@@ -6,6 +6,29 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-09
 
+### Added (Task 1)
+
+- **CodeQL analyzer of record** — brought forward `.github/workflows/codeql.yml` from `development` and adapted for the 8.1.x release line (`main` branch trigger, `intersoftdatalabs-in/percussioncms-java8` repo).
+- **Custom sanitizer barrier models** — `.github/codeql/models/` with 7 model packs (`sql-object-name`, `path-injection-guard`, `ldap-escape`, `url-validation-ssrf`, `redirxect-validation`, `secure-xml-xxe`, `xss-escape`). Per the dev branch's note, GHA rejects local pack paths in the `packs:` input, so the runtime sanitizers + sink-line `// codeql[...]` comments are the enforcement layer; the model packs are the audit trail.
+- **Shared SQL guards** — added `SecureStringUtils.requireSqlObjectName`, `requireSqlObjectNameOrNull`, `requireSafeMetadataToken`, `requireSingleSqlStatement`, `requireFactorySqlStatement` (CodeQL `java/sql-injection` barriers, backported from PR #1343 with pattern fields `SQL_OBJECT_NAME` and `SAFE_METADATA_TOKEN`).
+- **Junit 4 regression test** — `modules/perc-security-utils/src/test/java/com/percussion/security/SecureStringUtilsSqlInjectionTest` (7 tests covering accept/reject paths for each new method).
+- **Empty triage scaffolding** — `triage.md`, `suppressions.md`, `accepted-risks.md`, `codeql-pr-playbook.md`, `README.md` under `docs/ai-generated/tasks/8.1.x-codeql-baseline/`.
+- **Harness self-test** — `scripts/test_verify_suppressions.py` proves the suppression verifier can detect a missing `// codeql[...]` anchor.
+
+### Fixed (Tasks 0+1)
+
+- `scripts/verify-suppressions.py` — off-by-one parsing for the suppressions schema (data rows do not have a leading `#` column; the script was reading cells[1] as alert_id but the schema starts at cells[0]).
+- `scripts/verify-suppressions.py` — calls `filter-stale-alerts.py` (hyphen) by the correct filename, matching the file on disk.
+- `scripts/gh-preflight.py` — accepts SSH origin URLs (containing `:<repo>.git`) in addition to `https://github.com/<repo>`.
+
+### Notes
+
+- CodeQL Advanced only scans Java + JavaScript/TypeScript (no Actions/C#/Python/etc.).
+- Default Setup and Code Quality remain disabled per development branch's analyzer-of-record policy.
+- Spotless check passes on the modified module; full PMD/verify run is required for the first family PR per the plan.
+
+## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-09
+
 ### Added
 
 - Ported cross-platform Python verification scripts from `development` for the 8.1.x CodeQL Critical+High mitigation track: `scripts/fetch-gh-code-scanning-alerts.py`, `scripts/filter-stale-alerts.py`, `scripts/gh-preflight.py`, `scripts/verify-triage-inventory.py`, `scripts/verify-valid-fixes.py`, `scripts/verify-suppressions.py`, `scripts/verify-pr-review-resolution.py`, `scripts/verify-distribution-archive.py`, plus `scripts/generate-clusters.py` (8.1.x-local cluster summary) and `scripts/requirements-dev.txt`. Defaults target `intersoftdatalabs-in/percussioncms-java8` and `docs/ai-generated/tasks/8.1.x-codeql-baseline/`.
