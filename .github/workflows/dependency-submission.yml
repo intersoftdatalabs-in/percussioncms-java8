@@ -2,7 +2,7 @@ name: Dependency Submission
 
 on: 
   push:
-    branches: [ "development-8.1.x" ]
+    branches: [ "main" ]
   workflow_dispatch: 
 
 permissions:
