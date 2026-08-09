@@ -70,7 +70,7 @@
         <url>https://github.com/intersoftdatalabs-in/percussioncms</url>
     </scm>
     <properties>
-        <activemq.version>5.16.8</activemq.version>
+        <activemq.version>5.19.7</activemq.version>
         <ai-build-integrity.plugin.version>0.11.1-SNAPSHOT</ai-build-integrity.plugin.version>
         <ant.contrib.version>1.0b3</ant.contrib.version>
         <ant.version>1.10.14</ant.version>
@@ -79,7 +79,7 @@
         <axis.version>1.4.1</axis.version>
         <axiscore.version>1.4.2</axiscore.version>
         <batik.version>1.19</batik.version>
-        <bc.version>1.83</bc.version>
+        <bc.version>1.84</bc.version>
         <build.helper.maven.plugin.version>3.6.1</build.helper.maven.plugin.version>
         <build.profile.id>dev</build.profile.id>
         <buildId>0</buildId>
@@ -99,8 +99,8 @@
         <commons.math.version>3.6.1</commons.math.version>
         <commons.rng.version>1.3</commons.rng.version>
         <commons.validator.version>1.10.1</commons.validator.version>
-        <cxf.version>3.5.11</cxf.version>
-        <derby.version>10.14.2.0</derby.version>
+        <cxf.version>4.1.7</cxf.version>
+        <derby.version>10.17.1.0</derby.version>
         <duplicate.finder.maven.plugin.version>1.4.0</duplicate.finder.maven.plugin.version>
         <eclipse-manifest-location>META-INF</eclipse-manifest-location>
         <ehcache.version>2.10.9.2</ehcache.version>
@@ -112,12 +112,12 @@
         <guava.version>33.5.0-jre</guava.version>
         <gwt.maven.plugin.version>2.10.0</gwt.maven.plugin.version>
         <hibernate.validator.version>6.2.3.Final</hibernate.validator.version>
-        <hibernate.version>5.6.15.Final</hibernate.version>
+        <hibernate.version>6.0.0.Final</hibernate.version>
         <hikari.version>4.0.3</hikari.version>
         <httpcomponents.version>4.5.14</httpcomponents.version>
         <install.jre.version>8.222.10.1</install.jre.version>
         <jackson.annotations.version>2.21</jackson.annotations.version>
-        <jackson.version>2.21.1</jackson.version>
+        <jackson.version>2.21.4</jackson.version>
         <jacoco.it.execution.data.file>${project.build.directory}/coverage-reports/jacoco-it.exec</jacoco.it.execution.data.file>
         <jacoco.maven.plugin.version>0.8.14</jacoco.maven.plugin.version>
         <jacoco.ut.execution.data.file>${project.build.directory}/coverage-reports/jacoco-ut.exec</jacoco.ut.execution.data.file>
@@ -133,12 +133,12 @@
         <jetty.version>9.4.58.v20250814</jetty.version>
         <jfx.version>11.0.2</jfx.version>
         <json.version>20251224</json.version>
-        <jsoup.version>1.22.1</jsoup.version>
+        <jsoup.version>1.23.1</jsoup.version>
         <jtds.version>1.3.1</jtds.version>
         <junit.jupiter.version>5.14.3</junit.jupiter.version>
         <junit.version>4.13.2</junit.version>
         <lifecycle.mapping.plugin>1.0.0</lifecycle.mapping.plugin>
-        <log4j2.version>2.25.3</log4j2.version>
+        <log4j2.version>2.25.4</log4j2.version>
         <lucene.version>8.11.4</lucene.version>
         <maven.antrun.plugin.version>3.2.0</maven.antrun.plugin.version>
         <maven.assembly.plugin.version>3.8.0</maven.assembly.plugin.version>
@@ -183,7 +183,7 @@
         <owasp.csrfguard.version>4.5.0</owasp.csrfguard.version>
         <pdfbox.version>2.0.31</pdfbox.version>
         <plexus.component.metadata.version>2.2.0</plexus.component.metadata.version>
-        <poi.version>5.2.2</poi.version>
+        <poi.version>5.4.0</poi.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quartz.version>2.4.1</quartz.version>
@@ -200,12 +200,12 @@
         <snakeyaml.version>2.6</snakeyaml.version>
         <solr.version>8.11.4</solr.version>
         <spotless.plugin.version>2.30.0</spotless.plugin.version>
-        <spring.version>5.3.39</spring.version>
+        <spring.version>6.2.19</spring.version>
         <sqlite.version>3.43.2.2</sqlite.version>
         <stax.version>1.0.1</stax.version>
         <swagger.ui.version>5.31.2</swagger.ui.version>
         <swagger.version>2.2.43</swagger.version>
-        <tika.version>2.9.4</tika.version>
+        <tika.version>3.2.2</tika.version>
         <tinymce.version>5.10.3</tinymce.version>
         <trinidad.version>2.2.1</trinidad.version>
         <twelvemonkeys.version>3.13.1</twelvemonkeys.version>
@@ -622,7 +622,7 @@
             <dependency>
                 <groupId>org.apache.jackrabbit</groupId>
                 <artifactId>jackrabbit-jcr-commons</artifactId>
-                <version>2.20.17</version>
+                <version>2.22.2</version>
             </dependency>
             <dependency>
                 <groupId>org.jasypt</groupId>
@@ -2170,7 +2170,7 @@
                         <dependency>
                             <groupId>org.codehaus.plexus</groupId>
                             <artifactId>plexus-utils</artifactId>
-                            <version>3.5.1</version>
+                            <version>3.6.1</version>
                         </dependency>
                     </dependencies>
                 </plugin>
