@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-09
+
+### Added
+
+- Ported cross-platform Python verification scripts from `development` for the 8.1.x CodeQL Critical+High mitigation track: `scripts/fetch-gh-code-scanning-alerts.py`, `scripts/filter-stale-alerts.py`, `scripts/gh-preflight.py`, `scripts/verify-triage-inventory.py`, `scripts/verify-valid-fixes.py`, `scripts/verify-suppressions.py`, `scripts/verify-pr-review-resolution.py`, `scripts/verify-distribution-archive.py`, plus `scripts/generate-clusters.py` (8.1.x-local cluster summary) and `scripts/requirements-dev.txt`. Defaults target `intersoftdatalabs-in/percussioncms-java8` and `docs/ai-generated/tasks/8.1.x-codeql-baseline/`.
+- Initial baseline of open CodeQL alerts on `main` (2026-08-09): 610 open, 429 Critical+High across 30 rule clusters. Cluster map written to `docs/ai-generated/tasks/8.1.x-codeql-baseline/clusters.md`; raw API dump to `docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md`; stale-cache filter returns 0 (all paths present in `git ls-files`).
+
 ## [8.1.7 Build 947] - 2026-07-03
 
 ### Fixed
