@@ -24,6 +24,7 @@ import static org.apache.commons.lang.Validate.notNull;
 import com.percussion.error.PSExceptionUtils;
 import com.percussion.pagemanagement.data.PSTemplate;
 import com.percussion.pagemanagement.service.IPSTemplateService;
+import com.percussion.security.io.PSPathInjectionGuard;
 import com.percussion.server.PSRequest;
 import com.percussion.share.service.IPSDataService.DataServiceDeleteException;
 import com.percussion.share.service.IPSDataService.DataServiceLoadException;
@@ -150,6 +151,20 @@ public class PSThemeService implements IPSThemeService {
     return (request == null) ? "pssession" : request.getUserSessionId();
   }
 
+  /**
+   * Sanitizes a session id to a single path segment for temp theme-cache paths and matching
+   * relative URLs. Public for unit tests.
+   *
+   * <p>Session ids are system-issued; still constrain to {@code [a-zA-Z0-9._-]} so file path and
+   * relative URL never diverge.
+   */
+  public static String safeSessionSegment(String sessionId) {
+    if (sessionId == null || sessionId.trim().isEmpty()) {
+      return "pssession";
+    }
+    return sessionId.replaceAll("[^a-zA-Z0-9._-]", "_");
+  }
+
   private String getCachedRegionCSSRelativePath(String theme) {
     String psSession = getCurrentSessionId();
     return psSession + "/" + theme + "/" + THEME_REGION_CSS_PATH;
@@ -193,6 +208,7 @@ public class PSThemeService implements IPSThemeService {
    * @return the File pointer to the new theme folder, never <code>null</code>
    */
   protected File getNewThemeFolder(String themeName) {
+    PSPathInjectionGuard.requireSafeFileName(themeName);
     File root = getThemesRoot();
     File themeFolder = new File(root, themeName);
     int i = 0;
@@ -205,6 +221,7 @@ public class PSThemeService implements IPSThemeService {
   }
 
   protected File getThemeFolder(String themeName) throws PSThemeNotFoundException {
+    PSPathInjectionGuard.requireSafeFileName(themeName);
     File root = getThemesRoot();
     File themeFolder = new File(root, themeName);
     if (!themeFolder.isDirectory())
@@ -315,6 +332,7 @@ public class PSThemeService implements IPSThemeService {
    *     for the specified theme.
    */
   private String getThumbUrl(File themesRoot, String themeName) {
+    PSPathInjectionGuard.requireSafeFileName(themeName);
     String imgDirPath = File.separator + themeName;
     File imgDir = new File(themesRoot, imgDirPath);
     if (!imgDir.exists()) return null;
@@ -347,6 +365,7 @@ public class PSThemeService implements IPSThemeService {
       throws DataServiceLoadException, DataServiceNotFoundException, DataServiceSaveException {
     notEmpty(newTheme);
     notEmpty(existingTheme);
+    PSPathInjectionGuard.requireSafeFileName(newTheme);
 
     // get the existing theme directory
     File existingThemeFolder = getThemeFolder(existingTheme);
@@ -370,6 +389,7 @@ public class PSThemeService implements IPSThemeService {
   public PSThemeSummary createFromDefault(String newTheme)
       throws DataServiceLoadException, DataServiceNotFoundException, DataServiceSaveException {
     notEmpty(newTheme);
+    PSPathInjectionGuard.requireSafeFileName(newTheme);
 
     // get the existing theme directory
     File existingThemeFolder = getOriginalThemeFolder();
@@ -490,7 +510,10 @@ public class PSThemeService implements IPSThemeService {
     log.debug("clearCache for '{}", theme);
 
     File sessionDir =
-        new File(getThemesTempRootDirectory() + File.separator + getCurrentSessionId());
+        new File(
+            getThemesTempRootDirectory()
+                + File.separator
+                + safeSessionSegment(getCurrentSessionId()));
     if (sessionDir.exists()) {
       FileUtils.deleteQuietly(sessionDir);
     }

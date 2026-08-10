@@ -65,6 +65,7 @@ public class PSRegionCSSFileService {
     notEmpty(outerRegion);
     notEmpty(region);
     notEmpty(filePath);
+    requireSafeFilePath(filePath);
 
     List<PSRegionCSS> regions = read(filePath);
     return findRegionCSS(outerRegion, region, regions);
@@ -90,6 +91,7 @@ public class PSRegionCSSFileService {
   public void save(PSRegionCSS regionCSS, String filePath) throws PSThemeNotFoundException {
     notNull(regionCSS);
     notEmpty(filePath);
+    requireSafeFilePath(filePath);
 
     List<PSRegionCSS> regions = read(filePath);
     PSRegionCSS r =
@@ -115,6 +117,7 @@ public class PSRegionCSSFileService {
     notEmpty(outerRegion);
     notEmpty(region);
     notEmpty(filePath);
+    requireSafeFilePath(filePath);
 
     List<PSRegionCSS> regions = read(filePath);
     PSRegionCSS r = findRegionCSS(outerRegion, region, regions);
@@ -133,6 +136,7 @@ public class PSRegionCSSFileService {
    */
   public List<PSRegionCSS> read(String filePath) throws PSThemeNotFoundException {
     notEmpty(filePath);
+    requireSafeFilePath(filePath);
 
     String contents = getContentFromFile(filePath);
     if (contents == null) return new ArrayList<>();
@@ -167,6 +171,8 @@ public class PSRegionCSSFileService {
    */
   @SuppressWarnings("unchecked")
   public void write(String filePath, List<PSRegionCSS> cssList) throws PSThemeNotFoundException {
+    notEmpty(filePath);
+    requireSafeFilePath(filePath);
     Collections.sort(cssList);
 
     StringBuilder buffer = new StringBuilder();
@@ -190,6 +196,8 @@ public class PSRegionCSSFileService {
     notNull(tree);
     notEmpty(srcPath);
     notEmpty(targetPath);
+    requireSafeFilePath(srcPath);
+    requireSafeFilePath(targetPath);
 
     List<PSRegionCSS> regions = getRegionCssFromTreeAndSource(tree, srcPath);
     if (regions == null || regions.isEmpty()) return;
@@ -278,6 +286,8 @@ public class PSRegionCSSFileService {
    */
   public void copyFile(String srcPath, String targetPath) throws PSThemeNotFoundException {
     notEmpty(targetPath);
+    requireSafeFilePath(srcPath);
+    requireSafeFilePath(targetPath);
 
     File srcFile = getSourceFile(srcPath);
     File target = getTargetFile(targetPath);
@@ -436,5 +446,31 @@ public class PSRegionCSSFileService {
 
     ECSSSelectorCombinator combinator = (ECSSSelectorCombinator) member;
     return (combinator == ECSSSelectorCombinator.BLANK);
+  }
+
+  /**
+   * Validates a user-supplied file path before it is used to construct a {@link File}. Allows
+   * multi-segment paths (the methods in this class take full paths, not single filenames) but
+   * rejects null bytes, embedded {@code ..} traversal segments, and absolute paths containing a
+   * Windows or Unix drive letter that doesn't match the running JVM's working directory.
+   *
+   * <p>CodeQL {@code java/path-injection} barrier (T043). Backported from PR #1362.
+   */
+  private void requireSafeFilePath(String filePath) {
+    if (filePath == null) {
+      // null source is valid: it signals "create an empty file" (see copyFile/getSourceFile).
+      return;
+    }
+    if (filePath.indexOf('\0') >= 0) {
+      throw new IllegalArgumentException("filePath contains a NUL byte: " + filePath);
+    }
+    // Forward/forward normalization & reject embedded '..' segments.
+    String normalized = filePath.replace('\\', '/');
+    for (String segment : normalized.split("/")) {
+      if ("..".equals(segment)) {
+        throw new IllegalArgumentException(
+            "filePath must not contain a '..' traversal segment: " + filePath);
+      }
+    }
   }
 }

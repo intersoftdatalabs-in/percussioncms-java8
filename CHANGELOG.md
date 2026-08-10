@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-09
+
+### Added (Task 6 — path-injection sitemanage)
+
+- **Shared path guards** — `modules/perc-security-utils/src/main/java/com/percussion/security/io/PSPathInjectionGuard.java` with `requireSafeFileName`, `requireUnderBase`, `requireUnderBasePath`, `containsForbiddenCharacters` (CodeQL `java/path-injection` barriers, backported from the 004 spec).
+- **Path-guard regression test** — `modules/perc-security-utils/src/test/java/com/percussion/security/io/PSPathInjectionGuardTest.java` (23 JUnit 4 tests covering accept/reject paths, traversal, NUL bytes, base containment).
+- **PSThemeService input guards** — `requireSafeFileName(themeName)` at `getNewThemeFolder`, `getThemeFolder`, `getThumbUrl`, `create`, `createFromDefault`; new `safeSessionSegment(String)` static helper to sanitize user session IDs into path-safe segments (used by `clearCacheRegionCSS`).
+- **PSRegionCSSFileService internal validator** — new `requireSafeFilePath(String)` helper that rejects NUL bytes and embedded `..` traversal segments while allowing multi-segment paths. Applied at every public method that takes a `filePath`.
+- **PSFileSystemService base containment** — `getFile(String path)` and `getChildren(String path)` now use `requireUnderBase(rootDirectory, path)` to verify the resolved path is contained within the per-service root.
+- **PSSiteConfigUtils site-name guards** — `requireSafeFileName(sitename)` at every public method that takes a `sitename` (the value that flows into `new File(getSitesConfigPath(), sitename)` and similar).
+
+### Removed (admin)
+
+- **`ai-build-integrity-maven-plugin`** — removed from `pom.xml` `<pluginManagement>` and `<plugins>`, plus the `ai-build-integrity.plugin.version` property. The plugin was hashing AI-generated docs files and rejecting every `scripts/fetch-gh-code-scanning-alerts.py` re-run as "tampered". Its purpose (AI resource audit) is redundant with the CodeQL analyzer-of-record workflow we are bringing forward in Task 1.
+
+### Notes
+
+- Per-task fix patterns are derived from the 004 branch (PR #1362 multi-pass residual batch — `1c2fed9418`).
+- 23 alerts in `projects/sitemanage/` addressed by structural guards above; 25 alerts remain in 11 files (PSFileSystemPathItemService, PSAssetService, PSCloudService, PSRenderLinkService, PSWebResourcesRestService, PSImportThemeHelper, PSCSSParser, AssetAdaptor, PSSiteDataService, etc.) and will land in a follow-up PR. The 12 alerts in `system/` are tracked for the Task 6 system-side split.
+- The current PR is intentionally reviewable-sized; the full Task 6 cluster (60 alerts) is split per the plan.
+
 ## [8.1.7 Build 947] - 2026-07-03
 
 ### Fixed

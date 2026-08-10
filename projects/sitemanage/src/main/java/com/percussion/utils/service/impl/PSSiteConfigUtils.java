@@ -26,6 +26,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.percussion.error.PSExceptionUtils;
 import com.percussion.rx.publisher.PSRxPublisherServiceLocator;
+import com.percussion.security.io.PSPathInjectionGuard;
 import com.percussion.security.xml.PSSecureXMLUtils;
 import com.percussion.security.xml.PSXmlSecurityOptions;
 import com.percussion.server.PSServer;
@@ -171,6 +172,9 @@ public class PSSiteConfigUtils {
    * @return a String, never <code>null</code>.
    */
   public static String getSecureFilesPath(String sitename) {
+    // codeql[java/path-injection] justification: caller passes sitename straight into a string
+    // concat; validate at the constructor site; re-review by 2027-07-31
+    PSPathInjectionGuard.requireSafeFileName(sitename);
     String path = getSitesConfigPath();
 
     path += (path.endsWith("/")) ? sitename : "/" + sitename;
@@ -210,6 +214,7 @@ public class PSSiteConfigUtils {
    * @throws IOException if an error occurs when removing the file
    */
   public static void removeTouchedFile(String sitename) throws IOException {
+    PSPathInjectionGuard.requireSafeFileName(sitename);
     File tchFile = getTouchedFile(sitename);
     if (tchFile.exists()) {
       FileUtils.forceDelete(tchFile);
@@ -223,6 +228,7 @@ public class PSSiteConfigUtils {
    * @return {@link File} object for the touched file. Never <code>null</code>.
    */
   public static File getTouchedFile(String sitename) {
+    PSPathInjectionGuard.requireSafeFileName(sitename);
     return new File(getSitesTouchedFilesPath(), sitename + CONFIG_FILE_TOUCHED_EXTENSION);
   }
 
@@ -278,6 +284,8 @@ public class PSSiteConfigUtils {
       return;
     }
 
+    PSPathInjectionGuard.requireSafeFileName(srcSite);
+    PSPathInjectionGuard.requireSafeFileName(destSite);
     removeTouchedFile(srcSite);
   }
 
@@ -301,6 +309,7 @@ public class PSSiteConfigUtils {
    * @throws IOException if an error occurs when dealing with creation or writing of files.
    */
   public static void createSecureSiteConfiguration(String sitename) throws IOException {
+    PSPathInjectionGuard.requireSafeFileName(sitename);
     File siteConfigFolder = forceMkDirSiteConfig(sitename);
     FileUtils.copyDirectory(getSourceConfigurationFolder(), siteConfigFolder, false);
   }
@@ -314,6 +323,7 @@ public class PSSiteConfigUtils {
    *     exist @+-throws IOException
    */
   public static void removeServerEntry(String sitename, long serverId) throws IOException {
+    PSPathInjectionGuard.requireSafeFileName(sitename);
     FileOutputStream fos = null;
 
     File tchFile = getTouchedFile(sitename);
@@ -361,6 +371,7 @@ public class PSSiteConfigUtils {
    * @throws IOException if an error occurs when removing the files
    */
   public static void removeSiteConfiguration(String sitename) throws IOException {
+    PSPathInjectionGuard.requireSafeFileName(sitename);
     File siteConfigFolder = getSiteConfigFolder(sitename);
     if (siteConfigFolder.exists()) {
       FileUtils.forceDelete(siteConfigFolder);
@@ -375,6 +386,7 @@ public class PSSiteConfigUtils {
    * @throws IOException if an error occurs when removing the files
    */
   public static void removeSiteConfigurationAndTouchedFile(String sitename) throws IOException {
+    PSPathInjectionGuard.requireSafeFileName(sitename);
     removeSiteConfiguration(sitename);
     removeTouchedFile(sitename);
   }
@@ -397,6 +409,7 @@ public class PSSiteConfigUtils {
    */
   public static void updatePublishedDate(String sitename, IPSPubServer pubServer)
       throws IOException {
+    PSPathInjectionGuard.requireSafeFileName(sitename);
     File tchFile = getTouchedFile(sitename);
     if (!tchFile.exists()) {
       createTouchedFile(sitename);
