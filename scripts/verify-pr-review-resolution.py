@@ -68,8 +68,8 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--repo",
-        default="intersoftdatalabs-in/percussioncms",
-        help="owner/repo for gh CLI (default: intersoftdatalabs-in/percussioncms)",
+        default="intersoftdatalabs-in/percussioncms-java8",
+        help="owner/repo for gh CLI (default: intersoftdatalabs-in/percussioncms-java8)",
     )
     return parser
 

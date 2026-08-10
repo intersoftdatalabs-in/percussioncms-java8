@@ -1,0 +1,50 @@
+# CodeQL config for the 8.1.x release line (percussioncms-java8).
+#
+# Triggered by .github/workflows/codeql.yml. Scans Java and JavaScript/TypeScript.
+#
+# Findings:
+#   .github/codeql/models/  -- local sanitizer barriers (docs reference; GHA
+#     rejects local pack paths in workflow packs: input, so we rely on runtime
+#     sanitizers + sink-line // codeql[rule-id] comments + these path excludes).
+#   ../codeql/codeql-pr-playbook.md -- documentation.
+
+paths-ignore:
+  # Build outputs / caches
+  - "**/target/**"
+  - "**/build/**"
+  - "**/dist/**"
+  - "**/node_modules/**"
+  - "**/.codeql-db/**"
+  - "**/.codeql-results/**"
+  # Docker / local dev
+  - "**/docker/dev-data/**"
+  - "**/docker/logs/**"
+  # Test fixtures and unit-test JS
+  - "**/src/test/resources/**"
+  - "**/src/test/**"
+  # Vendored / packaging mirror trees (produce bulk js/* noise without product-source signal)
+  - "WebUI/war/**"
+  - "deliverytiersuite/delivery-tier-suite/**/lib-js/**"
+  - "deliverytiersuite/delivery-tier-suite/**/src-js/**"
+  - "cui/components/**"
+  - "cui/**/components/**"
+  # sys_resources vendored JS files (dojo, trinidad, jQuery, mobile preview, etc.)
+  - "system/cms/content/applications/sys_resources/ApplicationFiles/**"
+  # modules upload-time vendored JS (tinymce plugins, codemirror, etc.)
+  - "modules/perc-tinymce/src/main/resources/META-INF/resources/sys_resources/**"
+  # Legacy crypto module — accepted-risk-only; PR #1347 documented
+  - "modules/perc-legacy/**"
+  # Install bundles
+  - "modules/perc-toolkit/src/main/resources/InstallDir/**"
+  - "modules/perc-packages/**/jquery*.js"
+  - "modules/perc-packages/**/jquery.qtip.js"
+  # Retired cactus test fixtures
+  - "modules/CMLight-Main-cactus-tests/**"
+  # Local CodeQL model pack docs (not scanned source)
+  - ".github/codeql/**"
+
+# Per-query exclusion for documented false positives. Each entry MUST have a
+# matching row in docs/ai-generated/tasks/8.1.x-codeql-baseline/suppressions.md
+# with file_path set to .github/codeql/codeql-config.yml (populated as tasks
+# 2-8 discover residuals).
+query-filters: []

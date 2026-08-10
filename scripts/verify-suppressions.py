@@ -61,16 +61,22 @@ def _parse_suppression_rows(text: str) -> list[dict[str, str]]:
     for line in text.splitlines():
         if not ROW_RE.match(line):
             continue
-        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        # Strip leading/trailing whitespace, then leading/trailing pipe chars.
+        # Split on every remaining pipe. The first cell is the leading-pipe
+        # empty between-row separator; the last is the trailing-pipe separator.
+        body = line.strip().strip("|")
+        cells = [c.strip() for c in body.split("|")]
         if len(cells) < 9:
             continue
+        # Schema: alert_id | rule_id | file_path | line | justification | ...
+        # The first 5 cells are the rule-id grep + match window search.
         rows.append(
             {
-                "alert_id": cells[1].strip("`"),
-                "rule": cells[2].strip("`"),
-                "path": cells[3].strip("`"),
-                "line": cells[4],
-                "justification": cells[5],
+                "alert_id": cells[0].strip("`"),
+                "rule": cells[1].strip("`"),
+                "path": cells[2].strip("`"),
+                "line": cells[3],
+                "justification": cells[4],
             }
         )
     return rows

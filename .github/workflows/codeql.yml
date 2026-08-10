@@ -1,0 +1,91 @@
+# CodeQL Advanced — analyzer of record for the 8.1.x release line.
+#
+# Scope: Java and JavaScript/TypeScript only (no Actions, C#, Python, etc.).
+#
+# IMPORTANT — only one CodeQL orchestrator may own code-scanning uploads:
+#   - This workflow (.github/workflows/codeql.yml) is the analyzer of record.
+#   - Code scanning *default setup* must stay state=not-configured.
+#   - GitHub *Code Quality* (dynamic workflow "Code Quality: CodeQL Setup" at
+#     dynamic/github-code-scanning/codeql) must be DISABLED for this repo.
+#     Settings → Code quality → Disable. That dynamic runner ignores this
+#     config file, scans extra languages, and empty/stub analyses on the
+#     default branch close open alerts as "fixed".
+#
+# Verify default setup:
+#   gh api repos/intersoftdatalabs-in/percussioncms-java8/code-scanning/default-setup --jq .state
+#   # expected: not-configured
+#
+# Config applied only by this workflow:
+#   - .github/codeql/codeql-config.yml (paths-ignore, query-filters)
+#   - .github/codeql/models (sanitizer barrier documentation; GHA rejects
+#     local pack paths in `packs:` so the runtime + sink-line // codeql
+#     comments are the enforcement layer; the model packs are the audit
+#     trail of declared barriers)
+#
+# See docs/ai-generated/tasks/8.1.x-codeql-baseline/codeql-pr-playbook.md
+#
+name: "CodeQL Advanced"
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  schedule:
+    - cron: "44 2 * * 4"
+  # Manual re-scan after config changes or after disabling Code Quality / default setup
+  workflow_dispatch:
+
+# Least privilege at workflow level; jobs elevate only what CodeQL needs.
+# Repo may have default_workflow_permissions=read — security-events must be
+# requested explicitly or SARIF upload silently fails to open alerts.
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      # required to upload SARIF / open code-scanning alerts
+      security-events: write
+
+      # required to fetch internal or private CodeQL packs
+      packages: read
+
+      # only required for workflows in private repositories
+      actions: read
+      contents: read
+
+      # required so PR checks / annotations can be written for the head SHA
+      pull-requests: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Java only (build-mode none does not analyze Kotlin). Prefer none for
+          # this monorepo size; switch to autobuild/manual if coverage is thin.
+          - language: java-kotlin
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+        # Intentionally NOT scanning: actions, c-cpp, csharp, go, python, ruby, rust, swift
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          config-file: ./.github/codeql/codeql-config.yml
+          # Do not pass local pack paths via packs: — GHA fails with "not a valid pack".
+          # Models remain in-repo for docs; use sink-line // codeql + query-filters.
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"
