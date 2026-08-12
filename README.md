@@ -109,8 +109,8 @@ Use the environment scripts so Maven always runs under JDK 8:
 # Faster local iteration
 ./mvn-env.sh clean install -DskipTests
 
-# Single module + dependencies
-./mvn-env.sh clean install -pl modules/perc-toolkit -am
+# Single module
+./mvn-env.sh clean install modules/perc-toolkit
 ```
 
 ```batch
@@ -146,13 +146,15 @@ Start Jetty from the install:
 
 ```bash
 # Linux / macOS
-cd <installation-directory>/jetty/base && ./start.sh
+cd <installation-directory>/jetty/ && ./StartJetty.sh
 
 # Windows
-cd <installation-directory>\jetty\base && start.bat
+cd <installation-directory>\jetty\ && StartJetty.bat
 ```
 
 Default CMS URL: `http://localhost:9992/`
+
+Default Admin & Contributor users are generated with dynamically generated temporary passwords at startup.  These are written to <installation-directory>/var/config/generated/passwords.  These passwords should be changed and the password file deleted after post installation login. 
 
 ---
 
