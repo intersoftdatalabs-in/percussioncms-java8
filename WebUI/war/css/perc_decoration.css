@@ -1,20 +1,25 @@
 
 
 /*
- * Region span sizing for editor/preview decoration (GH-2352 / issue #2).
- * Do not force the legacy fixed pixel grid with !important — that stomps
- * responsive customer themes that set height/width: auto (or fluid sizes).
- * Published default-theme #757 footer/sidebar min-height lives in theme.css.
+ * Region span sizing for editor/preview decoration (issue #2; sister of GH-2352 on 8.2 line).
+ *
+ * Decoration loads BEFORE the site theme in PAGE_EDIT / PREVIEW (see PSHTMLHeaderImporterTest
+ * ordering: perc_decoration.css is link index 0, perc_theme.css follows), so it must not force
+ * the legacy fixed pixel grid with !important. Responsive customer themes that set
+ * height/width: auto on spans render correctly when decoration stays out of the way.
+ *
+ * - vspan_* : height: auto so responsive `height: auto` themes win; default theme still gets
+ *             a visual floor from its own min-height (GH-757 sidebar/footer behavior unchanged
+ *             in theme.css).
+ * - hspan_* : intentionally NOT declared here. Column widths are owned by the site theme
+ *             (default: 160/640/800/960px; responsive: auto). Forcing a width here would
+ *             override either theme at the same cascade tier.
  */
 .vspan_2 { height: auto; }
 .vspan_4 { height: auto; }
 .vspan_6 { height: auto; }
 .vspan_8 { height: auto; }
 
-.hspan_2  { width: auto; }
-.hspan_8  { width: auto; }
-.hspan_10 { width: auto; }
-.hspan_12 { width: auto; }
 
 
 #perc-content { margin : 0 auto }

@@ -42,6 +42,12 @@ import org.junit.Test;
  *   <li>Editor/preview decoration must <strong>not</strong> force the legacy fixed pixel grid with
  *       {@code !important} (or hard-coded px heights/widths) so responsive customer themes that set
  *       {@code height/width: auto} win in the CMS chrome &mdash; issue #2 / GH-2352.
+ *   <li>Decoration must not declare {@code hspan_*} column widths at all, because it loads
+ *       <em>before</em> the site theme in the editor/preview header (see
+ *       {@code PSHTMLHeaderImporterTest}: {@code perc_decoration.css} is link index 0,
+ *       {@code perc_theme.css} follows). Forcing a width would either override the default
+ *       theme's fixed 160/640/800/960 grid at the same cascade tier, or be defeated by an
+ *       {@code !important} counter in responsive themes (the original symptom).
  * </ul>
  */
 public class VspanFooterAlignmentCssTest {
@@ -49,6 +55,7 @@ public class VspanFooterAlignmentCssTest {
   private static final Pattern VSPAN_BLOCK =
       Pattern.compile("\\.vspan_([2468])\\s*\\{([^}]*)\\}", Pattern.DOTALL);
 
+  /** Matches any {@code .hspan_X { ... }} rule in decoration, used to assert absence. */
   private static final Pattern HSPAN_BLOCK =
       Pattern.compile("\\.hspan_(2|8|10|12)\\s*\\{([^}]*)\\}", Pattern.DOTALL);
 
@@ -63,50 +70,44 @@ public class VspanFooterAlignmentCssTest {
         }
       };
 
-  /** Theme CSS paths that own the published #757 footer/sidebar min-height floors. */
-  private static final List<String> THEME_PATHS =
-      Arrays.asList(
-          "system/cms/content/applications/rx_resources/ApplicationFiles/default_theme/theme.css",
-          "system/bin/cms/content/applications/rx_resources/ApplicationFiles/default_theme/theme.css");
+  /**
+   * Canonical source of truth for the published #757 footer/sidebar min-height floors. There is
+   * exactly one on disk in this repo; the test fails fast if it is missing (no soft skip).
+   */
+  private static final String THEME_CSS_PATH =
+      "system/cms/content/applications/rx_resources/ApplicationFiles/default_theme/theme.css";
 
   /** Decoration CSS paths shipped with the CMS UI. */
   private static final List<String> DECORATION_PATHS =
       Arrays.asList("WebUI/war/css/perc_decoration.css");
 
-  private static final List<String> HSPAN_KEYS = Arrays.asList("2", "8", "10", "12");
-
   @Test
   public void themeCssUsesMinHeightForVspanRegions() throws Exception {
     Path root = resolveRepoRoot();
-    boolean sawAtLeastOne = false;
-    for (String rel : THEME_PATHS) {
-      Path cssPath = root.resolve(rel);
-      if (!Files.exists(cssPath)) {
-        continue;
-      }
-      sawAtLeastOne = true;
-      String css = readFile(cssPath);
-      Matcher m = VSPAN_BLOCK.matcher(css);
-      int blocks = 0;
-      while (m.find()) {
-        blocks++;
-        String span = m.group(1);
-        String body = m.group(2);
-        String floor = VSPAN_FLOOR_PX.get(span);
-        assertTrue(
-            "theme.css .vspan_"
-                + span
-                + " must use min-height: "
-                + floor
-                + "px: "
-                + body.replace('\n', ' '),
-            Pattern.compile("min-height\\s*:\\s*" + floor + "px").matcher(body).find());
-      }
-      assertTrue(
-          rel + ": expected at least vspan_2/4/6/8 rules, found " + blocks,
-          blocks >= 4);
+    Path cssPath = root.resolve(THEME_CSS_PATH);
+    if (!Files.exists(cssPath)) {
+      fail("expected default theme CSS at " + cssPath.toAbsolutePath());
     }
-    assertTrue("expected to find at least one theme.css on disk", sawAtLeastOne);
+    String css = readFile(cssPath);
+    Matcher m = VSPAN_BLOCK.matcher(css);
+    int blocks = 0;
+    while (m.find()) {
+      blocks++;
+      String span = m.group(1);
+      String body = m.group(2);
+      String floor = VSPAN_FLOOR_PX.get(span);
+      assertTrue(
+          "theme.css .vspan_"
+              + span
+              + " must use min-height: "
+              + floor
+              + "px: "
+              + body.replace('\n', ' '),
+          Pattern.compile("min-height\\s*:\\s*" + floor + "px").matcher(body).find());
+    }
+    assertTrue(
+        THEME_CSS_PATH + ": expected at least vspan_2/4/6/8 rules, found " + blocks,
+        blocks >= 4);
   }
 
   @Test
@@ -119,7 +120,7 @@ public class VspanFooterAlignmentCssTest {
       }
       String css = readFile(cssPath);
       assertVspanAllowsResponsiveThemes(rel, css);
-      assertHspanAllowsResponsiveThemes(rel, css);
+      assertHspanNotDeclaredInDecoration(rel, css);
     }
   }
 
@@ -145,9 +146,9 @@ public class VspanFooterAlignmentCssTest {
           rel
               + " .vspan_"
               + span
-              + " must not reset min-height: 0 !important (kills theme floors): "
+              + " must not reset min-height: 0 (kills theme floors): "
               + body.replace('\n', ' '),
-          Pattern.compile("min-height\\s*:\\s*0\\s*!important").matcher(body).find());
+          Pattern.compile("min-height\\s*:\\s*0(?![0-9])").matcher(body).find());
       assertTrue(
           rel
               + " .vspan_"
@@ -175,45 +176,16 @@ public class VspanFooterAlignmentCssTest {
     }
   }
 
-  private static void assertHspanAllowsResponsiveThemes(String rel, String css) {
+  private static void assertHspanNotDeclaredInDecoration(String rel, String css) {
     Matcher m = HSPAN_BLOCK.matcher(css);
-    Map<String, Integer> counts = new LinkedHashMap<>();
-    for (String k : HSPAN_KEYS) {
-      counts.put(k, 0);
-    }
-    int blocks = 0;
-    while (m.find()) {
-      blocks++;
-      String span = m.group(1);
-      String body = m.group(2);
-      assertFalse(
+    if (m.find()) {
+      fail(
           rel
-              + " .hspan_"
-              + span
-              + " must not force width with !important: "
-              + body.replace('\n', ' '),
-          Pattern.compile("width\\s*:[^;!]*!important").matcher(body).find());
-      assertTrue(
-          rel
-              + " .hspan_"
-              + span
-              + " must use width: auto: "
-              + body.replace('\n', ' '),
-          Pattern.compile("width\\s*:\\s*auto").matcher(body).find());
-      assertFalse(
-          rel
-              + " .hspan_"
-              + span
-              + " must not set fixed legacy grid width: "
-              + body.replace('\n', ' '),
-          Pattern.compile("width\\s*:\\s*(160|640|800|960)px").matcher(body).find());
-      counts.merge(span, 1, Integer::sum);
-    }
-    assertTrue(rel + ": expected at least hspan_2/8/10/12 rules, found " + blocks, blocks >= 4);
-    for (Map.Entry<String, Integer> e : counts.entrySet()) {
-      assertTrue(
-          rel + " .hspan_" + e.getKey() + " count=" + e.getValue(),
-          e.getValue() >= 1);
+              + " must not declare .hspan_"
+              + m.group(1)
+              + " column widths (decoration loads before the site theme; column widths are owned"
+              + " by the theme). Found: "
+              + m.group(2).replace('\n', ' '));
     }
   }
 
