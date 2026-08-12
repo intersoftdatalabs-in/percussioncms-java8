@@ -241,20 +241,23 @@ public class Main {
         String name = entryName.substring(folderPrefix.length() + 1);
         if (name.length() == 0) continue;
 
-        Path entryDest = destPath.resolve(name);
-        File newFile = new File(entryDest.toString());
+        // Zip-slip guard (CodeQL java/zipslip alert #496): validate that the resolved path
+        // stays under destPath before any mkdirs/Files.copy. The entry name and the
+        // folderPrefix stripping are both attacker-controlled (jar archive).
+        File newFile =
+            com.percussion.security.io.ZipSlipGuard.safeDestFile(destPath.toFile(), name);
         System.out.println("Unzipping to " + newFile.getAbsolutePath());
         // create directories for sub directories in zip
         new File(newFile.getParent()).mkdirs();
 
         if (entry.isDirectory()) {
-          Files.createDirectory(entryDest);
+          Files.createDirectory(newFile.toPath());
           continue;
         }
 
-        System.out.println("Creating file " + entryDest);
+        System.out.println("Creating file " + newFile);
 
-        Files.copy(archive.getInputStream(entry), entryDest);
+        Files.copy(archive.getInputStream(entry), newFile.toPath());
 
         // Preserve executable permissions for shell scripts
         if (entryName.endsWith(".sh")) {

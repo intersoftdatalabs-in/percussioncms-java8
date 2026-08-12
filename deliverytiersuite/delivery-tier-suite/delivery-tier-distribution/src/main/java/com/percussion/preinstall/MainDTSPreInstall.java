@@ -197,19 +197,22 @@ public class MainDTSPreInstall {
         String name = entryName.substring(folderPrefix.length() + 1);
         if (name.length() == 0) continue;
 
-        Path entryDest = destPath.resolve(name);
+        // Zip-slip guard (CodeQL java/zipslip alert #494): validate that the resolved path
+        // stays under destPath before any mkdirs/Files.copy. The entry name and the
+        // folderPrefix stripping are both attacker-controlled (jar archive).
+        File newFile =
+            com.percussion.security.io.ZipSlipGuard.safeDestFile(destPath.toFile(), name);
 
         if (entry.isDirectory()) {
-          Files.createDirectory(entryDest);
+          Files.createDirectory(newFile.toPath());
           continue;
         }
-        System.out.println("Creating file " + entryDest);
-        Files.copy(archive.getInputStream(entry), entryDest);
+        System.out.println("Creating file " + newFile);
+        Files.copy(archive.getInputStream(entry), newFile.toPath());
 
         // Preserve executable permissions for shell scripts
         if (entryName.endsWith(".sh")) {
-          File file = entryDest.toFile();
-          file.setExecutable(true, false); // Set executable for owner, group, and others
+          newFile.setExecutable(true, false); // Set executable for owner, group, and others
         }
       }
     }

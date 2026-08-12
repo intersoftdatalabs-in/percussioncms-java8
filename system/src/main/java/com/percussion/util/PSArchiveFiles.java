@@ -18,6 +18,7 @@
 package com.percussion.util;
 
 import com.percussion.cms.IPSConstants;
+import com.percussion.security.io.ZipSlipGuard;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -365,7 +366,7 @@ public class PSArchiveFiles {
       }
 
       if (!dir.equals(".")) {
-        File file = new File(extractDir, dir);
+        File file = ZipSlipGuard.safeDestFile(directory, dir);
         if (!file.exists()) {
           if (!file.mkdirs()) return "Could not make directory " + file.getCanonicalPath();
         }
@@ -380,12 +381,9 @@ public class PSArchiveFiles {
       try {
         in = archiveFile.getInputStream(entry);
 
-        if (!extractDir.endsWith(File.separator)) extractDir += File.separator;
+        if (!directory.toString().endsWith(File.separator)) extractDir += File.separator;
 
-        File file = new File(extractDir, entry.getName());
-        if (!file.toPath().normalize().startsWith(extractDir))
-          throw new IllegalArgumentException(
-              "Archive file to extract from is not having correct path.");
+        File file = ZipSlipGuard.safeDestFile(directory, entry.getName());
         out = new FileOutputStream(file);
 
         byte[] buf = new byte[1024];

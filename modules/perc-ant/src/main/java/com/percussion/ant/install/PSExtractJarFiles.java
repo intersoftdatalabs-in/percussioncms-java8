@@ -83,11 +83,16 @@ public class PSExtractJarFiles extends PSAction {
       int bytesRead;
 
       for (int k = 0; k < fileList.size(); k++) {
-        String jarFileLoc = destinationDir + File.separator + fileList.get(k);
-        File makeLocation = new File(jarFileLoc).getParentFile();
+        String entryName = (String) fileList.get(k);
+        // Zip-slip guard (CodeQL java/zipslip alert #495): validate that the entry resolves
+        // under destinationDir before any mkdirs/FileOutputStream. The entry name is
+        // attacker-controlled (jar archive).
+        File fJarFile =
+            com.percussion.security.io.ZipSlipGuard.safeDestFile(
+                new File(destinationDir), entryName);
+        File makeLocation = fJarFile.getParentFile();
         makeLocation.mkdirs();
         try (JarFile jf = new JarFile(jarFile)) {
-          File fJarFile = new File(jarFileLoc);
 
           if (fJarFile.exists() && fJarFile.isFile()) {
             // see if we can replace this file?

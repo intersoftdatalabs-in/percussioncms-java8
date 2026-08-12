@@ -108,7 +108,9 @@ public class InstallRxApp {
    */
   private void copyInputStreamToFile(InputStream is, String tgtRoot, String fileName)
       throws IOException {
-    File file = new File(tgtRoot, fileName);
+    // Zip-slip guard (CodeQL java/zipslip alert #499): validate the entry resolves under tgtRoot
+    // before any mkdirs/FileOutputStream. The archive entry name is attacker-controlled.
+    File file = com.percussion.security.io.ZipSlipGuard.safeDestFile(new File(tgtRoot), fileName);
     File parent = file.getParentFile();
     if (null != parent && !parent.exists()) parent.mkdirs();
 
