@@ -333,7 +333,12 @@ tinymce.PluginManager.add('percadvimage', function(editor, url) {
                     cm1LinkData.inlinetype = 'rximage';
                     cm1LinkData.alt = renderLink.altText;
                     cm1LinkData.title = renderLink.title;
-                    cm1LinkData.jcrpath = pathItem.PathItem.folderPaths.replace('/Folders/$System$/','') + "/" + pathItem.PathItem.name;
+                    var folderPaths = pathItem.PathItem.folderPaths;
+                    var folderPath = Array.isArray(folderPaths) ? folderPaths[0] : folderPaths;
+                    if (typeof folderPath !== 'string') {
+                        folderPath = '';
+                    }
+                    cm1LinkData.jcrpath = folderPath.replace('/Folders/$System$/','') + "/" + pathItem.PathItem.name;
 
                     var currentaltoverride = formData.alt;
                     var currenttitleoverride = formData.title;
@@ -649,7 +654,6 @@ tinymce.PluginManager.add('percadvimage', function(editor, url) {
         }
 
         editor.addCommand('updateFileSelection', function (ui, selectedItem) {
-            console.log("Hello");
             updateLinkData(selectedItem,null);
         });
 

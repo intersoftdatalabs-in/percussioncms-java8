@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
+
+### Fixed
+
+- **Rich Text widget: image selected from Assets not inserted** (#11) — `modules/perc-tinymce/.../plugins/percadvimage/plugin.js` called `String.prototype.replace` on `pathItem.PathItem.folderPaths` returned by `PercPathService.getPathItemById`. The REST service now returns `folderPaths` as an array, so the call threw `TypeError: pathItem.PathItem.folderPaths.replace is not a function`, aborting `getImageData` before the inline image element was populated with `sys_dependentvariantid`/`sys_dependentid`. The fix normalizes `folderPaths` to a string (handling both string and array responses) so the inline link element is written correctly and the server-side `PSInlineLinkField` no longer reports `Missing required inline link parameter: sys_dependentvariantid`. Also removed a stray `console.log("Hello")` debug statement in the same `updateFileSelection` command handler.
+
 ## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-09
 
 ### Added (Task 1)
