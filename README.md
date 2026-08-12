@@ -1,211 +1,202 @@
-# Percussion CMS
+# Percussion CMS (Java 8 / 8.1.x)
 
-> **Note:** This branch (`development-8.1.x`) is the maintenance branch for Java 8 (JDK 1.8). All code must remain compatible with Java 8.
+**Actively maintained by [Intersoft Data Labs](https://www.intsof.com)** · Apache 2.0 · Formerly Percussion CM1 / Rhythmyx / CM System
 
-This is the main project for Percussion CMS - the next version of Percussion CM1 and Rhythmyx.
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Java](https://img.shields.io/badge/Java-8%20(JDK%201.8)-orange.svg)](https://openjdk.org/)
+[![Latest Release](https://img.shields.io/github/v/release/intersoftdatalabs-in/percussioncms-java8?label=Latest%20Release)](https://github.com/intersoftdatalabs-in/percussioncms-java8/releases)
+[![Dependency Submission](https://github.com/intersoftdatalabs-in/percussioncms-java8/actions/workflows/dependency-submission.yml/badge.svg?branch=main)](https://github.com/intersoftdatalabs-in/percussioncms-java8/actions/workflows/dependency-submission.yml)
 
-[![Maven Build](https://github.com/intersoftdatalabs-in/percussioncms/actions/workflows/dependency-submission.yml/badge.svg?branch=development-8.1.x)](https://github.com/intersoftdatalabs-in/percussioncms/actions/workflows/dependency-submission.yml)
+> **This repository is the Java 8 LTS home for the 8.1.x product line.**  
+> Default branch: **`main`**. All code **must remain compatible with JDK 1.8.0**.  
+> Active platform modernization (Java 21 / 8.2) lives in  
+> **[intersoftdatalabs-in/percussioncms](https://github.com/intersoftdatalabs-in/percussioncms)**.
+
+---
 
 ## What is Percussion CMS?
 
-Percussion CMS is the next generation of Percussion Software's proprietary Rhythmyx and CM1 content management products.  The original headless CMS (1999), Percussion CMS has a long history of de-coupled deployments with easily extensible integration points for delivering content in different formats to different channels.
+Percussion CMS is a mature, enterprise-grade, decoupled / headless-capable content management system with roots going back to 1999. It unifies the content production strengths of the original CM1 with the deep development and integration capabilities of Rhythmyx.
 
-Our goal is to empower the developer and the marketer. Smart architecture, smart API's, smart UI.
+It was designed from the beginning for multi-channel delivery — websites, static sites, XML/JSON feeds, databases, and custom channels — with strong workflow, permissions, and extensibility for both marketers and developers.
 
-## What can I do with it?
+**Smart architecture. Smart APIs. Smart UI.**
 
-* Create and manage one or more web sites - small or large.
-* Re-purpose Website content to database or XML channels.
-* Generate static Web site
-* Control content editorial through Workflows and Permissions.
+Intersoft Data Labs assumed full responsibility for support, maintenance, and ongoing development of the Percussion CMS product line in July 2023 after Percussion Software ended commercial support. This repository is the official open-source home of the **Java 8 / 8.1.x** product line under the Apache 2.0 license.
+
+---
+
+## Current Status (August 2026)
+
+| Version / line | Status | Notes |
+|----------------|--------|--------|
+| **8.1.7** | Current stable release on this repo | Security hardening, WCAG-oriented accessibility work, Google Analytics 4, REST fixes, and ongoing 8.1.x maintenance |
+| **8.1.x (`main`)** | Active maintenance (this repository) | JDK **1.8 only**. Security fixes, regression fixes, and carefully capped dependency updates |
+| **8.2 / Java 21** | Active development (separate repo) | See [percussioncms](https://github.com/intersoftdatalabs-in/percussioncms) — not built from this tree |
+
+**Stay on a current 8.1.x release** when you must remain on Java 8. Recent 8.1.x builds include important security patches.
+
+If you are planning a platform upgrade (Java 21, modern UI work, broader dependency refreshes), use the main [percussioncms](https://github.com/intersoftdatalabs-in/percussioncms) repository.
+
+---
+
+## What can you do with it?
+
+- Create and manage one or more websites (small sites to large multi-site deployments)
+- Re-purpose content to databases, XML/JSON channels, or other delivery endpoints
+- Generate static websites
+- Enforce editorial control through robust workflows and fine-grained permissions
+- Extend the platform with custom applications, templates, and integrations
+- Run fully decoupled / headless or hybrid delivery models
+
+---
 
 ## How do I get it?
 
-Download links are available on the project [Releases page](https://github.com/intersoftdatalabs-in/percussioncms/releases)
+**Binaries and installers** for the Java 8 line are published on this project’s  
+[Releases page](https://github.com/intersoftdatalabs-in/percussioncms-java8/releases).
 
-### Commercial Providers
+The latest stable **8.1.x** release is always featured there.  
+(The broader product release history also appears under  
+[percussioncms/releases](https://github.com/intersoftdatalabs-in/percussioncms/releases).)
 
-* [Intersoft Data Labs](https://www.intsof.com) will offer commercial support for Percussion CMS since July 2023.
+### Commercial Support & Services
 
-[Percussion](https://www.percussion.com) ended support for Percussion CMS products in June 2023.
+**Intersoft Data Labs** is the exclusive commercial support and maintenance provider for Percussion CMS (all versions of CMS and Rhythmyx) since July 2023.
 
-## I was a Percussion customer, is this where I download updates?
+- Production support and SLAs
+- Upgrade and migration assistance (including paths toward newer lines)
+- Custom development and integrations
+- Hosting / managed services options
 
-Yes.  The latest release will be featured in the [Releases page](https://github.com/intersoftdatalabs-in/percussioncms/releases) on this GitHub project.  For Technical Support please see the [Intersoft support portal](https://percussionsupport.intsof.com). The documentation can be found on https://percussioncmshelp.intsof.com and the old Percussion community has been re-homed to https://percussioncmshelp.intsof.com.
+Contact: [inquire@intsof.com](mailto:inquire@intsof.com) · [intsof.com](https://www.intsof.com) · [Support Portal](https://percussionsupport.intsof.com)
 
-## Development Setup
+Documentation: [percussioncmshelp.intsof.com](https://percussioncmshelp.intsof.com)
 
-### Prerequisites
+---
 
-* **Java Development Kit (JDK) 8**: This project requires Java 8. We recommend [Amazon Corretto 8](https://aws.amazon.com/corretto/) or [Eclipse Adoptium (Temurin) 8](https://adoptium.net/).
-* **Git**: To clone the repository.
+## I was a Percussion customer — is this where I download 8.1.x updates?
 
-### Setting up the Toolchain
+**Yes, for Java 8 / 8.1.x.** Use the [Releases page](https://github.com/intersoftdatalabs-in/percussioncms-java8/releases) on this GitHub project.
 
-#### Windows
+- Technical support: [Intersoft support portal](https://percussionsupport.intsof.com)
+- Product docs: [percussioncmshelp.intsof.com](https://percussioncmshelp.intsof.com)
+- Community discussion: [percussioncmscommunity.intsof.com](https://percussioncmscommunity.intsof.com)
 
-1. Download and install JDK 8.
-2. Set the `JAVA_HOME` environment variable to your JDK 8 installation directory.
-3. Add `%JAVA_HOME%\bin` to your `PATH`.
-4. Verify installation by running `java -version` in a command prompt. It should output version `1.8.x`.
+---
 
-#### Linux
+## Building from Source
 
-1. Install JDK 8 using your package manager or download a tarball.
-   * Ubuntu/Debian: `sudo apt-get install openjdk-8-jdk`
-   * RHEL/CentOS: `sudo yum install java-1.8.0-openjdk-devel`
-2. Set `JAVA_HOME`. You can add this to your `.bashrc` or `.zshrc`:
+### Requirements
 
-   ```bash
-   export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 # Example path, adjust as needed
-   export PATH=$JAVA_HOME/bin:$PATH
-   ```
-3. Verify with `java -version`.
+| Requirement | Notes |
+|-------------|--------|
+| **JDK 8** | Required. Amazon Corretto 8 or Eclipse Temurin 8 recommended. Set `JAVA_HOME` / `JAVA_HOME_8` to a **1.8** install only. |
+| **Git** | Including Git LFS (`git lfs pull` before building modules that use LFS) |
+| **Maven** | Prefer the repo wrapper + env scripts below (do not assume a system Maven on a newer JDK) |
 
-#### macOS
+This line **must not** introduce language features, APIs, or dependencies that require Java 11+.
 
-1. Install JDK 8. You can use Homebrew:
+### Recommended build commands
 
-   ```bash
-   brew tap homebrew/cask-versions
-   brew install --cask temurin8
-   ```
+Use the environment scripts so Maven always runs under JDK 8:
 
-   Or download from a provider.
+```bash
+# Linux / macOS — set once in your shell profile, e.g.:
+#   export JAVA_HOME_8=/usr/lib/jvm/java-1.8.0-amazon-corretto
+./mvn-env.sh clean install
 
-2. Set `JAVA_HOME`:
+# Faster local iteration
+./mvn-env.sh clean install -DskipTests
 
-   ```bash
-   export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
-   ```
-3. Verify with `java -version`.
+# Single module + dependencies
+./mvn-env.sh clean install -pl modules/perc-toolkit -am
+```
 
-### Environment Setup Scripts
+```batch
+REM Windows — set JAVA_HOME_8 to your JDK 8 home, then:
+mvn-env.bat clean install
+```
 
-To ensure Maven uses JDK 8, use the provided environment setup scripts instead of running `mvnw` directly. These scripts set `JAVA_HOME` to `JAVA_HOME_8` and run Maven.
+If you use the wrapper directly, ensure `JAVA_HOME` already points at JDK 8:
 
-#### Linux/macOS
+```bash
+./mvnw clean install
+```
 
-1. Set `JAVA_HOME_8` in your shell profile (e.g., `~/.bashrc` or `~/.zshrc`):
+Agent and contributor conventions (modules, formatting, Git workflow) are summarized in [AGENTS.md](AGENTS.md) and the [Contributor Guide](CONTRIBUTING.md).
 
-   ```bash
-   export JAVA_HOME_8=/path/to/jdk-8
-   ```
+### Install & run (after a successful build)
 
-   - Linux example: `export JAVA_HOME_8=/usr/lib/jvm/java-1.8.0-amazon-corretto`
-   - macOS example: `export JAVA_HOME_8=/Library/Java/JavaVirtualMachines/jdk-1.8.jdk/Contents/Home`
-2. Run Maven commands using the script:
-
-   ```bash
-   ./mvn-env.sh clean install
-   ```
-
-#### Windows
-
-1. Set `JAVA_HOME_8` as an environment variable:
-   - Open System Properties > Environment Variables.
-   - Add a new user variable `JAVA_HOME_8` with value `C:\path\to\jdk-8` (e.g., `C:\Program Files\Java\jdk-8`).
-2. Run Maven commands using the script:
-
-   ```batch
-   mvn-env.bat clean install
-   ```
-
-If `JAVA_HOME_8` is not set or invalid, the script will display an error message with setup instructions.
-
-### Building the Project
-
-This project uses the Maven Wrapper (`mvnw`), which ensures the correct Maven version is used. To ensure JDK 8 is used, use the environment setup scripts.
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/intersoftdatalabs-in/percussioncms.git
-   cd percussioncms
-   ```
-2. Build the project:
-   * **Linux/macOS**:
-
-     ```bash
-     ./mvn-env.sh clean install
-     ```
-   * **Windows**:
-
-     ```batch
-     mvn-env.bat clean install
-     ```
-
-   To skip tests (for a faster build):
-
-   ```bash
-   ./mvn-env.sh clean install -DskipTests
-   ```
-
-### Installing the Application
-
-After building the project, you can install it using the distribution tool.
-
-#### Installing the Main CMS Application
-
-The main CMS application can be installed using the `perc-distribution-tree.jar`:
+**CMS distribution**
 
 ```bash
 java -jar ./modules/perc-distribution-tree/target/perc-distribution-tree.jar <installation-directory>
-```
-
-**Example:**
-
-```bash
+# Example:
 java -jar ./modules/perc-distribution-tree/target/perc-distribution-tree.jar /opt/Percussion
 ```
 
-This will deploy the application to the specified installation directory with Jetty as the application server.
-
-#### Installing the Delivery Tier
-
-The Delivery Tier services can be installed separately using the `delivery-tier-distribution.jar`:
+**Delivery Tier (DTS)**
 
 ```bash
-java -jar ./deliverytiersuite/delivery-tier-suite/delivery-tier-distribution/target/delivery-tier-distribution-<version>.jar <installation-directory>
+java -jar ./deliverytiersuite/delivery-tier-suite/delivery-tier-distribution/target/delivery-tier-distribution*.jar <installation-directory>
 ```
 
-**Example:**
+Start Jetty from the install:
 
 ```bash
-java -jar ./deliverytiersuite/delivery-tier-suite/delivery-tier-distribution/target/delivery-tier-distribution.jar /opt/PercussionDTS
+# Linux / macOS
+cd <installation-directory>/jetty/base && ./start.sh
+
+# Windows
+cd <installation-directory>\jetty\base && start.bat
 ```
 
-This installs the Delivery Tier services including:
-- Metadata Services
-- Comments Services
-- Form Processor
-- Polls Services
-- Membership Services
-- Feeds Services
+Default CMS URL: `http://localhost:9992/`
 
-### Running the Application
+---
 
-After installation:
+## Key modules
 
-1. Navigate to your installation directory
-2. Start the Jetty server:
-   * **Linux/macOS**:
+| Module | Path | Description |
+|--------|------|-------------|
+| CMS core | `system` | Server core |
+| WebUI | `WebUI` | Primary UI |
+| sitemanage | `projects/sitemanage` | Backend for the primary UI |
+| rest | `rest` | Public REST API |
+| DTS | `deliverytiersuite/delivery-tier-suite` | Delivery-tier services |
+| Distribution | `modules/perc-distribution-tree` | Installable CMS distribution |
 
-     ```bash
-     cd <installation-directory>/jetty/base
-     ./start.sh
-     ```
-   * **Windows**:
+---
 
-     ```cmd
-     cd <installation-directory>\jetty\base
-     start.bat
-     ```
-3. Access the application at `http://localhost:9992/` (default port)
+## Contributing
 
-To stop the server, use `stop.sh` (Linux/macOS) or `stop.bat` (Windows) in the same directory.
+We welcome contributions that keep the **8.1.x / Java 8** line healthy: bug fixes, security hardening, tests, and docs.
 
-## Interested in Contributing?
+Please see:
 
-Check out our [Contributor Page](https://github.com/intersoftdatalabs-in/percussioncms/blob/development/CONTRIBUTING.md) for more information.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — process and orientation  
+- [AGENTS.md](AGENTS.md) — coding, build, and PR conventions for this repo  
 
+**Do not** land Java 11+ only dependencies or language features on `main`.  
+For Java 21 / 8.2 work, open PRs against [percussioncms](https://github.com/intersoftdatalabs-in/percussioncms).
+
+---
+
+## Related repositories
+
+| Repository | Role |
+|------------|------|
+| **[percussioncms-java8](https://github.com/intersoftdatalabs-in/percussioncms-java8)** (this repo) | Java 8 LTS — **8.1.x** maintenance |
+| **[percussioncms](https://github.com/intersoftdatalabs-in/percussioncms)** | Active product line — **Java 21 / 8.2** development |
+
+---
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE) for details.
+
+---
+
+**Maintained with care by Intersoft Data Labs**  
+Questions? Open an issue or reach out via the [support portal](https://percussionsupport.intsof.com).
