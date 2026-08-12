@@ -955,15 +955,26 @@ public class PSDeliveryClient extends HttpClient implements IPSDeliveryClient
                 if (!successfulHttpStatusCodes.contains(statusCode)) {
                     failureCount = 0;
                     offline = false;
+                    String methodLabel =
+                        this.requestType == null ? "?" : this.requestType.name();
+                    String requestUrl =
+                        this.requestUrl == null ? httpMethod.getURI().getEscapedURI() : this.requestUrl;
+                    String snippet = PSDeliveryHttpErrorSupport.firstLineSnippet(
+                            responseData, PSDeliveryHttpErrorSupport.DEFAULT_BODY_SNIPPET_MAX);
                     String msg;
                     if (statusCode == HttpStatus.SC_UNAUTHORIZED) {
-                        msg = String.format("Authentication error. Check user and password for this delivery server: %s",
-                                httpMethod.getStatusLine());
+                        msg = String.format(
+                                "Authentication error. Check user and password for this delivery server. %s %s (HTTP %d)%s",
+                                methodLabel,
+                                requestUrl,
+                                statusCode,
+                                snippet.isEmpty() ? "" : ": " + snippet);
                     } else {
-                        msg = String.format("Error when executing method : %s : %s" , httpMethod.getStatusLine() , responseData);
+                        msg = PSDeliveryHttpErrorSupport.formatExecutionError(
+                                methodLabel, requestUrl, statusCode, responseData);
                     }
                     log.error(msg);
-                    throw new PSDeliveryClientException(msg);
+                    throw new PSDeliveryClientException(msg, statusCode, methodLabel, requestUrl, snippet);
 
                 } else {
                     if (statusCode == HttpStatus.SC_NO_CONTENT)

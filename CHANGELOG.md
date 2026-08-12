@@ -6,6 +6,12 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
+### Fixed
+
+- **DTS `rotateKey` push failure logging** (#3) — `PSDeliveryClient` was logging a multi-KB Tomcat HTML error page and `PSDeliveryInfoService` only logged the admin base URL, leaving operators unable to tell that the real failing call was `PUT <admin>/feeds/rss/rotateKey` (HTTP 405). The ERROR line now includes method + full URL + HTTP status + a short reason (HTML body truncated to first line, max 200 chars) and the WARN text now points operators at the DTS feeds app, `deliverymanager` credentials, and `availableServices`. A new `PSDeliveryHttpErrorSupport` helper owns the truncation/formatting with a dedicated JUnit test, and `PSDeliveryClientException` now carries `statusCode` / `httpMethod` / `requestUrl` / `responseSnippet` so callers can render structured diagnostics without parsing the message.
+
+## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
+
 ### Added (Task 2 — LDAP injection)
 
 - **LDAP filter escape helper** — `system/src/main/java/com/percussion/security/PSJndiUtils.java#escapeLdapFilterValue(String)` package-private method that hex-escapes RFC 4515 reserved characters (`\`, `(`, `)`, NUL) and UTF-8 multi-byte sequences. The `*` wildcard is intentionally preserved so the existing `'%' → '*'` translation done by `processFilter` keeps working end-to-end.
