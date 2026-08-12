@@ -2505,7 +2505,7 @@
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
+     <!--           <plugin>
                     <groupId>com.intsof</groupId>
                     <artifactId>ai-build-integrity-maven-plugin</artifactId>
                     <version>${ai-build-integrity.plugin.version}</version>
@@ -2545,14 +2545,15 @@
                             </configuration>
                         </execution>
                     </executions>
-                </plugin>
+                </plugin> -->
             </plugins>
         </pluginManagement>
         <plugins>
-            <plugin>
+          <!--  <plugin>
                 <groupId>com.intsof</groupId>
                 <artifactId>ai-build-integrity-maven-plugin</artifactId>
             </plugin>
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jarsigner-plugin</artifactId>
