@@ -26,6 +26,12 @@ import com.percussion.rx.delivery.impl.PSEc2InstanceMetadataClient.TokenResponse
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.Test;
 
@@ -84,6 +90,40 @@ public class PSEc2InstanceMetadataClientTest {
         throw new IOException("Connection refused");
       }
       return new MetadataResponse(metadataPlainStatus, "meta");
+    }
+  }
+
+  /**
+   * Transport whose token PUT blocks on a barrier until the test signals it.
+   * Used to verify that concurrent callers all observe the same result and
+   * that the probe only runs once.
+   */
+  private static final class BlockingTransport implements MetadataTransport {
+    final AtomicInteger callCount = new AtomicInteger();
+    final CountDownLatch probeMayProceed = new CountDownLatch(1);
+    final CountDownLatch probeEntered = new CountDownLatch(1);
+
+    @Override
+    public TokenResponse putForToken(String endpoint, String ttlSeconds) throws IOException {
+      callCount.incrementAndGet();
+      probeEntered.countDown();
+      try {
+        probeMayProceed.await(5, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new IOException("interrupted", e);
+      }
+      return new TokenResponse(200, "TOK");
+    }
+
+    @Override
+    public MetadataResponse getWithToken(String endpoint, String token) throws IOException {
+      return new MetadataResponse(200, "meta");
+    }
+
+    @Override
+    public MetadataResponse getPlain(String endpoint) throws IOException {
+      return new MetadataResponse(404, "");
     }
   }
 
@@ -183,19 +223,20 @@ public class PSEc2InstanceMetadataClientTest {
     assertEquals(3, transport.calls.size());
   }
 
-  /** Caching: cached result is returned even after the transport changes. */
+  /** Caching: the transport is only hit once per JVM lifetime. */
   @Test
   public void testCachedResultIsReturnedOnSubsequentCalls() {
-    PSEc2InstanceMetadataClient.setTransportForTests(
-        new ScriptedTransport(200, "TOK", 200, 404, false, false));
+    ScriptedTransport transport = new ScriptedTransport(200, "TOK", 200, 404, false, false);
+    PSEc2InstanceMetadataClient.setTransportForTests(transport);
     PSEc2InstanceMetadataClient.resetCache();
+
+    assertTrue(PSEc2InstanceMetadataClient.isEC2Instance());
+    assertTrue(PSEc2InstanceMetadataClient.isEC2Instance());
     assertTrue(PSEc2InstanceMetadataClient.isEC2Instance());
 
-    // Swap to a transport that would otherwise say "not EC2"; cached true wins.
-    PSEc2InstanceMetadataClient.setTransportForTests(
-        new ScriptedTransport(500, "", 500, 0, true, true));
-    assertTrue("Cached true result must be returned",
-        PSEc2InstanceMetadataClient.isEC2Instance());
+    // Probe (PUT + GET-with-token) runs exactly once even though isEC2Instance
+    // was called three times.
+    assertEquals(2, transport.calls.size());
   }
 
   /** resetCache() clears the cached value so the probe can run again. */
@@ -212,6 +253,40 @@ public class PSEc2InstanceMetadataClientTest {
     PSEc2InstanceMetadataClient.resetCache();
     assertFalse(PSEc2InstanceMetadataClient.isEC2Instance());
     assertEquals(2, second.calls.size());
+  }
+
+  /**
+   * Concurrent first-call: the probe only runs once even when many threads
+   * call isEC2Instance() simultaneously, and all callers see the same result.
+   */
+  @Test
+  public void testConcurrentFirstCallRunsProbeOnce() throws Exception {
+    BlockingTransport transport = new BlockingTransport();
+    PSEc2InstanceMetadataClient.setTransportForTests(transport);
+    PSEc2InstanceMetadataClient.resetCache();
+
+    int threadCount = 8;
+    ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+    try {
+      List<Future<Boolean>> futures = new ArrayList<>();
+      for (int i = 0; i < threadCount; i++) {
+        futures.add(executor.submit(PSEc2InstanceMetadataClient::isEC2Instance));
+      }
+      // Wait until the first probe thread has entered the transport.
+      assertTrue("Probe did not enter transport in time",
+          transport.probeEntered.await(5, TimeUnit.SECONDS));
+      // Release the probe.
+      transport.probeMayProceed.countDown();
+
+      for (Future<Boolean> f : futures) {
+        assertTrue("All concurrent callers must observe EC2", f.get(5, TimeUnit.SECONDS));
+      }
+      assertEquals("Probe must run exactly once even under concurrent calls",
+          1, transport.callCount.get());
+    } finally {
+      transport.probeMayProceed.countDown();
+      executor.shutdownNow();
+    }
   }
 
   /** Spot check that the production transport class is wired and instantiates. */

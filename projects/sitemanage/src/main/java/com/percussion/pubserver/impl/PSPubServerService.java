@@ -127,7 +127,6 @@ public class PSPubServerService implements IPSPubServerService {
   private final IPSPublisherService publisherService;
   private final IPSContentChangeService contentChangeService;
   private final IPSUtilityService utilityService;
-  private static Boolean isEC2Instance = null;
   private IPSPublishingWs pubWs;
   private SecureKeyRotationListener secureKeyRotationListener;
 
@@ -764,17 +763,10 @@ public class PSPubServerService implements IPSPubServerService {
   }
 
   public static Boolean isEC2Instance() {
-    // Delegate to the IMDSv2-aware helper (with IMDSv1 fallback). The helper
-    // caches the result for the JVM lifetime, so the existing callers keep
-    // their previous behavior, but the probe now works on Amazon Linux 2023+
-    // and other IMDSv2-only hosts.
-    boolean detected = PSEc2InstanceMetadataClient.isEC2Instance();
-    if (detected) {
-      isEC2Instance = Boolean.TRUE;
-    } else {
-      isEC2Instance = Boolean.FALSE;
-    }
-    return isEC2Instance;
+    // Pure delegate to the IMDSv2-aware helper. The helper handles
+    // JVM-lifetime caching and concurrent first-call semantics, so this
+    // wrapper no longer carries its own (now unsafe) Boolean cache.
+    return PSEc2InstanceMetadataClient.isEC2Instance();
   }
 
   @Override
@@ -1819,11 +1811,11 @@ public class PSPubServerService implements IPSPubServerService {
       }
       // Access Key / Secret Key are intentionally never required at save time.
       // Operators may legitimately leave them blank when using an EC2 instance
-      // profile with or without Assume Role, or when the host is not EC2 and
-      // they prefer to provide credentials via another mechanism. The UI
-      // surfaces a non-modal warning if they are empty (see
-      // PercPublishMinuetView). Publish-time will fail-fast if credentials
-      // are missing when actually needed.
+      // profile with or without Assume Role. On non-EC2 hosts with no Assume
+      // Role, the runtime path in PSAmazonS3DeliveryHandler.getAmazonS3Client
+      // // fails fast with an explicit PSDeliveryException so the publish error
+      // is clear. The UI (PercPublishMinuetView) also surfaces a non-modal
+      // warning when S3 keys are empty on save.
     }
   }
 

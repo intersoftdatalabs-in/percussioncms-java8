@@ -70,8 +70,6 @@ public class PSAmazonS3DeliveryHandler extends PSBaseDeliveryHandler
 {
     private static final String CREDS_WRONG_MSG = "Either bucket {} doesn't exist or the credentials to access the bucket are wrong. Error: {}";
     private String targetRegion = Regions.DEFAULT_REGION.getName();
-    private static Boolean isEC2Instance = null;
-
     public String getTargetRegion()
     {
         return targetRegion;
@@ -309,17 +307,10 @@ public class PSAmazonS3DeliveryHandler extends PSBaseDeliveryHandler
     }
 
     public static boolean isEC2Instance(){
-        // Delegate to the IMDSv2-aware helper (with IMDSv1 fallback). The
-        // helper caches the result for the JVM lifetime, so the existing
-        // callers keep their previous behavior, but the probe now works on
-        // Amazon Linux 2023+ and other IMDSv2-only hosts.
-        if (isEC2Instance != null) {
-            return isEC2Instance;
-        }
-        boolean detected = com.percussion.rx.delivery.impl.PSEc2InstanceMetadataClient
-                .isEC2Instance();
-        isEC2Instance = detected ? Boolean.TRUE : Boolean.FALSE;
-        return isEC2Instance;
+        // Pure delegate to the IMDSv2-aware helper. The helper handles
+        // JVM-lifetime caching and concurrent first-call semantics, so this
+        // wrapper no longer carries its own (now unsafe) Boolean cache.
+        return PSEc2InstanceMetadataClient.isEC2Instance();
     }
 
     public static AmazonS3 getAmazonS3Client(IPSPubServer pubServer,Region configuredRegion) throws PSDeliveryException{
@@ -356,6 +347,20 @@ public class PSAmazonS3DeliveryHandler extends PSBaseDeliveryHandler
 
             String accessKey = pubServer.getPropertyValue(IPSPubServerDao.PUBLISH_AS3_ACCESSKEY_PROPERTY, "");
             String secretKey = pubServer.getPropertyValue(IPSPubServerDao.PUBLISH_AS3_SECURITYKEY_PROPERTY, "");
+            // Fail fast when neither EC2 nor Assume Role is available and the
+            // operator left the static keys blank. Without this check, the
+            // call below would build a BasicAWSCredentials("", "") and the
+            // first S3 API call would fail with a confusing auth error.
+            if (StringUtils.isBlank(accessKey) || StringUtils.isBlank(secretKey)) {
+                String msg = "Cannot build Amazon S3 client: not running on EC2, "
+                        + "Assume Role is not enabled, and the publish server "
+                        + "has no AWS Access Key / Secret Key configured. "
+                        + "Enable Assume Role with an instance profile, or "
+                        + "supply Access Key / Secret Key.";
+                log.error(msg);
+                throw new PSDeliveryException(
+                        IPSDeliveryErrors.COULD_NOT_COPY_TO_AMAMZON, msg);
+            }
             try {
                 accessKey = decrypt(accessKey);
                 secretKey = decrypt(secretKey);
