@@ -4,6 +4,23 @@ This file documents changes that have been made to API's / public interfaces.
 
 ## Design / Development Changes
 
+### Editor decoration region grid (issue #2 / 8.1.7 regression)
+
+In **8.1.7**, `perc_decoration.css` forced legacy fixed `vspan_*` heights with `!important` so editor placeholders could win over default-theme `min-height` (GH-757). That also **overrode responsive customer themes** that intentionally set `height`/`width: auto` on region spans, breaking **editor and preview** while published pages stayed correct.
+
+**Product fix (8.1.x backport):** shipped `WebUI/war/css/perc_decoration.css` now uses `height: auto` / `width: auto` for `.vspan_*` / `.hspan_*` and no longer uses `!important` fixed pixel sizes on those classes. Published default-theme sidebar/footer `min-height` behavior remains in `system/.../default_theme/theme.css` (GH-757).
+
+**Support (sites already on 8.1.7+ with broken editor/preview):** until upgraded, a temporary theme override is:
+
+```css
+.vspan_2, .vspan_4, .vspan_6, .vspan_8 { height: auto !important; min-height: 0; }
+.hspan_2, .hspan_8, .hspan_10, .hspan_12 { width: auto !important; }
+```
+
+Prefer product upgrade over permanent customer `!important` counters.
+
+Regression covered by `VspanFooterAlignmentCssTest` in `projects/sitemanage` (asserts decoration has no `!important` fixed sizes and that theme.css still owns the published `min-height` floors).
+
 ### Test / Debug Tools
 
 The Test / Debug tools have been disabled by default, and will all require user membership in the Admin role when enabled for all tool scripts.
