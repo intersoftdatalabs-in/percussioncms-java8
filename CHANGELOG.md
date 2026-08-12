@@ -6,6 +6,23 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
+### Added (Task 2 — LDAP injection)
+
+- **LDAP filter escape helper** — `system/src/main/java/com/percussion/security/PSJndiUtils.java#escapeLdapFilterValue(String)` package-private method that hex-escapes RFC 4515 reserved characters (`\`, `(`, `)`, NUL) and UTF-8 multi-byte sequences. The `*` wildcard is intentionally preserved so the existing `'%' → '*'` translation done by `processFilter` keeps working end-to-end.
+- **Filter-string hardening** — `PSJndiUtils.getFilterString` now escapes each user-supplied filter value before composing it into the LDAP search filter, closing the injection vector where an attacker who can control a filter argument could break out of the parenthesised comparison and append arbitrary clauses (e.g. `*)(uid=*` turning `cn=foo` into `(|(cn=*)(uid=*))`).
+- **LDAP injection regression test** — `system/Testing/src/com/percussion/security/PSJndiUtilsLdapInjectionTest.java` (9 JUnit 4 tests): reserved-char escape, wildcard preservation, ASCII passthrough, UTF-8 byte-by-byte escape, null/empty inputs, and the end-to-end `*)(uid=*` injection vector.
+
+### Fixed (build)
+
+- **`pom.xml` unparseable on `main`** — the `Comment out ai build plugin` change in `984b73ae70` placed a `</plugins></pluginManagement><plugins>` sequence *before* the `<!-- <plugin>...</plugin> -->` comment, then a second copy of the same sequence *after* the comment, leaving a stray `</pluginManagement>` whose matching `<pluginManagement>` had already been closed. Maven 3.9 and xmllint both rejected the file (`end tag name </pluginManagement> must match start tag name <build> from line 2072`) so `./mvn-env.sh validate` failed before any module compiled. The closing tags are now placed once, after the comment, restoring the original `pluginManagement → plugins → plugins` structure with the ai-build-integrity plugin still commented out. `./mvn-env.sh validate` → BUILD SUCCESS.
+
+### Notes
+
+- Per-task fix pattern is derived from the 004 branch (PR #1345 `e8489b698a` — same CodeQL `java/ldap-injection` rule, same fix family).
+- CodeQL alert #595 (`system/src/main/java/com/percussion/security/PSJndiGroupProvider.java:200`) is the only `java/ldap-injection` Critical+High alert on `main` as of 2026-08-12.
+
+## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
+
 ### Changed
 
 - **jsoup 1.22.1 → 1.23.1** — Java 8–compatible HTML parser bump (Cleaner security fix + parser/perf improvements). Property `jsoup.version` in root `pom.xml`; `sitemanage` now uses `${jsoup.version}` instead of a hard-coded pin.
