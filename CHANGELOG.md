@@ -6,6 +6,11 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
+### Changed
+
+- **jsoup 1.22.1 → 1.23.1** — Java 8–compatible HTML parser bump (Cleaner security fix + parser/perf improvements). Property `jsoup.version` in root `pom.xml`; `sitemanage` now uses `${jsoup.version}` instead of a hard-coded pin.
+- **Tomcat 9.0.117 → 9.0.118** — DTS `tomcat.version` (catalina/coyote/jasper + distribution zip). Remains on the Tomcat 9 / Java 8 line.
+
 ### Fixed
 
 - **Dependabot Java 8 ignore list not applied** — `.github/dependabot.yml` now applies the Java 8 compatibility ignore policy across all multi-module Maven manifests (`directories: ["/", "**/*"]`), removes an invalid version range (`>=*jre11*`) that could break ignore parsing, adds missing caps (e.g. Hibernate 6), and defines `java8-safe-patches` / `java8-security-patches` groups with exclude-patterns so grouped PRs cannot re-bundle Spring 6 / CXF 4 / Tika 3 / etc. with legitimate patches.
