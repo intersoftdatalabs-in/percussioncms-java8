@@ -17,7 +17,6 @@ package com.percussion.pubserver.impl;
 
 import static com.percussion.share.service.exception.PSParameterValidationUtils.validateParameters;
 import static com.percussion.utils.service.impl.PSSiteConfigUtils.removeServerEntry;
-import static javax.ws.rs.client.ClientBuilder.newClient;
 import static org.apache.commons.lang.StringUtils.EMPTY;
 import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
 import static org.apache.commons.lang.StringUtils.isBlank;
@@ -32,6 +31,7 @@ import com.percussion.pubserver.IPSPubServerService;
 import com.percussion.pubserver.data.PSPublishServerInfo;
 import com.percussion.pubserver.data.PSPublishServerProperty;
 import com.percussion.rx.delivery.impl.PSBaseDeliveryHandler;
+import com.percussion.rx.delivery.impl.PSEc2InstanceMetadataClient;
 import com.percussion.rx.publisher.IPSRxPublisherService;
 import com.percussion.security.PSEncryptionException;
 import com.percussion.security.PSEncryptor;
@@ -89,11 +89,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -769,27 +764,14 @@ public class PSPubServerService implements IPSPubServerService {
   }
 
   public static Boolean isEC2Instance() {
-    if (isEC2Instance != null) {
-      return isEC2Instance;
-    }
-    try {
-      Client client = newClient();
-
-      WebTarget resource = client.target("http://169.254.169.254/latest/meta-data/");
-
-      Invocation.Builder request = resource.request();
-      request.accept(MediaType.APPLICATION_JSON);
-
-      Response response = request.get();
-
-      if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
-        isEC2Instance = Boolean.TRUE;
-        return true;
-      } else {
-        isEC2Instance = Boolean.FALSE;
-      }
-    } catch (Exception e) {
-      // means not an EC2 Server
+    // Delegate to the IMDSv2-aware helper (with IMDSv1 fallback). The helper
+    // caches the result for the JVM lifetime, so the existing callers keep
+    // their previous behavior, but the probe now works on Amazon Linux 2023+
+    // and other IMDSv2-only hosts.
+    boolean detected = PSEc2InstanceMetadataClient.isEC2Instance();
+    if (detected) {
+      isEC2Instance = Boolean.TRUE;
+    } else {
       isEC2Instance = Boolean.FALSE;
     }
     return isEC2Instance;
@@ -1830,19 +1812,18 @@ public class PSPubServerService implements IPSPubServerService {
       String value = pubServerInfo.findProperty(property);
       if (IPSPubServerDao.PUBLISH_AS3_BUCKET_PROPERTY.equals(property)) {
         builder.rejectIfBlank(property, value).throwIfInvalid();
-      } else if (IPSPubServerDao.PUBLISH_AS3_ACCESSKEY_PROPERTY.equals(property)) {
-        if (!isEC2Instance()) {
-          builder.rejectIfBlank(property, value).throwIfInvalid();
-        }
-      } else if (IPSPubServerDao.PUBLISH_AS3_SECURITYKEY_PROPERTY.equals(property)) {
-        if (!isEC2Instance()) {
-          builder.rejectIfBlank(property, value).throwIfInvalid();
-        }
       } else if (IPSPubServerDao.PUBLISH_AS3_ARN_ROLE.equals(property)) {
         if (useAssumeRole) {
           builder.rejectIfBlank(property, value).throwIfInvalid();
         }
       }
+      // Access Key / Secret Key are intentionally never required at save time.
+      // Operators may legitimately leave them blank when using an EC2 instance
+      // profile with or without Assume Role, or when the host is not EC2 and
+      // they prefer to provide credentials via another mechanism. The UI
+      // surfaces a non-modal warning if they are empty (see
+      // PercPublishMinuetView). Publish-time will fail-fast if credentials
+      // are missing when actually needed.
     }
   }
 

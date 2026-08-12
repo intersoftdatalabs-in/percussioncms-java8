@@ -56,19 +56,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static javax.ws.rs.client.ClientBuilder.newClient;
 
 /**
  * This handler delivers content to the amazon s3.
@@ -316,29 +309,16 @@ public class PSAmazonS3DeliveryHandler extends PSBaseDeliveryHandler
     }
 
     public static boolean isEC2Instance(){
-        if(isEC2Instance != null){
+        // Delegate to the IMDSv2-aware helper (with IMDSv1 fallback). The
+        // helper caches the result for the JVM lifetime, so the existing
+        // callers keep their previous behavior, but the probe now works on
+        // Amazon Linux 2023+ and other IMDSv2-only hosts.
+        if (isEC2Instance != null) {
             return isEC2Instance;
         }
-        try {
-            Client client = newClient();
-
-            WebTarget resource = client.target("http://169.254.169.254/latest/meta-data/");
-
-            Invocation.Builder request = resource.request();
-            request.accept(MediaType.APPLICATION_JSON);
-
-            Response response = request.get();
-
-            if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
-                isEC2Instance = Boolean.TRUE;
-                return true;
-            } else {
-                isEC2Instance = Boolean.FALSE;
-            }
-        }catch(Exception e){
-            //means not an EC2 Server
-            isEC2Instance = Boolean.FALSE;
-        }
+        boolean detected = com.percussion.rx.delivery.impl.PSEc2InstanceMetadataClient
+                .isEC2Instance();
+        isEC2Instance = detected ? Boolean.TRUE : Boolean.FALSE;
         return isEC2Instance;
     }
 

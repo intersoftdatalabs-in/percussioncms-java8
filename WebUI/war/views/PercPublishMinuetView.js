@@ -922,8 +922,60 @@ function deleteServerRequest() {
 }
 
 function updateServerProperties(siteName, serverName, serverProperties) {
+    // Non-modal warning when S3 is selected and the AWS credentials are empty.
+    // The server validation will succeed (the fields are not required), but
+    // publish will fail at runtime if the host is not on EC2 and no instance
+    // profile / Assume Role is available. See issue #1.
+    warnOnMissingS3Credentials(serverProperties);
     startProcessRunningAlert();
     $.PercPublisherService(false).createUpdateSiteServer(siteName, serverName, serverProperties, updateServerPropertiesCallback);
+}
+
+function warnOnMissingS3Credentials(serverProperties) {
+    try {
+        var props = serverProperties && serverProperties.serverInfo
+            && serverProperties.serverInfo.properties;
+        if (!props) {
+            return;
+        }
+        var driver = null;
+        var accessKey = null;
+        var secretKey = null;
+        for (var i = 0; i < props.length; i++) {
+            var p = props[i];
+            if (!p || !p.key) {
+                continue;
+            }
+            if (p.key === 'driver') {
+                driver = p.value;
+            } else if (p.key === 'accessKey') {
+                accessKey = p.value;
+            } else if (p.key === 'securityKey') {
+                secretKey = p.value;
+            }
+        }
+        if (driver !== 'AMAZONS3') {
+            return;
+        }
+        var missingAccess = (accessKey === null || accessKey === undefined || accessKey === '');
+        var missingSecret = (secretKey === null || secretKey === undefined || secretKey === '');
+        if (missingAccess || missingSecret) {
+            var msg = 'AWS Access Key and/or Secret Key are empty. Publishing will rely on '
+                + 'an EC2 instance profile (with or without Assume Role). If the host is '
+                + 'not on EC2, the publish will fail at runtime.';
+            if (typeof $.PercNotifier === 'object' && $.PercNotifier && $.PercNotifier.addAlert) {
+                $.PercNotifier.addAlert({
+                    type: 'warning',
+                    id: 's3-missing-credentials',
+                    content: msg
+                });
+            } else if (typeof console !== 'undefined' && console.warn) {
+                console.warn(msg);
+            }
+        }
+    } catch (e) {
+        // defensive: never block the save from the warning helper
+    }
 }
 
 function processServerPropertiesForm(eventData) {

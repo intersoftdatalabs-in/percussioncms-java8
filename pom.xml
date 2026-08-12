@@ -2504,10 +2504,7 @@
                         </execution>
                     </executions>
                 </plugin>
-            </plugins>
-        </pluginManagement>
-        <plugins>
-     <!--           <plugin>
+                <!--           <plugin>
                     <groupId>com.intsof</groupId>
                     <artifactId>ai-build-integrity-maven-plugin</artifactId>
                     <version>${ai-build-integrity.plugin.version}</version>
@@ -2551,7 +2548,7 @@
             </plugins>
         </pluginManagement>
         <plugins>
-          <!--  <plugin>
+            <!--  <plugin>
                 <groupId>com.intsof</groupId>
                 <artifactId>ai-build-integrity-maven-plugin</artifactId>
             </plugin>
