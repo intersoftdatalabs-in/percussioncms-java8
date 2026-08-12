@@ -27,6 +27,7 @@ updates:
 
     # Group only Java 8–safe updates so security PRs cannot re-bundle ignored
     # majors with legitimate patches under one "maven group" PR.
+    # exclude-patterns: packages that are full-ignored below or require Java 11+.
     groups:
       java8-safe-patches:
         applies-to: version-updates
@@ -49,6 +50,7 @@ updates:
           - "org.apache.myfaces*"
           - "org.apache.solr*"
           - "org.apache.shiro*"
+          - "org.apache.jackrabbit*"
           - "org.liquibase*"
           - "com.zaxxer:HikariCP*"
           - "com.sun.xml.ws*"
@@ -60,17 +62,19 @@ updates:
           - "*"
         exclude-patterns:
           - "jakarta*"
-          - "org.springframework:spring-*"
-          - "org.springframework.security*"
+          - "org.springframework*"
           - "org.hibernate*"
           - "org.apache.cxf*"
           - "org.apache.tika*"
           - "org.apache.activemq*"
           - "org.apache.derby*"
+          - "org.apache.tomcat*"
           - "org.eclipse.jetty*"
           - "org.mortbay.jasper*"
           - "org.apache.myfaces*"
           - "org.apache.solr*"
+          - "org.apache.shiro*"
+          - "org.apache.jackrabbit*"
           - "com.sun.xml.ws*"
 
     ignore:
@@ -80,6 +84,21 @@ updates:
         versions:
           - ">= 0"
 
+      # --- Hard full-ignores (PR #22 still proposed these past version ranges) ---
+      # Full ignore (no `versions`) = ">= 0" and blocks version + security updates.
+      # Manual PRs only for security patches on the Java 8-compatible line.
+      #
+      # Spring Security 6.x is Java 17 (bytecode 61) and pulls Spring Framework 6.
+      # Stay on 5.8.x; do not auto-bump (grouped PRs kept proposing 6.5.x).
+      - dependency-name: "org.springframework.security*"
+      - dependency-name: "org.springframework.security:*"
+      # Shiro 2.x jars are already Java 11 bytecode; freeze automated bumps.
+      - dependency-name: "org.apache.shiro*"
+      - dependency-name: "org.apache.shiro:*"
+      # Jackrabbit 2.21+ is Java 11 (2.20.x is last Java 8 line we track).
+      - dependency-name: "org.apache.jackrabbit*"
+      - dependency-name: "org.apache.jackrabbit:*"
+
       # --- Frameworks: stay on last Java 8 major ---
       # Spring Framework 5.3.x (block 6+)
       - dependency-name: "org.springframework:*"
@@ -88,10 +107,6 @@ updates:
       - dependency-name: "org.springframework.*"
         versions:
           - ">= 6.0.0"
-      # Spring Security 5.8.x (block 5.9+ and 6+)
-      - dependency-name: "org.springframework.security*"
-        versions:
-          - ">= 5.9.0"
       - dependency-name: "org.springframework.data:spring-data-jpa"
         versions:
           - ">= 2.8.0"
@@ -137,18 +152,12 @@ updates:
       - dependency-name: "org.apache.solr*"
         versions:
           - ">= 9.0.0"
-      - dependency-name: "org.apache.jackrabbit:jackrabbit-jcr-commons"
-        versions:
-          - ">= 2.21.0"
       - dependency-name: "org.apache.felix:maven-bundle-plugin"
         versions:
           - ">= 6.0.0"
       - dependency-name: "org.apache.maven.plugins:maven-deploy-plugin"
         versions:
           - ">= 4.0.0"
-      - dependency-name: "org.apache.shiro*"
-        versions:
-          - ">= 2.0.0"
       - dependency-name: "org.apache.shindig*"
         versions:
           - "> 1.1-BETA5-incubating"
