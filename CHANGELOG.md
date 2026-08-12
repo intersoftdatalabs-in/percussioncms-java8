@@ -8,6 +8,7 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ### Fixed
 
+- **Dependency Submission workflow YAML syntax error** (#14) — `.github/workflows/dependency-submission.yml` failed immediately with a workflow file issue (Actions UI: syntax error on line 17) because the job `if:` condition was an unquoted plain scalar containing `chore: update build number`. YAML treats `: ` as mapping syntax, so no jobs started. The condition is now a block scalar (`if: |`) so the colon is literal text and Dependency Submission can run on `main` / `workflow_dispatch`.
 - **Rich Text widget: image selected from Assets not inserted** (#11) — `modules/perc-tinymce/.../plugins/percadvimage/plugin.js` called `String.prototype.replace` on `pathItem.PathItem.folderPaths` returned by `PercPathService.getPathItemById`. The REST service now returns `folderPaths` as an array, so the call threw `TypeError: pathItem.PathItem.folderPaths.replace is not a function`, aborting `getImageData` before the inline image element was populated with `sys_dependentvariantid`/`sys_dependentid`. The fix normalizes `folderPaths` to a string (handling both string and array responses) so the inline link element is written correctly and the server-side `PSInlineLinkField` no longer reports `Missing required inline link parameter: sys_dependentvariantid`. Also removed a stray `console.log("Hello")` debug statement in the same `updateFileSelection` command handler.
 
 ## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-09
