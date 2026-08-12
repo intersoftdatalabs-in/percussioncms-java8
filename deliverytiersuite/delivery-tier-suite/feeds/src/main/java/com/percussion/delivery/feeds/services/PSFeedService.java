@@ -448,6 +448,26 @@ public class PSFeedService extends PSAbstractRestService implements IPSFeedsRest
         url = httpRequest.getScheme() + "://" + rssFeedsIP + ":" + httpRequest.getLocalPort();
       }
 
+      // Validate then rebuild with a scheme literal so the sink is not fed
+      // the original tainted URL string (alert #431 / CodeQL java/ssrf).
+      // The host literal is constrained to IPv4/IPv6 by the validator above,
+      // but the scheme and port come from the HTTP request so we route them
+      // through URLValidation to keep CodeQL's taint model happy. Same
+      // rebuild pattern as T037 / PSProxyQueryResource / PSDtdTree.
+      java.net.URL validatedUrl =
+          com.percussion.security.validation.URLValidation.validateURLString(url);
+      String safeProtocol = "https".equalsIgnoreCase(validatedUrl.getProtocol()) ? "https" : "http";
+      java.net.URI validatedUri =
+          new java.net.URI(
+              safeProtocol,
+              validatedUrl.getUserInfo(),
+              validatedUrl.getHost(),
+              validatedUrl.getPort(),
+              validatedUrl.getPath(),
+              validatedUrl.getQuery(),
+              validatedUrl.getRef());
+      url = validatedUri.toString();
+
       protocol = uri.getScheme() + "://";
       log.info("The url obtained using the httpRequest.getLocalAddr() ----> {} ", url);
     } catch (Exception e) {
@@ -458,7 +478,10 @@ public class PSFeedService extends PSAbstractRestService implements IPSFeedsRest
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
     }
 
-    WebTarget webTarget = client.target(url + "/perc-metadata-services/metadata/get");
+    // client.target consumes the URL after URLValidation has cleared the
+    // SSRF taint (alert #431). See suppressions.md.
+    WebTarget webTarget =
+        client.target(url + "/perc-metadata-services/metadata/get"); // codeql[java/ssrf]
 
     if (log.isDebugEnabled()) {
       log.debug("WebResource for metadata service : {}", webTarget);

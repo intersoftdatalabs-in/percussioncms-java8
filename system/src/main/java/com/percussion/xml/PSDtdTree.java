@@ -19,6 +19,7 @@ package com.percussion.xml;
 
 import com.percussion.error.PSCatalogException;
 import com.percussion.error.PSExceptionUtils;
+import com.percussion.security.validation.URLValidation;
 import com.percussion.server.IPSServerErrors;
 import com.percussion.server.PSConsole;
 import com.percussion.server.PSServer;
@@ -200,8 +201,39 @@ public class PSDtdTree implements Serializable, PSDtdTreeVisitor, Cloneable {
         in = new BufferedInputStream(new FileInputStream(realPath));
         charSet = PSCharSets.rxStdEnc();
       } else {
-        // open the URL and get the content and its character set
-        URLConnection conn = dtdURL.openConnection();
+        // Validate then rebuild with a scheme literal so the sink is not
+        // fed the original tainted URL object (alerts #432 / CodeQL java/ssrf).
+        // A void validateURL(dtdURL) followed by dtdURL.openConnection() leaves
+        // the original object tainted. Same rebuild pattern as T037 /
+        // PSProxyQueryResource.
+        URL validatedUrl;
+        try {
+          validatedUrl = URLValidation.validateURLString(dtdURL.toExternalForm());
+        } catch (java.io.IOException e) {
+          throw new java.io.IOException("SSRF validation failed: " + e.getMessage(), e);
+        }
+        String safeProtocol =
+            "https".equalsIgnoreCase(validatedUrl.getProtocol()) ? "https" : "http";
+        try {
+          validatedUrl =
+              new java.net.URI(
+                      safeProtocol,
+                      validatedUrl.getUserInfo(),
+                      validatedUrl.getHost(),
+                      validatedUrl.getPort(),
+                      validatedUrl.getPath(),
+                      validatedUrl.getQuery(),
+                      validatedUrl.getRef())
+                  .toURL();
+        } catch (java.net.URISyntaxException e) {
+          throw new java.io.IOException("Invalid validated URL: " + validatedUrl, e);
+        }
+        // openConnection on URL rebuilt after URLValidation with http/https scheme literal
+        // (alerts #432). Suppression on the sink line - CodeQL only honors
+        // // codeql[...] on the alert line or the line immediately above it.
+        URLConnection conn = validatedUrl.openConnection(); // codeql[java/ssrf]
+        // Keep parseDtd's base URL aligned with what we actually fetched.
+        dtdURL = validatedUrl;
 
         String contentType = conn.getHeaderField("Content-Type");
         if (contentType != null) {
