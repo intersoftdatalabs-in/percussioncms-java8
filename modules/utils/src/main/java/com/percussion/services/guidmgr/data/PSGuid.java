@@ -278,7 +278,18 @@ public class PSGuid extends Number implements IPSGuid {
             setType(type.getOrdinal());
           }
 
-          if (type == null) type = PSTypeEnum.valueOf((int) typeid);
+          if (type == null) {
+            // Explicit int-range guard before the narrowing cast. CodeQL java/tainted-numeric-cast
+            // (alert #430) flags the long->int cast on a user-controlled input; the explicit
+            // check makes the safety boundary obvious to the analyzer and to readers. Valid
+            // PSTypeEnum ordinals are well within Integer range; out-of-range input becomes a
+            // clear IllegalArgumentException rather than a silently-wrapped int.
+            if (typeid > Integer.MAX_VALUE || typeid < Integer.MIN_VALUE) {
+              throw new IllegalArgumentException(
+                  "Type id out of range for PSTypeEnum ordinal: " + typeid);
+            }
+            type = PSTypeEnum.valueOf((int) typeid);
+          }
 
           assemble(hostid, type, uuid);
         }
