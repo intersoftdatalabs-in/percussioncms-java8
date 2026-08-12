@@ -7,5 +7,4 @@ with the 8.3 re-review window per the 004 spec C4 contract).
 Schema (per spec 004 C4):
 
 | alert_id | rule_id | severity | file_path:line | justification | re_review_by | linked_pr | notes |
-|----------|---------|----------|----------------|---------------|--------------|-----------|-------|
-
+|---|---|---|---|---|---|---|---|

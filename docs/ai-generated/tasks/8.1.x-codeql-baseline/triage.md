@@ -8,4 +8,3 @@ Schema (per spec 004 C1):
 
 | # | alert_id | rule_id | severity | file_path | module_owner | disposition (candidate) | target_action | target_milestone | linked_pr | notes |
 |---|----------|---------|----------|-----------|--------------|-------------------------|---------------|------------------|-----------|-------|
-

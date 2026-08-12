@@ -12,4 +12,3 @@ release readiness. See
 
 | alert_id | rule_id | path | last_seen_branch |
 |----------|---------|------|------------------|
-
