@@ -6,6 +6,11 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
+### Changed
+
+- **jsoup 1.22.1 → 1.23.1** — Java 8–compatible HTML parser bump (Cleaner security fix + parser/perf improvements). Property `jsoup.version` in root `pom.xml`; `sitemanage` now uses `${jsoup.version}` instead of a hard-coded pin.
+- **Tomcat 9.0.117 → 9.0.118** — DTS `tomcat.version` (catalina/coyote/jasper + distribution zip). Remains on the Tomcat 9 / Java 8 line.
+
 ### Fixed
 
 - **Dependabot still proposed Java 11+/17 majors in grouped PRs (#22)** — full-ignore (all versions) for `org.springframework.security*`, `org.apache.shiro*`, and `org.apache.jackrabbit*` so security group PRs cannot reintroduce Spring Security 6.x (Java 17), Shiro 2.x (Java 11), or Jackrabbit 2.21+ (Java 11). Expanded group `exclude-patterns` accordingly. Closed PR #22 without merge.
