@@ -1,192 +1,257 @@
+# Dependabot for the Java 8 LTS line (percussioncms-java8).
+#
+# Goal: allow patch/minor updates that stay on Java 8–compatible lines; block
+# majors (and some minors) that require Java 11+ / Jakarta EE.
+#
+# Notes on how Dependabot matches this file (see dependabot-core UpdateConfig):
+# - Config is selected by exact package-ecosystem + directory match. Nested
+#   pom.xml manifests only inherit these ignores if listed under `directories`.
+# - `update-types` ignores do NOT apply to security updates; use `versions`
+#   ranges (or omit versions entirely to ignore all versions) for security.
+# - Full ignore (no `versions`) expands to ">= 0" and blocks all updates.
+# - Version range syntax is npm-style with optional spaces: ">= 6.0.0".
 version: 2
 updates:
   - package-ecosystem: "maven"
-    directory: "/"
+    # Apply the same Java 8 policy to every Maven manifest Dependabot discovers
+    # (root + multi-module paths such as /system, /projects/sitemanage, ...).
+    directories:
+      - "/"
+      - "**/*"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 5
     target-branch: "main"
     allow:
       - dependency-type: "direct"
-    # ignore known groups/artifacts that require > Java 1.8.0+
+
+    # Group only Java 8–safe updates so security PRs cannot re-bundle ignored
+    # majors with legitimate patches under one "maven group" PR.
+    groups:
+      java8-safe-patches:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+        exclude-patterns:
+          - "jakarta*"
+          - "org.springframework*"
+          - "org.hibernate*"
+          - "org.apache.cxf*"
+          - "org.apache.tika*"
+          - "org.apache.activemq*"
+          - "org.apache.derby*"
+          - "org.apache.tomcat*"
+          - "org.eclipse.jetty*"
+          - "org.mortbay.jasper*"
+          - "org.apache.myfaces*"
+          - "org.apache.solr*"
+          - "org.apache.shiro*"
+          - "org.liquibase*"
+          - "com.zaxxer:HikariCP*"
+          - "com.sun.xml.ws*"
+          - "org.junit.jupiter*"
+          - "org.mockito*"
+      java8-security-patches:
+        applies-to: security-updates
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "jakarta*"
+          - "org.springframework:spring-*"
+          - "org.springframework.security*"
+          - "org.hibernate*"
+          - "org.apache.cxf*"
+          - "org.apache.tika*"
+          - "org.apache.activemq*"
+          - "org.apache.derby*"
+          - "org.eclipse.jetty*"
+          - "org.mortbay.jasper*"
+          - "org.apache.myfaces*"
+          - "org.apache.solr*"
+          - "com.sun.xml.ws*"
+
     ignore:
-      - dependency-name: "org.apache.cxf:*"
+      # --- Entire ecosystems that require Java 11+ / Jakarta ---
+      - dependency-name: "jakarta*"
+      - dependency-name: "com.percussion:*"
         versions:
-          - ">=3.6"
-      - dependency-name: "org.basepom.maven:duplicate-finder-maven-plugin"
-        versions:
-          - ">=2"
-      - dependency-name: "org.quartz-scheduler:quartz"
-        versions:
-          - ">=2.5"
+          - ">= 0"
+
+      # --- Frameworks: stay on last Java 8 major ---
+      # Spring Framework 5.3.x (block 6+)
       - dependency-name: "org.springframework:*"
         versions:
-          - ">=6"
-      - dependency-name: "org.apache.tika:*"
+          - ">= 6.0.0"
+      - dependency-name: "org.springframework.*"
         versions:
-          - ">=3"
-      - dependency-name: "org.junit.jupiter:*"
+          - ">= 6.0.0"
+      # Spring Security 5.8.x (block 5.9+ and 6+)
+      - dependency-name: "org.springframework.security*"
         versions:
-          - ">=6"
-      - dependency-name: "org.apache.activemq:*"
-        versions:
-          - ">=5.17"
-      - dependency-name: "org.jboss.logging:jboss-logging"
-        versions:
-          - ">=3.5"
-      - dependency-name: "org.apache.derby:*"
-        versions:
-          - ">=10.15"
-      - dependency-name: "org.aspectj:*"
-        versions:
-          - ">=1.9.8"
-      - dependency-name: "org.apache.myfaces.core:*"
-        versions:
-          - ">=3"
-      - dependency-name: "org.apache.felix:maven-bundle-plugin"
-        versions:
-          - ">=6"
-      - dependency-name: "org.apache.jackrabbit:jackrabbit-jcr-commons"
-        versions:
-          - ">=2.21"
-      - dependency-name: "com.diffplug.spotless:spotless-maven-plugin"
-        versions:
-          - ">=2.31"
-      - dependency-name: "com.google.googlejavaformat:google-java-format"
-        versions:
-          - ">=1.8"
-      - dependency-name: "org.liquibase:*"
-        versions:
-          - ">=5"
-      - dependency-name: "org.apache.tomcat:*"
-        versions:
-          - ">=10"
-      - dependency-name: "org.eclipse.jetty:*"
-        versions:
-          - ">=10"
-      - dependency-name: "com.zaxxer:HikariCP"
-        versions:
-          - ">=5"
-      - dependency-name: "org.apache.maven.plugins:maven-deploy-plugin"
-        versions:
-          - ">=4"
+          - ">= 5.9.0"
       - dependency-name: "org.springframework.data:spring-data-jpa"
         versions:
-          - ">=2.8"
-      - dependency-name: "org.springframework.security:*"
+          - ">= 2.8.0"
+      # Hibernate ORM 5.6.x (block 6+)
+      - dependency-name: "org.hibernate:*"
         versions:
-          - ">=5.9"
-      - dependency-name: "org.mozilla:rhino"
+          - ">= 6.0.0"
+      - dependency-name: "org.hibernate.orm:*"
         versions:
-          - ">=1.8"
-      - dependency-name: "com.lmax:disruptor"
-        versions:
-          - ">=4"
-      - dependency-name: "org.jmock:*"
-        versions:
-          - ">=2.9"
-      - dependency-name: "com.percussion:*"
-        versions: [">= 0"]
-      - dependency-name: "org.dom4j:dom4j"
-        versions:
-          - ">=2.2.0"
-      - dependency-name: "org.eclipse.jetty:jetty-maven-plugin"
-        versions:
-          - ">=10"
-      - dependency-name: "org.mortbay.jasper:*"
-        versions:
-          - ">=10"
-      - dependency-name: "com.github.spotbugs:spotbugs-annotations"
-        versions:
-          - ">=4.9"
-      - dependency-name: "org.mockito:*"
-        versions:
-          - ">=5"
-      - dependency-name: "org.apache.solr:*"
-        versions:
-          - ">=9"
-      - dependency-name: "org.codehaus.plexus:plexus-utils"
-        versions:
-          - ">=3.6"
+          - ">= 6.0.0"
       - dependency-name: "org.hibernate.validator:hibernate-validator"
         versions:
-          - ">=7"
+          - ">= 7.0.0"
+
+      # --- Apache stack Java 8 caps ---
+      - dependency-name: "org.apache.cxf*"
+        versions:
+          - ">= 3.6.0"
+      - dependency-name: "org.apache.tika*"
+        versions:
+          - ">= 3.0.0"
+      - dependency-name: "org.apache.activemq*"
+        versions:
+          - ">= 5.17.0"
+      - dependency-name: "org.apache.derby*"
+        versions:
+          - ">= 10.15.0"
+      - dependency-name: "org.apache.tomcat*"
+        versions:
+          - ">= 10.0.0"
+      - dependency-name: "org.eclipse.jetty*"
+        versions:
+          - ">= 10.0.0"
+      - dependency-name: "org.mortbay.jasper*"
+        versions:
+          - ">= 10.0.0"
+      - dependency-name: "org.apache.myfaces*"
+        versions:
+          - ">= 3.0.0"
+      - dependency-name: "org.apache.myfaces.trinidad*"
+        versions:
+          - ">= 3.0.0"
+      - dependency-name: "org.apache.solr*"
+        versions:
+          - ">= 9.0.0"
+      - dependency-name: "org.apache.jackrabbit:jackrabbit-jcr-commons"
+        versions:
+          - ">= 2.21.0"
+      - dependency-name: "org.apache.felix:maven-bundle-plugin"
+        versions:
+          - ">= 6.0.0"
+      - dependency-name: "org.apache.maven.plugins:maven-deploy-plugin"
+        versions:
+          - ">= 4.0.0"
+      - dependency-name: "org.apache.shiro*"
+        versions:
+          - ">= 2.0.0"
+      - dependency-name: "org.apache.shindig*"
+        versions:
+          - "> 1.1-BETA5-incubating"
+      - dependency-name: "org.apache.velocity:velocity-engine-core"
+        versions:
+          - ">= 3.0.0"
+      - dependency-name: "org.apache.velocity.tools*"
+        versions:
+          - ">= 4.0.0"
+
+      # --- Other Java 8 caps ---
+      - dependency-name: "org.quartz-scheduler:quartz"
+        versions:
+          - ">= 2.5.0"
+      - dependency-name: "org.jboss.logging:jboss-logging"
+        versions:
+          - ">= 3.5.0"
+      - dependency-name: "org.aspectj*"
+        versions:
+          - ">= 1.9.8"
+      - dependency-name: "org.basepom.maven:duplicate-finder-maven-plugin"
+        versions:
+          - ">= 2.0.0"
+      - dependency-name: "com.diffplug.spotless:spotless-maven-plugin"
+        versions:
+          - ">= 2.31.0"
+      - dependency-name: "com.google.googlejavaformat:google-java-format"
+        versions:
+          - ">= 1.8.0"
+      - dependency-name: "org.liquibase*"
+        versions:
+          - ">= 5.0.0"
+      - dependency-name: "com.zaxxer:HikariCP"
+        versions:
+          - ">= 5.0.0"
+      - dependency-name: "org.mozilla:rhino"
+        versions:
+          - ">= 1.8.0"
+      - dependency-name: "com.lmax:disruptor"
+        versions:
+          - ">= 4.0.0"
+      - dependency-name: "org.jmock*"
+        versions:
+          - ">= 2.9.0"
+      - dependency-name: "org.dom4j:dom4j"
+        versions:
+          - ">= 2.2.0"
+      - dependency-name: "com.github.spotbugs:spotbugs-annotations"
+        versions:
+          - ">= 4.9.0"
+      - dependency-name: "org.mockito*"
+        versions:
+          - ">= 5.0.0"
+      - dependency-name: "org.junit.jupiter*"
+        versions:
+          - ">= 6.0.0"
+      - dependency-name: "org.codehaus.plexus:plexus-utils"
+        versions:
+          - ">= 3.6.0"
       - dependency-name: "org.owasp:csrfguard"
         versions:
           - "4.5.0-jakarta"
       - dependency-name: "org.xerial:sqlite-jdbc"
         versions:
-          - ">=3.44"
-      - dependency-name: "com.sun.xml.ws:jaxws-ri"
+          - ">= 3.44.0"
+      - dependency-name: "com.sun.xml.ws*"
         versions:
-          - ">=3"
+          - ">= 3.0.0"
       - dependency-name: "com.ibm.icu:icu4j"
         versions:
-          - ">=78"
+          - ">= 78.0"
       - dependency-name: "com.phloc:phloc-commons"
         versions:
-          - ">=4.5"
+          - ">= 4.5.0"
       - dependency-name: "javax.jcr:jcr"
         versions:
-          - ">=2"
+          - ">= 2.0.0"
       - dependency-name: "commons-digester:commons-digester"
         versions:
-          - ">=1.9"
-      - dependency-name: "com.google.inject:guice"
+          - ">= 1.9.0"
+      - dependency-name: "com.google.inject*"
         versions:
-          - ">=5.2"
-      # Jakarta namespace - all Jakarta dependencies require Java 11+
-      - dependency-name: "jakarta.*:*"
-      # Trinidad 3.x requires Jakarta namespace
-      - dependency-name: "org.apache.myfaces.trinidad:*"
-        versions:
-          - ">=3"
-      # XML APIs 2.x may require Java 9+
+          - ">= 5.2.0"
       - dependency-name: "xml-apis:xml-apis"
         versions:
-          - ">=2"
-      # PDF Box - keep 3.x series, avoid backporting to 2.x
-      - dependency-name: "org.apache.pdfbox:*"
+          - ">= 2.0.0"
+      # PDFBox: keep 3.x (do not roll back to 2.x)
+      - dependency-name: "org.apache.pdfbox*"
         versions:
-          - "<3"
-      # Velocity 3.x may have compatibility issues
-      - dependency-name: "org.apache.velocity:velocity-engine-core"
-        versions:
-          - ">=3"
-      - dependency-name: "org.apache.velocity.tools:*"
-        versions:
-          - ">=4"
-      - dependency-name: "com.google.inject.*:*"
-        versions:
-          - ">=3"
-      - dependency-name: "org.apache.shiro:shiro-web"
-        versions:
-          - ">=2"
-      - dependency-name: "org.apache.shindig:*"
-        versions:
-          - ">1.1-BETA5-incubating"
+          - "< 3.0.0"
       - dependency-name: "net.oauth.core:oauth"
         versions:
-          - ">20090531"
+          - "> 20090531"
+      # SQL Server JDBC: do not pull jre11+ classifier lines (was invalid ">=*jre11*"
+      # which can break Dependabot ignore parsing). Pin updates to the jre8 line only
+      # via manual review; block known jre11 preview coordinates.
       - dependency-name: "com.microsoft.sqlserver:mssql-jdbc"
         versions:
-          - ">=*jre11*"
-          - ">=13.3.1.jre11-preview"
-      - dependency-name: "com.fasterxml.jackson.core:*"
+          - ">= 13.3.1.jre11-preview"
+      # Jackson: freeze further bumps past current policy floor
+      - dependency-name: "com.fasterxml.jackson*"
         versions:
-          - ">=2.18.0"
-      - dependency-name: "com.fasterxml.jackson.dataformat:*"
-        versions:
-          - ">=2.18.0"
-      - dependency-name: "com.fasterxml.jackson.jaxrs:*"
-        versions:
-          - ">=2.18.0"
-      - dependency-name: "com.fasterxml.jackson.module:*"
-        versions:
-          - ">=2.18.0"
-      - dependency-name: "com.fasterxml.jackson.datatype:*"
-        versions:
-          - ">=2.18.0"
+          - ">= 2.18.0"
       - dependency-name: "org.owasp:dependency-check-maven"
         versions:
-          - ">=11.0.0"
+          - ">= 11.0.0"

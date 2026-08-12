@@ -2507,6 +2507,55 @@
             </plugins>
         </pluginManagement>
         <plugins>
+     <!--           <plugin>
+                    <groupId>com.intsof</groupId>
+                    <artifactId>ai-build-integrity-maven-plugin</artifactId>
+                    <version>${ai-build-integrity.plugin.version}</version>
+                    <configuration>
+                        <hashFileMode>CENTRAL</hashFileMode>
+                        <baseDir>${maven.multiModuleProjectDirectory}</baseDir>
+                        <centralHashFile>${maven.multiModuleProjectDirectory}/target/ai-integrity.sha256</centralHashFile>
+                        <centralReportFile>${maven.multiModuleProjectDirectory}/target/ai-integrity-report.json</centralReportFile>
+                        <includes>**/*.md,**/*.json</includes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>generate-hashes</id>
+                            <goals>
+                                <goal>generate-hashes</goal>
+                            </goals>
+                            <phase>validate</phase>
+                            <configuration>
+                                <executionRootOnly>true</executionRootOnly>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>verify-hashes</id>
+                            <goals>
+                                <goal>verify-hashes</goal>
+                            </goals>
+                            <phase>test</phase>
+                        </execution>
+                        <execution>
+                            <id>clean-hashes</id>
+                            <goals>
+                                <goal>clean-hashes</goal>
+                            </goals>
+                            <phase>clean</phase>
+                            <configuration>
+                                <executionRootOnly>true</executionRootOnly>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin> -->
+            </plugins>
+        </pluginManagement>
+        <plugins>
+          <!--  <plugin>
+                <groupId>com.intsof</groupId>
+                <artifactId>ai-build-integrity-maven-plugin</artifactId>
+            </plugin>
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jarsigner-plugin</artifactId>
