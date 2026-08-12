@@ -147,4 +147,57 @@ public class PSThemeServiceTest {
               + "' does not exist anymore, but the attemp to delete it again, should not throw any exception");
     }
   }
+
+  // --- Path-injection defense (CodeQL java/path-injection, T043) ---
+
+  @Test
+  public void safeSessionSegmentRejectsPathTraversal() {
+    assertEquals("pssession", PSThemeService.safeSessionSegment(null));
+    assertEquals("pssession", PSThemeService.safeSessionSegment(""));
+    assertEquals("pssession", PSThemeService.safeSessionSegment("   "));
+    // forward slash / backslash / parent markers are replaced with "_"
+    assertEquals("a_.._b", PSThemeService.safeSessionSegment("a/../b"));
+    assertEquals("a_.._b", PSThemeService.safeSessionSegment("a\\..\\b"));
+    assertEquals("normal_session-1.0", PSThemeService.safeSessionSegment("normal_session-1.0"));
+    // null bytes and assorted special chars are also replaced
+    assertEquals("a_b", PSThemeService.safeSessionSegment("a b"));
+    assertEquals("a_b", PSThemeService.safeSessionSegment("a$b"));
+  }
+
+  @Test
+  public void createRejectsTraversalThemeName() {
+    try {
+      themeService.create("../escape", "roundedui");
+      fail("expected IllegalArgumentException for traversal themeName");
+    } catch (IllegalArgumentException expected) {
+      // pass
+    } catch (Exception other) {
+      // Other exceptions (e.g. from create internals) are also acceptable as long as
+      // the input was rejected before any file I/O. Re-throw to make sure the test
+      // surfaces unexpected failures.
+      if (!(other.getCause() instanceof IllegalArgumentException)) {
+        throw new AssertionError(
+            "Expected IllegalArgumentException or IllegalArgumentException cause, got "
+                + other.getClass().getName(),
+            other);
+      }
+    }
+  }
+
+  @Test
+  public void createFromDefaultRejectsTraversalThemeName() {
+    try {
+      themeService.createFromDefault("../escape");
+      fail("expected IllegalArgumentException for traversal themeName");
+    } catch (IllegalArgumentException expected) {
+      // pass
+    } catch (Exception other) {
+      if (!(other.getCause() instanceof IllegalArgumentException)) {
+        throw new AssertionError(
+            "Expected IllegalArgumentException or IllegalArgumentException cause, got "
+                + other.getClass().getName(),
+            other);
+      }
+    }
+  }
 }

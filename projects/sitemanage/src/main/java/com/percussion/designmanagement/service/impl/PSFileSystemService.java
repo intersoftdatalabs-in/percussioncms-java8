@@ -21,6 +21,7 @@ import static org.springframework.util.StringUtils.trimTrailingCharacter;
 
 import com.percussion.designmanagement.service.IPSFileSystemService;
 import com.percussion.pathmanagement.service.IPSPathService;
+import com.percussion.security.io.PSPathInjectionGuard;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -142,7 +143,7 @@ public class PSFileSystemService implements IPSFileSystemService {
    */
   public List<File> getChildren(String path) throws FileNotFoundException {
     File root = getRootDirectory();
-    File pathFile = new File(root, path);
+    File pathFile = PSPathInjectionGuard.requireUnderBase(root, path);
 
     if (!pathFile.exists()) {
       throw new FileNotFoundException("The path doesn't exist: " + path);
@@ -173,7 +174,7 @@ public class PSFileSystemService implements IPSFileSystemService {
   public File getFile(String path) {
     Validate.notNull(path, "path must not be null");
 
-    return new File(getRootDirectory(), path);
+    return PSPathInjectionGuard.requireUnderBase(getRootDirectory(), path);
   }
 
   /* (non-Javadoc)
@@ -237,6 +238,7 @@ public class PSFileSystemService implements IPSFileSystemService {
       throws PSFolderOperationException {
     Validate.notNull(oldFolderPath, "oldFolderPath cannot be null");
     Validate.notNull(newFolderName, "newFolderName cannot be null");
+    PSPathInjectionGuard.requireSafeFileName(newFolderName);
 
     // first we get the list of folders and files that are in the old folder
     // to see if we can rename it as the user wants
