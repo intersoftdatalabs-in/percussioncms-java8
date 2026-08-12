@@ -44,10 +44,10 @@
         <mariadb.version>3.5.7</mariadb.version>
         <servlet.api.version>4.0.1</servlet.api.version>
         <servlet.spec>3.1.0</servlet.spec>
-        <spring.security.version>5.8.16</spring.security.version>
+        <spring.security.version>6.5.11</spring.security.version>
         <sqlserver.version>13.3.0.jre8-preview</sqlserver.version>
         <timestamp>${maven.build.timestamp}</timestamp>
-        <tomcat.version>9.0.117</tomcat.version>
+        <tomcat.version>9.0.118</tomcat.version>
         <xmpbox.version>2.0.17</xmpbox.version>
     </properties>
     <dependencyManagement>
