@@ -5,7 +5,7 @@ This file provides guidance for AI agents operating in the Percussion CMS codeba
 ## Branch Information
 
 - **Repo Root**: `./`
-- **Branch**: development-8.1.x
+- **Branch**: main
 - **Java Version**: JDK 1.8.0 (all code must be compatible)
 - Set `JAVA_HOME` before builds: `export JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto`
 - Set `TEMPDIR` to repo relative .tmp folder, create if it doesn't exist.
@@ -16,7 +16,7 @@ This file provides guidance for AI agents operating in the Percussion CMS codeba
 
 - This repo uses Git LFS. Run `git lfs pull` before building modules that use LFS files.
 - Known modules using LFS: webservices, system, shindig-uber, webui.
-- **NEVER commit directly** to development-8.1.x branch
+- **NEVER commit directly** to main branch
 - **NEVER commit without explicit permission**
 - **NEVER push to remote** without explicit permission
 - Before creating a feature branch:
@@ -29,7 +29,7 @@ This file provides guidance for AI agents operating in the Percussion CMS codeba
   2. A corresponding changelog entry must be written to the repository `CHANGELOG.md` file.
      - The changelog entry header must use the placeholder `GH_POST_PR_COMMIT_RUN_ID` for the build number (e.g., `## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - YYYY-MM-DD`).
      - The changelog must follow the [Common Changelog](https://common-changelog.org/) format.
-     - When the PR is merged into `development-8.1.x`, the workflow will automatically replace the `GH_POST_PR_COMMIT_RUN_ID` placeholder with the correct sequential build number.
+     - When the PR is merged into `main`, the workflow will automatically replace the `GH_POST_PR_COMMIT_RUN_ID` placeholder with the correct sequential build number.
 
 ## Build Commands
 
