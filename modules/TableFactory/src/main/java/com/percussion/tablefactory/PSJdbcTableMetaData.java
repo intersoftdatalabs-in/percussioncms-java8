@@ -17,6 +17,7 @@
 
 package com.percussion.tablefactory;
 
+import com.percussion.security.SecureStringUtils;
 import com.percussion.util.PSSqlHelper;
 import com.percussion.utils.collections.PSIteratorUtils;
 import java.sql.Connection;
@@ -361,6 +362,14 @@ public class PSJdbcTableMetaData {
         ResultSetMetaData meta = step.getMetaData();
         if (meta != null) loadColumnInformation(meta);
       } else {
+        // Validate identifiers before passing to DatabaseMetaData.getColumns (CodeQL
+        // java/sql-injection alert #522). These fields are config-driven but CodeQL still flags
+        // them as flowing into a JDBC sink; requireSqlObjectName makes the safety boundary
+        // explicit. Existing call behaviour is unchanged when the names already match
+        // [A-Za-z_][A-Za-z0-9_.]* ; config values that don't match become a clear
+        // IllegalArgumentException instead of silently building an unsafe query string.
+        SecureStringUtils.requireSqlObjectNameOrNull(m_tableName);
+        SecureStringUtils.requireSqlObjectNameOrNull(m_schema);
         rs = md.getColumns(m_database, m_schema, m_tableName, "%");
         // driver can return a null ResultSet even though the API doc implies
         // that they should not (for example, Informix)
@@ -455,6 +464,11 @@ public class PSJdbcTableMetaData {
    * @throws SQLException if there are any errors.
    */
   private void loadKeyInformation(DatabaseMetaData md) throws SQLException {
+    // Validate identifiers before passing to DatabaseMetaData.getPrimaryKeys (CodeQL
+    // java/sql-injection alert #523). See the matching guard in loadColumnInformation for
+    // the rationale.
+    SecureStringUtils.requireSqlObjectNameOrNull(m_tableName);
+    SecureStringUtils.requireSqlObjectNameOrNull(m_schema);
     ResultSet rs = null;
     try {
       rs = md.getPrimaryKeys(m_database, m_schema, m_tableName);

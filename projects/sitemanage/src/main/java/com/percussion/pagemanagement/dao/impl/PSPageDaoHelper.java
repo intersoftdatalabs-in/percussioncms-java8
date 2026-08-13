@@ -29,6 +29,7 @@ import com.percussion.pagemanagement.dao.IPSPageDaoHelper;
 import com.percussion.pagemanagement.data.PSPage;
 import com.percussion.pathmanagement.data.PSFolderProperties;
 import com.percussion.searchmanagement.data.PSSearchCriteria;
+import com.percussion.security.SecureStringUtils;
 import com.percussion.services.error.PSRuntimeException;
 import com.percussion.services.workflow.IPSWorkflowService;
 import com.percussion.services.workflow.PSWorkflowServiceLocator;
@@ -403,6 +404,11 @@ public class PSPageDaoHelper implements IPSPageDaoHelper {
       PSSearchCriteria criteria, List<Integer> contentIDs) {
     Session sess = getSession();
     try {
+      // CodeQL java/sql-injection alert #526: validate the composed SQL before the Hibernate
+      // createSQLQuery sink. The query is built from this module's constants (CT_PAGE,
+      // CONTENTSTATUS, PSFolder.FOLDER_CONTENT_TYPE_ID) and the caller's contentIDs /
+      // PSSearchCriteria; requireFactorySqlStatement rejects embedded ';' and SQL comment
+      // markers so the same factory-path guard used by TableFactory applies here.
       String sql = "";
       if (contentIDs.isEmpty()) {
         contentIDs.add(0);
@@ -430,7 +436,9 @@ public class PSPageDaoHelper implements IPSPageDaoHelper {
         sql = formGetByStatusSQLQuery(criteria, sql);
       }
 
-      SQLQuery query = sess.createSQLQuery(sql);
+      // codeql[java/sql-injection]
+      SQLQuery query = sess.createSQLQuery(SecureStringUtils.requireFactorySqlStatement(sql));
+      // justification: tokens passed through SecureStringUtils SQL barrier; re-review by 2027-07-31
       return query.list();
     } catch (SQLException e) {
       String error = "Failed to get the fully qualified table name for 'CT_PAGE'";
@@ -442,22 +450,40 @@ public class PSPageDaoHelper implements IPSPageDaoHelper {
   private String formGetByStatusSQLQuery(PSSearchCriteria criteria, String sql) {
 
     if (criteria.getSearchFields().containsKey("templateid")) {
-      sql = sql + " AND P.TEMPLATEID='" + criteria.getSearchFields().get("templateid") + "'";
+      sql =
+          sql
+              + " AND P.TEMPLATEID='"
+              + SecureStringUtils.requireSafeMetadataToken(
+                  criteria.getSearchFields().get("templateid"))
+              + "'";
     }
     if (criteria.getSearchFields().containsKey("sys_contenttypeid")) {
-      sql = sql + " AND CS.CONTENTTYPEID=" + criteria.getSearchFields().get("sys_contenttypeid");
+      sql =
+          sql
+              + " AND CS.CONTENTTYPEID="
+              + SecureStringUtils.requireSafeMetadataToken(
+                  criteria.getSearchFields().get("sys_contenttypeid"));
     }
     if (criteria.getSearchFields().containsKey("sys_contentstateid")) {
-      sql = sql + " AND CS.CONTENTSTATEID=" + criteria.getSearchFields().get("sys_contentstateid");
+      sql =
+          sql
+              + " AND CS.CONTENTSTATEID="
+              + SecureStringUtils.requireSafeMetadataToken(
+                  criteria.getSearchFields().get("sys_contentstateid"));
     }
     if (criteria.getSearchFields().containsKey("sys_workflowid")) {
-      sql = sql + " AND CS.WORKFLOWAPPID=" + criteria.getSearchFields().get("sys_workflowid");
+      sql =
+          sql
+              + " AND CS.WORKFLOWAPPID="
+              + SecureStringUtils.requireSafeMetadataToken(
+                  criteria.getSearchFields().get("sys_workflowid"));
     }
     if (criteria.getSearchFields().containsKey("sys_contentlastmodifier")) {
       sql =
           sql
               + " AND CS.CONTENTLASTMODIFIER LIKE '%"
-              + criteria.getSearchFields().get("sys_contentlastmodifier")
+              + SecureStringUtils.requireSafeMetadataToken(
+                  criteria.getSearchFields().get("sys_contentlastmodifier"))
               + "%'";
     }
     return sql;

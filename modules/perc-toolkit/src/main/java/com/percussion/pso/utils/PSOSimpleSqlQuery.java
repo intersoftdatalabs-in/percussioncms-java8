@@ -21,6 +21,7 @@
 package com.percussion.pso.utils;
 
 import com.percussion.data.PSInternalRequestCallException;
+import com.percussion.security.SecureStringUtils;
 import com.percussion.server.IPSInternalRequest;
 import com.percussion.utils.jdbc.PSConnectionHelper;
 import java.sql.Connection;
@@ -85,6 +86,8 @@ public class PSOSimpleSqlQuery {
    */
   public static List<Object[]> doQuery(String query, List<? extends Object> params)
       throws SQLException, NamingException {
+    // CodeQL java/sql-injection alert #524: reject multi-statement SQL at the JDBC sink.
+    SecureStringUtils.requireSingleSqlStatement(query);
     List<Object[]> resultList = new ArrayList<Object[]>();
     Connection conn = null;
     PreparedStatement stmt = null;

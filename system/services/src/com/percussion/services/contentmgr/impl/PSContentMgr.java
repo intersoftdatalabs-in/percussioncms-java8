@@ -23,6 +23,7 @@ import com.percussion.cms.objectstore.PSComponentSummary;
 import com.percussion.cms.objectstore.server.PSItemDefManager;
 import com.percussion.design.objectstore.IPSBackEndMapping;
 import com.percussion.design.objectstore.PSBackEndColumn;
+import com.percussion.security.SecureStringUtils;
 import com.percussion.design.objectstore.PSField;
 import com.percussion.services.catalog.PSTypeEnum;
 import com.percussion.services.contentmgr.IPSContentMgr;
@@ -682,6 +683,14 @@ public class PSContentMgr  implements IPSContentMgr
       PSBackEndColumn beColumn = (PSBackEndColumn)loc;
       String tableName = beColumn.getTable().getTable();
       String columnName = beColumn.getColumn();
+      // CodeQL java/sql-injection alert #527: validate every variable interpolant before the
+      // Hibernate createSQLQuery sink. tableName / columnName are config-driven identifiers,
+      // fieldValue is the user-influenced comparison literal. The factory-path guard also
+      // rejects embedded ';' and SQL comment markers on the composed string so a malformed
+      // table or column name fails fast at construction time.
+      tableName = SecureStringUtils.requireSqlObjectNameOrNull(tableName);
+      columnName = SecureStringUtils.requireSqlObjectNameOrNull(columnName);
+      fieldValue = SecureStringUtils.requireSafeMetadataToken(fieldValue);
       org.hibernate.Session sess = getSession();
 
 
@@ -695,7 +704,9 @@ public class PSContentMgr  implements IPSContentMgr
       } catch (SQLException e) {
          throw new RuntimeException(e);
       }
-      List<Object> result = sess.createSQLQuery(sql).list();
+      // codeql[java/sql-injection]
+      List<Object> result = sess.createSQLQuery(SecureStringUtils.requireFactorySqlStatement(sql)).list();
+      // justification: tokens passed through SecureStringUtils SQL barrier; re-review by 2027-07-31
          
          for (Object row : result)
          {

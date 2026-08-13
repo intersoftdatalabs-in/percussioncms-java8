@@ -18,6 +18,7 @@
 package com.percussion.tablefactory;
 
 import com.percussion.error.PSExceptionUtils;
+import com.percussion.security.SecureStringUtils;
 import com.percussion.tablefactory.tools.PSCatalogTableData;
 import com.percussion.util.PSBase64Encoder;
 import com.percussion.util.PSLogger;
@@ -1210,6 +1211,10 @@ public class PSJdbcTableFactory {
 
     if (tableSchema == null) throw new IllegalArgumentException("tableSchema may not be null");
 
+    // Validate the table name before composing the SELECT COUNT(*) statement (CodeQL
+    // java/sql-injection alert #521). The schema/database/driver fields come from dbmsDef
+    // configuration; the table name is the most attacker-influenced input here.
+    SecureStringUtils.requireSqlObjectNameOrNull(tableSchema.getName());
     String sqlStmt =
         "SELECT COUNT(*) FROM "
             + PSSqlHelper.qualifyTableName(
