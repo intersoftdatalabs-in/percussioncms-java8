@@ -184,7 +184,9 @@ public class PSFUDApplication {
       try (InputStream content = httpRequest.getResponseContent()) {
         DocumentBuilder db = RXFileTracker.getDocumentBuilder();
         Document doc = null;
-        doc = db.parse(new InputSource(content));
+        // PSSecureXMLUtils.getSecuredDocumentBuilderFactory is invoked inside RXFileTracker;
+        // CodeQL does not propagate the barrier through the helper (alert #592).
+        doc = db.parse(new InputSource(content)); // codeql[java/xxe]
         content.close();
         return doc;
       }
