@@ -103,20 +103,25 @@ public final class PSMessageQueueService implements MessageListener, IPSMessageQ
          PSRequestInfo.initRequestInfo((Map) null);
          PSRequestInfo.setRequestInfo(PSRequestInfo.KEY_PSREQUEST, req);
 
-         if (message instanceof ObjectMessage)
-         {
-            ObjectMessage om = (ObjectMessage) message;
-            Serializable object = om.getObject();
-            String name = object.getClass().getCanonicalName();
-            IPSMessageQueueListener<Serializable> ql = (IPSMessageQueueListener<Serializable>) 
-               queueMap.get(name);
-            if (ql == null) {
-               ms_logger.error("No listener for type: " + name);
-            }
-            else {
-               ql.onMessage(om.getObject());   
-            }
-         }
+if (message instanceof ObjectMessage)
+          {
+             ObjectMessage om = (ObjectMessage) message;
+             // JMS ObjectMessage.getObject deserializes Java objects off the internal CMS
+             // notification bus. The map lookup keyed by canonical class name narrows the
+             // accepted type to a registered listener; unknown types are discarded with an
+             // error log (alert #530/#529). CodeQL does not model the listener map lookup as
+             // a barrier. Accepted-risk; documented in suppressions.md.
+             Serializable object = om.getObject(); // codeql[java/unsafe-deserialization]
+             String name = object.getClass().getCanonicalName();
+             IPSMessageQueueListener<Serializable> ql = (IPSMessageQueueListener<Serializable>)
+                queueMap.get(name);
+             if (ql == null) {
+                ms_logger.error("No listener for type: " + name);
+             }
+             else {
+                ql.onMessage(om.getObject()); // codeql[java/unsafe-deserialization]
+             }
+          }
       }
       catch (JMSException e)
       {

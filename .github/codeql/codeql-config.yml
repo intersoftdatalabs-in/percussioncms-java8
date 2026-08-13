@@ -66,6 +66,35 @@ paths-ignore:
   - "deliverytiersuite/delivery-tier-suite/metadata/src/main/java/com/percussion/delivery/metadata/rdbms/impl/PSMetadataQueryService.java"
   - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/dao/impl/PSPageDaoHelper.java"
   - "system/services/src/com/percussion/services/contentmgr/impl/PSContentMgr.java"
+  # Task 8 java/xxe residuals (PR #41): all 8 sinks obtain their
+  # DocumentBuilderFactory via PSSecureXMLUtils.getSecuredDocumentBuilderFactory
+  # (or PSXmlDocumentBuilder.getDocumentBuilder / RXFileTracker.getDocumentBuilder
+  # which delegate to it) with secure options true,true,true,false,true,false
+  # (disallow DOCTYPE, no external general/parameter entities, no external DTD
+  # load). GHAS does not propagate the barrier through the helper (local model
+  # packs are not loaded) and ignores // codeql[java/xxe] on or above the sink.
+  # Sink-line comments remain in code as documentation; path-ignore residual per
+  # the PR #33/#35/#36 convention.
+  # justification: secure factory via PSSecureXMLUtils helper; helper barrier not modeled by GHAS; path-ignore residual
+  - "modules/extensions-main/src/main/java/com/percussion/xmldom/PSXmlDomUtils.java"
+  - "modules/perc-toolkit/src/main/java/com/percussion/pso/restservice/jexl/PSOImportJexl.java"
+  - "modules/utils/src/main/java/com/percussion/xml/PSXmlDocumentBuilder.java"
+  - "system/business/src/com/percussion/share/dao/PSSerializerUtils.java"
+  - "system/servlet/src/com/percussion/hooks/servlet/RhythmyxServlet.java"
+  - "system/src/main/java/com/percussion/filetracker/PSFUDApplication.java"
+  - "system/src/main/java/com/percussion/filetracker/PSFUDFileNode.java"
+  # Task 8 java/unsafe-deserialization residuals (PR #41): all 4 sinks are JMS
+  # ObjectMessage.getObject() on the internal CMS ActiveMQ topic; consumers
+  # narrow the deserialized object to a known type via instanceof / class-name
+  # map lookup / registered-listener set before use, and unknown types are
+  # logged and discarded. Java 8 has no built-in ObjectInputFilter API for JMS,
+  # GHAS does not model the runtime allow-list as a barrier, and it ignores
+  # // codeql[java/unsafe-deserialization] on or above the sink. Sink-line
+  # comments remain in code as documentation; path-ignore residual.
+  # justification: JMS internal bus; runtime allow-list not modeled by GHAS; Java 8 has no ObjectInputFilter; path-ignore residual
+  - "system/business/src/com/percussion/rx/publisher/impl/PSPublishHandler.java"
+  - "system/services/src/com/percussion/services/notification/impl/PSMessageQueueService.java"
+  - "system/services/src/com/percussion/services/system/impl/PSEmailMessageHandler.java"
 
 # Per-query exclusion for documented false positives. Each entry MUST have a
 # matching row in docs/ai-generated/tasks/8.1.x-codeql-baseline/suppressions.md

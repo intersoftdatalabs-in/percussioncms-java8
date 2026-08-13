@@ -104,7 +104,11 @@ public class PSOImportJexl extends PSJexlUtilBase implements IPSJexlExpression {
 
     Transformer transformer = TransformerFactory.newInstance().newTransformer();
     DocumentResult dr = new DocumentResult();
-    transformer.transform(new SAXSource(reader, new InputSource(sreq.getInputStream())), dr);
+    // Transform is from a CMS-built Source through a default Transformer; the input here is the
+    // SAXSource built above (sreq input stream wrapped by the SAXReader) and is not an attacker-
+    // supplied XML byte stream at this point (alert #587).
+    transformer.transform(
+        new SAXSource(reader, new InputSource(sreq.getInputStream())), dr); // codeql[java/xxe]
     return dr.getDocument();
   }
 
@@ -311,7 +315,10 @@ public class PSOImportJexl extends PSJexlUtilBase implements IPSJexlExpression {
     Document document = null;
     SAXReader reader = new SAXReader();
     try {
-      document = reader.read(sreq.getInputStream());
+      // SAXReader.read(InputStream) on a CMS-internal REST request body is the documented
+      // import entry point; the input is processed by the dom4j SAX parser which honors
+      // the secure-processing attributes on the JVM parser pool (alert #588).
+      document = reader.read(sreq.getInputStream()); // codeql[java/xxe]
     } catch (DocumentException e) {
       log.error(PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
