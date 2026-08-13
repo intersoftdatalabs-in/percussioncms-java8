@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-13
+
+### Fixed
+
+- **Metadata extraction fails on unbound XML prefixes (e.g. `gcse:search`) during DTS publish** (#4) — `PSMetadataExtractorService` (RDFa / Semargl parse over published HTML) previously threw `SAXParseException: The prefix "gcse" for element "gcse:search" is not bound` for vendor embeds such as Google Custom Search that do not declare an `xmlns:gcse`. The whole page's metadata delivery then failed with ERROR in `PSMetadataDeliveryHandler` even when file publish itself succeeded. The extractor now pre-sanitizes HTML: it collects `xmlns:*` declarations on the document, strips elements and attributes whose prefixes are not in that declared set (deepest-first, via `Jsoup.unwrap`), and rewrites non-XML named entities to numeric character references before RDFa parse. As a defensive fallback, the RDFa parse is wrapped in a try/catch that detects `SAXParseException` / unbound-prefix parse messages and logs WARN with the page path and offending prefix (when extractable), so the rest of the page metadata still flows through. Normal `dcterms:*` / `og:*` / `perc:*` metadata is unchanged because the metadata of interest lives in attribute *values*, not in unbound element/attribute names.
+
+### Added
+
+- **Lenient unbound-prefix extraction unit tests** — `system/Testing/src/com/percussion/delivery/PSMetadataExtractorServiceTests.java` adds `testUnboundPrefixGcseSearch` (loads new `system/UnitTestResources/com/percussion/delivery/unbound-prefix-gcse.html` fixture with `<gcse:search>` + `vendor:data-id` and asserts page path, type, and `dcterms:source`/`dcterms:title`/`dcterms:description`/`dcterms:abstract` are still extracted), `testUnboundPrefixOnlyDoesNotThrow` (minimal `<gcse:search>` inline HTML does not throw and returns the default `page` type), and direct coverage of the new helpers `PSMetadataExtractorService.isUnboundPrefixParseFailure(Throwable)` and `extractUnboundPrefix(Throwable)` for both positive (`prefix "gcse" for element "gcse:search" is not bound`) and negative (unrelated parse error) cases.
+
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
 ### Fixed (Task 8 — tainted-numeric-cast)

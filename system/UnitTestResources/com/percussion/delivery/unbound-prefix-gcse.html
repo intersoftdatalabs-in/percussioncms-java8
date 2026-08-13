@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CSE Page Title</title>
+    <meta property="dcterms:title" content="CSE Page Title"/>
+    <meta property="dcterms:description" content="Page with Google CSE embed"/>
+    <meta property="dcterms:source" content="gcse-fixture"/>
+    <meta property="og:title" content="CSE Page Title"/>
+    <meta property="og:description" content="Page with Google CSE embed"/>
+</head>
+<body>
+    <div property="dcterms:abstract">
+        Abstract survives unbound vendor prefix strip.
+    </div>
+    <gcse:search data-placeholder="Search this site"></gcse:search>
+    <script async src="https://cse.google.com/cse.js?cx=abc"></script>
+    <p>Some body content with a prefixed attr: <span vendor:data-id="123">x</span></p>
+</body>
+</html>

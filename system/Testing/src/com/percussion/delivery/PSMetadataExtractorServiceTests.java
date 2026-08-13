@@ -27,10 +27,15 @@ import org.junit.rules.TemporaryFolder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 public class PSMetadataExtractorServiceTests {
 
@@ -155,5 +160,82 @@ public class PSMetadataExtractorServiceTests {
             String abstractText = map.get("dcterms:abstract");
             assertNotNull(abstractText);
         }
+    }
+
+    /**
+     * Issue #4: HTML with unbound XML-style prefixes (Google CSE {@code gcse:search} without
+     * {@code xmlns:gcse}) must not throw out of {@link PSMetadataExtractorService}; RDFa/dcterms
+     * present elsewhere on the page must still be extracted.
+     */
+    @Test
+    public void testUnboundPrefixGcseSearch() throws IOException {
+        InputStream is = PSMetadataExtractorServiceTests.class.getResourceAsStream(
+                "/com/percussion/delivery/unbound-prefix-gcse.html");
+        assertNotNull("unbound-prefix-gcse.html fixture must be on the test classpath", is);
+
+        try (InputStreamReader inputStreamReader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+
+            PSMetadataExtractorService svc = new PSMetadataExtractorService();
+            PSMetadataEntry entry = svc.process(inputStreamReader, "text/html",
+                    "/Sites/test/error.html", null);
+
+            assertNotNull(entry);
+            assertEquals("page", entry.getType());
+            assertEquals("/Sites/test/error.html", entry.getPagepath());
+
+            HashMap<String, String> map = new HashMap<>();
+            for (IPSMetadataProperty prop : entry.getProperties()) {
+                map.put(prop.getName(), prop.getValue());
+            }
+
+            assertEquals("gcse-fixture", map.get("dcterms:source"));
+            assertEquals("CSE Page Title", map.get("dcterms:title"));
+            assertEquals("Page with Google CSE embed", map.get("dcterms:description"));
+
+            String abstractText = map.get("dcterms:abstract");
+            assertNotNull("dcterms:abstract should still be extracted", abstractText);
+            assertTrue("abstract content should survive prefix sanitize: " + abstractText,
+                    abstractText.contains("Abstract survives unbound vendor prefix strip"));
+        }
+    }
+
+    /**
+     * Minimal inline HTML: unbound {@code gcse:search} alone must not throw; page still gets a
+     * default type of {@code page}.
+     */
+    @Test
+    public void testUnboundPrefixOnlyDoesNotThrow() {
+        String html = "<!DOCTYPE html><html><head><title>x</title></head>"
+                + "<body><gcse:search></gcse:search><p>ok</p></body></html>";
+        PSMetadataExtractorService svc = new PSMetadataExtractorService();
+        Reader reader = new StringReader(html);
+        PSMetadataEntry entry;
+        try {
+            entry = svc.process(reader, "text/html", "/Sites/test/minimal-gcse.html", null);
+        } catch (RuntimeException ex) {
+            throw new AssertionError("unbound gcse: prefix must not fail metadata extraction", ex);
+        }
+        assertNotNull(entry);
+        assertEquals("page", entry.getType());
+        assertEquals("/Sites/test/minimal-gcse.html", entry.getPagepath());
+    }
+
+    /**
+     * Unit-level coverage for the SAX unbound-prefix detection helper.
+     */
+    @Test
+    public void testIsUnboundPrefixParseFailureDetectsGcse() {
+        Throwable ex = new RuntimeException(
+                "The prefix \"gcse\" for element \"gcse:search\" is not bound.",
+                new RuntimeException("nested cause"));
+        assertTrue(PSMetadataExtractorService.isUnboundPrefixParseFailure(ex));
+        assertEquals("gcse", PSMetadataExtractorService.extractUnboundPrefix(ex));
+    }
+
+    @Test
+    public void testIsUnboundPrefixParseFailureIgnoresOtherErrors() {
+        Throwable ex = new RuntimeException("Some unrelated parse error");
+        assertFalse(PSMetadataExtractorService.isUnboundPrefixParseFailure(ex));
+        assertEquals(null, PSMetadataExtractorService.extractUnboundPrefix(ex));
     }
 }
