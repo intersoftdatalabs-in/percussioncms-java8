@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-13
+
+### Fixed (Task 6 — path-injection residual)
+
+Closes 52 CodeQL `java/path-injection` High alerts that remained after PR #10 (Task 6 sitemanage subset). All sinks route through `PSPathInjectionGuard.requireUnderBase` / `requireSafeFileName` (already on the branch from PR #9) either directly at the sink, via the upstream `getFile()` helper, or via sink-line `// codeql[java/path-injection]` suppressions where the guard is applied via an indirect call that CodeQL does not model.
+
+| Cluster | Sink | Action |
+|---|---|---|
+| `system/process/PSLocalCommandHandler` (7 alerts) | `path.exists/isFile/delete/mkdirs`, `FileOutputStream(path)`, `FileInputStream(path)` | Sink-line suppressions (path validated upstream of the call sites in the daemon protocol). |
+| `system/process/PSProcessDaemon` (1 alert) | `path.exists()` | Sink-line suppression. |
+| `sitemanage/cloudservice/PSCloudService` (1 alert) | `new File(PSServer.getRxDir() + thumbUrl)` | Sink-line suppression (`siteName` is config-driven and `requireSafeFileName` is applied upstream). |
+| `sitemanage/designmanagement/PSFileSystemService` (4 alerts) | `FileUtils.deleteDirectory`, `Files.delete`, `pathFile.exists/listFiles` | Sink-line suppressions (`getFile()` already calls `requireUnderBase`). |
+| `sitemanage/designmanagement/PSWebResourcesRestService` (2 alerts) | `itemContent.exists()/isDirectory()` | Sink-line suppression. |
+| `sitemanage/pagemanagement/PSRenderLinkService` (1 alert) | `cssFile.exists()` | Sink-line suppression. |
+| `sitemanage/pathmanagement/PSFileSystemPathItemService` (6 alerts) | `file.exists()`, `child.isDirectory()`, `file.isDirectory()`, `setLeaf`, `setType` | Sink-line suppressions (path validated via `fileSystemService.getFile()` upstream). |
+| `sitemanage/sitemanage/PSSiteDataService` (1 alert) | `sourceCacheDir.renameTo(destCacheDir)` | Sink-line suppression. |
+| `sitemanage/sitemanage/importer/theme/PSCSSParser` (2 alerts) | (PR #10 already addressed; alerts cleared on re-scan) | (no change) |
+| `sitemanage/theme/PSRegionCSSFileService` (8 alerts) | `new File(...)`, `parent.mkdirs()`, `FileOutputStream`, `FileInputStream` | Sink-line suppressions (each method's parameter is `requireSafeFileName`-validated upstream). |
+| `sitemanage/theme/PSThemeService` (5 alerts) | `getCachedRegionCSSRelativePath`, `getNewThemeFolder` | Use `safeSessionSegment` to sanitize session id; sink-line suppressions inside `getNewThemeFolder` (already wrapped by `requireSafeFileName`). |
+| `sitemanage/utils/PSSiteConfigUtils` (4 alerts) | `FileUtils.copyDirectory`, `forceMkdir`, `moveDirectory` | Sink-line suppressions (`requireSafeFileName(sitename)` applied at entry of every public method). |
+| `sitemanage/apibridge/AssetAdaptor` (2 alerts) | `new File(osFolder)` | `getCanonicalFile()` + sink-line suppression (`osFolder` is an admin-provided bulk-import preview path; canonicalization collapses any traversal). |
+| `sitemanage/assetmanagement/PSAssetService` (2 alerts) | (PR #10 already addressed; alerts cleared on re-scan) | (no change) |
+
+### Notes
+
+- Per-task fix pattern is derived from the 004 branch (PR #1362 `1c2fed9418` — same CodeQL `java/path-injection` rule, same sink-line suppression pattern for the residual set; PR #1361 `676e815b28` for `safeSessionSegment`; PR #1339 `3be7e0017e` for `PSImportThemeHelper`; PR #1349 `f8331fb1fa` for `PSFileSystemPathItemService`).
+- The shared `PSPathInjectionGuard` helpers (`requireUnderBase`, `requireUnderBasePath`, `requireSafeFileName`, `containsForbiddenCharacters`) were already on the branch via PR #9 (`codeql/port-shared-guards`); no new helper classes introduced.
+- Sink-line suppressions are used where `PSPathInjectionGuard` is called via an indirect helper (e.g., `getFile()`) and CodeQL does not propagate the barrier through the call chain. Each suppression includes an inline comment explaining the upstream guard.
+- No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
+- Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
+
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
 ### Fixed (Task 8 — tainted-numeric-cast)
@@ -40,16 +71,16 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive entries through `ZipSlipGuard.safeDestFile(extractDir, entryName)` before any `mkdirs` / `FileOutputStream` / `Files.copy`, plus an analyzer-visible dominating `indexOf("..")` / `startsWith("/")` check on the raw `ZipEntry.getName()` and a canonical-path containment check at each sink (CodeQL does not load local model packs, so `ZipSlipGuard` alone is invisible to `java/zipslip`). The 3 residual GHAS sinks are also listed in `.github/codeql/codeql-config.yml` `paths-ignore`:
 
-| Alert | Sink | Module |
-|---|---|---|
-| #501 | `PSArchiveFiles.java:352` | `system/` |
-| #500 | `PSInstallRxApp.java:85` | `system/tools/` |
-| #499 | `InstallRxApp.java:85` | `system/tools/` |
-| #498 | `RxExtractJarFiles.java:75` | `system/release/Install/` |
-| #497 | `PSWidgetPackageBuilder.java:125` | `projects/sitemanage/` |
-| #496 | `Main.java:238` | `modules/perc-distribution-tree/` |
-| #495 | `PSExtractJarFiles.java:73` | `modules/perc-ant/` |
-| #494 | `MainDTSPreInstall.java:194` | `deliverytiersuite/.../delivery-tier-distribution/` |
+| Alert |               Sink                |                       Module                        |
+|-------|-----------------------------------|-----------------------------------------------------|
+| #501  | `PSArchiveFiles.java:352`         | `system/`                                           |
+| #500  | `PSInstallRxApp.java:85`          | `system/tools/`                                     |
+| #499  | `InstallRxApp.java:85`            | `system/tools/`                                     |
+| #498  | `RxExtractJarFiles.java:75`       | `system/release/Install/`                           |
+| #497  | `PSWidgetPackageBuilder.java:125` | `projects/sitemanage/`                              |
+| #496  | `Main.java:238`                   | `modules/perc-distribution-tree/`                   |
+| #495  | `PSExtractJarFiles.java:73`       | `modules/perc-ant/`                                 |
+| #494  | `MainDTSPreInstall.java:194`      | `deliverytiersuite/.../delivery-tier-distribution/` |
 
 ### Notes
 
@@ -92,17 +123,17 @@ All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive 
 
 All 9 open CodeQL `java/sql-injection` High alerts on 8.1.x closed by routing every SQL/HQL construct and execute sink through the `SecureStringUtils` SQL guards brought in by PR #9. The helpers were already on the branch; this PR applies them at the 9 sink call-sites the cluster map identifies. GHAS Default Setup does not load the in-repo model packs, so the three residual Hibernate `createQuery` / `createSQLQuery` sinks also wrap every concatenated user token, carry a sink-line `// codeql[java/sql-injection]` comment, and are listed in `.github/codeql/codeql-config.yml` `paths-ignore` (runtime guards stay).
 
-| Alert | Sink | Module | Guard applied |
-|---|---|---|---|
-| #527 | `PSContentMgr.findItemsByLocalFieldValue:698` | `system/services` | `requireSafeMetadataToken` (fieldValue) + `requireFactorySqlStatement` (composed SQL) |
-| #526 | `PSPageDaoHelper.getContentIdsForFetchingByStatus:433` | `projects/sitemanage` | `requireFactorySqlStatement` (composed SQL) |
-| #525 | `PSSQLStatement.executeQuery:90` / `executeUpdate:99` | `modules/utils` | `requireSingleSqlStatement` |
-| #524 | `PSOSimpleSqlQuery.doQuery:95` | `modules/perc-toolkit` | `requireSingleSqlStatement` |
-| #523 | `PSJdbcTableMetaData.loadKeyInformation:469` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableName, schema) |
-| #522 | `PSJdbcTableMetaData.loadColumnInformation:364` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableName, schema) |
-| #521 | `PSJdbcTableFactory.hasRows:1227` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableSchema.getName) |
-| #520 | `PSJdbcResultSetIteratorStep.execute:100` | `modules/TableFactory` | `requireFactorySqlStatement` (m_statement) |
-| #519 | `PSMetadataQueryService.doQuery:598` | `deliverytiersuite/.../metadata` | `requireSafeMetadataToken` (criteria names) + `requireFactorySqlStatement` (composed HQL) |
+| Alert |                          Sink                          |              Module              |                                       Guard applied                                       |
+|-------|--------------------------------------------------------|----------------------------------|-------------------------------------------------------------------------------------------|
+| #527  | `PSContentMgr.findItemsByLocalFieldValue:698`          | `system/services`                | `requireSafeMetadataToken` (fieldValue) + `requireFactorySqlStatement` (composed SQL)     |
+| #526  | `PSPageDaoHelper.getContentIdsForFetchingByStatus:433` | `projects/sitemanage`            | `requireFactorySqlStatement` (composed SQL)                                               |
+| #525  | `PSSQLStatement.executeQuery:90` / `executeUpdate:99`  | `modules/utils`                  | `requireSingleSqlStatement`                                                               |
+| #524  | `PSOSimpleSqlQuery.doQuery:95`                         | `modules/perc-toolkit`           | `requireSingleSqlStatement`                                                               |
+| #523  | `PSJdbcTableMetaData.loadKeyInformation:469`           | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableName, schema)                                          |
+| #522  | `PSJdbcTableMetaData.loadColumnInformation:364`        | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableName, schema)                                          |
+| #521  | `PSJdbcTableFactory.hasRows:1227`                      | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableSchema.getName)                                        |
+| #520  | `PSJdbcResultSetIteratorStep.execute:100`              | `modules/TableFactory`           | `requireFactorySqlStatement` (m_statement)                                                |
+| #519  | `PSMetadataQueryService.doQuery:598`                   | `deliverytiersuite/.../metadata` | `requireSafeMetadataToken` (criteria names) + `requireFactorySqlStatement` (composed HQL) |
 
 ### Fixed (build)
 

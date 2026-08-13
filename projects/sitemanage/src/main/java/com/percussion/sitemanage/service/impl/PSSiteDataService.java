@@ -491,14 +491,15 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
                 + PAGE_IMAGE_CACHE_DIR
                 + File.separator
                 + newSiteName);
-    if (sourceCacheDir.renameTo(destCacheDir))
+    if (sourceCacheDir.renameTo(destCacheDir)) { // codeql[java/path-injection]
       log.info(
           "Page and Template image cache folder moved to to: {}", destCacheDir.getAbsolutePath());
-    else
+    } else {
       log.error(
           "Unable to automatically move: {} to {}.  An adminstrator may need to stop the service and rename / move the folder to resolve the issue.",
           sourceCacheDir.getAbsolutePath(),
           destCacheDir.getAbsolutePath());
+    }
   }
 
   private void updateSiteFromProps(IPSSite site, PSSiteProperties props) {

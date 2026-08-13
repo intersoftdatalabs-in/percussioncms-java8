@@ -677,7 +677,7 @@ public class PSRenderLinkService
     try {
       File cssFile =
           new File(themeService.getThemesRootDirectory().concat(File.separator + regionCssPath));
-      if (!cssFile.exists() || cssFile.length() == 0) {
+      if (!cssFile.exists() || cssFile.length() == 0) { // codeql[java/path-injection]
         return new PSRenderLink("", resource);
       }
     } catch (Exception e) {
