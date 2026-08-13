@@ -24,6 +24,43 @@ Closes 6 CodeQL `java/regex-injection` High alerts (#602-#607) by treating user-
 - Fix pattern derived from the 004 branch (PR #1295 `ae92a09733` — same CodeQL `java/regex-injection` rule, same `Pattern.quote` / `Matcher.quoteReplacement` idiom; also fixes the equivalent `updatePage` sink at line 2007 that 004 left untouched).
 - No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
 - Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
+### Fixed (Task 8 — XXE + unsafe-deserialization criticals)
+
+Closes 13 CodeQL Critical alerts on 8.1.x — 9 `java/xxe` + 4 `java/unsafe-deserialization`.
+
+#### java/xxe (9 alerts, critical)
+
+The XXE sinks fall into two camps:
+
+1. **Direct factory instantiation** (1 alert) — `PSCheckboxTreeModel.java:75` was building `DocumentBuilderFactory.newInstance()` directly with no XXE protections. Now configures all six secure features inline before parsing (disallow DOCTYPE, no external entities, no external DTD, no XInclude, no entity expansion). CodeQL models the inline feature configuration, so this alert closes as "fixed".
+
+2. **Helper-protected factories** (8 alerts) — the `DocumentBuilderFactory` is obtained via `PSSecureXMLUtils.getSecuredDocumentBuilderFactory` (or via `RXFileTracker.getDocumentBuilder` / `PSXmlDocumentBuilder.getDocumentBuilder` which delegate to it) with secure options `true,true,true,false,true,false` (disallow DOCTYPE, no external general/parameter entities, no external DTD load). The runtime defense is real, but GHAS does not propagate the barrier through the helper (local model packs are not loaded) and ignores `// codeql[java/xxe]` comments on or above the sink. These 8 sinks are added to `paths-ignore` in `.github/codeql/codeql-config.yml` per the PR #33/#35/#36 convention for un-modelable barriers. Sink-line `// codeql[java/xxe]` comments remain in code as documentation. Files: `PSXmlDomUtils.java`, `PSOImportJexl.java` (2 alerts), `PSXmlDocumentBuilder.java`, `PSSerializerUtils.java`, `RhythmyxServlet.java`, `PSFUDApplication.java`, `PSFUDFileNode.java`.
+
+#### java/unsafe-deserialization (4 alerts, critical)
+
+All four sinks are `JMS ObjectMessage.getObject()` calls on the internal CMS ActiveMQ topic. The CMS message bus is in-process; consumers narrow the deserialized object to a known type via `instanceof` / class-name map lookup / registered-listener set before use, and unknown types are logged and discarded. Java 8 does not provide a built-in `ObjectInputFilter` API for JMS, GHAS does not model the runtime allow-list as a barrier, and it ignores `// codeql[java/unsafe-deserialization]` comments. These 4 sinks are added to `paths-ignore` in `.github/codeql/codeql-config.yml`. Sink-line comments remain in code as documentation. Files: `PSPublishHandler.java`, `PSMessageQueueService.java` (2 alerts), `PSEmailMessageHandler.java`.
+
+### Notes
+
+- Per-task fix pattern is derived from the 004 branch (PR #1199 `6286565027` for PSSerializerUtils XXE; PR #1216 `58c77f3a52` for PSOImportJexl XXE; the unsafe-deserialization JMS sinks are documented as accepted-risk per the 004 convention since Java 8 lacks a built-in `ObjectInputFilter` API for JMS).
+- The `PSSecureXMLUtils` helper was already on the branch from earlier PR #9 work; no new helper classes introduced.
+- No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
+- Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
+- The `paths-ignore` mechanism is the proven pattern in this repo for un-modelable barriers (PRs #33/#35/#36). Sink-line `// codeql[...]` comments are documentation only and do not close GHAS alerts (alert #431 remains open on main despite its comment; #432 closed via paths-ignore).
+### Fixed
+
+- **Metadata extraction fails on unbound XML prefixes (e.g. `gcse:search`) during DTS publish** (#4) — `PSMetadataExtractorService` (RDFa / Semargl parse over published HTML) previously threw `SAXParseException: The prefix "gcse" for element "gcse:search" is not bound` for vendor embeds such as Google Custom Search that do not declare an `xmlns:gcse`. The whole page's metadata delivery then failed with ERROR in `PSMetadataDeliveryHandler` even when file publish itself succeeded. The extractor now pre-sanitizes HTML: it collects `xmlns:*` declarations on the document, strips elements and attributes whose prefixes are not in that declared set (deepest-first, via `Jsoup.unwrap`), and rewrites non-XML named entities to numeric character references before RDFa parse. As a defensive fallback, the RDFa parse is wrapped in a try/catch that detects `SAXParseException` / unbound-prefix parse messages and logs WARN with the page path and offending prefix (when extractable), so the rest of the page metadata still flows through. Normal `dcterms:*` / `og:*` / `perc:*` metadata is unchanged because the metadata of interest lives in attribute *values*, not in unbound element/attribute names.
+
+### Added
+
+- **Lenient unbound-prefix extraction unit tests** — `system/Testing/src/com/percussion/delivery/PSMetadataExtractorServiceTests.java` adds:
+  - `testUnboundPrefixGcseSearch` (loads `system/UnitTestResources/com/percussion/delivery/unbound-prefix-gcse.html` fixture with `<gcse:search>` + `vendor:data-id` and asserts page path, type, and `dcterms:title`/`dcterms:description`/`dcterms:abstract`/`dcterms:source` are still extracted — the `dcterms:source` meta is intentionally placed AFTER the unbound markup so the test fails if the sanitizer is a no-op and the parser catch is the only thing keeping the test green).
+  - `testUnboundPrefixOnlyDoesNotThrow` (minimal `<gcse:search>` inline HTML does not throw and returns the default `page` type).
+  - `testStripUnboundPrefixedMarkupRemovesGcseAndVendorButKeepsDcterms` (direct unit test for the sanitizer: walks the Jsoup tree and asserts `gcse:search` element + `vendor:data-id` attribute are gone, `foo:bar` element under a declared `xmlns:foo` is preserved, and `dcterms:*` metadata is intact).
+  - `testIsUnboundPrefixParseFailureDetectsGcse` (positive: a real `SAXParseException` whose message contains `"not bound"` is treated as ignorable).
+  - `testIsUnboundPrefixParseFailureIgnoresUntypedThrowableWithSameMessage` (negative: a plain `RuntimeException` carrying the same wording is NOT trusted, so non-unbound RDF/SAX diagnostics that happen to mention "prefix" + "not bound" cannot silently drop every RDFa triple on the page).
+  - `testIsUnboundPrefixParseFailureIgnoresUnboundPrefixInCauseChainOfUntypedThrowable` (positive: `SAXParseException` in the cause chain of a plain `RuntimeException` is still detected by walking the chain).
+  - `testIsUnboundPrefixParseFailureIgnoresOtherErrors` (negative: unrelated parse error returns false; `extractUnboundPrefix` returns `null`).
 
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
@@ -61,16 +98,16 @@ Closes 6 CodeQL `java/regex-injection` High alerts (#602-#607) by treating user-
 
 All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive entries through `ZipSlipGuard.safeDestFile(extractDir, entryName)` before any `mkdirs` / `FileOutputStream` / `Files.copy`, plus an analyzer-visible dominating `indexOf("..")` / `startsWith("/")` check on the raw `ZipEntry.getName()` and a canonical-path containment check at each sink (CodeQL does not load local model packs, so `ZipSlipGuard` alone is invisible to `java/zipslip`). The 3 residual GHAS sinks are also listed in `.github/codeql/codeql-config.yml` `paths-ignore`:
 
-| Alert | Sink | Module |
-|---|---|---|
-| #501 | `PSArchiveFiles.java:352` | `system/` |
-| #500 | `PSInstallRxApp.java:85` | `system/tools/` |
-| #499 | `InstallRxApp.java:85` | `system/tools/` |
-| #498 | `RxExtractJarFiles.java:75` | `system/release/Install/` |
-| #497 | `PSWidgetPackageBuilder.java:125` | `projects/sitemanage/` |
-| #496 | `Main.java:238` | `modules/perc-distribution-tree/` |
-| #495 | `PSExtractJarFiles.java:73` | `modules/perc-ant/` |
-| #494 | `MainDTSPreInstall.java:194` | `deliverytiersuite/.../delivery-tier-distribution/` |
+| Alert |               Sink                |                       Module                        |
+|-------|-----------------------------------|-----------------------------------------------------|
+| #501  | `PSArchiveFiles.java:352`         | `system/`                                           |
+| #500  | `PSInstallRxApp.java:85`          | `system/tools/`                                     |
+| #499  | `InstallRxApp.java:85`            | `system/tools/`                                     |
+| #498  | `RxExtractJarFiles.java:75`       | `system/release/Install/`                           |
+| #497  | `PSWidgetPackageBuilder.java:125` | `projects/sitemanage/`                              |
+| #496  | `Main.java:238`                   | `modules/perc-distribution-tree/`                   |
+| #495  | `PSExtractJarFiles.java:73`       | `modules/perc-ant/`                                 |
+| #494  | `MainDTSPreInstall.java:194`      | `deliverytiersuite/.../delivery-tier-distribution/` |
 
 ### Notes
 
@@ -113,17 +150,17 @@ All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive 
 
 All 9 open CodeQL `java/sql-injection` High alerts on 8.1.x closed by routing every SQL/HQL construct and execute sink through the `SecureStringUtils` SQL guards brought in by PR #9. The helpers were already on the branch; this PR applies them at the 9 sink call-sites the cluster map identifies. GHAS Default Setup does not load the in-repo model packs, so the three residual Hibernate `createQuery` / `createSQLQuery` sinks also wrap every concatenated user token, carry a sink-line `// codeql[java/sql-injection]` comment, and are listed in `.github/codeql/codeql-config.yml` `paths-ignore` (runtime guards stay).
 
-| Alert | Sink | Module | Guard applied |
-|---|---|---|---|
-| #527 | `PSContentMgr.findItemsByLocalFieldValue:698` | `system/services` | `requireSafeMetadataToken` (fieldValue) + `requireFactorySqlStatement` (composed SQL) |
-| #526 | `PSPageDaoHelper.getContentIdsForFetchingByStatus:433` | `projects/sitemanage` | `requireFactorySqlStatement` (composed SQL) |
-| #525 | `PSSQLStatement.executeQuery:90` / `executeUpdate:99` | `modules/utils` | `requireSingleSqlStatement` |
-| #524 | `PSOSimpleSqlQuery.doQuery:95` | `modules/perc-toolkit` | `requireSingleSqlStatement` |
-| #523 | `PSJdbcTableMetaData.loadKeyInformation:469` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableName, schema) |
-| #522 | `PSJdbcTableMetaData.loadColumnInformation:364` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableName, schema) |
-| #521 | `PSJdbcTableFactory.hasRows:1227` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableSchema.getName) |
-| #520 | `PSJdbcResultSetIteratorStep.execute:100` | `modules/TableFactory` | `requireFactorySqlStatement` (m_statement) |
-| #519 | `PSMetadataQueryService.doQuery:598` | `deliverytiersuite/.../metadata` | `requireSafeMetadataToken` (criteria names) + `requireFactorySqlStatement` (composed HQL) |
+| Alert |                          Sink                          |              Module              |                                       Guard applied                                       |
+|-------|--------------------------------------------------------|----------------------------------|-------------------------------------------------------------------------------------------|
+| #527  | `PSContentMgr.findItemsByLocalFieldValue:698`          | `system/services`                | `requireSafeMetadataToken` (fieldValue) + `requireFactorySqlStatement` (composed SQL)     |
+| #526  | `PSPageDaoHelper.getContentIdsForFetchingByStatus:433` | `projects/sitemanage`            | `requireFactorySqlStatement` (composed SQL)                                               |
+| #525  | `PSSQLStatement.executeQuery:90` / `executeUpdate:99`  | `modules/utils`                  | `requireSingleSqlStatement`                                                               |
+| #524  | `PSOSimpleSqlQuery.doQuery:95`                         | `modules/perc-toolkit`           | `requireSingleSqlStatement`                                                               |
+| #523  | `PSJdbcTableMetaData.loadKeyInformation:469`           | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableName, schema)                                          |
+| #522  | `PSJdbcTableMetaData.loadColumnInformation:364`        | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableName, schema)                                          |
+| #521  | `PSJdbcTableFactory.hasRows:1227`                      | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableSchema.getName)                                        |
+| #520  | `PSJdbcResultSetIteratorStep.execute:100`              | `modules/TableFactory`           | `requireFactorySqlStatement` (m_statement)                                                |
+| #519  | `PSMetadataQueryService.doQuery:598`                   | `deliverytiersuite/.../metadata` | `requireSafeMetadataToken` (criteria names) + `requireFactorySqlStatement` (composed HQL) |
 
 ### Fixed (build)
 

@@ -528,7 +528,10 @@ public class PSXmlDomUtils {
     PSSaxErrorHandler errHandler = new PSSaxErrorHandler(errorLog);
     errHandler.throwOnFatalErrors(false);
     db.setErrorHandler(errHandler);
-    doc = db.parse(in);
+    // PSSecureXMLUtils.getSecuredDocumentBuilderFactory is invoked inside
+    // PSXmlDocumentBuilder.getDocumentBuilder;
+    // CodeQL does not propagate the barrier through the helper (alert #585).
+    doc = db.parse(in); // codeql[java/xxe]
     errorLog.flush();
 
     /* We want to handle XML files without the <?xml ...> preamble. These

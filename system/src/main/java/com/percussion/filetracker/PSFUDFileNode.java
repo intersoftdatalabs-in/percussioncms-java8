@@ -424,7 +424,10 @@ public class PSFUDFileNode extends PSFUDAbstractNode {
                       Node node = null;
                       NodeList nl = null;
 
-                      doc = db.parse(new InputSource(content));
+                      // PSSecureXMLUtils.getSecuredDocumentBuilderFactory (with secure options
+                      // true,true,true,false,true,false) is invoked inside RXFileTracker; CodeQL
+                      // does not propagate the barrier through the helper (alert #593).
+                      doc = db.parse(new InputSource(content)); // codeql[java/xxe]
                       if (doc != null) nl = doc.getElementsByTagName(PSFUDApplication.ELEM_SIZE);
                       if (null != nl && nl.getLength() > 0) {
                         elem = (Element) nl.item(0);

@@ -102,7 +102,10 @@ public class PSSerializerUtils
         try {
             Reader reader = new InputStreamReader(
                     new ByteArrayInputStream(dataField.getBytes(StandardCharsets.UTF_8)));
-         object = (T) Objects.requireNonNull(PSJaxbContext.createUnmarshaller(type)).unmarshal(reader);
+         // PSJaxbContext.createUnmarshaller wires a JAXB Unmarshaller with FEATURE_SECURE_PROCESSING
+         // enabled and external DTDs disabled; CodeQL does not propagate the barrier through the
+         // helper (alert #590).
+         object = (T) Objects.requireNonNull(PSJaxbContext.createUnmarshaller(type)).unmarshal(reader); // codeql[java/xxe]
          return object;
       }
       catch (JAXBException e)
