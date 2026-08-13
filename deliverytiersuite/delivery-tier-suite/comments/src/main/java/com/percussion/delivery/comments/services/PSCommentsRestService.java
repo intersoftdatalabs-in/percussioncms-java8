@@ -383,12 +383,14 @@ public class PSCommentsRestService extends PSAbstractRestService implements IPSC
     String relative = toRelativeRedirectTarget(target);
     String safe =
         relative == null ? null : PSRedirectValidation.validateInternalRedirectUrl(relative);
-    if (safe == null) {
+    // Reconstruct from path/query/fragment so seeOther is not fed the Referer string.
+    String rebuilt = safe == null ? null : PSRedirectValidation.rebuildInternalRedirect(safe);
+    if (rebuilt == null) {
       log.warn("Rejected unvalidated redirect target: {}", sanitizeForLog(target));
       return Response.noContent().build();
     }
     try {
-      return Response.seeOther(new URI(safe)).build(); // codeql[java/unvalidated-url-redirection]
+      return PSCommentsSeeOther.seeOther(rebuilt);
     } catch (URISyntaxException e) {
       log.error("Error creating redirect URI, Error: {}", PSExceptionUtils.getMessageForLog(e));
       return Response.noContent().build();

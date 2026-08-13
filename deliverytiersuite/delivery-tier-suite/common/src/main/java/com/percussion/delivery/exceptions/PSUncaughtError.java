@@ -19,6 +19,7 @@ package com.percussion.delivery.exceptions;
 
 import com.percussion.error.PSExceptionUtils;
 import com.percussion.security.utils.PSRedirectValidation;
+import com.percussion.security.utils.PSValidatedRedirect;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Context;
@@ -55,10 +56,14 @@ public class PSUncaughtError extends Throwable implements ExceptionMapper<Throwa
         }
         String errorPath = context + "/error.html";
         String safe = PSRedirectValidation.validateInternalRedirectUrl(errorPath);
-        if (safe == null) {
-          safe = "/error.html";
+        String rebuilt = safe == null ? null : PSRedirectValidation.rebuildInternalRedirect(safe);
+        if (rebuilt == null) {
+          rebuilt = PSRedirectValidation.rebuildInternalRedirect("/error.html");
         }
-        response.sendRedirect(safe);
+        if (rebuilt == null) {
+          rebuilt = "/error.html";
+        }
+        PSValidatedRedirect.send(response, rebuilt);
       } else {
         logErrorMessage(exception);
       }

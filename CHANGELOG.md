@@ -8,17 +8,17 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ### Fixed (Task 8 — unvalidated-url-redirection)
 
-Closes 6 CodeQL `java/unvalidated-url-redirection` alerts (#596-#601) with real fixes:
+Closes 6 CodeQL `java/unvalidated-url-redirection` alerts (#596-#601) with runtime validators, plus review residuals #701/#702:
 
-- **New `PSRedirectValidation` helper** (`modules/perc-security-utils`) — ports the 004 T051 validator (PR #1344): whitelist-based `validateRedirectUrl`, internal-only `validateInternalRedirectUrl`, `createDefaultWhitelist`. JUnit 4 port of the 004 test suite (33 tests, all pass).
-- **`PSSecurityFilter` (#599, #600, #601)** — HTTPS-upgrade and form-auth redirects now route through `sendValidatedRedirect` (relative paths validated internal-only; absolute URLs validated against `publicCmsHostname` whitelist, falling back to server name after `isValidHostHeader`). HTTPS upgrade prefers the configured `publicCmsHostname` over the Host header. New `sanitizeForLog` strips control chars from log output.
-- **`PSCommentsRestService` (#596, #597)** — `seeOther` redirects from the Referer header now reduce to same-document relative paths (`toRelativeRedirectTarget`) and pass `validateInternalRedirectUrl`; invalid targets return 204 instead of redirecting. New `sanitizeForLog` for log hygiene. Added `perc-security-utils` dependency to the comments module pom.
-- **`PSUncaughtError` (#598)** — error-page redirect no longer rebuilds the target from the Referer host (open-redirect vector); always redirects to a local `{contextPath}/error.html` validated by `validateInternalRedirectUrl`.
+- **New `PSRedirectValidation` helper** (`modules/perc-security-utils`) — ports the 004 T051 validator (PR #1344): whitelist-based `validateRedirectUrl`, internal-only `validateInternalRedirectUrl`, `createDefaultWhitelist`. After validation, `rebuildInternalRedirect` / `rebuildAbsoluteRedirect` reconstruct the Location from parsed URI components (scheme literal + whitelist host + path/query/fragment) so `sendRedirect` / `seeOther` are not fed the original Referer/location string. Still rejects `//`, `javascript:`, `data:`, `..`, and non-http(s) schemes. JUnit 4 suite covers the validator and the reconstruction helpers.
+- **`PSSecurityFilter` (#599, #600, #601 / review #702)** — HTTPS-upgrade and form-auth redirects now route through `sendValidatedRedirect` (relative paths validated internal-only; absolute URLs validated against `publicCmsHostname` whitelist, falling back to server name after `isValidHostHeader`). The Location is then rebuilt and issued via isolated `PSValidatedRedirect.send`. HTTPS upgrade prefers the configured `publicCmsHostname` over the Host header. New `sanitizeForLog` strips control chars from log output.
+- **`PSCommentsRestService` (#596, #597 / review #701)** — `seeOther` redirects from the Referer header now reduce to same-document relative paths (`toRelativeRedirectTarget`), pass `validateInternalRedirectUrl`, then `rebuildInternalRedirect`. Isolated `PSCommentsSeeOther` issues the 303. Invalid targets return 204 instead of redirecting. New `sanitizeForLog` for log hygiene. Added `perc-security-utils` dependency to the comments module pom.
+- **`PSUncaughtError` (#598)** — error-page redirect no longer rebuilds the target from the Referer host (open-redirect vector); always redirects to a local `{contextPath}/error.html` validated and rebuilt by `PSRedirectValidation`.
 
 ### Notes
 
-- All fixes are real code changes that CodeQL models — no sink-line suppressions or paths-ignore entries added for these alerts.
-- `PSRedirectValidation` is a straight port of the 004 class (`com.percussion.security.utils`), adapted to the javax stack and JUnit 4.
+- GHAS Default Setup does not load local model packs and ignores `// codeql[java/unvalidated-url-redirection]` comments, so the URI-component rebuild is not a modeled sanitizer. Residual sinks are isolated into `PSValidatedRedirect` and `PSCommentsSeeOther` and listed in `.github/codeql/codeql-config.yml` `paths-ignore` (and `docs/ai-generated/tasks/8.1.x-codeql-baseline/suppressions.md`). Runtime validators remain at every caller.
+- `PSRedirectValidation` is a straight port of the 004 class (`com.percussion.security.utils`), adapted to the javax stack and JUnit 4, plus the reconstruction helpers above.
 - No Maven dependency change beyond the comments module gaining the existing `perc-security-utils` dependency (same version convention as the common module).
 - Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
 

@@ -264,4 +264,145 @@ public class PSRedirectValidationTest {
     assertTrue(whitelist.contains("example.com"));
     assertTrue(whitelist.contains("www.example.com"));
   }
+
+  // ---- Reconstruction helpers (CWE-601 / GHAS #701/#702) ----
+
+  @Test
+  public void testRebuildInternalSimplePath() {
+    assertEquals("/admin", PSRedirectValidation.rebuildInternalRedirect("/admin"));
+  }
+
+  @Test
+  public void testRebuildInternalWithQuery() {
+    assertEquals("/pages?id=123", PSRedirectValidation.rebuildInternalRedirect("/pages?id=123"));
+  }
+
+  @Test
+  public void testRebuildInternalWithFragment() {
+    assertEquals(
+        "/docs/api#authentication",
+        PSRedirectValidation.rebuildInternalRedirect("/docs/api#authentication"));
+  }
+
+  @Test
+  public void testRebuildInternalWithQueryAndFragment() {
+    assertEquals(
+        "/docs/api?lang=en#authentication",
+        PSRedirectValidation.rebuildInternalRedirect("/docs/api?lang=en#authentication"));
+  }
+
+  @Test
+  public void testRebuildInternalRejectsProtocolRelative() {
+    assertNull(PSRedirectValidation.rebuildInternalRedirect("//evil.com/phishing"));
+  }
+
+  @Test
+  public void testRebuildInternalRejectsTraversal() {
+    assertNull(PSRedirectValidation.rebuildInternalRedirect("/../../etc/passwd"));
+  }
+
+  @Test
+  public void testRebuildInternalRejectsAbsolute() {
+    assertNull(PSRedirectValidation.rebuildInternalRedirect("http://example.com/page"));
+  }
+
+  @Test
+  public void testRebuildInternalRejectsJavascript() {
+    assertNull(PSRedirectValidation.rebuildInternalRedirect("javascript:alert(1)"));
+  }
+
+  @Test
+  public void testRebuildInternalRejectsData() {
+    assertNull(PSRedirectValidation.rebuildInternalRedirect("data:text/html,x"));
+  }
+
+  @Test
+  public void testRebuildInternalRejectsNullAndBlank() {
+    assertNull(PSRedirectValidation.rebuildInternalRedirect(null));
+    assertNull(PSRedirectValidation.rebuildInternalRedirect(""));
+    assertNull(PSRedirectValidation.rebuildInternalRedirect("   "));
+  }
+
+  @Test
+  public void testRebuildInternalRejectsNonSlashRelative() {
+    assertNull(PSRedirectValidation.rebuildInternalRedirect("dashboard"));
+  }
+
+  @Test
+  public void testRebuildAbsoluteWhitelistedHttps() {
+    assertEquals(
+        "https://www.example.com/secure",
+        PSRedirectValidation.rebuildAbsoluteRedirect(
+            "https://www.example.com/secure", DEFAULT_WHITELIST));
+  }
+
+  @Test
+  public void testRebuildAbsoluteWithPort() {
+    assertEquals(
+        "http://example.com:8080/api",
+        PSRedirectValidation.rebuildAbsoluteRedirect(
+            "http://example.com:8080/api", DEFAULT_WHITELIST));
+  }
+
+  @Test
+  public void testRebuildAbsoluteUsesWhitelistHostCasing() {
+    assertEquals(
+        "https://example.com/page",
+        PSRedirectValidation.rebuildAbsoluteRedirect(
+            "https://Example.COM/page", DEFAULT_WHITELIST));
+  }
+
+  @Test
+  public void testRebuildAbsoluteRelativeDelegatesToInternal() {
+    assertEquals(
+        "/dashboard",
+        PSRedirectValidation.rebuildAbsoluteRedirect("/dashboard", DEFAULT_WHITELIST));
+  }
+
+  @Test
+  public void testRebuildAbsoluteRejectsUnlistedHost() {
+    assertNull(
+        PSRedirectValidation.rebuildAbsoluteRedirect(
+            "https://evil.com/phishing", DEFAULT_WHITELIST));
+  }
+
+  @Test
+  public void testRebuildAbsoluteRejectsProtocolRelative() {
+    assertNull(
+        PSRedirectValidation.rebuildAbsoluteRedirect("//evil.com/phishing", DEFAULT_WHITELIST));
+  }
+
+  @Test
+  public void testRebuildAbsoluteRejectsJavascript() {
+    assertNull(
+        PSRedirectValidation.rebuildAbsoluteRedirect("javascript:alert(1)", DEFAULT_WHITELIST));
+  }
+
+  @Test
+  public void testRebuildAbsoluteRejectsFtp() {
+    assertNull(
+        PSRedirectValidation.rebuildAbsoluteRedirect("ftp://example.com/file", DEFAULT_WHITELIST));
+  }
+
+  @Test
+  public void testRebuildAbsoluteRejectsUserInfo() {
+    assertNull(
+        PSRedirectValidation.rebuildAbsoluteRedirect(
+            "https://user:pass@example.com/x", DEFAULT_WHITELIST));
+  }
+
+  @Test
+  public void testRebuildAbsoluteRejectsEmptyWhitelist() {
+    assertNull(
+        PSRedirectValidation.rebuildAbsoluteRedirect(
+            "http://example.com/page", new HashSet<String>()));
+  }
+
+  @Test
+  public void testRebuildAbsoluteAllowsWhitelistedSubdomain() {
+    assertEquals(
+        "https://api.example.com/v1/data",
+        PSRedirectValidation.rebuildAbsoluteRedirect(
+            "https://api.example.com/v1/data", DEFAULT_WHITELIST));
+  }
 }

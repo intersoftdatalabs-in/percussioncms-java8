@@ -173,6 +173,111 @@ public class PSRedirectValidation {
   }
 
   /**
+   * Rebuilds an already-validated internal redirect from parsed URI components.
+   *
+   * <p>The returned string is a newly constructed relative URL (path + query + fragment only).
+   * Rejects protocol-relative targets, {@code javascript:}/{@code data:} schemes, directory
+   * traversal, and any absolute URL.
+   *
+   * @param validated a value previously accepted by {@link #validateInternalRedirectUrl(String)}
+   * @return a newly constructed relative URL, or {@code null} if the input cannot be rebuilt safely
+   */
+  public static String rebuildInternalRedirect(String validated) {
+    if (validated == null) {
+      return null;
+    }
+    String trimmed = validated.trim();
+    if (trimmed.isEmpty()) {
+      return null;
+    }
+    String lower = trimmed.toLowerCase();
+    if (trimmed.startsWith("//")
+        || lower.startsWith("javascript:")
+        || lower.startsWith("data:")
+        || lower.startsWith("vbscript:")
+        || trimmed.contains("..")
+        || !trimmed.startsWith("/")) {
+      return null;
+    }
+    try {
+      URI uri = new URI(trimmed);
+      if (uri.isAbsolute() || uri.getScheme() != null || uri.getHost() != null) {
+        return null;
+      }
+      String path = uri.getPath();
+      if (path == null || path.isEmpty()) {
+        path = "/";
+      }
+      if (!path.startsWith("/") || path.startsWith("//") || path.contains("..")) {
+        return null;
+      }
+      return new URI(null, null, path, uri.getQuery(), uri.getFragment()).toASCIIString();
+    } catch (URISyntaxException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Rebuilds an already-validated absolute redirect from a whitelist host plus parsed path/query.
+   *
+   * <p>Scheme is taken only as the literals {@code http} or {@code https}. Host is taken from the
+   * allowed-domain set on an exact match (subdomain matches keep the validated host after the
+   * whitelist check). Relative inputs are delegated to {@link #rebuildInternalRedirect(String)}.
+   *
+   * @param validated a value previously accepted by {@link #validateRedirectUrl(String, Set)}
+   * @param allowedDomains whitelist used to select the rebuilt host
+   * @return a newly constructed URL, or {@code null} if the input cannot be rebuilt safely
+   */
+  public static String rebuildAbsoluteRedirect(String validated, Set<String> allowedDomains) {
+    if (validated == null) {
+      return null;
+    }
+    String trimmed = validated.trim();
+    if (trimmed.isEmpty()) {
+      return null;
+    }
+    if (trimmed.startsWith("/") && !trimmed.startsWith("//")) {
+      return rebuildInternalRedirect(trimmed);
+    }
+    String lower = trimmed.toLowerCase();
+    if (trimmed.startsWith("//")
+        || lower.startsWith("javascript:")
+        || lower.startsWith("data:")
+        || lower.startsWith("vbscript:")
+        || trimmed.contains("..")) {
+      return null;
+    }
+    try {
+      URI uri = new URI(trimmed);
+      String scheme = uri.getScheme();
+      if (scheme == null
+          || (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme))) {
+        return null;
+      }
+      if (uri.getUserInfo() != null) {
+        return null;
+      }
+      String safeHost = resolveAllowedHost(uri.getHost(), allowedDomains);
+      if (safeHost == null) {
+        return null;
+      }
+      String path = uri.getPath();
+      if (path == null || path.isEmpty()) {
+        path = "/";
+      }
+      if (path.contains("..") || path.startsWith("//")) {
+        return null;
+      }
+      String safeScheme = "https".equalsIgnoreCase(scheme) ? "https" : "http";
+      return new URI(
+              safeScheme, null, safeHost, uri.getPort(), path, uri.getQuery(), uri.getFragment())
+          .toASCIIString();
+    } catch (URISyntaxException e) {
+      return null;
+    }
+  }
+
+  /**
    * Checks if a domain matches the whitelist. Supports exact matches and subdomain matching (e.g.,
    * "sub.example.com" matches whitelist entry "example.com").
    *
@@ -202,6 +307,26 @@ public class PSRedirectValidation {
     }
 
     return false;
+  }
+
+  /**
+   * Returns the whitelist entry that matches {@code host}, or the validated host when it is a
+   * permitted subdomain. {@code null} when the host is not allowed.
+   */
+  private static String resolveAllowedHost(String host, Set<String> allowedDomains) {
+    if (host == null || host.isEmpty() || allowedDomains == null || allowedDomains.isEmpty()) {
+      return null;
+    }
+    String hostLower = host.toLowerCase();
+    for (String allowedDomain : allowedDomains) {
+      if (allowedDomain != null && hostLower.equals(allowedDomain.toLowerCase())) {
+        return allowedDomain;
+      }
+    }
+    if (isAllowedDomain(host, allowedDomains)) {
+      return hostLower;
+    }
+    return null;
   }
 
   /**

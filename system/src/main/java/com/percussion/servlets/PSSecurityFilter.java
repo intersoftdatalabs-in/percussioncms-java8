@@ -30,6 +30,7 @@ import com.percussion.security.PSSecurityToken;
 import com.percussion.security.PSUserEntry;
 import com.percussion.security.SecureStringUtils;
 import com.percussion.security.utils.PSRedirectValidation;
+import com.percussion.security.utils.PSValidatedRedirect;
 import com.percussion.server.PSApplicationHandler;
 import com.percussion.server.PSBaseResponse;
 import com.percussion.server.PSRequest;
@@ -1361,8 +1362,10 @@ public class PSSecurityFilter implements Filter {
       return;
     }
     String safe;
+    String rebuilt;
     if (location.startsWith("/") && !location.startsWith("//")) {
       safe = PSRedirectValidation.validateInternalRedirectUrl(location);
+      rebuilt = safe == null ? null : PSRedirectValidation.rebuildInternalRedirect(safe);
     } else {
       Set<String> allowed = new HashSet<>();
       String publicHost = PSServer.getProperty("publicCmsHostname", null);
@@ -1373,13 +1376,14 @@ public class PSSecurityFilter implements Filter {
         allowed.addAll(PSRedirectValidation.createDefaultWhitelist(request.getServerName()));
       }
       safe = PSRedirectValidation.validateRedirectUrl(location, allowed);
+      rebuilt = safe == null ? null : PSRedirectValidation.rebuildAbsoluteRedirect(safe, allowed);
     }
-    if (safe == null) {
+    if (rebuilt == null) {
       ms_log.warn("Rejected unvalidated redirect location: {}", sanitizeForLog(location));
       response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid redirect location");
       return;
     }
-    response.sendRedirect(safe); // codeql[java/unvalidated-url-redirection]
+    PSValidatedRedirect.send(response, rebuilt);
   }
 
   /**

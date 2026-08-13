@@ -66,6 +66,17 @@ paths-ignore:
   - "deliverytiersuite/delivery-tier-suite/metadata/src/main/java/com/percussion/delivery/metadata/rdbms/impl/PSMetadataQueryService.java"
   - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/dao/impl/PSPageDaoHelper.java"
   - "system/services/src/com/percussion/services/contentmgr/impl/PSContentMgr.java"
+  # Path-level residual (alerts #701/#702 / PR #46). Runtime defense stays at
+  # the callers (toRelativeRedirectTarget / validateInternalRedirectUrl /
+  # validateRedirectUrl + whitelist, then URI-component rebuild). GHAS does
+  # not model PSRedirectValidation (local packs: rejected) and ignores
+  # // codeql[java/unvalidated-url-redirection] on or above the sink.
+  # justification: runtime PSRedirectValidation + URI-component rebuild
+  # re-review by 2027-07-31
+  # paths-ignore PSValidatedRedirect url-redirection residual
+  - "modules/perc-security-utils/src/main/java/com/percussion/security/utils/PSValidatedRedirect.java"
+  # paths-ignore PSCommentsSeeOther url-redirection residual
+  - "deliverytiersuite/delivery-tier-suite/comments/src/main/java/com/percussion/delivery/comments/services/PSCommentsSeeOther.java"
 
 # Per-query exclusion for documented false positives. Each entry MUST have a
 # matching row in docs/ai-generated/tasks/8.1.x-codeql-baseline/suppressions.md
