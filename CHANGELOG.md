@@ -38,7 +38,7 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ### Fixed (Task 5 — zip-slip sinks)
 
-All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive entries through `ZipSlipGuard.safeDestFile(extractDir, entryName)` before any `mkdirs` / `FileOutputStream` / `Files.copy`, plus an analyzer-visible dominating canonical-path containment check at each sink (CodeQL does not load local model packs, so `ZipSlipGuard` alone is invisible to `java/zipslip`):
+All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive entries through `ZipSlipGuard.safeDestFile(extractDir, entryName)` before any `mkdirs` / `FileOutputStream` / `Files.copy`, plus an analyzer-visible dominating `indexOf("..")` / `startsWith("/")` check on the raw `ZipEntry.getName()` and a canonical-path containment check at each sink (CodeQL does not load local model packs, so `ZipSlipGuard` alone is invisible to `java/zipslip`). The 3 residual GHAS sinks are also listed in `.github/codeql/codeql-config.yml` `paths-ignore`:
 
 | Alert | Sink | Module |
 |---|---|---|

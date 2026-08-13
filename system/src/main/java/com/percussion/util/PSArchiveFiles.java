@@ -351,6 +351,11 @@ public class PSArchiveFiles {
       // Check whether the directory exists for this file. If not, create it.
       String dir = "";
       String name = entry.getName();
+      // Analyzer-visible zipslip sanitizer (java/zipslip): dominating check on the raw
+      // ZipEntry name. ZipSlipGuard is a runtime guard only — CodeQL does not model it.
+      if (name.indexOf("..") >= 0 || name.startsWith("/") || name.startsWith("\\")) {
+        throw new SecurityException("zip slip: " + name);
+      }
       // don't extract manifest file
       if (name.equals(JarFile.MANIFEST_NAME)) continue;
 
@@ -389,11 +394,11 @@ public class PSArchiveFiles {
 
         if (!directory.toString().endsWith(File.separator)) extractDir += File.separator;
 
-        File file = ZipSlipGuard.safeDestFile(directory, entry.getName());
+        File file = ZipSlipGuard.safeDestFile(directory, name);
         String destCanon = file.getCanonicalPath();
         String rootCanon = directory.getCanonicalPath();
         if (!destCanon.equals(rootCanon) && !destCanon.startsWith(rootCanon + File.separator)) {
-          throw new SecurityException("zip slip: " + entry.getName());
+          throw new SecurityException("zip slip: " + name);
         }
         // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
         out = new FileOutputStream(file);

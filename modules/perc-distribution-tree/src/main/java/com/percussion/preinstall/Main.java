@@ -236,10 +236,20 @@ public class Main {
       for (ZipEntry entry : entries) {
         currentLineNo.getAndIncrement();
         String entryName = entry.getName();
+        // Analyzer-visible zipslip sanitizer (java/zipslip): dominating check on the raw
+        // ZipEntry name. ZipSlipGuard is a runtime guard only — CodeQL does not model it.
+        if (entryName.indexOf("..") >= 0
+            || entryName.startsWith("/")
+            || entryName.startsWith("\\")) {
+          throw new SecurityException("zip slip: " + entryName);
+        }
         if (!entryName.startsWith(folderPrefix)) continue;
 
         String name = entryName.substring(folderPrefix.length() + 1);
         if (name.length() == 0) continue;
+        if (name.indexOf("..") >= 0 || name.startsWith("/") || name.startsWith("\\")) {
+          throw new SecurityException("zip slip: " + name);
+        }
 
         // Zip-slip guard (CodeQL java/zipslip alert #496): validate that the resolved path
         // stays under destPath before any mkdirs/Files.copy. The entry name and the

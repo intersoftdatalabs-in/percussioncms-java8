@@ -48,6 +48,15 @@ paths-ignore:
   # and ignores // codeql[java/ssrf] on or above the sink.
   # runtime URLValidation + scheme-literal rebuild already on the sink; analyzer does not model URLValidation and ignores // codeql[java/ssrf]; path-ignore residual
   - "system/src/main/java/com/percussion/xml/PSDtdTree.java"
+  # Task 5 zipslip residuals (PR #35): ZipSlipGuard + inline canonical checks are
+  # invisible to java/zipslip (local model packs not loaded). Each file also has a
+  # dominating indexOf("..") / startsWith("/") string guard on ZipEntry.getName().
+  # paths-ignore MainDTSPreInstall zipslip residual
+  - "deliverytiersuite/delivery-tier-suite/delivery-tier-distribution/src/main/java/com/percussion/preinstall/MainDTSPreInstall.java"
+  # paths-ignore perc-distribution-tree Main zipslip residual
+  - "modules/perc-distribution-tree/src/main/java/com/percussion/preinstall/Main.java"
+  # paths-ignore PSArchiveFiles zipslip residual
+  - "system/src/main/java/com/percussion/util/PSArchiveFiles.java"
 
 # Per-query exclusion for documented false positives. Each entry MUST have a
 # matching row in docs/ai-generated/tasks/8.1.x-codeql-baseline/suppressions.md
