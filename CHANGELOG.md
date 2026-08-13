@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
+
+### Fixed
+
+- **EC2 instance metadata detection on IMDSv2-only hosts** (#1) — `PSPubServerService.isEC2Instance()` and `PSAmazonS3DeliveryHandler.isEC2Instance()` used to probe `http://169.254.169.254/latest/meta-data/` with a plain IMDSv1-style GET. On Amazon Linux 2023+ and other AMIs with `HttpTokens=required`, that probe fails and the host is treated as non-EC2, forcing operators to set static Access Key / Secret even when using an EC2 instance profile (with or without Assume Role). Both probe paths now delegate to a new `PSEc2InstanceMetadataClient` (`system/business/.../PSEc2InstanceMetadataClient.java`) that performs the IMDSv2 token flow (`PUT /latest/api/token` with `X-aws-ec2-metadata-token-ttl-seconds`, then `GET` with `X-aws-ec2-metadata-token`) and falls back to IMDSv1 only when the token endpoint is not available. The result is cached for the JVM lifetime, the first probe is gated by a `CountDownLatch` so concurrent callers wait for the same result instead of racing two IMDS probes, and `PSPubServerService` / `PSAmazonS3DeliveryHandler` are pure delegates (no second JVM cache layer).
+- **S3 publish server save rejects empty AWS credentials on non-EC2 hosts** (#1) — `PSPubServerService.validatePropertiesByDriver` no longer rejects missing Access Key / Secret Key on save. Operators can leave them empty when relying on an EC2 instance profile (with or without Assume Role + ARN). The runtime `PSAmazonS3DeliveryHandler.getAmazonS3Client` now fails fast with an explicit `PSDeliveryException` when neither EC2 nor Assume Role is available and the static keys are blank, so the publish error is clear instead of a confusing auth failure on the first S3 API call. The UI (PercPublishMinuetView) downgrades the post-save success footer alert to a warning alert when S3 is selected and the Access Key / Secret Key are empty, so operators are still informed that the publish will fail at runtime on non-EC2 hosts.
+
+### Added
+
+- **IMDSv2-aware metadata client** — `system/business/src/com/percussion/rx/delivery/impl/PSEc2InstanceMetadataClient.java` with `MetadataTransport` indirection for testability, JVM-lifetime result cache, IMDSv2 → IMDSv1 fallback, `CountDownLatch` for concurrent first-call, and a `resetCache()` hook for tests / ops.
+- **IMDSv2 unit tests** — `system/Testing/src/com/percussion/rx/delivery/impl/PSEc2InstanceMetadataClientTest.java` covering IMDSv2 success, IMDSv1 fallback when token PUT is rejected, non-EC2 connection-refused, IMDSv2 metadata GET failure with IMDSv1 also failing, result caching, concurrent first-call (single probe), and `resetCache()` re-probing.
+
+### Notes
+
+- AL2023+ defaults require `HttpPutResponseHopLimit >= 2` when running inside a container; operate-side documentation should mention this alongside the code fix.
+- The optional follow-up to support DefaultCredentialsProvider / IRSA-style auth for non-EC2 hosts is not in scope here and remains a separate work item.
+- Legacy `WebUI/war/views/PublishView.js` does not share the missing-S3-credentials warning; the warning is only surfaced in the Minuet (`PercPublishMinuetView.js`) save path.
+
 ## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
 ### Added (Task 2 — LDAP injection)
