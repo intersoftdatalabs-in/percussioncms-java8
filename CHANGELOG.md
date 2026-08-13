@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-13
+
+### Changed (Issue #5 — MySQL 8 auth / purge legacy mysql-connector-java 5.1.x)
+
+- **MySQL driver class updated to `com.mysql.cj.jdbc.Driver`** across the product. Connector/J 5.1.x (`com.mysql.jdbc.Driver`) only supports `mysql_native_password` and fails Hikari pool init against MySQL 8 with `caching_sha2_password` (default plugin since MySQL 8.0). The modern class is now used in:
+  - `system/config/config.xml`, `system/bin/config/config.xml` (`PSXJdbcDriverConfig`).
+  - `system/services/.../PSDatabasePubServer.java` enum.
+  - `modules/utils/.../RxInstaller.properties` (DB type → driver map).
+  - `modules/TableFactory/.../PSTDToolDialogResources.properties` (PSTDTool driver dropdown).
+  - `modules/perc-ant/.../PSExecDTSSqlStmt.java` (added new case, kept legacy case for back-compat).
+  - `modules/perc-ant/src/test/.../TestUpdateRxRepositoryProperties.java` and `rx-ds.xml.mysql` test fixture.
+  - `projects/sitemanage` test fixtures (`PSServerConfigUpdaterTest-config.xml`, `rx-ds.xml`).
+  - `deliverytiersuite/.../p13n-ds/src-sql/soln-p13n.mysql.xml` and `jdbc.mysql.properties`.
+- **Pinned `com.mysql:mysql-connector-j:8.4.0`** as the product MySQL JDBC driver (Java 8 compatible; last 8.x line before the 9.x cutover to JDK 17). Declared in:
+  - `deliverytiersuite/delivery-tier-suite/pom.xml` (`<mysql.connector.version>8.4.0</mysql.connector.version>` + `dependencyManagement`).
+  - `deliverytiersuite/.../DTS-shared-dependencies/pom.xml` (provided scope).
+  - `deliverytiersuite/.../delivery-tier-distribution/pom.xml` (3 dependency sections: top-level + shared + tomcat9-cargo).
+  - `deliverytiersuite/.../delivery-tier-distribution/src/main/tomcat9/conf/catalina.properties` (`tomcat.util.scan.StandardJarScanFilter.jarsToSkip` includes `mysql-connector-j-*.jar` and `mysql-connector-java-*.jar`).
+- **Bundled MySQL JDBC upgraded.** `system/Tools/mysql/mysql-connector-java-8.0.18.jar` (legacy artifact name) replaced with `system/Tools/mysql/mysql-connector-j-8.4.0.jar`; the dev install path in `modules/perc-distribution-tree/src/main/resources/installDistributionFiles.xml` now copies the renamed JAR to `${assembly-directory}/jetty/base/lib/jdbc/mysql-connector.jar`.
+- **MariaDB Connector/J bumped 3.5.7 → 3.5.10** (last 3.x line that fully supports Java 8 LTS). Pinned in `deliverytiersuite/.../pom.xml`.
+- **DTS installer purges obsolete MySQL Connector/J 5.1.x** on install/upgrade. `deliverytiersuite/.../delivery-tier-distribution/src/main/rootFiles/rxconfig/Installer/installDts.xml` now deletes `mysql-connector-java-5*.jar`, `mysql-connector-java-6*.jar`, `mysql-connector-java-7*.jar` from `Deployment/Server/common/lib`, `Deployment/Server/lib`, and `Deployment/Server/perc-lib` *before* restoring the operator backup, with `failonerror="false"` so the install still completes if no legacy JAR is present. The backup-restore wildcard was tightened to `mysql-connector-j-*.jar` so a legacy 5.x backup cannot silently re-introduce the broken driver.
+- **Legacy runtime classpath references updated** (`system/installResources/install.sh`, `system/release/tomcat/TomcatWindowsFiles/bin/runTd.bat`, `system/release/tomcat/TomcatSolarisFiles/bin/runTd.sh` now point at `mysql-connector-j-8.4.0.jar`).
+- **Docs updated** (`deliverytiersuite/.../p13n-ds/src-sql/readme.txt`, `readme.htm`, `deliverytiersuite/.../delivery-tier-distribution/src/main/conf/perc/perc-datasources.properties.sample`).
+
+### Notes
+
+- Customers still pinning `mysql_native_password` after the upgrade (the prior workaround from the issue) can optionally revert to `caching_sha2_password` now that a modern driver ships — no product action required.
+- Connector/J 9.x dropped Java 8 support; 8.4.0 is the last 8.x release line that runs on JDK 8.
+- MariaDB Connector/J 3.5.x does **not** accept `jdbc:mysql://…` URLs by default (and that behaviour is preserved here). MySQL customers continue to use `jdbc:mysql://…` with `com.mysql.cj.jdbc.Driver`; MariaDB customers use `jdbc:mariadb://…` with `org.mariadb.jdbc.Driver`. The product no longer ships the legacy Connector/J 5.1.x in either path.
+- Related sister PR on the main Java 21 line: intersoftdatalabs-in/percussioncms#1388.
+- The pre-existing compile error in `modules/perc-distribution-tree/.../Main.java:283` (`cannot find symbol: entryDest`) introduced by commit `efd14b2364` (zip-slip Task 5) is **not** addressed by this PR; it is left for a separate fix on `main`.
+
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
 ### Fixed (Task 8 — tainted-numeric-cast)
@@ -40,16 +72,16 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive entries through `ZipSlipGuard.safeDestFile(extractDir, entryName)` before any `mkdirs` / `FileOutputStream` / `Files.copy`, plus an analyzer-visible dominating `indexOf("..")` / `startsWith("/")` check on the raw `ZipEntry.getName()` and a canonical-path containment check at each sink (CodeQL does not load local model packs, so `ZipSlipGuard` alone is invisible to `java/zipslip`). The 3 residual GHAS sinks are also listed in `.github/codeql/codeql-config.yml` `paths-ignore`:
 
-| Alert | Sink | Module |
-|---|---|---|
-| #501 | `PSArchiveFiles.java:352` | `system/` |
-| #500 | `PSInstallRxApp.java:85` | `system/tools/` |
-| #499 | `InstallRxApp.java:85` | `system/tools/` |
-| #498 | `RxExtractJarFiles.java:75` | `system/release/Install/` |
-| #497 | `PSWidgetPackageBuilder.java:125` | `projects/sitemanage/` |
-| #496 | `Main.java:238` | `modules/perc-distribution-tree/` |
-| #495 | `PSExtractJarFiles.java:73` | `modules/perc-ant/` |
-| #494 | `MainDTSPreInstall.java:194` | `deliverytiersuite/.../delivery-tier-distribution/` |
+| Alert |               Sink                |                       Module                        |
+|-------|-----------------------------------|-----------------------------------------------------|
+| #501  | `PSArchiveFiles.java:352`         | `system/`                                           |
+| #500  | `PSInstallRxApp.java:85`          | `system/tools/`                                     |
+| #499  | `InstallRxApp.java:85`            | `system/tools/`                                     |
+| #498  | `RxExtractJarFiles.java:75`       | `system/release/Install/`                           |
+| #497  | `PSWidgetPackageBuilder.java:125` | `projects/sitemanage/`                              |
+| #496  | `Main.java:238`                   | `modules/perc-distribution-tree/`                   |
+| #495  | `PSExtractJarFiles.java:73`       | `modules/perc-ant/`                                 |
+| #494  | `MainDTSPreInstall.java:194`      | `deliverytiersuite/.../delivery-tier-distribution/` |
 
 ### Notes
 
@@ -92,17 +124,17 @@ All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive 
 
 All 9 open CodeQL `java/sql-injection` High alerts on 8.1.x closed by routing every SQL/HQL construct and execute sink through the `SecureStringUtils` SQL guards brought in by PR #9. The helpers were already on the branch; this PR applies them at the 9 sink call-sites the cluster map identifies. GHAS Default Setup does not load the in-repo model packs, so the three residual Hibernate `createQuery` / `createSQLQuery` sinks also wrap every concatenated user token, carry a sink-line `// codeql[java/sql-injection]` comment, and are listed in `.github/codeql/codeql-config.yml` `paths-ignore` (runtime guards stay).
 
-| Alert | Sink | Module | Guard applied |
-|---|---|---|---|
-| #527 | `PSContentMgr.findItemsByLocalFieldValue:698` | `system/services` | `requireSafeMetadataToken` (fieldValue) + `requireFactorySqlStatement` (composed SQL) |
-| #526 | `PSPageDaoHelper.getContentIdsForFetchingByStatus:433` | `projects/sitemanage` | `requireFactorySqlStatement` (composed SQL) |
-| #525 | `PSSQLStatement.executeQuery:90` / `executeUpdate:99` | `modules/utils` | `requireSingleSqlStatement` |
-| #524 | `PSOSimpleSqlQuery.doQuery:95` | `modules/perc-toolkit` | `requireSingleSqlStatement` |
-| #523 | `PSJdbcTableMetaData.loadKeyInformation:469` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableName, schema) |
-| #522 | `PSJdbcTableMetaData.loadColumnInformation:364` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableName, schema) |
-| #521 | `PSJdbcTableFactory.hasRows:1227` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableSchema.getName) |
-| #520 | `PSJdbcResultSetIteratorStep.execute:100` | `modules/TableFactory` | `requireFactorySqlStatement` (m_statement) |
-| #519 | `PSMetadataQueryService.doQuery:598` | `deliverytiersuite/.../metadata` | `requireSafeMetadataToken` (criteria names) + `requireFactorySqlStatement` (composed HQL) |
+| Alert |                          Sink                          |              Module              |                                       Guard applied                                       |
+|-------|--------------------------------------------------------|----------------------------------|-------------------------------------------------------------------------------------------|
+| #527  | `PSContentMgr.findItemsByLocalFieldValue:698`          | `system/services`                | `requireSafeMetadataToken` (fieldValue) + `requireFactorySqlStatement` (composed SQL)     |
+| #526  | `PSPageDaoHelper.getContentIdsForFetchingByStatus:433` | `projects/sitemanage`            | `requireFactorySqlStatement` (composed SQL)                                               |
+| #525  | `PSSQLStatement.executeQuery:90` / `executeUpdate:99`  | `modules/utils`                  | `requireSingleSqlStatement`                                                               |
+| #524  | `PSOSimpleSqlQuery.doQuery:95`                         | `modules/perc-toolkit`           | `requireSingleSqlStatement`                                                               |
+| #523  | `PSJdbcTableMetaData.loadKeyInformation:469`           | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableName, schema)                                          |
+| #522  | `PSJdbcTableMetaData.loadColumnInformation:364`        | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableName, schema)                                          |
+| #521  | `PSJdbcTableFactory.hasRows:1227`                      | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableSchema.getName)                                        |
+| #520  | `PSJdbcResultSetIteratorStep.execute:100`              | `modules/TableFactory`           | `requireFactorySqlStatement` (m_statement)                                                |
+| #519  | `PSMetadataQueryService.doQuery:598`                   | `deliverytiersuite/.../metadata` | `requireSafeMetadataToken` (criteria names) + `requireFactorySqlStatement` (composed HQL) |
 
 ### Fixed (build)
 

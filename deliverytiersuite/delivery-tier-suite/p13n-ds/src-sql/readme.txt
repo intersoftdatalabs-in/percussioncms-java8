@@ -74,7 +74,7 @@ Configure for MySQL Server
 ===========================
 
 #. Create default visitor & profile tables with the SQL statement in ``visitor_profile.mysql.sql``
-#. Download ``mysql-connector-java-5.1.12-bin.jar`` and copy it to ``$CATALINA_HOME/lib``
+#. Download ``mysql-connector-j-8.4.0.jar`` (or later Connector/J 8.x compatible with MySQL 8 auth) and copy it to ``$CATALINA_HOME/lib``
 #. Copy ``soln-p13n.mysql.xml`` to ``$CATALINA_HOME/conf/Catalina/localhost/soln-p13n.xml``
 #. Modify above ``soln-p13n.xml`` as needed, such as server name, database name, password, ...etc.
 #. Modify ``soln-p13n.war/WEB-INF/classes/soln-p13n.properties``, to comment out properties defined in `Database Configation Properties`_.

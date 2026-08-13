@@ -41,7 +41,8 @@
         <jfx.version>11.0.2</jfx.version>
         <jrds.version>1.3.1</jrds.version>
         <liquibase-core.version>4.33.0</liquibase-core.version>
-        <mariadb.version>3.5.7</mariadb.version>
+        <mariadb.version>3.5.10</mariadb.version>
+        <mysql.connector.version>8.4.0</mysql.connector.version>
         <servlet.api.version>4.0.1</servlet.api.version>
         <servlet.spec>3.1.0</servlet.spec>
         <spring.security.version>5.8.16</spring.security.version>
@@ -52,6 +53,11 @@
     </properties>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
+                <version>${mysql.connector.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.liquibase</groupId>
                 <artifactId>liquibase-core</artifactId>

@@ -537,26 +537,47 @@
                             </if>
                         </then>
                     </if>
+                    <!-- Issue #5: purge legacy mysql-connector-java 5.1.x (com.mysql.jdbc.*)
+                         that lacks caching_sha2_password support required by MySQL 8.
+                         The modern com.mysql.cj.jdbc.Driver is restored below from the backup. -->
+                    <echo>Purging legacy mysql-connector-java 5.1.x from managed JDBC classpath..............</echo>
+                    <delete verbose="true" failonerror="false">
+                        <fileset dir="${install.dir}${staging.dir}/Deployment/Server/common/lib">
+                            <include name="mysql-connector-java-5*.jar"/>
+                            <include name="mysql-connector-java-6*.jar"/>
+                            <include name="mysql-connector-java-7*.jar"/>
+                        </fileset>
+                        <fileset dir="${install.dir}${staging.dir}/Deployment/Server/lib">
+                            <include name="mysql-connector-java-5*.jar"/>
+                            <include name="mysql-connector-java-6*.jar"/>
+                            <include name="mysql-connector-java-7*.jar"/>
+                        </fileset>
+                        <fileset dir="${install.dir}${staging.dir}/Deployment/Server/perc-lib">
+                            <include name="mysql-connector-java-5*.jar"/>
+                            <include name="mysql-connector-java-6*.jar"/>
+                            <include name="mysql-connector-java-7*.jar"/>
+                        </fileset>
+                    </delete>
                     <!-- Restore mysql-connector if present -->
                     <echo>Restore mysql-connector if present in Server/common/lib.....................</echo>
                     <copy todir="${install.dir}${staging.dir}/Deployment/Server/common/lib"
                           verbose="true" failonerror="false">
                         <fileset dir="${new.backup.dir}${staging.dir}/Server/common/lib">
-                            <include name="mysql-connector*.jar"/>
+                            <include name="mysql-connector-j-*.jar"/>
                         </fileset>
                     </copy>
                     <echo>Restore mysql-connector if present in Server/perc-lib again on re-upgrading upgraded environment............................................</echo>
                     <copy todir="${install.dir}${staging.dir}/Deployment/Server/common/lib"
                           verbose="true" failonerror="false">
                         <fileset dir="${new.backup.dir}${staging.dir}/Server/perc-lib">
-                            <include name="mysql-connector*.jar"/>
+                            <include name="mysql-connector-j-*.jar"/>
                         </fileset>
                     </copy>
                     <echo>Restore mysql-connector if present in Server/lib re-upgrading upgraded environment............................................</echo>
                     <copy todir="${install.dir}${staging.dir}/Deployment/Server/common/lib"
                           verbose="true" failonerror="false">
                         <fileset dir="${new.backup.dir}${staging.dir}/Server/lib">
-                            <include name="mysql-connector*.jar"/>
+                            <include name="mysql-connector-j-*.jar"/>
                         </fileset>
                     </copy>
                     <copy todir="${install.dir}${staging.dir}" overwrite="true" force="true" verbose="true">

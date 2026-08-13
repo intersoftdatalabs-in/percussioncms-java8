@@ -27,7 +27,7 @@ db.schema=APP
 # the JDBC driver class name
 # "Oracle" - oracle.jdbc.driver.OracleDriver
 #  MariaDB"  - org.mariadb.jdbc.Driver
-#  MySQL 5.7 - com.mysql.jdbc.Driver
+#  MySQL 5.7 / 8.x - com.mysql.cj.jdbc.Driver (requires mysql-connector-j 8.x)
 #  MySQL 8.0 - com.mysql.cj.jdbc.Driver
 # "MS SQL" - com.microsoft.sqlserver.jdbc.SQLServerDriver
 # "Derby"  - org.apache.derby.jdbc.ClientDriver

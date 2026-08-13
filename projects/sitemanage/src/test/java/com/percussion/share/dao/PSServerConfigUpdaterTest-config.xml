@@ -28,7 +28,7 @@
       <PSXJdbcDriverConfig driverName="oracle:thin" className="oracle.jdbc.driver.OracleDriver" containerTypeMapping="Oracle8"/>
       <PSXJdbcDriverConfig driverName="jtds:sqlserver" className="net.sourceforge.jtds.jdbc.Driver" containerTypeMapping="MS SQLSERVER2000"/>
       <PSXJdbcDriverConfig driverName="db2" className="com.ibm.db2.jcc.DB2Driver" containerTypeMapping="DB2"/>
-      <PSXJdbcDriverConfig driverName="mysql" className="com.mysql.jdbc.Driver" containerTypeMapping="MYSQL"/>
+      <PSXJdbcDriverConfig driverName="mysql" className="com.mysql.cj.jdbc.Driver" containerTypeMapping="MYSQL"/>
       <PSXJdbcDriverConfig driverName="derby" className="org.apache.derby.jdbc.ClientDriver" containerTypeMapping="DERBY"/>
    </JdbcDriverConfigs>
    <SecurityProviders>

@@ -147,7 +147,7 @@ public class TestUpdateRxRepositoryProperties {
     assertEquals("jdbc/RhythmyxData", props.getProperty(PSJdbcDbmsDef.DSCONFIG_NAME));
     assertEquals("MYSQL", props.getProperty(PSJdbcDbmsDef.DB_BACKEND_PROPERTY));
     assertEquals(
-        "com.mysql.jdbc.Driver", props.getProperty(PSJdbcDbmsDef.DB_DRIVER_CLASS_NAME_PROPERTY));
+        "com.mysql.cj.jdbc.Driver", props.getProperty(PSJdbcDbmsDef.DB_DRIVER_CLASS_NAME_PROPERTY));
     assertEquals("", props.getProperty(PSJdbcDbmsDef.DB_NAME_PROPERTY));
     assertEquals("", props.getProperty(PSJdbcDbmsDef.UID_PROPERTY));
     assertEquals("", props.getProperty(PSJdbcDbmsDef.PWD_PROPERTY));
