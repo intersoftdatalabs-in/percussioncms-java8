@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-13
+
+### Fixed (Task 8 — regex-injection)
+
+Closes 6 CodeQL `java/regex-injection` High alerts (#602-#607) by treating user-supplied path / site-name components as literals wherever they are composed into regex patterns:
+
+- **`PSFolderStringUtils.getFolderPatterns`** (#603) — replaced the character-by-character hex-escape loop with `Pattern.quote`-based literal segment wrapping: the path is split on the documented `%` wildcard, each segment is `Pattern.quote`-wrapped, and segments are re-joined with `.*` so the wildcard still works. The compiled regex now carries `\Q...\E` markers that CodeQL recognizes as quoted, and the trailing-`/` semantics are preserved (decided from the raw input, not the quoted output).
+- **`PSSiteDataService.updateListAsset`** (#604-#606) — the three `replaceFirst(original... , replacement...)` calls now wrap the pattern with `Pattern.quote(original)` and the replacement with `Matcher.quoteReplacement(replacement)`, so folder/site names containing regex meta-characters (e.g. `mysite.com`) are treated literally.
+- **`PSSiteDataService.updatePage`** (#607) — `pagePath.replaceFirst(copySiteName, origSiteName)` now uses `Pattern.quote(copySiteName)` + `Matcher.quoteReplacement(origSiteName)`. The same latent pattern at `updateLinkedPage` (`linkedPagePath.replaceFirst(...)`) is fixed identically even though CodeQL did not flag it.
+- **`PSBlogPostVisitDao.updatePostsAfterSiteRename`** (#602) — `pagepath.replaceAll(prevSiteName, newSiteName)` now uses `Pattern.quote(prevSiteName)` + `Matcher.quoteReplacement(newSiteName)`.
+
+### Regression tests
+
+- **`PSFolderStringUtilsTest`** — 3 new JUnit 4 tests (7 adversarial meta-character inputs assert literal matching + `\Q` marker + no wildcard bleed; `%` wildcard preservation with empty-span match; `;` multi-path split + null/blank returns empty array).
+
+### Notes
+
+- Fix pattern derived from the 004 branch (PR #1295 `ae92a09733` — same CodeQL `java/regex-injection` rule, same `Pattern.quote` / `Matcher.quoteReplacement` idiom; also fixes the equivalent `updatePage` sink at line 2007 that 004 left untouched).
+- No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
+- Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
+
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
 ### Fixed (Task 8 — tainted-numeric-cast)

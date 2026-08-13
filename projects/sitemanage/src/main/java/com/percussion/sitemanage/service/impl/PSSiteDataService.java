@@ -127,6 +127,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
@@ -1796,12 +1798,17 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
         if (replaceVal != null) {
           for (String original : replaceMappings.keySet()) {
             String replacement = replaceMappings.get(original);
+            // Pattern.quote / Matcher.quoteReplacement treat the path components as literals;
+            // without them a site/folder name containing regex meta-characters would be
+            // interpreted as a pattern (CodeQL java/regex-injection, alerts #604-#606).
+            String quotedOriginal = Pattern.quote(original);
+            String quotedReplacement = Matcher.quoteReplacement(replacement);
             if (replaceVal.contains(original + '/')) {
-              replaceVal = replaceVal.replaceFirst(original + '/', replacement + '/');
+              replaceVal = replaceVal.replaceFirst(quotedOriginal + '/', quotedReplacement + '/');
             } else if (replaceVal.contains(original + '%')) {
-              replaceVal = replaceVal.replaceFirst(original + '%', replacement + '%');
+              replaceVal = replaceVal.replaceFirst(quotedOriginal + '%', quotedReplacement + '%');
             } else {
-              replaceVal = replaceVal.replaceFirst(original, replacement);
+              replaceVal = replaceVal.replaceFirst(quotedOriginal, quotedReplacement);
             }
           }
 
@@ -1875,7 +1882,9 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
       String copySiteName = copySite.getName();
       String origSiteName = origSite.getName();
 
-      String origPagePath = pagePath.replaceFirst(copySiteName, origSiteName);
+      String origPagePath =
+          pagePath.replaceFirst(
+              Pattern.quote(copySiteName), Matcher.quoteReplacement(origSiteName));
       PSPage origPage = pageDao.findPageByPath(origPagePath);
 
       Collection<String> assetIds = null;
@@ -2004,7 +2013,9 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
           if (linkedSite != null && linkedSite.getId().equals(origSite.getId())) {
             // page is under the original site, need to update the link
             // to point to copied page
-            String copyPagePath = linkedPagePath.replaceFirst(origSite.getName(), copySiteName);
+            String copyPagePath =
+                linkedPagePath.replaceFirst(
+                    Pattern.quote(origSite.getName()), Matcher.quoteReplacement(copySiteName));
             PSPage copyPage = pageDao.findPageByPath(copyPagePath);
             if (copyPage != null) {
               widgetAssetRelationshipService.updateSharedRelationshipDependent(
