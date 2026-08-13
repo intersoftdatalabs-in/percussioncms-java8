@@ -6,6 +6,13 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
+### Fixed (Task 8 — tainted-numeric-cast)
+
+- **`java/tainted-numeric-cast` in PSGuid 3-component constructor** (#430, critical) — added an explicit int-range guard around the long->int narrowing cast in `PSGuid.assemble(String, PSTypeEnum, boolean)`. The `typeid` component was previously parsed as long and cast directly to int for `PSTypeEnum.valueOf` lookup, which CodeQL flags as a tainted narrowing conversion. The new guard rejects out-of-range input with a clear `IllegalArgumentException` (`Type id out of range for PSTypeEnum ordinal: ...`) instead of the previous generic `type cannot be null` error from `assemble()`. Behaviour for valid in-range input is unchanged.
+- **Tainted-numeric-cast regression test** — `modules/utils/src/test/java/com/percussion/services/guidmgr/data/PSGuidTaintedNumericCastTest.java` (JUnit 4, 4 cases): in-range accept, above-Integer.MAX_VALUE reject, below-Integer.MIN_VALUE reject, in-range-but-unmatched-ordinal reject.
+
+## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
+
 ### Fixed
 
 - **EC2 instance metadata detection on IMDSv2-only hosts** (#1) — `PSPubServerService.isEC2Instance()` and `PSAmazonS3DeliveryHandler.isEC2Instance()` used to probe `http://169.254.169.254/latest/meta-data/` with a plain IMDSv1-style GET. On Amazon Linux 2023+ and other AMIs with `HttpTokens=required`, that probe fails and the host is treated as non-EC2, forcing operators to set static Access Key / Secret even when using an EC2 instance profile (with or without Assume Role). Both probe paths now delegate to a new `PSEc2InstanceMetadataClient` (`system/business/.../PSEc2InstanceMetadataClient.java`) that performs the IMDSv2 token flow (`PUT /latest/api/token` with `X-aws-ec2-metadata-token-ttl-seconds`, then `GET` with `X-aws-ec2-metadata-token`) and falls back to IMDSv1 only when the token endpoint is not available. The result is cached for the JVM lifetime, the first probe is gated by a `CountDownLatch` so concurrent callers wait for the same result instead of racing two IMDS probes, and `PSPubServerService` / `PSAmazonS3DeliveryHandler` are pure delegates (no second JVM cache layer).
