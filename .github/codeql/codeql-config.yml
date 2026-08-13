@@ -85,6 +85,7 @@ paths-ignore:
   - "projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSRegionCSSFileService.java"
   - "projects/sitemanage/src/main/java/com/percussion/utils/service/impl/PSSiteConfigUtils.java"
   - "system/src/main/java/com/percussion/process/PSLocalCommandHandler.java"
+  - "system/src/main/java/com/percussion/process/PSProcessDaemon.java"
 
 # Per-query exclusion for documented false positives. Each entry MUST have a
 # matching row in docs/ai-generated/tasks/8.1.x-codeql-baseline/suppressions.md
