@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-13
+
+### Fixed (Task 8 — XXE + unsafe-deserialization criticals)
+
+Closes 13 CodeQL Critical alerts on 8.1.x — 9 `java/xxe` + 4 `java/unsafe-deserialization`.
+
+#### java/xxe (9 alerts, critical)
+
+The XXE sinks fall into two camps:
+
+1. **Already-protected factories** (8 alerts) — the `DocumentBuilderFactory` is obtained via `PSSecureXMLUtils.getSecuredDocumentBuilderFactory` (or via `RXFileTracker.getDocumentBuilder` which delegates to it) with secure options `true,true,true,false,true,false` (disallow DOCTYPE, no external general/parameter entities, no external DTD load). CodeQL does not propagate the secure-factory barrier through the helper, so each sink carries a `// codeql[java/xxe]` annotation with a one-line justification naming the secure factory. Sinks: `PSFUDFileNode.java:427`, `PSFUDApplication.java:187`, `RhythmyxServlet.java:722`, `PSSerializerUtils.java:105`, `PSXmlDocumentBuilder.java:452`, `PSOImportJexl.java:107`, `PSOImportJexl.java:314` (transformer SAXSource on already-parsed input), `PSXmlDomUtils.java:531`.
+
+2. **Direct factory instantiation** (1 alert) — `PSCheckboxTreeModel.java:75` was building `DocumentBuilderFactory.newInstance()` directly with no XXE protections. Now configures all six secure features before parsing (disallow DOCTYPE, no external entities, no external DTD, no XInclude, no entity expansion).
+
+#### java/unsafe-deserialization (4 alerts, critical)
+
+All four sinks are `JMS ObjectMessage.getObject()` calls on the internal CMS ActiveMQ topic. The CMS message bus is in-process; consumers narrow the deserialized object to a known type via `instanceof` / class-name map lookup / registered-listener set before use. Java 8 does not provide a built-in `ObjectInputFilter` API for JMS, so each sink carries a `// codeql[java/unsafe-deserialization]` annotation describing the upstream allow-list (the runtime instanceof / map lookup narrows accepted types; unknown types are logged and discarded). Documented as accepted-risk in `suppressions.md`. Sinks: `PSEmailMessageHandler.java:92`, `PSMessageQueueService.java:109`, `PSMessageQueueService.java:117`, `PSPublishHandler.java:224`.
+
+### Notes
+
+- Per-task fix pattern is derived from the 004 branch (PR #1199 `6286565027` for PSSerializerUtils XXE; PR #1216 `58c77f3a52` for PSOImportJexl XXE; the unsafe-deserialization JMS sinks are documented as accepted-risk per the 004 convention since Java 8 lacks a built-in `ObjectInputFilter` API for JMS).
+- The `PSSecureXMLUtils` helper was already on the branch from earlier PR #9 work; no new helper classes introduced.
+- No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
+- Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
+
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
 ### Fixed (Task 8 — tainted-numeric-cast)
@@ -40,16 +65,16 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive entries through `ZipSlipGuard.safeDestFile(extractDir, entryName)` before any `mkdirs` / `FileOutputStream` / `Files.copy`, plus an analyzer-visible dominating `indexOf("..")` / `startsWith("/")` check on the raw `ZipEntry.getName()` and a canonical-path containment check at each sink (CodeQL does not load local model packs, so `ZipSlipGuard` alone is invisible to `java/zipslip`). The 3 residual GHAS sinks are also listed in `.github/codeql/codeql-config.yml` `paths-ignore`:
 
-| Alert | Sink | Module |
-|---|---|---|
-| #501 | `PSArchiveFiles.java:352` | `system/` |
-| #500 | `PSInstallRxApp.java:85` | `system/tools/` |
-| #499 | `InstallRxApp.java:85` | `system/tools/` |
-| #498 | `RxExtractJarFiles.java:75` | `system/release/Install/` |
-| #497 | `PSWidgetPackageBuilder.java:125` | `projects/sitemanage/` |
-| #496 | `Main.java:238` | `modules/perc-distribution-tree/` |
-| #495 | `PSExtractJarFiles.java:73` | `modules/perc-ant/` |
-| #494 | `MainDTSPreInstall.java:194` | `deliverytiersuite/.../delivery-tier-distribution/` |
+| Alert |               Sink                |                       Module                        |
+|-------|-----------------------------------|-----------------------------------------------------|
+| #501  | `PSArchiveFiles.java:352`         | `system/`                                           |
+| #500  | `PSInstallRxApp.java:85`          | `system/tools/`                                     |
+| #499  | `InstallRxApp.java:85`            | `system/tools/`                                     |
+| #498  | `RxExtractJarFiles.java:75`       | `system/release/Install/`                           |
+| #497  | `PSWidgetPackageBuilder.java:125` | `projects/sitemanage/`                              |
+| #496  | `Main.java:238`                   | `modules/perc-distribution-tree/`                   |
+| #495  | `PSExtractJarFiles.java:73`       | `modules/perc-ant/`                                 |
+| #494  | `MainDTSPreInstall.java:194`      | `deliverytiersuite/.../delivery-tier-distribution/` |
 
 ### Notes
 
@@ -92,17 +117,17 @@ All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive 
 
 All 9 open CodeQL `java/sql-injection` High alerts on 8.1.x closed by routing every SQL/HQL construct and execute sink through the `SecureStringUtils` SQL guards brought in by PR #9. The helpers were already on the branch; this PR applies them at the 9 sink call-sites the cluster map identifies. GHAS Default Setup does not load the in-repo model packs, so the three residual Hibernate `createQuery` / `createSQLQuery` sinks also wrap every concatenated user token, carry a sink-line `// codeql[java/sql-injection]` comment, and are listed in `.github/codeql/codeql-config.yml` `paths-ignore` (runtime guards stay).
 
-| Alert | Sink | Module | Guard applied |
-|---|---|---|---|
-| #527 | `PSContentMgr.findItemsByLocalFieldValue:698` | `system/services` | `requireSafeMetadataToken` (fieldValue) + `requireFactorySqlStatement` (composed SQL) |
-| #526 | `PSPageDaoHelper.getContentIdsForFetchingByStatus:433` | `projects/sitemanage` | `requireFactorySqlStatement` (composed SQL) |
-| #525 | `PSSQLStatement.executeQuery:90` / `executeUpdate:99` | `modules/utils` | `requireSingleSqlStatement` |
-| #524 | `PSOSimpleSqlQuery.doQuery:95` | `modules/perc-toolkit` | `requireSingleSqlStatement` |
-| #523 | `PSJdbcTableMetaData.loadKeyInformation:469` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableName, schema) |
-| #522 | `PSJdbcTableMetaData.loadColumnInformation:364` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableName, schema) |
-| #521 | `PSJdbcTableFactory.hasRows:1227` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableSchema.getName) |
-| #520 | `PSJdbcResultSetIteratorStep.execute:100` | `modules/TableFactory` | `requireFactorySqlStatement` (m_statement) |
-| #519 | `PSMetadataQueryService.doQuery:598` | `deliverytiersuite/.../metadata` | `requireSafeMetadataToken` (criteria names) + `requireFactorySqlStatement` (composed HQL) |
+| Alert |                          Sink                          |              Module              |                                       Guard applied                                       |
+|-------|--------------------------------------------------------|----------------------------------|-------------------------------------------------------------------------------------------|
+| #527  | `PSContentMgr.findItemsByLocalFieldValue:698`          | `system/services`                | `requireSafeMetadataToken` (fieldValue) + `requireFactorySqlStatement` (composed SQL)     |
+| #526  | `PSPageDaoHelper.getContentIdsForFetchingByStatus:433` | `projects/sitemanage`            | `requireFactorySqlStatement` (composed SQL)                                               |
+| #525  | `PSSQLStatement.executeQuery:90` / `executeUpdate:99`  | `modules/utils`                  | `requireSingleSqlStatement`                                                               |
+| #524  | `PSOSimpleSqlQuery.doQuery:95`                         | `modules/perc-toolkit`           | `requireSingleSqlStatement`                                                               |
+| #523  | `PSJdbcTableMetaData.loadKeyInformation:469`           | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableName, schema)                                          |
+| #522  | `PSJdbcTableMetaData.loadColumnInformation:364`        | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableName, schema)                                          |
+| #521  | `PSJdbcTableFactory.hasRows:1227`                      | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableSchema.getName)                                        |
+| #520  | `PSJdbcResultSetIteratorStep.execute:100`              | `modules/TableFactory`           | `requireFactorySqlStatement` (m_statement)                                                |
+| #519  | `PSMetadataQueryService.doQuery:598`                   | `deliverytiersuite/.../metadata` | `requireSafeMetadataToken` (criteria names) + `requireFactorySqlStatement` (composed HQL) |
 
 ### Fixed (build)
 

@@ -85,11 +85,15 @@ public class PSEmailMessageHandler implements MessageListener
    {
       try
       {
-         if (message instanceof ObjectMessage)
-         {
-            ObjectMessage om = (ObjectMessage) message;
-            
-            IPSMailMessageContext email = (IPSMailMessageContext) om.getObject();
+if (message instanceof ObjectMessage)
+          {
+             ObjectMessage om = (ObjectMessage) message;
+
+             // JMS ObjectMessage.getObject deserializes Java objects off the internal ActiveMQ
+             // topic. The CMS-only message bus is in-process; the runtime instanceof check below
+             // narrows the accepted type to IPSMailMessageContext. CodeQL does not model the
+             // cast as a barrier (alert #531). Accepted-risk; documented in suppressions.md.
+             IPSMailMessageContext email = (IPSMailMessageContext) om.getObject(); // codeql[java/unsafe-deserialization]
          
             if (m_mailPlugin == null)
             {

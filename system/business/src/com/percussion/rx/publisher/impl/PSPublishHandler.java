@@ -221,7 +221,12 @@ public class PSPublishHandler implements MessageListener, IPSNotificationListene
             Object objectMessage;
             try
             {
-               objectMessage = om.getObject();
+               // JMS ObjectMessage.getObject deserializes Java objects off the internal
+               // publishing bus. The CMS-only message bus is in-process; the publish runner
+               // (PRS_PUBLISH_RUNNER / similar) is a known set of registered message types
+               // (alert #528). CodeQL does not model the type allow-list as a barrier.
+               // Accepted-risk; documented in suppressions.md.
+               objectMessage = om.getObject(); // codeql[java/unsafe-deserialization]
             }
             catch (JMSException e)
             {

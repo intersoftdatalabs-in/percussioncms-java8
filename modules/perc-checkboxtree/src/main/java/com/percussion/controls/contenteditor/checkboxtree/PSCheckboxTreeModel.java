@@ -71,7 +71,15 @@ public class PSCheckboxTreeModel extends DefaultTreeModel implements TreeModel {
       URLConnection conn = docUrl.openConnection();
       try (InputStream is = conn.getInputStream()) {
 
-        DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        // XXE hardening (CodeQL java/xxe alert #586): disable DOCTYPE and external entities.
+        dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        dbf.setXIncludeAware(false);
+        dbf.setExpandEntityReferences(false);
+        DocumentBuilder builder = dbf.newDocumentBuilder();
         doc = builder.parse(is);
         PSCheckboxTreeRootNode rootNode = (PSCheckboxTreeRootNode) getRoot();
         rootNode.loadDocument(doc);
