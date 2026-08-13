@@ -29,15 +29,16 @@ import com.percussion.sitemanage.importer.dao.IPSImportLogDao;
 import com.percussion.sitemanage.importer.data.PSImportLogEntry;
 import java.io.IOException;
 import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.Date;
 import java.util.List;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang.math.NumberUtils;
@@ -357,42 +358,47 @@ public class PSSiteImporter {
   }
 
   /**
-   * Override connection properties and install an all-trusting certificate manager.
+   * Override connection properties and install the JVM's default certificate manager.
    *
    * @return The URL connection properties from before, to be used in restoration.
    */
   public static URLConnectionProperties overrideConnectionProperties() {
-    TrustManager[] trustAllCerts =
-        new TrustManager[] {
-          new X509TrustManager() {
-            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-              return null;
-            }
+    // CodeQL java/insecure-trustmanager (alert #594): previously installed an all-trusting
+    // X509TrustManager that accepted any chain. Replace with the JVM's default trust managers,
+    // which validate TLS server certificates against the system trust store (cacerts).
+    // Operators who need to import a private CA / self-signed cert should add it to the JVM
+    // trust store via `keytool -importcert -alias <name> -file <cert> -cacerts`.
+    TrustManager[] defaultTrustManagers;
+    try {
+      TrustManagerFactory tmf =
+          TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+      tmf.init((KeyStore) null);
+      defaultTrustManagers = tmf.getTrustManagers();
+      if (defaultTrustManagers == null || defaultTrustManagers.length == 0) {
+        throw new GeneralSecurityException(
+            "Default TrustManagerFactory returned no trust managers (algorithm="
+                + TrustManagerFactory.getDefaultAlgorithm()
+                + ")");
+      }
+    } catch (GeneralSecurityException e) {
+      log.error("Error initializing default trust managers", e);
+      return null;
+    }
 
-            public void checkClientTrusted(
-                java.security.cert.X509Certificate[] certs, String authType) {}
-
-            public void checkServerTrusted(
-                java.security.cert.X509Certificate[] certs, String authType) {}
-          }
-        };
-
-    // Install the all-trusting trust manager
+    // Install the default trust manager
     try {
       SSLContext sc = SSLContext.getInstance("TLS");
-      sc.init(null, trustAllCerts, new java.security.SecureRandom());
+      sc.init(null, defaultTrustManagers, new java.security.SecureRandom());
 
       URLConnectionProperties connectionData = new URLConnectionProperties();
       connectionData.setDefaultSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
       connectionData.setDefaultHostnameVerifier(HttpsURLConnection.getDefaultHostnameVerifier());
 
       HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-      HttpsURLConnection.setDefaultHostnameVerifier(
-          new HostnameVerifier() {
-            public boolean verify(String urlHostName, SSLSession session) {
-              return true;
-            }
-          });
+      // Keep the JVM default HostnameVerifier (RFC 2818 host matching). Do not install an
+      // always-true verifier — that was CodeQL java/unsafe-hostname-verification #584 (T053).
+      // Certificate chain trust is enforced by the default TrustManagers installed above;
+      // hostname verification remains the platform default for the duration of the override.
 
       return connectionData;
     } catch (Exception e) {
