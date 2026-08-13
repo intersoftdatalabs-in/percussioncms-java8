@@ -635,6 +635,11 @@ public class PSJndiUtils {
 
         // only support '%', convert to '*'
         filter = processFilter(filter);
+        // RFC 4515 LDAP filter escape: protect against LDAP injection from
+        // user-supplied filter values. Wildcard '*' is intentionally preserved
+        // because processFilter converts the '%' input syntax to '*', and the
+        // existing public contract documents '*' as the supported wildcard.
+        filter = escapeLdapFilterValue(filter);
         buf.append(" (");
         buf.append(attr);
         buf.append("=");
@@ -669,6 +674,47 @@ public class PSJndiUtils {
     filter = filter.replace(IPSSecurityProviderMetaData.FILTER_MATCH_MANY, '*');
 
     return filter;
+  }
+
+  /**
+   * Escapes RFC 4515 reserved characters in an LDAP filter value to prevent LDAP injection from
+   * user-supplied input. The asterisk ({@code *}) is intentionally preserved because {@link
+   * #processFilter(String)} has already converted the documented wildcard input ({@code %}) to
+   * {@code *}, and the public contract treats {@code *} as a wildcard.
+   *
+   * <p>Characters escaped per RFC 4515 section 3: {@code \}, {@code *}, {@code (}, {@code )},
+   * {@code NUL}. The asterisk is preserved on purpose; the other four are escaped using their hex
+   * byte form.
+   *
+   * @param value the filter value to escape, may be {@code null} in which case {@code null} is
+   *     returned.
+   * @return the escaped value, never {@code null} unless input was {@code null}.
+   */
+  static String escapeLdapFilterValue(String value) {
+    if (value == null) return null;
+    StringBuilder out = new StringBuilder(value.length());
+    for (int i = 0; i < value.length(); i++) {
+      char c = value.charAt(i);
+      if (c == '*') {
+        // preserve wildcard
+        out.append('*');
+      } else if (c == '(') {
+        out.append("\\28");
+      } else if (c == ')') {
+        out.append("\\29");
+      } else if (c == '\\') {
+        out.append("\\5c");
+      } else if (c == '\u0000') {
+        out.append("\\00");
+      } else if (c <= 0x7f) {
+        out.append(c);
+      } else {
+        // higher-order UTF-8 bytes must be hex-escaped per RFC 4515
+        byte[] utf8 = String.valueOf(c).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        for (byte b : utf8) out.append(String.format("\\%02x", b & 0xff));
+      }
+    }
+    return out.toString();
   }
 
   /**
