@@ -281,6 +281,11 @@ public class PSDeliveryInfoService implements IPSDeliveryInfoService
                                 ex.getMessage(),
                                 ex);
                     }
+                } else {
+                    log.info(
+                            "Skipping rotateKey for DTS server {} because availableServices does not include feeds: {}",
+                            info.getAdminUrl(),
+                            info.getAvailableServices());
                 }
             }
         }

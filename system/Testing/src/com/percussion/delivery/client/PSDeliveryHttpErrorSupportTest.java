@@ -54,11 +54,21 @@ public class PSDeliveryHttpErrorSupportTest {
     String snippet =
         PSDeliveryHttpErrorSupport.firstLineSnippet(
             tomcatHtml, PSDeliveryHttpErrorSupport.DEFAULT_BODY_SNIPPET_MAX);
-    assertFalse(snippet.isEmpty());
+    assertEquals("HTTP Status 405 - Method Not Allowed", snippet);
     assertTrue(
         "snippet must not dump multi-KB HTML: len=" + snippet.length(),
         snippet.length() <= PSDeliveryHttpErrorSupport.DEFAULT_BODY_SNIPPET_MAX + 3);
     assertFalse("snippet must be single-line for log files", snippet.contains("\n"));
+  }
+
+  @Test
+  public void firstLineSnippetExtractsTitleFromOneLineHtml() {
+    String oneLineHtml =
+        "<html><head><title>HTTP Status 405 - Method Not Allowed</title></head>"
+            + "<body><h1>HTTP Status 405 - Method Not Allowed</h1></body></html>";
+    assertEquals(
+        "HTTP Status 405 - Method Not Allowed",
+        PSDeliveryHttpErrorSupport.firstLineSnippet(oneLineHtml, 200));
   }
 
   @Test
@@ -130,9 +140,41 @@ public class PSDeliveryHttpErrorSupportTest {
   }
 
   @Test
+  public void causeOnlyExceptionPreservesToStringMessage() {
+    IllegalStateException cause = new IllegalStateException("boom");
+    PSDeliveryClientException ex = new PSDeliveryClientException(cause);
+    assertEquals(cause.toString(), ex.getMessage());
+    assertEquals(cause, ex.getCause());
+    assertEquals(-1, ex.getStatusCode());
+  }
+
+  @Test
   public void firstLineSnippetBlankIsEmpty() {
     assertEquals("", PSDeliveryHttpErrorSupport.firstLineSnippet(null, 100));
     assertEquals("", PSDeliveryHttpErrorSupport.firstLineSnippet("   ", 100));
+  }
+
+  @Test
+  public void formatExecutionErrorFallsBackWhenMethodOrUrlBlank() {
+    String fromNulls = PSDeliveryHttpErrorSupport.formatExecutionError(null, null, 405, "");
+    assertTrue(fromNulls.contains("?"));
+    assertTrue(fromNulls.contains("HTTP 405"));
+    String fromBlanks = PSDeliveryHttpErrorSupport.formatExecutionError("  ", "   ", 500, null);
+    assertTrue(fromBlanks.contains("?"));
+    assertTrue(fromBlanks.contains("HTTP 500"));
+    assertFalse("blank method must not leave an empty token", fromBlanks.startsWith("Error when executing method :  "));
+  }
+
+  @Test
+  public void formatRotateKeyFailureWarnFallsBackWhenMethodOrUrlBlank() {
+    String warn = PSDeliveryHttpErrorSupport.formatRotateKeyFailureWarn(null, "  ", 405, "");
+    assertTrue("blank method should default to PUT", warn.contains("PUT"));
+    assertTrue("blank URL should default to ?", warn.contains("?"));
+    assertTrue(warn.contains("HTTP 405"));
+    String warnNullUrl = PSDeliveryHttpErrorSupport.formatRotateKeyFailureWarn("  ", null, -1, null);
+    assertTrue(warnNullUrl.contains("PUT"));
+    assertTrue(warnNullUrl.contains("?"));
+    assertTrue(warnNullUrl.contains("no HTTP status") || warnNullUrl.contains("transport"));
   }
 
   /** Avoid pulling in StringUtils.repeat dependency quirks; tiny local helper for tests. */

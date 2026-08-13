@@ -957,8 +957,7 @@ public class PSDeliveryClient extends HttpClient implements IPSDeliveryClient
                     offline = false;
                     String methodLabel =
                         this.requestType == null ? "?" : this.requestType.name();
-                    String requestUrl =
-                        this.requestUrl == null ? httpMethod.getURI().getEscapedURI() : this.requestUrl;
+                    String requestUrl = this.requestUrl == null ? "?" : this.requestUrl;
                     String snippet = PSDeliveryHttpErrorSupport.firstLineSnippet(
                             responseData, PSDeliveryHttpErrorSupport.DEFAULT_BODY_SNIPPET_MAX);
                     String msg;
@@ -994,7 +993,9 @@ public class PSDeliveryClient extends HttpClient implements IPSDeliveryClient
            if(!offline)
               log.error("Fatal transport error: {}" , ex.getMessage());
             
-           String reqUrl = this.requestUrl;
+           String methodLabel = this.requestType == null ? "?" : this.requestType.name();
+           String fullRequestUrl = this.requestUrl == null ? "?" : this.requestUrl;
+           String reqUrl = fullRequestUrl;
            try
            {
               URL url = new URL(reqUrl);
@@ -1006,7 +1007,12 @@ public class PSDeliveryClient extends HttpClient implements IPSDeliveryClient
                  log.error(e.getLocalizedMessage());
            }
            if(!offline)
-              throw new PSDeliveryClientException("Unable to connect to delivery server at: {}." + reqUrl + ".");
+              throw new PSDeliveryClientException(
+                      "Unable to connect to delivery server at: " + reqUrl + ".",
+                      -1,
+                      methodLabel,
+                      fullRequestUrl,
+                      null);
          return null;
         }
         finally

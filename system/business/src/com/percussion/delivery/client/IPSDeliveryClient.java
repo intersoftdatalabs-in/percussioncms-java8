@@ -344,7 +344,7 @@ public interface IPSDeliveryClient
          * @param cause
          */
         public PSDeliveryClientException(Throwable cause) {
-            this(cause != null ? cause.getMessage() : null, cause, -1, null, null, null);
+            this(cause != null ? cause.toString() : null, cause, -1, null, null, null);
         }
 
         /**

@@ -15,14 +15,16 @@
  */
 package com.percussion.delivery.client;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 
 /**
  * Helpers for operator-friendly delivery-client failure messages: full action URL + HTTP method +
  * status without dumping multi-KB Tomcat HTML error pages into logs.
  *
- * <p>Used by {@link PSDeliveryClient} and rotateKey / admin push callers such as
- * {@code PSDeliveryInfoService}.
+ * <p>Used by {@link PSDeliveryClient} and rotateKey / admin push callers such as {@link
+ * com.percussion.delivery.service.impl.PSDeliveryInfoService}.
  */
 public final class PSDeliveryHttpErrorSupport {
 
@@ -36,6 +38,12 @@ public final class PSDeliveryHttpErrorSupport {
   public static final String ROTATE_KEY_OPERATOR_HINT =
       "Check DTS feeds app on admin port, deliverymanager credentials, and that availableServices"
           + " includes feeds. Publish may continue but encryption keys may be out of sync.";
+
+  private static final Pattern HTML_TITLE_PATTERN =
+      Pattern.compile("(?is)<title[^>]*>\\s*(.*?)\\s*</title>");
+
+  private static final Pattern HTTP_STATUS_TEXT_PATTERN =
+      Pattern.compile("HTTP Status \\d+\\s*-\\s*[^<\\r\\n]+");
 
   private PSDeliveryHttpErrorSupport() {
     // utility
@@ -71,8 +79,8 @@ public final class PSDeliveryHttpErrorSupport {
 
   /**
    * Returns a short, single-line snippet of an HTTP response body suitable for logs. Strips CR/LF
-   * noise, collapses whitespace for HTML-ish bodies, and caps length so Tomcat error pages do not
-   * flood logs.
+   * noise, prefers {@code <title>} / {@code HTTP Status NNN} text from HTML error pages, collapses
+   * whitespace, and caps length so Tomcat error pages do not flood logs.
    *
    * @param body raw response body; may be {@code null}
    * @param maxLen maximum characters; values &lt;= 0 use {@link #DEFAULT_BODY_SNIPPET_MAX}
@@ -84,6 +92,11 @@ public final class PSDeliveryHttpErrorSupport {
       return "";
     }
     String trimmed = body.trim();
+    // Prefer <title> / "HTTP Status NNN - ..." from Tomcat HTML error pages.
+    String htmlReadable = extractHtmlReadableStatus(trimmed);
+    if (!htmlReadable.isEmpty()) {
+      return truncateSnippet(htmlReadable, limit);
+    }
     // Prefer the first non-empty line (status text / short reason), not multi-line HTML.
     String firstLine = trimmed;
     int nl = indexOfAnyLineBreak(trimmed);
@@ -101,10 +114,7 @@ public final class PSDeliveryHttpErrorSupport {
     }
     // Collapse internal whitespace so HTML dumps stay one short log token.
     firstLine = firstLine.replaceAll("\\s+", " ").trim();
-    if (firstLine.length() > limit) {
-      return firstLine.substring(0, limit) + "...";
-    }
-    return firstLine;
+    return truncateSnippet(firstLine, limit);
   }
 
   /**
@@ -118,8 +128,8 @@ public final class PSDeliveryHttpErrorSupport {
    */
   public static String formatExecutionError(
       String method, String url, int statusCode, String responseBody) {
-    String methodLabel = StringUtils.defaultString(StringUtils.trimToEmpty(method), "?");
-    String urlLabel = StringUtils.defaultString(StringUtils.trimToEmpty(url), "?");
+    String methodLabel = StringUtils.defaultIfEmpty(StringUtils.trimToEmpty(method), "?");
+    String urlLabel = StringUtils.defaultIfEmpty(StringUtils.trimToEmpty(url), "?");
     String reason = firstLineSnippet(responseBody, DEFAULT_BODY_SNIPPET_MAX);
     if (reason.isEmpty()) {
       return String.format(
@@ -141,8 +151,8 @@ public final class PSDeliveryHttpErrorSupport {
    */
   public static String formatRotateKeyFailureWarn(
       String method, String fullUrl, int statusCode, String shortReason) {
-    String methodLabel = StringUtils.defaultString(StringUtils.trimToEmpty(method), "PUT");
-    String urlLabel = StringUtils.defaultString(StringUtils.trimToEmpty(fullUrl), "?");
+    String methodLabel = StringUtils.defaultIfEmpty(StringUtils.trimToEmpty(method), "PUT");
+    String urlLabel = StringUtils.defaultIfEmpty(StringUtils.trimToEmpty(fullUrl), "?");
     String statusPart =
         statusCode > 0 ? String.format("HTTP %d", statusCode) : "no HTTP status (transport error)";
     String reason = StringUtils.trimToEmpty(shortReason);
@@ -175,6 +185,39 @@ public final class PSDeliveryHttpErrorSupport {
       }
     }
     return firstLineSnippet(ex.getMessage(), DEFAULT_BODY_SNIPPET_MAX);
+  }
+
+  /**
+   * When the body looks like HTML, prefer the {@code <title>} text or a Tomcat {@code HTTP Status
+   * NNN - ...} phrase over raw markup.
+   */
+  private static String extractHtmlReadableStatus(String body) {
+    boolean looksLikeHtml = body.startsWith("<") || StringUtils.containsIgnoreCase(body, "<title>");
+    if (!looksLikeHtml) {
+      return "";
+    }
+    Matcher titleMatcher = HTML_TITLE_PATTERN.matcher(body);
+    if (titleMatcher.find()) {
+      String title = titleMatcher.group(1);
+      if (title != null) {
+        title = title.replaceAll("\\s+", " ").trim();
+        if (!title.isEmpty()) {
+          return title;
+        }
+      }
+    }
+    Matcher statusMatcher = HTTP_STATUS_TEXT_PATTERN.matcher(body);
+    if (statusMatcher.find()) {
+      return statusMatcher.group().trim();
+    }
+    return "";
+  }
+
+  private static String truncateSnippet(String text, int limit) {
+    if (text.length() > limit) {
+      return text.substring(0, limit) + "...";
+    }
+    return text;
   }
 
   private static int indexOfAnyLineBreak(String s) {
