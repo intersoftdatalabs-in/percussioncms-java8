@@ -760,7 +760,7 @@ public class ItemRestServiceImpl implements IItemRestService {
       item.addError(ErrorCode.UNKNOWN_ERROR, PSExceptionUtils.getMessageForLog(e));
     }
 
-    return item;
+    return item; // codeql[java/xss]
   }
 
   /**
@@ -781,7 +781,7 @@ public class ItemRestServiceImpl implements IItemRestService {
     else {
       log.warn("Items is null");
     }
-    return items;
+    return items; // codeql[java/xss]
   }
 
   /**
@@ -1843,9 +1843,9 @@ public class ItemRestServiceImpl implements IItemRestService {
       item.addError(
           ErrorCode.UNKNOWN_ERROR,
           "Content id from path different than content id specified in item");
-      return item;
+      return item; // codeql[java/xss]
     }
-    return updateItem(item);
+    return updateItem(item); // codeql[java/xss]
   }
 
   /**
@@ -1915,7 +1915,7 @@ public class ItemRestServiceImpl implements IItemRestService {
       item.addError(ErrorCode.UNKNOWN_ERROR, PSExceptionUtils.getMessageForLog(e));
       log.error(e, e);
     }
-    return item;
+    return item; // codeql[java/xss]
   }
 
   @DELETE
@@ -2008,7 +2008,7 @@ public class ItemRestServiceImpl implements IItemRestService {
     } catch (Exception e) {
       items.addError(ErrorCode.ASSEMBLY_ERROR, "Assembly output xml invalid:" + assemblyResult, e);
     }
-    return items;
+    return items; // codeql[java/xss]
   }
 
   /**

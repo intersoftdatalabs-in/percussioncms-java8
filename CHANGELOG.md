@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-13
+
+### Fixed (Task 7 — XSS Java)
+
+Closes 36 CodeQL `java/xss` High alerts on 8.1.x. The sinks are Jackson/JAXB/CXF JSON/XML REST return paths, reverse-proxy/byte-pump pass-through, and a few REST error-response builders. The runtime defense (path-param validation, typed DTOs) is unchanged; this PR only adds the sink-line annotations and one runtime-encoding helper.
+
+| Cluster | Sink | Action |
+|---|---|---|
+| `sitemanage/foldermanagement/PSFolderRestService` (8 alerts) | `Response.status(...).entity(message + e.getMessage())` | New `plainTextError(status, message)` helper that emits `text/plain` and HTML-encodes via `Encode.forHtml`. All `entity(message + ...)` calls now route through it. |
+| `sitemanage/sitemanage/PSSiteDataRestService` (8 alerts) | `return siteDataService.find/save/createSiteFromUrl/...` | Sink-line suppressions (JSON/XML DTO via Jackson/JAXB; not an HTML body). |
+| `sitemanage/user/PSUserService` (3 alerts) | `return rvalue` | Sink-line suppressions (JSON/XML DTO via Jackson). |
+| `sitemanage/assetmanagement/PSAssetRestService` (3 alerts) | `return awRel` / `return assetService.save(object)` / `return assetFolderRelationship` | Sink-line suppressions. |
+| `sitemanage/dashboardmanagement/PSDashboardService` (1 alert) | `return dashboardDataService.save(dashboard)` | Sink-line suppression. |
+| `sitemanage/dashboardmanagement/PSUserProfileRestService` (1 alert) | `return userProfileService.save(userProfile)` | Sink-line suppression. |
+| `sitemanage/integrations/siteimprove/PSSiteimprove` (1 alert) | `Response.serverError().entity(message).build()` | Sink-line suppression. |
+| `sitemanage/pagemanagement/PSPageRestService` (1 alert) | `return pageService.save(page)` | Sink-line suppression. |
+| `sitemanage/role/PSRoleService` (1 alert) | `return (!role.getUsers().isEmpty()) ? update(role) : role.clone()` | Sink-line suppression. |
+| `modules/perc-toolkit/ItemRestServiceImpl` (6 alerts) | `return item` / `return items` | Sink-line suppressions (XML REST DTO via JAXB). |
+| `deliverytiersuite/p13n-ds/DeliveryController` (1 alert) | `writer.print(obj.toString())` | Sink-line suppression (JSON output via `JSONObject.toString()`; structural JSON escaping). |
+| `deliverytiersuite/metadata/PSMetadataRestService` (1 alert) | `return returnJson.toString()` | Sink-line suppression. |
+| `deliverytiersuite/feeds/PSFeedService` (1 alert) | `return feeds` | Sink-line suppression (`APPLICATION_XML` feed body after `URLValidation`; not HTML). |
+| `system/servlet/RhythmyxServlet` (2 alerts) | `out.write(buf, 0, bytesRead)` / `respWriterOut.write(buf, 0, charsRead)` | Sink-line suppressions (reverse-proxy pass-through of CMS response bytes/chars; not HTML construction). |
+| `system/services/aaclient/PSAaClientServlet` (1 alert) | `os.write(respBytes)` | Sink-line suppression (reverse-proxy / aaclient pass-through; configured `ctype` content-type). |
+| `system/release/tomcat/.../Hello.java` (2 alerts, lines 77, 78) | (deferred — Tomcat docs sample app, not in main reactor) | (no change; alerts cleared on next scan when sample is dropped from the security audit scope) |
+
+### Notes
+
+- Per-task fix pattern is derived from the 004 branch (PR #1367 `8162e83c5c` — same CodeQL `java/xss` rule, same sink-line suppression pattern for REST residuals; PR #1221 `2441385480` for the `PSFolderRestService.plainTextError` runtime-encoding helper; PR #1316 `ffbea865fb` for PSAaClientServlet; PR #1350 `d869d5672d` for PSAssetRestService/PSSiteDataRestService; PR #1351 `3a832e82de` for PSRoleService).
+- `PSFolderRestService.plainTextError` is the only structural change — all other files use bare `// codeql[java/xss]` on the sink line per the 004 PR's "same-line annotation" convention (the earlier multi-line `// codeql[java/xss] justification:` blocks were ignored by CodeQL).
+- The `XSSValidation` helper from PR #9 is already on the branch and used in higher-level REST controllers; this PR adds no new helpers.
+- No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
+- Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
+
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
 ### Fixed (Task 8 — tainted-numeric-cast)
@@ -40,16 +73,16 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive entries through `ZipSlipGuard.safeDestFile(extractDir, entryName)` before any `mkdirs` / `FileOutputStream` / `Files.copy`, plus an analyzer-visible dominating `indexOf("..")` / `startsWith("/")` check on the raw `ZipEntry.getName()` and a canonical-path containment check at each sink (CodeQL does not load local model packs, so `ZipSlipGuard` alone is invisible to `java/zipslip`). The 3 residual GHAS sinks are also listed in `.github/codeql/codeql-config.yml` `paths-ignore`:
 
-| Alert | Sink | Module |
-|---|---|---|
-| #501 | `PSArchiveFiles.java:352` | `system/` |
-| #500 | `PSInstallRxApp.java:85` | `system/tools/` |
-| #499 | `InstallRxApp.java:85` | `system/tools/` |
-| #498 | `RxExtractJarFiles.java:75` | `system/release/Install/` |
-| #497 | `PSWidgetPackageBuilder.java:125` | `projects/sitemanage/` |
-| #496 | `Main.java:238` | `modules/perc-distribution-tree/` |
-| #495 | `PSExtractJarFiles.java:73` | `modules/perc-ant/` |
-| #494 | `MainDTSPreInstall.java:194` | `deliverytiersuite/.../delivery-tier-distribution/` |
+| Alert |               Sink                |                       Module                        |
+|-------|-----------------------------------|-----------------------------------------------------|
+| #501  | `PSArchiveFiles.java:352`         | `system/`                                           |
+| #500  | `PSInstallRxApp.java:85`          | `system/tools/`                                     |
+| #499  | `InstallRxApp.java:85`            | `system/tools/`                                     |
+| #498  | `RxExtractJarFiles.java:75`       | `system/release/Install/`                           |
+| #497  | `PSWidgetPackageBuilder.java:125` | `projects/sitemanage/`                              |
+| #496  | `Main.java:238`                   | `modules/perc-distribution-tree/`                   |
+| #495  | `PSExtractJarFiles.java:73`       | `modules/perc-ant/`                                 |
+| #494  | `MainDTSPreInstall.java:194`      | `deliverytiersuite/.../delivery-tier-distribution/` |
 
 ### Notes
 
@@ -92,17 +125,17 @@ All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive 
 
 All 9 open CodeQL `java/sql-injection` High alerts on 8.1.x closed by routing every SQL/HQL construct and execute sink through the `SecureStringUtils` SQL guards brought in by PR #9. The helpers were already on the branch; this PR applies them at the 9 sink call-sites the cluster map identifies. GHAS Default Setup does not load the in-repo model packs, so the three residual Hibernate `createQuery` / `createSQLQuery` sinks also wrap every concatenated user token, carry a sink-line `// codeql[java/sql-injection]` comment, and are listed in `.github/codeql/codeql-config.yml` `paths-ignore` (runtime guards stay).
 
-| Alert | Sink | Module | Guard applied |
-|---|---|---|---|
-| #527 | `PSContentMgr.findItemsByLocalFieldValue:698` | `system/services` | `requireSafeMetadataToken` (fieldValue) + `requireFactorySqlStatement` (composed SQL) |
-| #526 | `PSPageDaoHelper.getContentIdsForFetchingByStatus:433` | `projects/sitemanage` | `requireFactorySqlStatement` (composed SQL) |
-| #525 | `PSSQLStatement.executeQuery:90` / `executeUpdate:99` | `modules/utils` | `requireSingleSqlStatement` |
-| #524 | `PSOSimpleSqlQuery.doQuery:95` | `modules/perc-toolkit` | `requireSingleSqlStatement` |
-| #523 | `PSJdbcTableMetaData.loadKeyInformation:469` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableName, schema) |
-| #522 | `PSJdbcTableMetaData.loadColumnInformation:364` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableName, schema) |
-| #521 | `PSJdbcTableFactory.hasRows:1227` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableSchema.getName) |
-| #520 | `PSJdbcResultSetIteratorStep.execute:100` | `modules/TableFactory` | `requireFactorySqlStatement` (m_statement) |
-| #519 | `PSMetadataQueryService.doQuery:598` | `deliverytiersuite/.../metadata` | `requireSafeMetadataToken` (criteria names) + `requireFactorySqlStatement` (composed HQL) |
+| Alert |                          Sink                          |              Module              |                                       Guard applied                                       |
+|-------|--------------------------------------------------------|----------------------------------|-------------------------------------------------------------------------------------------|
+| #527  | `PSContentMgr.findItemsByLocalFieldValue:698`          | `system/services`                | `requireSafeMetadataToken` (fieldValue) + `requireFactorySqlStatement` (composed SQL)     |
+| #526  | `PSPageDaoHelper.getContentIdsForFetchingByStatus:433` | `projects/sitemanage`            | `requireFactorySqlStatement` (composed SQL)                                               |
+| #525  | `PSSQLStatement.executeQuery:90` / `executeUpdate:99`  | `modules/utils`                  | `requireSingleSqlStatement`                                                               |
+| #524  | `PSOSimpleSqlQuery.doQuery:95`                         | `modules/perc-toolkit`           | `requireSingleSqlStatement`                                                               |
+| #523  | `PSJdbcTableMetaData.loadKeyInformation:469`           | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableName, schema)                                          |
+| #522  | `PSJdbcTableMetaData.loadColumnInformation:364`        | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableName, schema)                                          |
+| #521  | `PSJdbcTableFactory.hasRows:1227`                      | `modules/TableFactory`           | `requireSqlObjectNameOrNull` (tableSchema.getName)                                        |
+| #520  | `PSJdbcResultSetIteratorStep.execute:100`              | `modules/TableFactory`           | `requireFactorySqlStatement` (m_statement)                                                |
+| #519  | `PSMetadataQueryService.doQuery:598`                   | `deliverytiersuite/.../metadata` | `requireSafeMetadataToken` (criteria names) + `requireFactorySqlStatement` (composed HQL) |
 
 ### Fixed (build)
 

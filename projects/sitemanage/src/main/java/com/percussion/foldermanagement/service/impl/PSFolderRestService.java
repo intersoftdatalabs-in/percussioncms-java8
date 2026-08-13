@@ -45,6 +45,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.owasp.encoder.Encode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -143,23 +144,26 @@ public class PSFolderRestService {
                   workflowName, "/" + path, includeFoldersWithDifferentWorkflow)) {};
       return Response.ok(folderItems).build();
     } catch (PSWorkflowNotFoundException e) {
-      log.error("{}, Error: {}", message, PSExceptionUtils.getMessageForLog(e));
-      log.debug(PSExceptionUtils.getDebugMessageForLog(e));
-      return Response.status(Status.NOT_FOUND).entity(message + e.getMessage()).build();
+      log.error("Workflow not found: {}", PSExceptionUtils.getMessageForLog(e));
+      throw new WebApplicationException(
+          Response.status(Status.NOT_FOUND)
+              .type(MediaType.TEXT_PLAIN)
+              .entity(Encode.forHtml("Workflow not found: " + workflowName))
+              .build());
     } catch (IllegalArgumentException e) {
       // This means that either the workflow name or the path are empty.
       log.error("{}, Error: {}", message, PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
-      return Response.status(Status.BAD_REQUEST).entity(message + e.getLocalizedMessage()).build();
+      return plainTextError(Status.BAD_REQUEST, message);
     } catch (PSPathNotFoundServiceException | LoadException e) {
       // This means that the required path could not be found.
       log.error("{}, Error: {}", message, PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
-      return Response.status(Status.NOT_FOUND).entity(message + e.getLocalizedMessage()).build();
+      return plainTextError(Status.NOT_FOUND, message);
     } catch (Exception e) {
       log.error("{}, Error: {}", message, PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
-      return Response.serverError().entity(message + e.getLocalizedMessage()).build();
+      return plainTextError(Status.INTERNAL_SERVER_ERROR, message);
     }
   }
 
@@ -186,20 +190,20 @@ public class PSFolderRestService {
     } catch (PSWorkflowNotFoundException e) {
       log.error("{}, Error: {}", message, PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
-      return Response.status(Status.NOT_FOUND).entity(message + e.getMessage()).build();
+      return plainTextError(Status.NOT_FOUND, message);
     } catch (PSWorkflowAssignmentInProgressException e) {
       log.error("{}, Error: {}", message, PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
-      return Response.status(Status.CONFLICT).entity(e.getLocalizedMessage()).build();
+      return plainTextError(Status.CONFLICT, "Workflow assignment is already in progress.");
     } catch (IllegalArgumentException e) {
       // This means that is empty or does not exists.
       log.error("{}, Error: {}", message, PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
-      return Response.status(Status.BAD_REQUEST).entity(message + e.getLocalizedMessage()).build();
+      return plainTextError(Status.BAD_REQUEST, message);
     } catch (Exception e) {
       log.error("{}, Error: {}", message, PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
-      return Response.serverError().entity(message + e.getLocalizedMessage()).build();
+      return plainTextError(Status.INTERNAL_SERVER_ERROR, message);
     }
   }
 
@@ -214,7 +218,26 @@ public class PSFolderRestService {
         | PSValidationException e) {
       log.error(PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
-      throw new WebApplicationException(e.getMessage());
+      throw new WebApplicationException(
+          Response.status(Status.INTERNAL_SERVER_ERROR)
+              .type(MediaType.TEXT_PLAIN)
+              .entity(Encode.forHtml("Error retrieving pages for folder: " + id))
+              .build());
     }
+  }
+
+  /**
+   * Builds a plain-text HTTP error response with the supplied status and HTML-encoded message.
+   *
+   * <p>Centralizes the contract that all error responses from this service are emitted as {@code
+   * text/plain} so the browser cannot interpret the body as HTML (CWE-79 XSS via JSON consumers
+   * that re-render server output), and that any caller-supplied content included in {@code message}
+   * is HTML-encoded via the OWASP encoder before being placed on the wire.
+   */
+  private Response plainTextError(Status status, String message) {
+    return Response.status(status)
+        .type(MediaType.TEXT_PLAIN)
+        .entity(Encode.forHtml(message))
+        .build();
   }
 }
