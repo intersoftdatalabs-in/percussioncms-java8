@@ -228,10 +228,9 @@ public class PSDtdTree implements Serializable, PSDtdTreeVisitor, Cloneable {
         } catch (java.net.URISyntaxException e) {
           throw new java.io.IOException("Invalid validated URL: " + validatedUrl, e);
         }
-        // openConnection on URL rebuilt after URLValidation with http/https scheme literal
-        // (alerts #432). Suppression on the sink line - CodeQL only honors
-        // // codeql[...] on the alert line or the line immediately above it.
-        URLConnection conn = validatedUrl.openConnection(); // codeql[java/ssrf]
+        // codeql[java/ssrf] justification: URL rebuilt from URLValidation.validateURLString +
+        // http/https scheme literal; re-review by 2027-07-31
+        URLConnection conn = validatedUrl.openConnection();
         // Keep parseDtd's base URL aligned with what we actually fetched.
         dtdURL = validatedUrl;
 

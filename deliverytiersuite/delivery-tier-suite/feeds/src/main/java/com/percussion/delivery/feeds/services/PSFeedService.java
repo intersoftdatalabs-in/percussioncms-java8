@@ -437,8 +437,20 @@ public class PSFeedService extends PSAbstractRestService implements IPSFeedsRest
     String protocol = null;
     Client client;
 
+    // SSL client construction is independent of URL validation. A failure here
+    // used to share a catch with validateURLString and then fall through to
+    // client.target using the original unvalidated url (live java/ssrf path).
     try {
       client = httpClient.getSSLClient();
+    } catch (Exception e) {
+      client = ClientBuilder.newClient();
+      log.error(
+          "Exception occurred in creating the SSL Client : {} ",
+          PSExceptionUtils.getMessageForLog(e));
+      log.debug(PSExceptionUtils.getDebugMessageForLog(e));
+    }
+
+    try {
       uri = new URI(desc.getLink());
       if (isIPV4Address) {
         url = httpRequest.getScheme() + "://" + rssFeedsIP + ":" + httpRequest.getLocalPort();
@@ -450,10 +462,9 @@ public class PSFeedService extends PSAbstractRestService implements IPSFeedsRest
 
       // Validate then rebuild with a scheme literal so the sink is not fed
       // the original tainted URL string (alert #431 / CodeQL java/ssrf).
-      // The host literal is constrained to IPv4/IPv6 by the validator above,
-      // but the scheme and port come from the HTTP request so we route them
-      // through URLValidation to keep CodeQL's taint model happy. Same
-      // rebuild pattern as T037 / PSProxyQueryResource / PSDtdTree.
+      // The host is constrained by InetAddressValidator + URLValidation;
+      // scheme/port come from the HTTP request so they are rebuilt with an
+      // http/https scheme literal. Same pattern as T037 / PSDtdTree.
       java.net.URL validatedUrl =
           com.percussion.security.validation.URLValidation.validateURLString(url);
       String safeProtocol = "https".equalsIgnoreCase(validatedUrl.getProtocol()) ? "https" : "http";
@@ -471,17 +482,20 @@ public class PSFeedService extends PSAbstractRestService implements IPSFeedsRest
       protocol = uri.getScheme() + "://";
       log.info("The url obtained using the httpRequest.getLocalAddr() ----> {} ", url);
     } catch (Exception e) {
-      client = ClientBuilder.newClient();
       log.error(
-          "Exception occurred in creating the SSL Client : {} ",
+          "Exception occurred validating metadata-service URL : {} ",
           PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
+      // Do not call client.target with the pre-validation url.
+      throw new FeedException(e.getMessage(), e);
     }
 
-    // client.target consumes the URL after URLValidation has cleared the
-    // SSRF taint (alert #431). See suppressions.md.
-    WebTarget webTarget =
-        client.target(url + "/perc-metadata-services/metadata/get"); // codeql[java/ssrf]
+    if (url == null) {
+      throw new FeedException("metadata-service URL failed SSRF validation");
+    }
+
+    // codeql[java/ssrf] justification: URL rebuilt from URLValidation.validateURLString + http/https scheme literal; re-review by 2027-07-31
+    WebTarget webTarget = client.target(url + "/perc-metadata-services/metadata/get");
 
     if (log.isDebugEnabled()) {
       log.debug("WebResource for metadata service : {}", webTarget);
