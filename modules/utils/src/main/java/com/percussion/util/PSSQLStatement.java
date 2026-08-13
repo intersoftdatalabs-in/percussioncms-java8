@@ -16,6 +16,7 @@
  */
 package com.percussion.util;
 
+import com.percussion.security.SecureStringUtils;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -86,6 +87,11 @@ public class PSSQLStatement implements Statement {
 
   // Implements Statement.executeQuery(String)
   public ResultSet executeQuery(String sql) throws SQLException {
+    // CodeQL java/sql-injection alert #525: reject multi-statement SQL at the JDBC sink.
+    // The general-path guard (requireSingleSqlStatement) allows line/block comments inside
+    // string literals or vendor hints, which the Statement.executeQuery path can legally
+    // encounter.
+    SecureStringUtils.requireSingleSqlStatement(sql);
     startTimer(sql);
     ResultSet rs = m_stmt.executeQuery(sql);
     logElapsedTime();
@@ -95,6 +101,8 @@ public class PSSQLStatement implements Statement {
 
   // Implements Statement.executeUpdate(String)
   public int executeUpdate(String sql) throws SQLException {
+    // Same barrier as executeQuery (CodeQL java/sql-injection alert #525).
+    SecureStringUtils.requireSingleSqlStatement(sql);
     startTimer(sql);
     int rs = m_stmt.executeUpdate(sql);
     logElapsedTime();

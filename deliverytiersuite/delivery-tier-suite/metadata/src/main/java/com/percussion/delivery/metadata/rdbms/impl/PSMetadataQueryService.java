@@ -595,7 +595,20 @@ public class PSMetadataQueryService implements IPSMetadataQueryService {
 
     log.debug("{}", queryBuf);
 
-    Query q = sess.createQuery(queryBuf.toString());
+    // CodeQL java/sql-injection alert #519: validate every interpolated metadata token before
+    // the HQL createQuery sink. ce.getName() and valueColumn are attacker-influenced
+    // (rawQuery.getCriteria() comes from the metadata REST API); requireSafeMetadataToken
+    // rejects SQL punctuation so an injection like "name'; DROP TABLE ...; --" fails fast.
+    // requireFactorySqlStatement additionally rejects embedded ';' and comment markers on
+    // the composed HQL string so any future interpolant that slips past the per-field
+    // guards still cannot produce stacked statements.
+    for (PSCriteriaElement ce : entryCrit) {
+      SecureStringUtils.requireSafeMetadataToken(ce.getName());
+    }
+    for (PSCriteriaElement ce : propsCrit) {
+      SecureStringUtils.requireSafeMetadataToken(ce.getName());
+    }
+    Query q = sess.createQuery(SecureStringUtils.requireFactorySqlStatement(queryBuf.toString()));
     int useLimit = queryLimit;
     // All caller to set a query limit, but they can't allow higher than the server limit.
     if (rawQuery.getTotalMaxResults() > 0 && rawQuery.getTotalMaxResults() < queryLimit) {

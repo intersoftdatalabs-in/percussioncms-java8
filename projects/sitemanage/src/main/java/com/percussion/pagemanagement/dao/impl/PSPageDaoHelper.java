@@ -29,6 +29,7 @@ import com.percussion.pagemanagement.dao.IPSPageDaoHelper;
 import com.percussion.pagemanagement.data.PSPage;
 import com.percussion.pathmanagement.data.PSFolderProperties;
 import com.percussion.searchmanagement.data.PSSearchCriteria;
+import com.percussion.security.SecureStringUtils;
 import com.percussion.services.error.PSRuntimeException;
 import com.percussion.services.workflow.IPSWorkflowService;
 import com.percussion.services.workflow.PSWorkflowServiceLocator;
@@ -403,6 +404,11 @@ public class PSPageDaoHelper implements IPSPageDaoHelper {
       PSSearchCriteria criteria, List<Integer> contentIDs) {
     Session sess = getSession();
     try {
+      // CodeQL java/sql-injection alert #526: validate the composed SQL before the Hibernate
+      // createSQLQuery sink. The query is built from this module's constants (CT_PAGE,
+      // CONTENTSTATUS, PSFolder.FOLDER_CONTENT_TYPE_ID) and the caller's contentIDs /
+      // PSSearchCriteria; requireFactorySqlStatement rejects embedded ';' and SQL comment
+      // markers so the same factory-path guard used by TableFactory applies here.
       String sql = "";
       if (contentIDs.isEmpty()) {
         contentIDs.add(0);
@@ -430,7 +436,7 @@ public class PSPageDaoHelper implements IPSPageDaoHelper {
         sql = formGetByStatusSQLQuery(criteria, sql);
       }
 
-      SQLQuery query = sess.createSQLQuery(sql);
+      SQLQuery query = sess.createSQLQuery(SecureStringUtils.requireFactorySqlStatement(sql));
       return query.list();
     } catch (SQLException e) {
       String error = "Failed to get the fully qualified table name for 'CT_PAGE'";

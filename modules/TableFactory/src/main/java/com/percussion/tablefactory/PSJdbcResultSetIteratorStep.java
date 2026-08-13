@@ -16,6 +16,7 @@
  */
 package com.percussion.tablefactory;
 
+import com.percussion.security.SecureStringUtils;
 import com.percussion.util.PSSQLStatement;
 import java.io.IOException;
 import java.sql.Connection;
@@ -94,6 +95,12 @@ public class PSJdbcResultSetIteratorStep extends PSJdbcSqlStatement {
    */
   public int execute(Connection conn) throws SQLException {
     if (conn == null) throw new IllegalArgumentException("conn may not be null");
+
+    // Validate the statement is single-statement and free of SQL comments before the JDBC
+    // sink (CodeQL java/sql-injection alert #520). TableFactory never embeds comments
+    // legitimately, so requireFactorySqlStatement (the strictest barrier) is the right
+    // helper here.
+    SecureStringUtils.requireFactorySqlStatement(m_statement);
 
     // execute the sql query and store the result set
     m_stmt = PSSQLStatement.getStatement(conn);
