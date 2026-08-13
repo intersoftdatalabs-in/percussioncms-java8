@@ -88,14 +88,34 @@ All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive 
 - **Filter-string hardening** — `PSJndiUtils.getFilterString` now escapes each user-supplied filter value before composing it into the LDAP search filter, closing the injection vector where an attacker who can control a filter argument could break out of the parenthesised comparison and append arbitrary clauses (e.g. `*)(uid=*` turning `cn=foo` into `(|(cn=*)(uid=*))`).
 - **LDAP injection regression test** — `system/Testing/src/com/percussion/security/PSJndiUtilsLdapInjectionTest.java` (9 JUnit 4 tests): reserved-char escape, wildcard preservation, ASCII passthrough, UTF-8 byte-by-byte escape, null/empty inputs, and the end-to-end `*)(uid=*` injection vector.
 
+### Fixed (Task 4 — SQL injection defense)
+
+All 9 open CodeQL `java/sql-injection` High alerts on 8.1.x closed by routing every SQL/HQL construct and execute sink through the `SecureStringUtils` SQL guards brought in by PR #9. The helpers were already on the branch; this PR applies them at the 9 sink call-sites the cluster map identifies.
+
+| Alert | Sink | Module | Guard applied |
+|---|---|---|---|
+| #527 | `PSContentMgr.findItemsByLocalFieldValue:698` | `system/services` | `requireSafeMetadataToken` (fieldValue) + `requireFactorySqlStatement` (composed SQL) |
+| #526 | `PSPageDaoHelper.getContentIdsForFetchingByStatus:433` | `projects/sitemanage` | `requireFactorySqlStatement` (composed SQL) |
+| #525 | `PSSQLStatement.executeQuery:90` / `executeUpdate:99` | `modules/utils` | `requireSingleSqlStatement` |
+| #524 | `PSOSimpleSqlQuery.doQuery:95` | `modules/perc-toolkit` | `requireSingleSqlStatement` |
+| #523 | `PSJdbcTableMetaData.loadKeyInformation:469` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableName, schema) |
+| #522 | `PSJdbcTableMetaData.loadColumnInformation:364` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableName, schema) |
+| #521 | `PSJdbcTableFactory.hasRows:1227` | `modules/TableFactory` | `requireSqlObjectNameOrNull` (tableSchema.getName) |
+| #520 | `PSJdbcResultSetIteratorStep.execute:100` | `modules/TableFactory` | `requireFactorySqlStatement` (m_statement) |
+| #519 | `PSMetadataQueryService.doQuery:598` | `deliverytiersuite/.../metadata` | `requireSafeMetadataToken` (criteria names) + `requireFactorySqlStatement` (composed HQL) |
+
 ### Fixed (build)
 
 - **`pom.xml` unparseable on `main`** — the `Comment out ai build plugin` change in `984b73ae70` placed a `</plugins></pluginManagement><plugins>` sequence *before* the `<!-- <plugin>...</plugin> -->` comment, then a second copy of the same sequence *after* the comment, leaving a stray `</pluginManagement>` whose matching `<pluginManagement>` had already been closed. Maven 3.9 and xmllint both rejected the file (`end tag name </pluginManagement> must match start tag name <build> from line 2072`) so `./mvn-env.sh validate` failed before any module compiled. The closing tags are now placed once, after the comment, restoring the original `pluginManagement → plugins → plugins` structure with the ai-build-integrity plugin still commented out. `./mvn-env.sh validate` → BUILD SUCCESS.
 
 ### Notes
 
-- Per-task fix pattern is derived from the 004 branch (PR #1345 `e8489b698a` — same CodeQL `java/ldap-injection` rule, same fix family).
+- Per-task fix patterns are derived from the 004 branch: PR #1345 `e8489b698a` (LDAP injection, RFC 4515 escape) and PR #1343 `121060193f` (SQL injection, SecureStringUtils guards).
 - CodeQL alert #595 (`system/src/main/java/com/percussion/security/PSJndiGroupProvider.java:200`) is the only `java/ldap-injection` Critical+High alert on `main` as of 2026-08-12.
+- The SQL guard helpers were already on the branch via PR #9 (`codeql/port-shared-guards`); no new helper classes introduced for Task 4.
+- Behaviour for valid input is unchanged. Invalid identifiers / stacked statements / metadata tokens that don't match the allowed pattern become a clear `IllegalArgumentException` instead of silently building an unsafe query string.
+- No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
+- Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
 
 ## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
