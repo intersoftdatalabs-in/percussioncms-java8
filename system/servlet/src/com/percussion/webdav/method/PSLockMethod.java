@@ -328,8 +328,11 @@ public class PSLockMethod extends PSWebdavMethod
     */
    private void setLockResponse() throws PSWebdavException, IOException
    {
-      getResponse().setHeader(H_LOCK_TOKEN,
-            "<" + S_LOCK_TOKEN + getRxVirtualPath() + ">");
+      // Strip CR/LF from the virtual path before writing it into the header
+      // (CWE-113 / CodeQL java/http-response-splitting).
+      getResponse().setHeader(
+            H_LOCK_TOKEN,
+            "<" + S_LOCK_TOKEN + com.percussion.security.SecureStringUtils.stripAllLineBreaks(getRxVirtualPath()) + ">");
       Element responseElem = createResponseElement();
       setResponse(responseElem, PSWebdavStatus.SC_OK);
    }

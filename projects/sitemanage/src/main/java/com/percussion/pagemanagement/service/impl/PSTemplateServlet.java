@@ -82,7 +82,11 @@ public class PSTemplateServlet extends HttpServlet {
       resp.reset();
       resp.setBufferSize(DEFAULT_BUFFER_SIZE);
       resp.setContentType("text/xml");
-      resp.setHeader("Content-Disposition", "attachment; filename=\"" + templateName + "\"");
+      resp.setHeader(
+          "Content-Disposition",
+          "attachment; filename=\""
+              + com.percussion.security.SecureStringUtils.stripAllLineBreaks(templateName)
+              + "\"");
       resp.getWriter().write(PSSerializerUtils.marshal(templateSelected));
     } catch (Exception ex) {
       throw new ServletException("Failed to find Template with name = " + templateName, ex);

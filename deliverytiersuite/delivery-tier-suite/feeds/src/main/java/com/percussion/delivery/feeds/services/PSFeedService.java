@@ -119,7 +119,9 @@ public class PSFeedService extends PSAbstractRestService implements IPSFeedsRest
     for (Cookie cookie : cookies) {
       if ("XSRF-TOKEN".equals(cookie.getName())) {
         response.setHeader("X-CSRF-HEADER", "X-XSRF-TOKEN");
-        response.setHeader("X-CSRF-TOKEN", cookie.getValue());
+        // CR/LF strip before writing the cookie value into a response header
+        // (CWE-113 / CodeQL java/http-response-splitting).
+        response.setHeader("X-CSRF-TOKEN", cookie.getValue().replaceAll("[\\r\\n]", ""));
       }
     }
   }
@@ -494,7 +496,8 @@ public class PSFeedService extends PSAbstractRestService implements IPSFeedsRest
       throw new FeedException("metadata-service URL failed SSRF validation");
     }
 
-    // codeql[java/ssrf] justification: URL rebuilt from URLValidation.validateURLString + http/https scheme literal; re-review by 2027-07-31
+    // codeql[java/ssrf] justification: URL rebuilt from URLValidation.validateURLString +
+    // http/https scheme literal; re-review by 2027-07-31
     WebTarget webTarget = client.target(url + "/perc-metadata-services/metadata/get");
 
     if (log.isDebugEnabled()) {

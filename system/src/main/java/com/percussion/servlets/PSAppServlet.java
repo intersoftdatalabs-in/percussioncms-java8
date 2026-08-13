@@ -188,7 +188,11 @@ public class PSAppServlet extends HttpServlet {
 
     while (entryiter.hasNext()) {
       Map.Entry entry = (Entry) entryiter.next();
-      res.setHeader((String) entry.getKey(), (String) entry.getValue());
+      // Strip CR/LF from header names and values before writing them
+      // (CWE-113 / CodeQL java/http-response-splitting).
+      res.setHeader(
+          com.percussion.security.SecureStringUtils.stripAllLineBreaks((String) entry.getKey()),
+          com.percussion.security.SecureStringUtils.stripAllLineBreaks((String) entry.getValue()));
     }
   }
 
