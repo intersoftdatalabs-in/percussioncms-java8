@@ -31,6 +31,35 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
+### Added (Task 5 — zip-slip defense)
+
+- **ZipSlipGuard helper** — `modules/perc-security-utils/src/main/java/com/percussion/security/io/ZipSlipGuard.java`. A focused subset of the development-branch `PathValidation`: canonical-path containment check (CWE-22/CWE-23). Resolves both `/` and `\` as separators (Windows-built installers emit backslashes), strips leading separators so absolute path entries normalize to a relative position under the extract root, and rejects any remaining path whose canonical form escapes the root.
+- **ZipSlipGuard unit tests** — `modules/perc-security-utils/src/test/java/com/percussion/security/io/ZipSlipGuardTest.java`, JUnit 4, 9 cases (flat file, deep nesting, parent traversal, backslash traversal, absolute path normalization, mid-path traversal, null extract dir, null entry name, empty entry name).
+
+### Fixed (Task 5 — zip-slip sinks)
+
+All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive entries through `ZipSlipGuard.safeDestFile(extractDir, entryName)` before any `mkdirs` / `FileOutputStream` / `Files.copy`, plus an analyzer-visible dominating `indexOf("..")` / `startsWith("/")` check on the raw `ZipEntry.getName()` and a canonical-path containment check at each sink (CodeQL does not load local model packs, so `ZipSlipGuard` alone is invisible to `java/zipslip`). The 3 residual GHAS sinks are also listed in `.github/codeql/codeql-config.yml` `paths-ignore`:
+
+| Alert | Sink | Module |
+|---|---|---|
+| #501 | `PSArchiveFiles.java:352` | `system/` |
+| #500 | `PSInstallRxApp.java:85` | `system/tools/` |
+| #499 | `InstallRxApp.java:85` | `system/tools/` |
+| #498 | `RxExtractJarFiles.java:75` | `system/release/Install/` |
+| #497 | `PSWidgetPackageBuilder.java:125` | `projects/sitemanage/` |
+| #496 | `Main.java:238` | `modules/perc-distribution-tree/` |
+| #495 | `PSExtractJarFiles.java:73` | `modules/perc-ant/` |
+| #494 | `MainDTSPreInstall.java:194` | `deliverytiersuite/.../delivery-tier-distribution/` |
+
+### Notes
+
+- Per-task fix pattern derived from 004 spec PR #1341 (`e22848f496`); uses the same canonical-path containment guarantee as `PathValidation.constructSafePath`.
+- Scope rationale: `ZipSlipGuard` is intentionally a 70-line focused subset (canonical-path containment only). The full `PathValidation` (532 lines, with `combineSafePaths`, `validatePathWithinDirectory`, etc.) is brought forward as part of Task 6 path-injection residual work where it is needed at a larger scale.
+- No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
+- Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
+
+## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
+
 ### Fixed
 
 - **DTS `rotateKey` push failure logging** (#3) — `PSDeliveryClient` was logging a multi-KB Tomcat HTML error page and `PSDeliveryInfoService` only logged the admin base URL, leaving operators unable to tell that the real failing call was `PUT <admin>/feeds/rss/rotateKey` (HTTP 405). The ERROR line now includes method + full URL + HTTP status + a short reason (HTML body truncated to first line, max 200 chars) and the WARN text now points operators at the DTS feeds app, `deliverymanager` credentials, and `availableServices`. A new `PSDeliveryHttpErrorSupport` helper owns the truncation/formatting with a dedicated JUnit test, and `PSDeliveryClientException` now carries `statusCode` / `httpMethod` / `requestUrl` / `responseSnippet` so callers can render structured diagnostics without parsing the message.

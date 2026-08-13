@@ -13,6 +13,7 @@ package com.percussion.installer.action;
 import com.percussion.install.InstallUtil;
 import com.percussion.installanywhere.RxIAAction;
 import com.percussion.installanywhere.RxIAUtils;
+import com.percussion.security.io.ZipSlipGuard;
 import com.zerog.ia.api.pub.IASys;
 
 import java.io.File;
@@ -85,29 +86,38 @@ public class RxExtractJarFiles extends RxIAAction
          {
             if (k != 0 && k % modifier == 0)
                IASys.out.print('.');
-            
-            String jarFileLoc = m_destinationDir + File.separator +
-               fileList.get(k);
-            File makeLocation = new File(jarFileLoc).getParentFile();
+
+            String entryName = fileList.get(k);
+            // Zip-slip guard (CodeQL java/zipslip alert #498): validate that the entry resolves
+            // under m_destinationDir before any mkdirs/FileOutputStream. The entry name is
+            // attacker-controlled.
+            File extractDir = new File(m_destinationDir);
+            File fJarFile = ZipSlipGuard.safeDestFile(extractDir, entryName);
+            String destCanon = fJarFile.getCanonicalPath();
+            String rootCanon = extractDir.getCanonicalPath();
+            if (!destCanon.equals(rootCanon)
+                  && !destCanon.startsWith(rootCanon + File.separator)) {
+               throw new SecurityException("zip slip: " + entryName);
+            }
+            File makeLocation = fJarFile.getParentFile();
             makeLocation.mkdirs();
             JarFile jf = null;
             jf = new JarFile(m_jarFile);
-            File fJarFile = new File(jarFileLoc);
-            
-            if (jarFileLoc.endsWith(File.separator) ||
-                  jarFileLoc.endsWith("/"))
+
+            if (entryName.endsWith(File.separator) ||
+                  entryName.endsWith("/"))
             {
                fJarFile.mkdir();
                continue;
             }
-            
+
             if (fJarFile.exists() && fJarFile.isFile())
             {
                // delete the file if it exists, else the write operation may
                // fail if the file is readonly.
                fJarFile.delete();
             }
-            
+
             fJarFile.createNewFile();
             
             FileOutputStream fos = null;
@@ -117,6 +127,7 @@ public class RxExtractJarFiles extends RxIAAction
             {
                String entry = fileList.get(k);
                is = jf.getInputStream(jf.getEntry(entry));
+               // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
                fos = new FileOutputStream(fJarFile);
                
                text = "expanding " + entry + " to " +

@@ -123,13 +123,25 @@ public class PSWidgetPackageBuilder {
         if (!entry.isDirectory()) {
 
           String resolvePath = resolvePath(entry.getName(), packageSpec);
-          File file = new File(rootDir, resolvePath);
+          // Zip-slip guard (CodeQL java/zipslip alert #497): validate that the resolved path
+          // stays under rootDir before any mkdirs/FileOutputStream. The entry name and the
+          // package-spec token substitution are both attacker-controlled.
+          File file = com.percussion.security.io.ZipSlipGuard.safeDestFile(rootDir, resolvePath);
           IPSWidgetFileTransformer xform = getFileTransformer(file);
           if (xform != null) {
             file = xform.transformPath(file, packageSpec);
+            // Re-validate after the transformer may have re-mapped the path.
+            file = com.percussion.security.io.ZipSlipGuard.safeDestFile(rootDir, file.getPath());
+          }
+
+          String destCanon = file.getCanonicalPath();
+          String rootCanon = rootDir.getCanonicalPath();
+          if (!destCanon.equals(rootCanon) && !destCanon.startsWith(rootCanon + File.separator)) {
+            throw new SecurityException("zip slip: " + resolvePath);
           }
 
           file.getParentFile().mkdirs();
+          // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
           fout = new FileOutputStream(file);
 
           if (isTextFile(file)) {

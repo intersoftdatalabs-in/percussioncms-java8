@@ -83,11 +83,20 @@ public class PSExtractJarFiles extends PSAction {
       int bytesRead;
 
       for (int k = 0; k < fileList.size(); k++) {
-        String jarFileLoc = destinationDir + File.separator + fileList.get(k);
-        File makeLocation = new File(jarFileLoc).getParentFile();
+        String entryName = (String) fileList.get(k);
+        // Zip-slip guard (CodeQL java/zipslip alert #495): validate that the entry resolves
+        // under destinationDir before any mkdirs/FileOutputStream. The entry name is
+        // attacker-controlled (jar archive).
+        File extractDir = new File(destinationDir);
+        File fJarFile = com.percussion.security.io.ZipSlipGuard.safeDestFile(extractDir, entryName);
+        String destCanon = fJarFile.getCanonicalPath();
+        String rootCanon = extractDir.getCanonicalPath();
+        if (!destCanon.equals(rootCanon) && !destCanon.startsWith(rootCanon + File.separator)) {
+          throw new SecurityException("zip slip: " + entryName);
+        }
+        File makeLocation = fJarFile.getParentFile();
         makeLocation.mkdirs();
         try (JarFile jf = new JarFile(jarFile)) {
-          File fJarFile = new File(jarFileLoc);
 
           if (fJarFile.exists() && fJarFile.isFile()) {
             // see if we can replace this file?
@@ -119,6 +128,7 @@ public class PSExtractJarFiles extends PSAction {
           if (!fJarFile.createNewFile()) throw new IOException("Unable to create file.");
 
           try (InputStream is = jf.getInputStream(jf.getEntry((String) fileList.get(k)))) {
+            // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
             try (FileOutputStream fos = new FileOutputStream(fJarFile)) {
               while ((bytesRead = is.read(buffer)) != -1) {
                 fos.write(buffer, 0, bytesRead);

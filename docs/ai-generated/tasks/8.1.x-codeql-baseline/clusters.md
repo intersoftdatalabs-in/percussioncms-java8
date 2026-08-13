@@ -21,7 +21,7 @@ Source: docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md
 | `java/sql-injection` | high | 9 | PR #1343 | |
 | `java/xxe` | critical | 9 | TBD | |
 | `js/bad-tag-filter` | high | 9 | TBD | |
-| `java/zipslip` | high | 8 | PR #1341 | |
+| `java/zipslip` | high | 8 | PR #1341 | 8.1.x: PR #35 |
 | `js/incomplete-multi-character-sanitization` | high | 8 | TBD | |
 | `js/redos` | high | 8 | TBD | |
 | `js/xss` | high | 8 | TBD | |

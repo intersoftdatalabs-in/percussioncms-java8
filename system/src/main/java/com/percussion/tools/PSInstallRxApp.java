@@ -108,10 +108,19 @@ public class PSInstallRxApp {
    */
   private void copyInputStreamToFile(InputStream is, String tgtRoot, String fileName)
       throws IOException {
-    File file = new File(tgtRoot, fileName);
+    // Zip-slip guard (CodeQL java/zipslip alert #500): validate the entry resolves under tgtRoot
+    // before any mkdirs/FileOutputStream. The archive entry name is attacker-controlled.
+    File extractDir = new File(tgtRoot);
+    File file = com.percussion.security.io.ZipSlipGuard.safeDestFile(extractDir, fileName);
+    String destCanon = file.getCanonicalPath();
+    String rootCanon = extractDir.getCanonicalPath();
+    if (!destCanon.equals(rootCanon) && !destCanon.startsWith(rootCanon + File.separator)) {
+      throw new SecurityException("zip slip: " + fileName);
+    }
     File parent = file.getParentFile();
     if (null != parent && !parent.exists()) parent.mkdirs();
 
+    // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
     FileOutputStream fos = new FileOutputStream(file);
     byte[] buffer = new byte[1024];
     int nRead = -1;

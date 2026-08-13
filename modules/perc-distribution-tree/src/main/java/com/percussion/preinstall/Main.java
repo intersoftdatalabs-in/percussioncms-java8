@@ -236,25 +236,45 @@ public class Main {
       for (ZipEntry entry : entries) {
         currentLineNo.getAndIncrement();
         String entryName = entry.getName();
+        // Analyzer-visible zipslip sanitizer (java/zipslip): dominating check on the raw
+        // ZipEntry name. ZipSlipGuard is a runtime guard only — CodeQL does not model it.
+        if (entryName.indexOf("..") >= 0
+            || entryName.startsWith("/")
+            || entryName.startsWith("\\")) {
+          throw new SecurityException("zip slip: " + entryName);
+        }
         if (!entryName.startsWith(folderPrefix)) continue;
 
         String name = entryName.substring(folderPrefix.length() + 1);
         if (name.length() == 0) continue;
+        if (name.indexOf("..") >= 0 || name.startsWith("/") || name.startsWith("\\")) {
+          throw new SecurityException("zip slip: " + name);
+        }
 
-        Path entryDest = destPath.resolve(name);
-        File newFile = new File(entryDest.toString());
+        // Zip-slip guard (CodeQL java/zipslip alert #496): validate that the resolved path
+        // stays under destPath before any mkdirs/Files.copy. The entry name and the
+        // folderPrefix stripping are both attacker-controlled (jar archive).
+        File extractDir = destPath.toFile();
+        File newFile = com.percussion.security.io.ZipSlipGuard.safeDestFile(extractDir, name);
+        String destCanon = newFile.getCanonicalPath();
+        String rootCanon = extractDir.getCanonicalPath();
+        if (!destCanon.equals(rootCanon) && !destCanon.startsWith(rootCanon + File.separator)) {
+          throw new SecurityException("zip slip: " + name);
+        }
         System.out.println("Unzipping to " + newFile.getAbsolutePath());
         // create directories for sub directories in zip
         new File(newFile.getParent()).mkdirs();
 
         if (entry.isDirectory()) {
-          Files.createDirectory(entryDest);
+          // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
+          Files.createDirectory(newFile.toPath());
           continue;
         }
 
-        System.out.println("Creating file " + entryDest);
+        System.out.println("Creating file " + newFile);
 
-        Files.copy(archive.getInputStream(entry), entryDest);
+        // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
+        Files.copy(archive.getInputStream(entry), newFile.toPath());
 
         // Preserve executable permissions for shell scripts
         if (entryName.endsWith(".sh")) {

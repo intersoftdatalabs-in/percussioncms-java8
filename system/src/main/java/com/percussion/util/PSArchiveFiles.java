@@ -18,6 +18,7 @@
 package com.percussion.util;
 
 import com.percussion.cms.IPSConstants;
+import com.percussion.security.io.ZipSlipGuard;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -350,6 +351,11 @@ public class PSArchiveFiles {
       // Check whether the directory exists for this file. If not, create it.
       String dir = "";
       String name = entry.getName();
+      // Analyzer-visible zipslip sanitizer (java/zipslip): dominating check on the raw
+      // ZipEntry name. ZipSlipGuard is a runtime guard only — CodeQL does not model it.
+      if (name.indexOf("..") >= 0 || name.startsWith("/") || name.startsWith("\\")) {
+        throw new SecurityException("zip slip: " + name);
+      }
       // don't extract manifest file
       if (name.equals(JarFile.MANIFEST_NAME)) continue;
 
@@ -365,8 +371,14 @@ public class PSArchiveFiles {
       }
 
       if (!dir.equals(".")) {
-        File file = new File(extractDir, dir);
+        File file = ZipSlipGuard.safeDestFile(directory, dir);
+        String destCanon = file.getCanonicalPath();
+        String rootCanon = directory.getCanonicalPath();
+        if (!destCanon.equals(rootCanon) && !destCanon.startsWith(rootCanon + File.separator)) {
+          throw new SecurityException("zip slip: " + dir);
+        }
         if (!file.exists()) {
+          // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
           if (!file.mkdirs()) return "Could not make directory " + file.getCanonicalPath();
         }
       }
@@ -380,12 +392,15 @@ public class PSArchiveFiles {
       try {
         in = archiveFile.getInputStream(entry);
 
-        if (!extractDir.endsWith(File.separator)) extractDir += File.separator;
+        if (!directory.toString().endsWith(File.separator)) extractDir += File.separator;
 
-        File file = new File(extractDir, entry.getName());
-        if (!file.toPath().normalize().startsWith(extractDir))
-          throw new IllegalArgumentException(
-              "Archive file to extract from is not having correct path.");
+        File file = ZipSlipGuard.safeDestFile(directory, name);
+        String destCanon = file.getCanonicalPath();
+        String rootCanon = directory.getCanonicalPath();
+        if (!destCanon.equals(rootCanon) && !destCanon.startsWith(rootCanon + File.separator)) {
+          throw new SecurityException("zip slip: " + name);
+        }
+        // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
         out = new FileOutputStream(file);
 
         byte[] buf = new byte[1024];
