@@ -4,6 +4,10 @@ This file documents changes that have been made to API's / public interfaces.
 
 ## Design / Development Changes
 
+### Editor decoration region grid
+
+See `CHANGELOG.md` (issue #2, 8.1.7 entry) for the full product / support note, including the temporary customer theme override snippet for sites already on 8.1.7+.
+
 ### Test / Debug Tools
 
 The Test / Debug tools have been disabled by default, and will all require user membership in the Admin role when enabled for all tool scripts.
