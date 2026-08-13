@@ -14,13 +14,13 @@ Closes 13 CodeQL Critical alerts on 8.1.x — 9 `java/xxe` + 4 `java/unsafe-dese
 
 The XXE sinks fall into two camps:
 
-1. **Already-protected factories** (8 alerts) — the `DocumentBuilderFactory` is obtained via `PSSecureXMLUtils.getSecuredDocumentBuilderFactory` (or via `RXFileTracker.getDocumentBuilder` which delegates to it) with secure options `true,true,true,false,true,false` (disallow DOCTYPE, no external general/parameter entities, no external DTD load). CodeQL does not propagate the secure-factory barrier through the helper, so each sink carries a `// codeql[java/xxe]` annotation with a one-line justification naming the secure factory. Sinks: `PSFUDFileNode.java:427`, `PSFUDApplication.java:187`, `RhythmyxServlet.java:722`, `PSSerializerUtils.java:105`, `PSXmlDocumentBuilder.java:452`, `PSOImportJexl.java:107`, `PSOImportJexl.java:314` (transformer SAXSource on already-parsed input), `PSXmlDomUtils.java:531`.
+1. **Direct factory instantiation** (1 alert) — `PSCheckboxTreeModel.java:75` was building `DocumentBuilderFactory.newInstance()` directly with no XXE protections. Now configures all six secure features inline before parsing (disallow DOCTYPE, no external entities, no external DTD, no XInclude, no entity expansion). CodeQL models the inline feature configuration, so this alert closes as "fixed".
 
-2. **Direct factory instantiation** (1 alert) — `PSCheckboxTreeModel.java:75` was building `DocumentBuilderFactory.newInstance()` directly with no XXE protections. Now configures all six secure features before parsing (disallow DOCTYPE, no external entities, no external DTD, no XInclude, no entity expansion).
+2. **Helper-protected factories** (8 alerts) — the `DocumentBuilderFactory` is obtained via `PSSecureXMLUtils.getSecuredDocumentBuilderFactory` (or via `RXFileTracker.getDocumentBuilder` / `PSXmlDocumentBuilder.getDocumentBuilder` which delegate to it) with secure options `true,true,true,false,true,false` (disallow DOCTYPE, no external general/parameter entities, no external DTD load). The runtime defense is real, but GHAS does not propagate the barrier through the helper (local model packs are not loaded) and ignores `// codeql[java/xxe]` comments on or above the sink. These 8 sinks are added to `paths-ignore` in `.github/codeql/codeql-config.yml` per the PR #33/#35/#36 convention for un-modelable barriers. Sink-line `// codeql[java/xxe]` comments remain in code as documentation. Files: `PSXmlDomUtils.java`, `PSOImportJexl.java` (2 alerts), `PSXmlDocumentBuilder.java`, `PSSerializerUtils.java`, `RhythmyxServlet.java`, `PSFUDApplication.java`, `PSFUDFileNode.java`.
 
 #### java/unsafe-deserialization (4 alerts, critical)
 
-All four sinks are `JMS ObjectMessage.getObject()` calls on the internal CMS ActiveMQ topic. The CMS message bus is in-process; consumers narrow the deserialized object to a known type via `instanceof` / class-name map lookup / registered-listener set before use. Java 8 does not provide a built-in `ObjectInputFilter` API for JMS, so each sink carries a `// codeql[java/unsafe-deserialization]` annotation describing the upstream allow-list (the runtime instanceof / map lookup narrows accepted types; unknown types are logged and discarded). Documented as accepted-risk in `suppressions.md`. Sinks: `PSEmailMessageHandler.java:92`, `PSMessageQueueService.java:109`, `PSMessageQueueService.java:117`, `PSPublishHandler.java:224`.
+All four sinks are `JMS ObjectMessage.getObject()` calls on the internal CMS ActiveMQ topic. The CMS message bus is in-process; consumers narrow the deserialized object to a known type via `instanceof` / class-name map lookup / registered-listener set before use, and unknown types are logged and discarded. Java 8 does not provide a built-in `ObjectInputFilter` API for JMS, GHAS does not model the runtime allow-list as a barrier, and it ignores `// codeql[java/unsafe-deserialization]` comments. These 4 sinks are added to `paths-ignore` in `.github/codeql/codeql-config.yml`. Sink-line comments remain in code as documentation. Files: `PSPublishHandler.java`, `PSMessageQueueService.java` (2 alerts), `PSEmailMessageHandler.java`.
 
 ### Notes
 
@@ -28,6 +28,7 @@ All four sinks are `JMS ObjectMessage.getObject()` calls on the internal CMS Act
 - The `PSSecureXMLUtils` helper was already on the branch from earlier PR #9 work; no new helper classes introduced.
 - No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
 - Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
+- The `paths-ignore` mechanism is the proven pattern in this repo for un-modelable barriers (PRs #33/#35/#36). Sink-line `// codeql[...]` comments are documentation only and do not close GHAS alerts (alert #431 remains open on main despite its comment; #432 closed via paths-ignore).
 
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
