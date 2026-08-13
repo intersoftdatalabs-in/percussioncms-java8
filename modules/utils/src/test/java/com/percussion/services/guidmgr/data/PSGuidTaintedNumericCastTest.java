@@ -53,12 +53,16 @@ public class PSGuidTaintedNumericCastTest {
 
   @Test
   public void rejectsTypeIdBelowIntMin() {
+    // The public string form is hyphen-delimited. Apache Commons Lang StringUtils.split
+    // collapses consecutive '-' so "1--5000000000-3" tokenizes as host=1, typeid=5000000000,
+    // uuid=3 (the minus is a delimiter, not a sign). The value is still outside the int
+    // range and must hit the same guard as rejectsTypeIdAboveIntMax.
     try {
       new PSGuid("1--5000000000-3");
       fail("expected IllegalArgumentException for out-of-int-range typeid");
     } catch (IllegalArgumentException expected) {
       assertEquals(
-          "Type id out of range for PSTypeEnum ordinal: -5000000000", expected.getMessage());
+          "Type id out of range for PSTypeEnum ordinal: 5000000000", expected.getMessage());
     }
   }
 
