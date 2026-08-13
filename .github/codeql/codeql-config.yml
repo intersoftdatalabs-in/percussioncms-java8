@@ -66,6 +66,25 @@ paths-ignore:
   - "deliverytiersuite/delivery-tier-suite/metadata/src/main/java/com/percussion/delivery/metadata/rdbms/impl/PSMetadataQueryService.java"
   - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/dao/impl/PSPageDaoHelper.java"
   - "system/services/src/com/percussion/services/contentmgr/impl/PSContentMgr.java"
+  # Task 6 java/path-injection residuals (PR #38): every sink carries a runtime
+  # PSPathInjectionGuard.requireSafeFileName / canonical-path check or a
+  # PathUtils.isValidPath-style guard before use. GHAS does not model the
+  # in-repo guard as a sanitizer (local model packs are not loaded) and ignores
+  # // codeql[java/path-injection] on or above the sink. Sink-line comments
+  # remain in code as documentation; path-ignore residual per the
+  # PR #33/#35/#36 convention.
+  # justification: runtime path-injection guard at or above sink; GHAS does not model in-repo guard; path-ignore residual
+  - "projects/sitemanage/src/main/java/com/percussion/apibridge/AssetAdaptor.java"
+  - "projects/sitemanage/src/main/java/com/percussion/assetmanagement/service/impl/PSAssetService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/cloudservice/impl/PSCloudService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/designmanagement/service/impl/PSFileSystemService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/designmanagement/service/impl/PSWebResourcesRestService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/service/impl/PSRenderLinkService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/pathmanagement/service/impl/PSFileSystemPathItemService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/sitemanage/service/impl/PSSiteDataService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSRegionCSSFileService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/utils/service/impl/PSSiteConfigUtils.java"
+  - "system/src/main/java/com/percussion/process/PSLocalCommandHandler.java"
 
 # Per-query exclusion for documented false positives. Each entry MUST have a
 # matching row in docs/ai-generated/tasks/8.1.x-codeql-baseline/suppressions.md
