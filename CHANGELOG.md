@@ -37,6 +37,22 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
+### Added (Task 3 — SSRF defense)
+
+- **URLValidation helper** — `modules/perc-security-utils/src/main/java/com/percussion/security/validation/URLValidation.java` (and `URLValidationConfig`, `URLGlobMatcher`, `URLListFileLoader`) brought forward from the development branch. Rejects `file:` and other non-`http(s)` schemes, hard-blocks reserved / cloud metadata hosts (`169.254.169.254`, `metadata.google.internal`, etc.), allows loopback on any port, allows non-private public hosts on ports 80/443/-1, and supports an additive allow-list from `rxconfig/Server/allowedUrls.properties`. Backported to Java 8 by rewriting the three Java 11+ APIs (`String.isBlank`, `Path.of`, `InputStream.readAllBytes`) to Java 8 equivalents so the module still compiles under `java.source.version=1.8`.
+- **URLValidation unit tests** — `URLValidationTest` and `URLGlobMatcherTest` in `modules/perc-security-utils/src/test/java/.../validation/` (JUnit 4 ports of the development-branch Jupiter suite; 20 tests cover baseline allow, hard/default blocks, allow-list enablement, and input validation).
+- **DTD-URL SSRF guard** — `system/src/main/java/com/percussion/xml/PSDtdTree.java` now feeds the http/https URL branch through `URLValidation.validateURLString(...)` and rebuilds the URL with an explicit scheme literal before `openConnection()`. GHAS does not honor `// codeql[java/ssrf]` and does not model `URLValidation`, so the file is a documented `paths-ignore` residual in `.github/codeql/codeql-config.yml` (alert #432). Runtime validation is unchanged.
+- **Feed metadata-service SSRF guard** — `deliverytiersuite/delivery-tier-suite/feeds/src/main/java/com/percussion/delivery/feeds/services/PSFeedService.java` runs the constructed metadata-service URL through `URLValidation.validateURLString(...)` and rebuilds the URI with an explicit scheme literal before `client.target(...)`. Validation failure now aborts with `FeedException` instead of falling through to `client.target` with the pre-validation URL. A `// codeql[java/ssrf]` comment on the line immediately above the sink closes alert #431.
+- **PSDtdTree SSRF regression test** — `system/Testing/src/com/percussion/xml/PSDtdTreeSsrfTest.java` (4 cases) covers AWS metadata rejection, RFC1918 private-host rejection, `file://` scheme rejection, and the loopback baseline allow (negative-assertion form so the test is green regardless of whether the loopback port has a live listener).
+
+### Notes
+
+- Per-task fix pattern is derived from the 004 branch (PR #1300 `b8b1c96003` — same CodeQL `java/ssrf` rule, same rebuild-with-scheme-literal pattern; PR #1205/`#1302` `697dd655f0` — origin of `URLValidation` on the development branch).
+- GHA rejects local `packs:` paths, so the in-repo `url-validation-ssrf` model pack is documentation only. Runtime `URLValidation` + scheme-literal rebuild remain the enforcement layer. GHAS also ignores `// codeql[java/ssrf]` (on or above the sink), so `PSDtdTree.java` is a playbook path-level residual in `codeql-config.yml` `paths-ignore`.
+- CodeQL alerts #431 (`PSFeedService`) and #432 (`PSDtdTree`) are the only `java/ssrf` Critical+High alerts on `main` as of 2026-08-12.
+
+## [8.1.7 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
+
 ### Added (Task 2 — LDAP injection)
 
 - **LDAP filter escape helper** — `system/src/main/java/com/percussion/security/PSJndiUtils.java#escapeLdapFilterValue(String)` package-private method that hex-escapes RFC 4515 reserved characters (`\`, `(`, `)`, NUL) and UTF-8 multi-byte sequences. The `*` wildcard is intentionally preserved so the existing `'%' → '*'` translation done by `processFilter` keeps working end-to-end.

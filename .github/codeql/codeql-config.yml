@@ -42,6 +42,12 @@ paths-ignore:
   - "modules/CMLight-Main-cactus-tests/**"
   # Local CodeQL model pack docs (not scanned source)
   - ".github/codeql/**"
+  # Path-level residual (alert #432 / PR #33). Runtime defense stays in the
+  # file (URLValidation + http/https scheme-literal rebuild before
+  # openConnection). GHAS does not model URLValidation (local packs: rejected)
+  # and ignores // codeql[java/ssrf] on or above the sink.
+  # runtime URLValidation + scheme-literal rebuild already on the sink; analyzer does not model URLValidation and ignores // codeql[java/ssrf]; path-ignore residual
+  - "system/src/main/java/com/percussion/xml/PSDtdTree.java"
 
 # Per-query exclusion for documented false positives. Each entry MUST have a
 # matching row in docs/ai-generated/tasks/8.1.x-codeql-baseline/suppressions.md
