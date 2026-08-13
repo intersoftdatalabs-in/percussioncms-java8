@@ -57,6 +57,15 @@ paths-ignore:
   - "modules/perc-distribution-tree/src/main/java/com/percussion/preinstall/Main.java"
   # paths-ignore PSArchiveFiles zipslip residual
   - "system/src/main/java/com/percussion/util/PSArchiveFiles.java"
+  # Path-level residual (Task 4 / PR #36): GHAS Default Setup does not load
+  # local model packs, so SecureStringUtils is not a recognized sanitizer.
+  # Runtime requireSafeMetadataToken / requireSqlObjectNameOrNull /
+  # requireFactorySqlStatement guards remain at the Hibernate sinks.
+  # justification: tokens passed through SecureStringUtils SQL barrier
+  # re-review by 2027-07-31
+  - "deliverytiersuite/delivery-tier-suite/metadata/src/main/java/com/percussion/delivery/metadata/rdbms/impl/PSMetadataQueryService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/dao/impl/PSPageDaoHelper.java"
+  - "system/services/src/com/percussion/services/contentmgr/impl/PSContentMgr.java"
 
 # Per-query exclusion for documented false positives. Each entry MUST have a
 # matching row in docs/ai-generated/tasks/8.1.x-codeql-baseline/suppressions.md
