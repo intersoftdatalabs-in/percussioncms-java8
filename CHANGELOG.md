@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-13
+
+### Fixed (Task 8 — sql-injection residual)
+
+Closes 6 CodeQL `java/sql-injection` High alerts (#520-#525) that remained open after PR #36 (Task 4). Every sink already carries a runtime `SecureStringUtils` barrier on `main` (`requireSqlObjectNameOrNull` / `requireSingleSqlStatement` / `requireFactorySqlStatement`), but GHAS does not load local model packs, so the in-repo sanitizer is not a recognized barrier, and sink-line `// codeql[java/sql-injection]` comments are ignored. The 5 files are added to `paths-ignore` in `.github/codeql/codeql-config.yml` with matching `suppressions.md` rows, per the PR #36 convention (same rule family, same guard helpers, same path-level residual pattern).
+
+| Alert | File | Runtime guard already on main |
+|---|---|---|
+| #520 | `PSJdbcResultSetIteratorStep.java` | `requireFactorySqlStatement(m_statement)` before `executeQuery` |
+| #521 | `PSJdbcTableFactory.java` | `requireSqlObjectNameOrNull(tableSchema.getName())` before COUNT(*) |
+| #522 | `PSJdbcTableMetaData.java` | `requireSqlObjectNameOrNull(m_tableName/m_schema)` before `getColumns` |
+| #523 | `PSJdbcTableMetaData.java` | same guards before `getPrimaryKeys` |
+| #524 | `PSOSimpleSqlQuery.java` | `requireSingleSqlStatement(query)` before `prepareStatement` |
+| #525 | `PSSQLStatement.java` | `requireSingleSqlStatement(sql)` before `executeQuery` |
+
+### Notes
+
+- Same mechanism as PR #36's residuals (alerts #519/#526/#527): GHAS does not model `SecureStringUtils` because local model packs are rejected by GHA; sink-line comments are documentation only.
+- No Java code changed in this PR — the runtime guards were already landed in PR #36's sink hardening.
+- No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
+- Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
+
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
 ### Fixed (Task 8 — tainted-numeric-cast)

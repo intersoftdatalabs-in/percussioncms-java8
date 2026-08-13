@@ -66,6 +66,20 @@ paths-ignore:
   - "deliverytiersuite/delivery-tier-suite/metadata/src/main/java/com/percussion/delivery/metadata/rdbms/impl/PSMetadataQueryService.java"
   - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/dao/impl/PSPageDaoHelper.java"
   - "system/services/src/com/percussion/services/contentmgr/impl/PSContentMgr.java"
+  # Task 8 java/sql-injection residuals (PR #43): the 6 remaining sql-injection
+  # alerts (#520-#525) sit at JDBC sinks that already carry runtime
+  # SecureStringUtils guards on main (requireSqlObjectNameOrNull /
+  # requireSingleSqlStatement / requireFactorySqlStatement). GHAS does not load
+  # local model packs, so SecureStringUtils is not a recognized sanitizer, and
+  # it ignores // codeql[java/sql-injection] on or above the sink. Sink-line
+  # comments remain in code as documentation; path-ignore residual per the
+  # PR #36 convention (same rule family, same guard helpers).
+  # justification: runtime SecureStringUtils SQL barrier at sink; GHAS does not model in-repo sanitizer; path-ignore residual
+  - "modules/TableFactory/src/main/java/com/percussion/tablefactory/PSJdbcResultSetIteratorStep.java"
+  - "modules/TableFactory/src/main/java/com/percussion/tablefactory/PSJdbcTableFactory.java"
+  - "modules/TableFactory/src/main/java/com/percussion/tablefactory/PSJdbcTableMetaData.java"
+  - "modules/perc-toolkit/src/main/java/com/percussion/pso/utils/PSOSimpleSqlQuery.java"
+  - "modules/utils/src/main/java/com/percussion/util/PSSQLStatement.java"
 
 # Per-query exclusion for documented false positives. Each entry MUST have a
 # matching row in docs/ai-generated/tasks/8.1.x-codeql-baseline/suppressions.md
