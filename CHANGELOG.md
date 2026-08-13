@@ -6,6 +6,24 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-13
 
+### Fixed (Task 8 — zipslip residual)
+
+Closes 2 CodeQL `java/zipslip` High alerts (#500, #622) that surfaced after PR #35's sink-line suppressions. Both call sites already route through `ZipSlipGuard.safeDestFile` + canonical `startsWith` checks inside the extraction helper, but GHAS does not model the in-repo guard (local model packs not loaded) and ignores `// codeql[java/zipslip]` on or above the sink. The 2 files are added to `paths-ignore` in `.github/codeql/codeql-config.yml` with matching `suppressions.md` rows, per the PR #35 convention.
+
+| Alert | File | Runtime guard already on main |
+|---|---|---|
+| #500 | `PSInstallRxApp.java` | `ZipSlipGuard.safeDestFile` + canonical startsWith in `copyInputStreamToFile` |
+| #622 | `PSWidgetPackageBuilder.java` | `ZipSlipGuard.safeDestFile` (incl. re-validation after transformer) + canonical startsWith before `FileOutputStream` |
+
+### Notes
+
+- Same mechanism as PR #35's residuals (MainDTSPreInstall/Main/PSArchiveFiles): GHAS does not model `ZipSlipGuard` because local model packs are rejected by GHA; sink-line comments are documentation only.
+- No Java code changed in this PR — the runtime guards were already landed in PR #35.
+- No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
+- Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
+
+## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-13
+
 ### Fixed (Task 8 — sql-injection residual)
 
 Closes 6 CodeQL `java/sql-injection` High alerts (#520-#525) that remained open after PR #36 (Task 4). Every sink already carries a runtime `SecureStringUtils` barrier on `main` (`requireSqlObjectNameOrNull` / `requireSingleSqlStatement` / `requireFactorySqlStatement`), but GHAS does not load local model packs, so the in-repo sanitizer is not a recognized barrier, and sink-line `// codeql[java/sql-injection]` comments are ignored. The 5 files are added to `paths-ignore` in `.github/codeql/codeql-config.yml` with matching `suppressions.md` rows, per the PR #36 convention (same rule family, same guard helpers, same path-level residual pattern).
