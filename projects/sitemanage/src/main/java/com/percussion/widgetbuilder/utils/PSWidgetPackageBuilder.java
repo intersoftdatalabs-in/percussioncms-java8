@@ -134,7 +134,14 @@ public class PSWidgetPackageBuilder {
             file = com.percussion.security.io.ZipSlipGuard.safeDestFile(rootDir, file.getPath());
           }
 
+          String destCanon = file.getCanonicalPath();
+          String rootCanon = rootDir.getCanonicalPath();
+          if (!destCanon.equals(rootCanon) && !destCanon.startsWith(rootCanon + File.separator)) {
+            throw new SecurityException("zip slip: " + resolvePath);
+          }
+
           file.getParentFile().mkdirs();
+          // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
           fout = new FileOutputStream(file);
 
           if (isTextFile(file)) {

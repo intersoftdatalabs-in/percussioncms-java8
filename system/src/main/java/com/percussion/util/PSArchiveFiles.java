@@ -367,7 +367,13 @@ public class PSArchiveFiles {
 
       if (!dir.equals(".")) {
         File file = ZipSlipGuard.safeDestFile(directory, dir);
+        String destCanon = file.getCanonicalPath();
+        String rootCanon = directory.getCanonicalPath();
+        if (!destCanon.equals(rootCanon) && !destCanon.startsWith(rootCanon + File.separator)) {
+          throw new SecurityException("zip slip: " + dir);
+        }
         if (!file.exists()) {
+          // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
           if (!file.mkdirs()) return "Could not make directory " + file.getCanonicalPath();
         }
       }
@@ -384,6 +390,12 @@ public class PSArchiveFiles {
         if (!directory.toString().endsWith(File.separator)) extractDir += File.separator;
 
         File file = ZipSlipGuard.safeDestFile(directory, entry.getName());
+        String destCanon = file.getCanonicalPath();
+        String rootCanon = directory.getCanonicalPath();
+        if (!destCanon.equals(rootCanon) && !destCanon.startsWith(rootCanon + File.separator)) {
+          throw new SecurityException("zip slip: " + entry.getName());
+        }
+        // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
         out = new FileOutputStream(file);
 
         byte[] buf = new byte[1024];

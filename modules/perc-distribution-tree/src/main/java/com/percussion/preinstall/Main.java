@@ -244,19 +244,26 @@ public class Main {
         // Zip-slip guard (CodeQL java/zipslip alert #496): validate that the resolved path
         // stays under destPath before any mkdirs/Files.copy. The entry name and the
         // folderPrefix stripping are both attacker-controlled (jar archive).
-        File newFile =
-            com.percussion.security.io.ZipSlipGuard.safeDestFile(destPath.toFile(), name);
+        File extractDir = destPath.toFile();
+        File newFile = com.percussion.security.io.ZipSlipGuard.safeDestFile(extractDir, name);
+        String destCanon = newFile.getCanonicalPath();
+        String rootCanon = extractDir.getCanonicalPath();
+        if (!destCanon.equals(rootCanon) && !destCanon.startsWith(rootCanon + File.separator)) {
+          throw new SecurityException("zip slip: " + name);
+        }
         System.out.println("Unzipping to " + newFile.getAbsolutePath());
         // create directories for sub directories in zip
         new File(newFile.getParent()).mkdirs();
 
         if (entry.isDirectory()) {
+          // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
           Files.createDirectory(newFile.toPath());
           continue;
         }
 
         System.out.println("Creating file " + newFile);
 
+        // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
         Files.copy(archive.getInputStream(entry), newFile.toPath());
 
         // Preserve executable permissions for shell scripts

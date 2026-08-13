@@ -91,7 +91,14 @@ public class RxExtractJarFiles extends RxIAAction
             // Zip-slip guard (CodeQL java/zipslip alert #498): validate that the entry resolves
             // under m_destinationDir before any mkdirs/FileOutputStream. The entry name is
             // attacker-controlled.
-            File fJarFile = ZipSlipGuard.safeDestFile(new File(m_destinationDir), entryName);
+            File extractDir = new File(m_destinationDir);
+            File fJarFile = ZipSlipGuard.safeDestFile(extractDir, entryName);
+            String destCanon = fJarFile.getCanonicalPath();
+            String rootCanon = extractDir.getCanonicalPath();
+            if (!destCanon.equals(rootCanon)
+                  && !destCanon.startsWith(rootCanon + File.separator)) {
+               throw new SecurityException("zip slip: " + entryName);
+            }
             File makeLocation = fJarFile.getParentFile();
             makeLocation.mkdirs();
             JarFile jf = null;
@@ -120,6 +127,7 @@ public class RxExtractJarFiles extends RxIAAction
             {
                String entry = fileList.get(k);
                is = jf.getInputStream(jf.getEntry(entry));
+               // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
                fos = new FileOutputStream(fJarFile);
                
                text = "expanding " + entry + " to " +
