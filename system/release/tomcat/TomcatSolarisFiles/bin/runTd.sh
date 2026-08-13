@@ -10,7 +10,8 @@ else
 fi
 
 
-$EXECJAVA -classpath ../server/rx/deploy/RxServices.war/WEB-INF/lib/rxtablefactory.jar:../server/rx/deploy/RxServices.war/WEB-INF/lib/rxclient.jar:../server/rx/deploy/RxServices.war/WEB-INF/lib/rxutils.jar:../lib/endorsed/xml-apis.jar:../lib/endorsed/xercesImpl.jar:../server/rx/lib/jtds.jar:../server/rx/lib/ojdbc14.jar:../server/rx/lib/db2jcc.jar:../server/rx/lib/db2jcc_license_cu.jar:../server/rx/lib/mysql-connector-j-8.4.0.jar:../server/rx/lib/saxon.jar: com.percussion.tablefactory.tools.PSTDToolDialog
+# MySQL JDBC: PSJdbcUtils.MYSQL_DTS_DRIVER_LOCATION contract path.
+$EXECJAVA -classpath ../server/rx/deploy/RxServices.war/WEB-INF/lib/rxtablefactory.jar:../server/rx/deploy/RxServices.war/WEB-INF/lib/rxclient.jar:../server/rx/deploy/RxServices.war/WEB-INF/lib/rxutils.jar:../lib/endorsed/xml-apis.jar:../lib/endorsed/xercesImpl.jar:../../Deployment/Server/common/lib/mysql-connector.jar:../server/rx/lib/jtds.jar:../server/rx/lib/ojdbc14.jar:../server/rx/lib/db2jcc.jar:../server/rx/lib/db2jcc_license_cu.jar:../server/rx/lib/saxon.jar: com.percussion.tablefactory.tools.PSTDToolDialog
 
 
 

@@ -77,7 +77,9 @@ CLASSPATH=${CLASSPATH}:$pwd/build/dist/lib/rxff.jar
 CLASSPATH=${CLASSPATH}:$tpt/jaxb-2.1.9/lib/jaxb-api.jar
 CLASSPATH=${CLASSPATH}:$tpt/guava-r07/guava-r07.jar
 CLASSPATH=${CLASSPATH}:$pwd/Tools/jsch/jsch-0.1.48.jar
-CLASSPATH=${CLASSPATH}:$pwd/jdbc/mysql/mysql-connector-j-8.4.0.jar
+# MySQL JDBC: installRepository.xml / install.xml write the operator-supplied
+# driver to $pwd/jdbc/mysql/mysql-connector.jar (PSJdbcUtils contract path).
+CLASSPATH=${CLASSPATH}:$pwd/jdbc/mysql/mysql-connector.jar
 
 #CLASSPATH=${CLASSPATH}:$pwd/Tools/mail/activation.jar
 #CLASSPATH=${CLASSPATH}:$pwd/Tools/regex/jakarta-oro-2.0.6.jar
