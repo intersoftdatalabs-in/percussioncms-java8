@@ -12,7 +12,14 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ### Added
 
-- **Lenient unbound-prefix extraction unit tests** — `system/Testing/src/com/percussion/delivery/PSMetadataExtractorServiceTests.java` adds `testUnboundPrefixGcseSearch` (loads new `system/UnitTestResources/com/percussion/delivery/unbound-prefix-gcse.html` fixture with `<gcse:search>` + `vendor:data-id` and asserts page path, type, and `dcterms:source`/`dcterms:title`/`dcterms:description`/`dcterms:abstract` are still extracted), `testUnboundPrefixOnlyDoesNotThrow` (minimal `<gcse:search>` inline HTML does not throw and returns the default `page` type), and direct coverage of the new helpers `PSMetadataExtractorService.isUnboundPrefixParseFailure(Throwable)` and `extractUnboundPrefix(Throwable)` for both positive (`prefix "gcse" for element "gcse:search" is not bound`) and negative (unrelated parse error) cases.
+- **Lenient unbound-prefix extraction unit tests** — `system/Testing/src/com/percussion/delivery/PSMetadataExtractorServiceTests.java` adds:
+  - `testUnboundPrefixGcseSearch` (loads `system/UnitTestResources/com/percussion/delivery/unbound-prefix-gcse.html` fixture with `<gcse:search>` + `vendor:data-id` and asserts page path, type, and `dcterms:title`/`dcterms:description`/`dcterms:abstract`/`dcterms:source` are still extracted — the `dcterms:source` meta is intentionally placed AFTER the unbound markup so the test fails if the sanitizer is a no-op and the parser catch is the only thing keeping the test green).
+  - `testUnboundPrefixOnlyDoesNotThrow` (minimal `<gcse:search>` inline HTML does not throw and returns the default `page` type).
+  - `testStripUnboundPrefixedMarkupRemovesGcseAndVendorButKeepsDcterms` (direct unit test for the sanitizer: walks the Jsoup tree and asserts `gcse:search` element + `vendor:data-id` attribute are gone, `foo:bar` element under a declared `xmlns:foo` is preserved, and `dcterms:*` metadata is intact).
+  - `testIsUnboundPrefixParseFailureDetectsGcse` (positive: a real `SAXParseException` whose message contains `"not bound"` is treated as ignorable).
+  - `testIsUnboundPrefixParseFailureIgnoresUntypedThrowableWithSameMessage` (negative: a plain `RuntimeException` carrying the same wording is NOT trusted, so non-unbound RDF/SAX diagnostics that happen to mention "prefix" + "not bound" cannot silently drop every RDFa triple on the page).
+  - `testIsUnboundPrefixParseFailureIgnoresUnboundPrefixInCauseChainOfUntypedThrowable` (positive: `SAXParseException` in the cause chain of a plain `RuntimeException` is still detected by walking the chain).
+  - `testIsUnboundPrefixParseFailureIgnoresOtherErrors` (negative: unrelated parse error returns false; `extractUnboundPrefix` returns `null`).
 
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 

@@ -510,7 +510,7 @@ public class PSMetadataExtractorService implements IPSMetadataExtractorService
      * @param doc Jsoup document mutated in place
      * @param pagePath page path for WARN log context
      */
-    void stripUnboundPrefixedMarkup(Document doc, String pagePath) {
+    public void stripUnboundPrefixedMarkup(Document doc, String pagePath) {
         Set<String> declared = new HashSet<>();
         // Always allow the reserved XML prefixes
         declared.add("xml");
@@ -591,18 +591,35 @@ public class PSMetadataExtractorService implements IPSMetadataExtractorService
 
     /**
      * @return {@code true} if the failure (or a cause) is a SAX unbound-prefix parse error
+     *     that should be tolerated (WARN + skip) rather than failing the whole page.
+     *
+     *     <p>Detection is intentionally conservative: we only treat a parse as
+     *     "unbound prefix" when the cause chain shows a {@link org.xml.sax.SAXParseException}
+     *     (or a SAX-typed throwable) whose message contains {@code "not bound"}. The
+     *     looser {@code prefix "x" for element} pattern from {@link #UNBOUND_PREFIX_MESSAGE}
+     *     is intentionally NOT trusted here on its own — RDF/SAX diagnostics unrelated to
+     *     namespace binding could in principle contain the same words, and we must not
+     *     swallow them and silently drop every subsequent RDFa triple on the page.
+     *     That pattern is only used by {@link #extractUnboundPrefix(Throwable)} to label
+     *     the WARN log with the offending prefix when we have already decided to ignore.
      */
     public static boolean isUnboundPrefixParseFailure(Throwable ex) {
         Throwable cur = ex;
         while (cur != null) {
-            String msg = cur.getMessage();
-            if (msg != null) {
-                String lower = msg.toLowerCase(Locale.ROOT);
-                if (lower.contains("is not bound") && lower.contains("prefix")) {
+            if (cur instanceof org.xml.sax.SAXParseException) {
+                String msg = cur.getMessage();
+                if (msg != null && msg.toLowerCase(Locale.ROOT).contains("not bound")) {
                     return true;
                 }
-                if (UNBOUND_PREFIX_MESSAGE.matcher(msg).find()) {
-                    return true;
+            } else {
+                String typeName = cur.getClass().getName();
+                if (typeName.contains(".sax.")
+                        || typeName.endsWith(".SAXException")
+                        || typeName.endsWith(".SAXParseException")) {
+                    String msg = cur.getMessage();
+                    if (msg != null && msg.toLowerCase(Locale.ROOT).contains("not bound")) {
+                        return true;
+                    }
                 }
             }
             cur = cur.getCause();

@@ -21,6 +21,8 @@ import com.percussion.delivery.metadata.IPSMetadataProperty;
 import com.percussion.delivery.metadata.PSMetadataExtractorService;
 import com.percussion.delivery.metadata.rdfa.PSTripleHandler;
 import com.percussion.delivery.metadata.extractor.data.PSMetadataEntry;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -33,9 +35,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class PSMetadataExtractorServiceTests {
 
@@ -222,14 +225,32 @@ public class PSMetadataExtractorServiceTests {
 
     /**
      * Unit-level coverage for the SAX unbound-prefix detection helper.
+     *
+     * <p>Detection requires either a {@link org.xml.sax.SAXParseException} (or
+     * SAX-typed throwable) whose message contains {@code "not bound"}. A
+     * plain {@link RuntimeException} wrapping the same message must NOT be
+     * trusted — that would let unrelated RDF/SAX diagnostics that happen to
+     * mention "prefix x for element" silently drop every RDFa triple on the
+     * page.
      */
     @Test
     public void testIsUnboundPrefixParseFailureDetectsGcse() {
-        Throwable ex = new RuntimeException(
+        Throwable ex = new org.xml.sax.SAXParseException(
                 "The prefix \"gcse\" for element \"gcse:search\" is not bound.",
-                new RuntimeException("nested cause"));
+                "https://example.com/error.html", null, 0, 0);
         assertTrue(PSMetadataExtractorService.isUnboundPrefixParseFailure(ex));
         assertEquals("gcse", PSMetadataExtractorService.extractUnboundPrefix(ex));
+    }
+
+    @Test
+    public void testIsUnboundPrefixParseFailureIgnoresUntypedThrowableWithSameMessage() {
+        // A bare RuntimeException carrying the same wording must NOT be
+        // tolerated — otherwise non-unbound RDF/SAX diagnostics that happen
+        // to contain the words "prefix" and "not bound" would silently drop
+        // every subsequent RDFa triple on the page.
+        Throwable ex = new RuntimeException(
+                "The prefix \"gcse\" for element \"gcse:search\" is not bound.");
+        assertFalse(PSMetadataExtractorService.isUnboundPrefixParseFailure(ex));
     }
 
     @Test
@@ -237,5 +258,72 @@ public class PSMetadataExtractorServiceTests {
         Throwable ex = new RuntimeException("Some unrelated parse error");
         assertFalse(PSMetadataExtractorService.isUnboundPrefixParseFailure(ex));
         assertEquals(null, PSMetadataExtractorService.extractUnboundPrefix(ex));
+    }
+
+    @Test
+    public void testIsUnboundPrefixParseFailureIgnoresUnboundPrefixInCauseChainOfUntypedThrowable() {
+        // SAXParseException is in the cause chain of a plain RuntimeException
+        // — should still be detected by walking the chain.
+        Throwable root = new org.xml.sax.SAXParseException(
+                "The prefix \"vendor\" for element \"vendor:widget\" is not bound.",
+                "https://example.com/error.html", null, 0, 0);
+        Throwable wrapper = new RuntimeException("wrapping", root);
+        assertTrue(PSMetadataExtractorService.isUnboundPrefixParseFailure(wrapper));
+        assertEquals("vendor", PSMetadataExtractorService.extractUnboundPrefix(wrapper));
+    }
+
+    /**
+     * Direct unit test for {@link PSMetadataExtractorService#stripUnboundPrefixedMarkup(Document, String)}.
+     *
+     * <p>This is the only way to assert that the sanitizer itself is what
+     * preserves {@code dcterms:*} metadata that appears after the unbound
+     * markup. Without the strip, the SAX parser would throw on
+     * {@code <gcse:search>} and never reach trailing {@code dcterms:*}
+     * nodes; the integration test alone cannot distinguish "strip worked"
+     * from "strip didn't run but the catch swallowed the throw".
+     */
+    @Test
+    public void testStripUnboundPrefixedMarkupRemovesGcseAndVendorButKeepsDcterms() {
+        String html = "<!DOCTYPE html><html xmlns:foo=\"http://example.com/foo\">"
+                + "<head>"
+                + "  <meta property=\"dcterms:title\" content=\"title\"/>"
+                + "</head>"
+                + "<body>"
+                + "  <p property=\"dcterms:abstract\">trailing abstract</p>"
+                + "  <gcse:search data-id=\"x\">cse</gcse:search>"
+                + "  <span vendor:data-id=\"123\">body</span>"
+                + "  <foo:bar baz=\"qux\">declared</foo:bar>"
+                + "</body></html>";
+        Document doc = Jsoup.parse(html);
+        PSMetadataExtractorService svc = new PSMetadataExtractorService();
+        svc.stripUnboundPrefixedMarkup(doc, "/Sites/test/strip-fixture.html");
+
+        // <gcse:search> and <vendor:...> element+attribute must be gone.
+        // (Jsoup's CSS selector parser does not support tag names with `:`, so
+        // we walk the tree directly for the bound-prefix assertion.)
+        boolean hasGcseSearch = false;
+        boolean hasVendorDataIdAttr = false;
+        boolean hasFooBar = false;
+        for (org.jsoup.nodes.Element el : doc.getAllElements()) {
+            String tag = el.tagName();
+            if ("gcse:search".equals(tag)) {
+                hasGcseSearch = true;
+            }
+            if ("foo:bar".equals(tag)) {
+                hasFooBar = true;
+            }
+            if (el.hasAttr("vendor:data-id")) {
+                hasVendorDataIdAttr = true;
+            }
+        }
+        assertFalse("gcse:search element should have been stripped", hasGcseSearch);
+        assertFalse("vendor:data-id attribute should have been stripped", hasVendorDataIdAttr);
+        assertTrue("foo:bar element with declared xmlns:foo must survive", hasFooBar);
+
+        // dcterms:* metadata is intact.
+        assertEquals("title",
+                doc.select("meta[property='dcterms:title']").attr("content"));
+        assertEquals("trailing abstract",
+                doc.select("[property='dcterms:abstract']").text());
     }
 }
