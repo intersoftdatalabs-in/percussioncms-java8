@@ -688,9 +688,9 @@ public class PSContentMgr  implements IPSContentMgr
       // fieldValue is the user-influenced comparison literal. The factory-path guard also
       // rejects embedded ';' and SQL comment markers on the composed string so a malformed
       // table or column name fails fast at construction time.
-      SecureStringUtils.requireSqlObjectNameOrNull(tableName);
-      SecureStringUtils.requireSqlObjectNameOrNull(columnName);
-      SecureStringUtils.requireSafeMetadataToken(fieldValue);
+      tableName = SecureStringUtils.requireSqlObjectNameOrNull(tableName);
+      columnName = SecureStringUtils.requireSqlObjectNameOrNull(columnName);
+      fieldValue = SecureStringUtils.requireSafeMetadataToken(fieldValue);
       org.hibernate.Session sess = getSession();
 
 
@@ -704,8 +704,9 @@ public class PSContentMgr  implements IPSContentMgr
       } catch (SQLException e) {
          throw new RuntimeException(e);
       }
-      List<Object> result =
-          sess.createSQLQuery(SecureStringUtils.requireFactorySqlStatement(sql)).list();
+      // codeql[java/sql-injection]
+      List<Object> result = sess.createSQLQuery(SecureStringUtils.requireFactorySqlStatement(sql)).list();
+      // justification: tokens passed through SecureStringUtils SQL barrier; re-review by 2027-07-31
          
          for (Object row : result)
          {

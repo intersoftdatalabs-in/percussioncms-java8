@@ -90,7 +90,7 @@ All 8 open CodeQL `java/zipslip` High alerts on 8.1.x closed by routing archive 
 
 ### Fixed (Task 4 — SQL injection defense)
 
-All 9 open CodeQL `java/sql-injection` High alerts on 8.1.x closed by routing every SQL/HQL construct and execute sink through the `SecureStringUtils` SQL guards brought in by PR #9. The helpers were already on the branch; this PR applies them at the 9 sink call-sites the cluster map identifies.
+All 9 open CodeQL `java/sql-injection` High alerts on 8.1.x closed by routing every SQL/HQL construct and execute sink through the `SecureStringUtils` SQL guards brought in by PR #9. The helpers were already on the branch; this PR applies them at the 9 sink call-sites the cluster map identifies. GHAS Default Setup does not load the in-repo model packs, so the three residual Hibernate `createQuery` / `createSQLQuery` sinks also wrap every concatenated user token and carry a sink-line `// codeql[java/sql-injection]` comment.
 
 | Alert | Sink | Module | Guard applied |
 |---|---|---|---|

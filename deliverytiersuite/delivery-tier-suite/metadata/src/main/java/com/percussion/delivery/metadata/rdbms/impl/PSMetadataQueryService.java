@@ -432,8 +432,11 @@ public class PSMetadataQueryService implements IPSMetadataQueryService {
           type = SORTTYPE.METADATA;
         } else {
           sortColumnName =
-              PSMetadataQueryServiceHelper.getValueColumnName(
-                  PSMetadataQueryServiceHelper.getSortPropertyName(orderBy), datatypeMappings);
+              SecureStringUtils.requireSafeMetadataToken(
+                  PSMetadataQueryServiceHelper.getValueColumnName(
+                      SecureStringUtils.requireSafeMetadataToken(
+                          PSMetadataQueryServiceHelper.getSortPropertyName(orderBy)),
+                      datatypeMappings));
           isSortingOnProperty = true;
           type = SORTTYPE.PROPERTY;
         }
@@ -472,7 +475,9 @@ public class PSMetadataQueryService implements IPSMetadataQueryService {
       queryBuf
           .append(" prop.id.name = ")
           .append("'")
-          .append(PSMetadataQueryServiceHelper.getSortPropertyName(orderBy))
+          .append(
+              SecureStringUtils.requireSafeMetadataToken(
+                  PSMetadataQueryServiceHelper.getSortPropertyName(orderBy)))
           .append("'");
     }
     String clauseTemplate = " me.{0} {1} :{2}";
@@ -492,7 +497,12 @@ public class PSMetadataQueryService implements IPSMetadataQueryService {
       if (ce.getOperationType() == PSCriteriaElement.OPERATION_TYPE.IN) {
         useClause = inClauseTemplate;
       }
-      queryBuf.append(MessageFormat.format(useClause, ce.getName(), ce.getOperation(), replParam));
+      queryBuf.append(
+          MessageFormat.format(
+              useClause,
+              SecureStringUtils.requireSafeMetadataToken(ce.getName()),
+              ce.getOperation(),
+              replParam));
       paramValues.put(replParam, ce.getValue());
       paramOps.put(replParam, ce.getOperationType());
     }
@@ -507,7 +517,9 @@ public class PSMetadataQueryService implements IPSMetadataQueryService {
       String nameParam = "propName" + paramIndex;
       String valueParam = "propValue" + paramIndex++;
       Object value = ce.getValue();
-      String valueColumn = PSMetadataQueryServiceHelper.getValueColumnName(ce, datatypeMappings);
+      String valueColumn =
+          SecureStringUtils.requireSafeMetadataToken(
+              PSMetadataQueryServiceHelper.getValueColumnName(ce, datatypeMappings));
 
       if (valueColumn.equals(PROP_DATEVALUE_COLUMN_NAME)) {
         Calendar date = DatatypeConverter.parseDate(value.toString().replace(' ', 'T'));
@@ -573,9 +585,9 @@ public class PSMetadataQueryService implements IPSMetadataQueryService {
             queryBuf
                 .append(", ")
                 .append("me.")
-                .append(entry.getKey())
+                .append(SecureStringUtils.requireSafeMetadataToken(entry.getKey()))
                 .append(" ")
-                .append(entry.getValue());
+                .append(SecureStringUtils.requireSafeMetadataToken(entry.getValue()));
           }
         }
       } else {
@@ -585,7 +597,9 @@ public class PSMetadataQueryService implements IPSMetadataQueryService {
         queryBuf
             .append(" order by ")
             .append("me.")
-            .append(PSMetadataQueryServiceHelper.getSortPropertyName(orderBy))
+            .append(
+                SecureStringUtils.requireSafeMetadataToken(
+                    PSMetadataQueryServiceHelper.getSortPropertyName(orderBy)))
             .append(" ");
       }
 
@@ -608,7 +622,9 @@ public class PSMetadataQueryService implements IPSMetadataQueryService {
     for (PSCriteriaElement ce : propsCrit) {
       SecureStringUtils.requireSafeMetadataToken(ce.getName());
     }
+    // codeql[java/sql-injection]
     Query q = sess.createQuery(SecureStringUtils.requireFactorySqlStatement(queryBuf.toString()));
+    // justification: tokens passed through SecureStringUtils SQL barrier; re-review by 2027-07-31
     int useLimit = queryLimit;
     // All caller to set a query limit, but they can't allow higher than the server limit.
     if (rawQuery.getTotalMaxResults() > 0 && rawQuery.getTotalMaxResults() < queryLimit) {
@@ -740,8 +756,12 @@ public class PSMetadataQueryService implements IPSMetadataQueryService {
       String[] arrayOrderBy = orderByColumns.split(",");
 
       for (String orderColumn : arrayOrderBy) {
-        String sortField = PSMetadataQueryServiceHelper.getSortPropertyName(orderColumn.trim());
-        String sortingOrder = PSMetadataQueryServiceHelper.getSortingOrder(orderColumn.trim());
+        String sortField =
+            SecureStringUtils.requireSafeMetadataToken(
+                PSMetadataQueryServiceHelper.getSortPropertyName(orderColumn.trim()));
+        String sortingOrder =
+            SecureStringUtils.requireSafeMetadataToken(
+                PSMetadataQueryServiceHelper.getSortingOrder(orderColumn.trim()));
         hMapColumns.put(sortField, sortingOrder);
       }
     }

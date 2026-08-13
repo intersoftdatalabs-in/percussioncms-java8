@@ -436,7 +436,9 @@ public class PSPageDaoHelper implements IPSPageDaoHelper {
         sql = formGetByStatusSQLQuery(criteria, sql);
       }
 
+      // codeql[java/sql-injection]
       SQLQuery query = sess.createSQLQuery(SecureStringUtils.requireFactorySqlStatement(sql));
+      // justification: tokens passed through SecureStringUtils SQL barrier; re-review by 2027-07-31
       return query.list();
     } catch (SQLException e) {
       String error = "Failed to get the fully qualified table name for 'CT_PAGE'";
@@ -448,22 +450,40 @@ public class PSPageDaoHelper implements IPSPageDaoHelper {
   private String formGetByStatusSQLQuery(PSSearchCriteria criteria, String sql) {
 
     if (criteria.getSearchFields().containsKey("templateid")) {
-      sql = sql + " AND P.TEMPLATEID='" + criteria.getSearchFields().get("templateid") + "'";
+      sql =
+          sql
+              + " AND P.TEMPLATEID='"
+              + SecureStringUtils.requireSafeMetadataToken(
+                  criteria.getSearchFields().get("templateid"))
+              + "'";
     }
     if (criteria.getSearchFields().containsKey("sys_contenttypeid")) {
-      sql = sql + " AND CS.CONTENTTYPEID=" + criteria.getSearchFields().get("sys_contenttypeid");
+      sql =
+          sql
+              + " AND CS.CONTENTTYPEID="
+              + SecureStringUtils.requireSafeMetadataToken(
+                  criteria.getSearchFields().get("sys_contenttypeid"));
     }
     if (criteria.getSearchFields().containsKey("sys_contentstateid")) {
-      sql = sql + " AND CS.CONTENTSTATEID=" + criteria.getSearchFields().get("sys_contentstateid");
+      sql =
+          sql
+              + " AND CS.CONTENTSTATEID="
+              + SecureStringUtils.requireSafeMetadataToken(
+                  criteria.getSearchFields().get("sys_contentstateid"));
     }
     if (criteria.getSearchFields().containsKey("sys_workflowid")) {
-      sql = sql + " AND CS.WORKFLOWAPPID=" + criteria.getSearchFields().get("sys_workflowid");
+      sql =
+          sql
+              + " AND CS.WORKFLOWAPPID="
+              + SecureStringUtils.requireSafeMetadataToken(
+                  criteria.getSearchFields().get("sys_workflowid"));
     }
     if (criteria.getSearchFields().containsKey("sys_contentlastmodifier")) {
       sql =
           sql
               + " AND CS.CONTENTLASTMODIFIER LIKE '%"
-              + criteria.getSearchFields().get("sys_contentlastmodifier")
+              + SecureStringUtils.requireSafeMetadataToken(
+                  criteria.getSearchFields().get("sys_contentlastmodifier"))
               + "%'";
     }
     return sql;
