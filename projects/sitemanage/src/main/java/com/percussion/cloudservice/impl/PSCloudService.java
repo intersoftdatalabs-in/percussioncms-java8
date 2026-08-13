@@ -28,6 +28,7 @@ import com.percussion.licensemanagement.service.impl.PSLicenseService;
 import com.percussion.pagemanagement.data.PSPage;
 import com.percussion.pagemanagement.service.IPSPageService;
 import com.percussion.pagemanagement.service.IPSRenderService;
+import com.percussion.security.io.PSPathInjectionGuard;
 import com.percussion.server.PSServer;
 import com.percussion.services.sitemgr.IPSSite;
 import com.percussion.share.dao.IPSFolderHelper;
@@ -233,9 +234,9 @@ public class PSCloudService implements IPSCloudService {
    * @return The thumb url for the supplied page.
    */
   public String generateThumbUrl(String pageId, String siteName) {
-    // siteName/pageId are config/admin inputs that are subsequently canonicalized into
-    // a CMS-managed thumb path; existing flow applies requireSafeFileName on siteName
-    // upstream of this method (CodeQL java/path-injection alert #438).
+    PSPathInjectionGuard.requireSafeFileName(siteName);
+    // pageId is a PSGuid (hostid-type-uuid); single-segment, no separators.
+    PSPathInjectionGuard.requireSafeFileName(pageId);
     String thumbUrl = PAGE_THUMB_ROOT + siteName + "/" + pageId + PAGE_THUMB_SUFFIX;
     File file = new File(PSServer.getRxDir() + thumbUrl); // codeql[java/path-injection]
     if (!file.exists()) thumbUrl = ""; // codeql[java/path-injection]

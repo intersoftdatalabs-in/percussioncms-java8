@@ -166,10 +166,8 @@ public class PSThemeService implements IPSThemeService {
   }
 
   private String getCachedRegionCSSRelativePath(String theme) {
-    // Sanitize the session id before composing the relative path (CodeQL java/path-injection
-    // alert #467). Session ids are system-issued but are still constrained to a single path
-    // segment via safeSessionSegment so a future session-id format change cannot turn this
-    // into a traversal vector.
+    // Session id and theme are both single path segments before composition.
+    PSPathInjectionGuard.requireSafeFileName(theme);
     return safeSessionSegment(getCurrentSessionId()) + "/" + theme + "/" + THEME_REGION_CSS_PATH;
   }
 

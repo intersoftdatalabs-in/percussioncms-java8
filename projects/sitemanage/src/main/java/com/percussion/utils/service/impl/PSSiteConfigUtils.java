@@ -253,6 +253,9 @@ public class PSSiteConfigUtils {
       return;
     }
 
+    PSPathInjectionGuard.requireSafeFileName(srcSite);
+    PSPathInjectionGuard.requireSafeFileName(destSite);
+
     // just remove the touched file if it exists (this forces the next full
     // publish to copy the corresponding configure files to the live site)
     removeTouchedFile(srcSite);

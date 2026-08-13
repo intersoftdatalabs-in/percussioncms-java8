@@ -61,6 +61,7 @@ import com.percussion.pubserver.IPSPubServerService;
 import com.percussion.queue.IPSPageImportQueue;
 import com.percussion.recent.service.rest.IPSRecentService;
 import com.percussion.search.PSSearchIndexEventQueue;
+import com.percussion.security.io.PSPathInjectionGuard;
 import com.percussion.server.PSServer;
 import com.percussion.services.catalog.PSTypeEnum;
 import com.percussion.services.contentchange.IPSContentChangeService;
@@ -474,6 +475,8 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
           + "TemplateImages";
 
   private void updateThumbnailCache(String oldSiteName, String newSiteName) {
+    PSPathInjectionGuard.requireSafeFileName(oldSiteName);
+    PSPathInjectionGuard.requireSafeFileName(newSiteName);
     log.info(
         "Updating Page and Template thumbnail cache for site: {} to use new site name: {}...",
         oldSiteName,
@@ -661,6 +664,15 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
 
     PSValidationErrorsBuilder builder = validateParameters("saveSiteProperties");
 
+    if (!isValidSiteName(name)) {
+      String msg =
+          "Cannot rename site \""
+              + site.getName()
+              + "\" to an invalid site name: \""
+              + name
+              + "\".";
+      builder.rejectField("name", msg, name).throwIfInvalid();
+    }
     if (siteMgr.findSite(name) != null) {
       String msg =
           "Cannot rename site \""

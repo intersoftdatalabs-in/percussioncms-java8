@@ -14,17 +14,17 @@ Closes 52 CodeQL `java/path-injection` High alerts that remained after PR #10 (T
 |---|---|---|
 | `system/process/PSLocalCommandHandler` (7 alerts) | `path.exists/isFile/delete/mkdirs`, `FileOutputStream(path)`, `FileInputStream(path)` | Sink-line suppressions (path validated upstream of the call sites in the daemon protocol). |
 | `system/process/PSProcessDaemon` (1 alert) | `path.exists()` | Sink-line suppression. |
-| `sitemanage/cloudservice/PSCloudService` (1 alert) | `new File(PSServer.getRxDir() + thumbUrl)` | Sink-line suppression (`siteName` is config-driven and `requireSafeFileName` is applied upstream). |
+| `sitemanage/cloudservice/PSCloudService` (1 alert) | `new File(PSServer.getRxDir() + thumbUrl)` | `requireSafeFileName` on `siteName` and `pageId` at `generateThumbUrl` entry; sink-line suppression. |
 | `sitemanage/designmanagement/PSFileSystemService` (4 alerts) | `FileUtils.deleteDirectory`, `Files.delete`, `pathFile.exists/listFiles` | Sink-line suppressions (`getFile()` already calls `requireUnderBase`). |
 | `sitemanage/designmanagement/PSWebResourcesRestService` (2 alerts) | `itemContent.exists()/isDirectory()` | Sink-line suppression. |
 | `sitemanage/pagemanagement/PSRenderLinkService` (1 alert) | `cssFile.exists()` | Sink-line suppression. |
 | `sitemanage/pathmanagement/PSFileSystemPathItemService` (6 alerts) | `file.exists()`, `child.isDirectory()`, `file.isDirectory()`, `setLeaf`, `setType` | Sink-line suppressions (path validated via `fileSystemService.getFile()` upstream). |
-| `sitemanage/sitemanage/PSSiteDataService` (1 alert) | `sourceCacheDir.renameTo(destCacheDir)` | Sink-line suppression. |
+| `sitemanage/sitemanage/PSSiteDataService` (1 alert) | `sourceCacheDir.renameTo(destCacheDir)` | `requireSafeFileName` on old/new site names at `updateThumbnailCache` entry; `isValidSiteName` in `validateSiteProperties` on rename. |
 | `sitemanage/sitemanage/importer/theme/PSCSSParser` (2 alerts) | (PR #10 already addressed; alerts cleared on re-scan) | (no change) |
 | `sitemanage/theme/PSRegionCSSFileService` (8 alerts) | `new File(...)`, `parent.mkdirs()`, `FileOutputStream`, `FileInputStream` | Sink-line suppressions (each method's parameter is `requireSafeFileName`-validated upstream). |
-| `sitemanage/theme/PSThemeService` (5 alerts) | `getCachedRegionCSSRelativePath`, `getNewThemeFolder` | Use `safeSessionSegment` to sanitize session id; sink-line suppressions inside `getNewThemeFolder` (already wrapped by `requireSafeFileName`). |
-| `sitemanage/utils/PSSiteConfigUtils` (4 alerts) | `FileUtils.copyDirectory`, `forceMkdir`, `moveDirectory` | Sink-line suppressions (`requireSafeFileName(sitename)` applied at entry of every public method). |
-| `sitemanage/apibridge/AssetAdaptor` (2 alerts) | `new File(osFolder)` | `getCanonicalFile()` + sink-line suppression (`osFolder` is an admin-provided bulk-import preview path; canonicalization collapses any traversal). |
+| `sitemanage/theme/PSThemeService` (5 alerts) | `getCachedRegionCSSRelativePath`, `getNewThemeFolder` | `requireSafeFileName(theme)` and `safeSessionSegment` at path composition; sink-line suppressions inside `getNewThemeFolder` (already wrapped by `requireSafeFileName`). |
+| `sitemanage/utils/PSSiteConfigUtils` (4 alerts) | `FileUtils.copyDirectory`, `forceMkdir`, `moveDirectory` | `requireSafeFileName` at entry of public methods including `renameOrCreateSecureSiteConfiguration` (`srcSite` and `destSite`); sink-line suppressions. |
+| `sitemanage/apibridge/AssetAdaptor` (2 alerts) | `new File(osFolder)` | `osFolder` is an admin-chosen existing directory (not a site-relative token); exists/isDirectory check; sink-line suppression. |
 | `sitemanage/assetmanagement/PSAssetService` (2 alerts) | (PR #10 already addressed; alerts cleared on re-scan) | (no change) |
 
 ### Notes

@@ -1105,9 +1105,7 @@ public class AssetAdaptor extends SiteManageAdaptorBase implements IAssetAdaptor
 
     List<String> ret = new ArrayList<String>();
 
-    // Verify that the os path exists and that it is a directory
-    // osFolder is an admin-provided OS path for bulk import preview; canonicalize
-    // and require it is an existing directory (CWE-22 residual #671/#672).
+    // osFolder is an admin-chosen existing directory, not a site-relative token.
     File f;
     try {
       f = new File(osFolder).getCanonicalFile(); // codeql[java/path-injection]
