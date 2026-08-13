@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-13
+
+### Fixed (Task 8 — error-message-exposure)
+
+Closes 12 CodeQL `java/error-message-exposure` alerts (#572-#583) with real fixes following the CWE-209 pattern: generic client-facing message + server-side log of the detailed exception.
+
+- **`PSEmsRestService` (#575-#581)** — 7 endpoints replaced `entity(e.getMessage())` with a `GENERIC_EMS_ERROR` constant; the detailed exception is logged server-side.
+- **`PSSiteimprove` (#582)** — `storeSiteImproveConfiguration` replaced the message concatenation with `GENERIC_SAVE_CONFIG_ERROR`; the detailed exception is logged.
+- **`PSWebResourcesRestService` (#574)** — `deleteFile`, `uploadFile`, `validateFileUpload` replaced `entity(e.getMessage())` with `GENERIC_FILE_OPERATION_ERROR`; details logged server-side.
+- **`SimpleXmlView` x2 (#572, #573)** — `findResult` no longer leaks the internal result-key in the thrown `RuntimeException`; `GENERIC_RENDER_ERROR` is used and the detail is logged.
+- **`PSTemplateServlet` (#583)** — `handleExtractionError` sends a generic message via `sendError`; the detailed exception remains server-side.
+
+### Notes
+
+- Fix pattern matches 004 T054 (PR #1268).
+- All fixes are real code changes that CodeQL models — no sink-line suppressions or paths-ignore entries added.
+- No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
+- Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
+
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 
 ### Fixed (Task 8 — tainted-numeric-cast)
