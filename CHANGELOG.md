@@ -6,6 +6,20 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-13
 
+### Fixed (Task 8 — trustmanager + hostname + URL-forward + ReDoS)
+
+Closes 4 CodeQL alerts with real fixes (no paths-ignore):
+
+- **`java/insecure-trustmanager` (#594)** — `PSSiteImporter.overrideConnectionProperties()` replaced the all-trusting `X509TrustManager` (accepts any chain) with the JVM's default `TrustManagerFactory` trust managers, which validate TLS certificates against the system trust store (`cacerts`). Operators who need a private CA / self-signed cert must import it via `keytool -importcert ... -cacerts`. This matches 004 T046 (PR #1297).
+- **`java/unsafe-hostname-verification` (#584)** — the always-true `HostnameVerifier` was removed; the JVM default (RFC 2818 host matching) is kept for the duration of the override. This matches 004 T053 (PR #1342).
+- **`java/unvalidated-url-forward` (#568)** — `PSServletUtils.getDispatcher(path)` now validates the path before `getRequestDispatcher`: rejects control characters/backslashes, `..` traversal segments (including query-string/bare shapes), and `WEB-INF`/`META-INF` targets. This matches 004 T052 (PR #1335).
+- **`java/redos` (#610)** — `PSFormEncodeDecodeHelper.fixCommentTags` now caps input at 64 KiB and collapses the overlapping `[\r\n]` alternation into the `[^\- ]` class so the match is linear in input length. This matches 004 T049 (PR #1333).
+
+### Notes
+
+- All four fixes are real code changes that CodeQL models — no sink-line suppressions or paths-ignore entries added for these alerts.
+- No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
+- Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
 ### Fixed (Task 8 — XXE + unsafe-deserialization criticals)
 
 Closes 13 CodeQL Critical alerts on 8.1.x — 9 `java/xxe` + 4 `java/unsafe-deserialization`.
