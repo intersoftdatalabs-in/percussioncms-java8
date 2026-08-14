@@ -33,7 +33,7 @@
    <local-tx-datasource>
       <jndi-name>jdbc/mysql_db</jndi-name>
       <connection-url>jdbc:mysql://localhost:3306/OOB9438</connection-url>
-      <driver-class>com.mysql.jdbc.Driver</driver-class>
+      <driver-class>com.mysql.cj.jdbc.Driver</driver-class>
       <security-domain>rx.datasource.jdbc_mysql_db</security-domain>
       <min-pool-size>5</min-pool-size>
       <max-pool-size>100</max-pool-size>

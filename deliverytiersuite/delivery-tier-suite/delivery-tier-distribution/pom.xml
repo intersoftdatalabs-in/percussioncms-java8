@@ -269,6 +269,11 @@
             <version>${mariadb.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>${mysql.connector.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
             <version>${sqlserver.version}</version>
@@ -523,6 +528,10 @@
                             <dependency>
                                 <groupId>org.mariadb.jdbc</groupId>
                                 <artifactId>mariadb-java-client</artifactId>
+                            </dependency>
+                            <dependency>
+                                <groupId>com.mysql</groupId>
+                                <artifactId>mysql-connector-j</artifactId>
                             </dependency>
                             <dependency>
                                 <groupId>com.microsoft.sqlserver</groupId>
@@ -986,6 +995,10 @@
                                     <dependency>
                                         <groupId>org.mariadb.jdbc</groupId>
                                         <artifactId>mariadb-java-client</artifactId>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>com.mysql</groupId>
+                                        <artifactId>mysql-connector-j</artifactId>
                                     </dependency>
                                     <dependency>
                                         <groupId>com.microsoft.sqlserver</groupId>

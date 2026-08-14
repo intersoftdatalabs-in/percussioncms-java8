@@ -6,57 +6,35 @@ The format is based on [Common Changelog](https://common-changelog.org/).
 
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-13
 
-### Fixed (Task 8 — trustmanager + hostname + URL-forward + ReDoS)
+### Changed (Issue #5 — MySQL 8 auth / purge legacy mysql-connector-java 5.1.x)
 
-Closes 4 CodeQL alerts with real fixes (no paths-ignore):
-
-- **`java/insecure-trustmanager` (#594)** — `PSSiteImporter.overrideConnectionProperties()` replaced the all-trusting `X509TrustManager` (accepts any chain) with the JVM's default `TrustManagerFactory` trust managers, which validate TLS certificates against the system trust store (`cacerts`). Operators who need a private CA / self-signed cert must import it via `keytool -importcert ... -cacerts`. This matches 004 T046 (PR #1297).
-- **`java/unsafe-hostname-verification` (#584)** — the always-true `HostnameVerifier` was removed; the JVM default (RFC 2818 host matching) is kept for the duration of the override. This matches 004 T053 (PR #1342).
-- **`java/unvalidated-url-forward` (#568)** — `PSServletUtils.getDispatcher(path)` now validates the path before `getRequestDispatcher`: rejects control characters/backslashes, `..` traversal segments (including query-string/bare shapes), and `WEB-INF`/`META-INF` targets. This matches 004 T052 (PR #1335).
-- **`java/redos` (#610)** — `PSFormEncodeDecodeHelper.fixCommentTags` now caps input at 64 KiB and collapses the overlapping `[\r\n]` alternation into the `[^\- ]` class so the match is linear in input length. This matches 004 T049 (PR #1333).
-
-### Notes
-
-- All four fixes are real code changes that CodeQL models — no sink-line suppressions or paths-ignore entries added for these alerts.
-- No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
-- Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
-### Fixed (Task 8 — XXE + unsafe-deserialization criticals)
-
-Closes 13 CodeQL Critical alerts on 8.1.x — 9 `java/xxe` + 4 `java/unsafe-deserialization`.
-
-#### java/xxe (9 alerts, critical)
-
-The XXE sinks fall into two camps:
-
-1. **Direct factory instantiation** (1 alert) — `PSCheckboxTreeModel.java:75` was building `DocumentBuilderFactory.newInstance()` directly with no XXE protections. Now configures all six secure features inline before parsing (disallow DOCTYPE, no external entities, no external DTD, no XInclude, no entity expansion). CodeQL models the inline feature configuration, so this alert closes as "fixed".
-
-2. **Helper-protected factories** (8 alerts) — the `DocumentBuilderFactory` is obtained via `PSSecureXMLUtils.getSecuredDocumentBuilderFactory` (or via `RXFileTracker.getDocumentBuilder` / `PSXmlDocumentBuilder.getDocumentBuilder` which delegate to it) with secure options `true,true,true,false,true,false` (disallow DOCTYPE, no external general/parameter entities, no external DTD load). The runtime defense is real, but GHAS does not propagate the barrier through the helper (local model packs are not loaded) and ignores `// codeql[java/xxe]` comments on or above the sink. These 8 sinks are added to `paths-ignore` in `.github/codeql/codeql-config.yml` per the PR #33/#35/#36 convention for un-modelable barriers. Sink-line `// codeql[java/xxe]` comments remain in code as documentation. Files: `PSXmlDomUtils.java`, `PSOImportJexl.java` (2 alerts), `PSXmlDocumentBuilder.java`, `PSSerializerUtils.java`, `RhythmyxServlet.java`, `PSFUDApplication.java`, `PSFUDFileNode.java`.
-
-#### java/unsafe-deserialization (4 alerts, critical)
-
-All four sinks are `JMS ObjectMessage.getObject()` calls on the internal CMS ActiveMQ topic. The CMS message bus is in-process; consumers narrow the deserialized object to a known type via `instanceof` / class-name map lookup / registered-listener set before use, and unknown types are logged and discarded. Java 8 does not provide a built-in `ObjectInputFilter` API for JMS, GHAS does not model the runtime allow-list as a barrier, and it ignores `// codeql[java/unsafe-deserialization]` comments. These 4 sinks are added to `paths-ignore` in `.github/codeql/codeql-config.yml`. Sink-line comments remain in code as documentation. Files: `PSPublishHandler.java`, `PSMessageQueueService.java` (2 alerts), `PSEmailMessageHandler.java`.
+- **MySQL driver class updated to `com.mysql.cj.jdbc.Driver`** across the product. Connector/J 5.1.x (`com.mysql.jdbc.Driver`) only supports `mysql_native_password` and fails Hikari pool init against MySQL 8 with `caching_sha2_password` (default plugin since MySQL 8.0). The modern class is now used in:
+  - `system/config/config.xml` (`PSXJdbcDriverConfig`).
+  - `system/services/.../PSDatabasePubServer.java` enum.
+  - `modules/utils/.../RxInstaller.properties` (DB type → driver map).
+  - `modules/TableFactory/.../PSTDToolDialogResources.properties` (PSTDTool driver dropdown).
+  - `modules/perc-ant/.../PSExecDTSSqlStmt.java` (added new case, kept legacy case for back-compat).
+  - `modules/perc-ant/src/test/.../TestUpdateRxRepositoryProperties.java` and `rx-ds.xml.mysql` test fixture.
+  - `projects/sitemanage` test fixtures (`PSServerConfigUpdaterTest-config.xml`, `rx-ds.xml`).
+  - `deliverytiersuite/.../p13n-ds/src-sql/soln-p13n.mysql.xml` and `jdbc.mysql.properties`.
+- **Pinned `com.mysql:mysql-connector-j:8.4.0`** as the product MySQL JDBC driver (Java 8 compatible; last 8.x line before the 9.x cutover to JDK 17). Declared in:
+  - `deliverytiersuite/delivery-tier-suite/pom.xml` (`<mysql.connector.version>8.4.0</mysql.connector.version>` + `dependencyManagement`).
+  - `deliverytiersuite/.../DTS-shared-dependencies/pom.xml` (provided scope).
+  - `deliverytiersuite/.../delivery-tier-distribution/pom.xml` (3 dependency sections: top-level + shared + tomcat9-cargo).
+  - `deliverytiersuite/.../delivery-tier-distribution/src/main/tomcat9/conf/catalina.properties` (`tomcat.util.scan.StandardJarScanFilter.jarsToSkip` includes `mysql-connector-j-*.jar` and `mysql-connector-java-*.jar`).
+- **Bundled MySQL JDBC upgraded.** `system/Tools/mysql/mysql-connector-java-8.0.18.jar` (legacy artifact name) replaced with the real Maven Central `mysql-connector-j-8.4.0.jar` (not a rename of 8.0.18). Verified against https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/8.4.0/mysql-connector-j-8.4.0.jar: `Implementation-Version: 8.4.0`, size 2533399, SHA-1 `b1bc0f47bcad26ad5f9bceefb63fcb920d868fca`, SHA-256 `d77962877d010777cff997015da90ee689f0f4bb76848340e1488f2b83332af5`. The dev install path in `modules/perc-distribution-tree/src/main/resources/installDistributionFiles.xml` copies that artifact to `${assembly-directory}/jetty/base/lib/jdbc/mysql-connector.jar`.
+- **MariaDB Connector/J bumped 3.5.7 → 3.5.10** (last 3.x line that fully supports Java 8 LTS). Pinned in `deliverytiersuite/.../pom.xml`.
+- **DTS installer purges obsolete MySQL Connector/J 5.1.x** on install/upgrade. `deliverytiersuite/.../delivery-tier-distribution/src/main/rootFiles/rxconfig/Installer/installDts.xml` now deletes `mysql-connector-java-5*.jar`, `mysql-connector-java-6*.jar`, `mysql-connector-java-7*.jar` from `Deployment/Server/common/lib`, `Deployment/Server/lib`, and `Deployment/Server/perc-lib` *before* restoring the operator backup, with `failonerror="false"` so the install still completes if no legacy JAR is present. The backup-restore wildcard was tightened to `mysql-connector-j-*.jar` so a legacy 5.x backup cannot silently re-introduce the broken driver.
+- **Legacy runtime classpath references updated** (`system/installResources/install.sh`, `system/release/tomcat/TomcatWindowsFiles/bin/runTd.bat`, `system/release/tomcat/TomcatSolarisFiles/bin/runTd.sh` now point at the installer contract path `mysql-connector.jar`).
+- **Docs updated** (`deliverytiersuite/.../p13n-ds/src-sql/readme.txt`, `readme.htm`, `deliverytiersuite/.../delivery-tier-distribution/src/main/conf/perc/perc-datasources.properties.sample`).
 
 ### Notes
 
-- Per-task fix pattern is derived from the 004 branch (PR #1199 `6286565027` for PSSerializerUtils XXE; PR #1216 `58c77f3a52` for PSOImportJexl XXE; the unsafe-deserialization JMS sinks are documented as accepted-risk per the 004 convention since Java 8 lacks a built-in `ObjectInputFilter` API for JMS).
-- The `PSSecureXMLUtils` helper was already on the branch from earlier PR #9 work; no new helper classes introduced.
-- No Maven dependency change; `*.version` properties untouched per the Java 8 stack constraint.
-- Per AGENTS.md, `Version.properties` was **not** modified; the build-number workflow handles that on merge.
-- The `paths-ignore` mechanism is the proven pattern in this repo for un-modelable barriers (PRs #33/#35/#36). Sink-line `// codeql[...]` comments are documentation only and do not close GHAS alerts (alert #431 remains open on main despite its comment; #432 closed via paths-ignore).
-### Fixed
-
-- **Metadata extraction fails on unbound XML prefixes (e.g. `gcse:search`) during DTS publish** (#4) — `PSMetadataExtractorService` (RDFa / Semargl parse over published HTML) previously threw `SAXParseException: The prefix "gcse" for element "gcse:search" is not bound` for vendor embeds such as Google Custom Search that do not declare an `xmlns:gcse`. The whole page's metadata delivery then failed with ERROR in `PSMetadataDeliveryHandler` even when file publish itself succeeded. The extractor now pre-sanitizes HTML: it collects `xmlns:*` declarations on the document, strips elements and attributes whose prefixes are not in that declared set (deepest-first, via `Jsoup.unwrap`), and rewrites non-XML named entities to numeric character references before RDFa parse. As a defensive fallback, the RDFa parse is wrapped in a try/catch that detects `SAXParseException` / unbound-prefix parse messages and logs WARN with the page path and offending prefix (when extractable), so the rest of the page metadata still flows through. Normal `dcterms:*` / `og:*` / `perc:*` metadata is unchanged because the metadata of interest lives in attribute *values*, not in unbound element/attribute names.
-
-### Added
-
-- **Lenient unbound-prefix extraction unit tests** — `system/Testing/src/com/percussion/delivery/PSMetadataExtractorServiceTests.java` adds:
-  - `testUnboundPrefixGcseSearch` (loads `system/UnitTestResources/com/percussion/delivery/unbound-prefix-gcse.html` fixture with `<gcse:search>` + `vendor:data-id` and asserts page path, type, and `dcterms:title`/`dcterms:description`/`dcterms:abstract`/`dcterms:source` are still extracted — the `dcterms:source` meta is intentionally placed AFTER the unbound markup so the test fails if the sanitizer is a no-op and the parser catch is the only thing keeping the test green).
-  - `testUnboundPrefixOnlyDoesNotThrow` (minimal `<gcse:search>` inline HTML does not throw and returns the default `page` type).
-  - `testStripUnboundPrefixedMarkupRemovesGcseAndVendorButKeepsDcterms` (direct unit test for the sanitizer: walks the Jsoup tree and asserts `gcse:search` element + `vendor:data-id` attribute are gone, `foo:bar` element under a declared `xmlns:foo` is preserved, and `dcterms:*` metadata is intact).
-  - `testIsUnboundPrefixParseFailureDetectsGcse` (positive: a real `SAXParseException` whose message contains `"not bound"` is treated as ignorable).
-  - `testIsUnboundPrefixParseFailureIgnoresUntypedThrowableWithSameMessage` (negative: a plain `RuntimeException` carrying the same wording is NOT trusted, so non-unbound RDF/SAX diagnostics that happen to mention "prefix" + "not bound" cannot silently drop every RDFa triple on the page).
-  - `testIsUnboundPrefixParseFailureIgnoresUnboundPrefixInCauseChainOfUntypedThrowable` (positive: `SAXParseException` in the cause chain of a plain `RuntimeException` is still detected by walking the chain).
-  - `testIsUnboundPrefixParseFailureIgnoresOtherErrors` (negative: unrelated parse error returns false; `extractUnboundPrefix` returns `null`).
+- Customers still pinning `mysql_native_password` after the upgrade (the prior workaround from the issue) can optionally revert to `caching_sha2_password` now that a modern driver ships — no product action required.
+- Connector/J 9.x dropped Java 8 support; 8.4.0 is the last 8.x release line that runs on JDK 8.
+- MariaDB Connector/J 3.5.x does **not** accept `jdbc:mysql://…` URLs by default (and that behaviour is preserved here). MySQL customers continue to use `jdbc:mysql://…` with `com.mysql.cj.jdbc.Driver`; MariaDB customers use `jdbc:mariadb://…` with `org.mariadb.jdbc.Driver`. The product no longer ships the legacy Connector/J 5.1.x in either path.
+- Related sister PR on the main Java 21 line: intersoftdatalabs-in/percussioncms#1388.
+- The pre-existing compile error in `modules/perc-distribution-tree/.../Main.java:283` (`cannot find symbol: entryDest`) introduced by commit `efd14b2364` (zip-slip Task 5) is **not** addressed by this PR; it is left for a separate fix on `main`.
 
 ## [8.1.8 Build GH_POST_PR_COMMIT_RUN_ID] - 2026-08-12
 

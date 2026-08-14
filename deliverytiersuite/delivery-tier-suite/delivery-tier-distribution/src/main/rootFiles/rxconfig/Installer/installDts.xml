@@ -537,27 +537,62 @@
                             </if>
                         </then>
                     </if>
+                    <!-- Purge Connector/J 5-7 before backup restore. -->
+                    <echo>Purging legacy mysql-connector-java 5.1.x from managed JDBC classpath..............</echo>
+                    <delete verbose="true" failonerror="false">
+                        <fileset dir="${install.dir}${staging.dir}/Deployment/Server/common/lib">
+                            <include name="mysql-connector-java-5*.jar"/>
+                            <include name="mysql-connector-java-6*.jar"/>
+                            <include name="mysql-connector-java-7*.jar"/>
+                            <!-- Also drop any pre-existing legacy generic-name contract path
+                                 so the rewrite below is the only mysql-connector.jar on disk. -->
+                            <include name="mysql-connector.jar"/>
+                        </fileset>
+                        <fileset dir="${install.dir}${staging.dir}/Deployment/Server/lib">
+                            <include name="mysql-connector-java-5*.jar"/>
+                            <include name="mysql-connector-java-6*.jar"/>
+                            <include name="mysql-connector-java-7*.jar"/>
+                        </fileset>
+                        <fileset dir="${install.dir}${staging.dir}/Deployment/Server/perc-lib">
+                            <include name="mysql-connector-java-5*.jar"/>
+                            <include name="mysql-connector-java-6*.jar"/>
+                            <include name="mysql-connector-java-7*.jar"/>
+                        </fileset>
+                    </delete>
                     <!-- Restore mysql-connector if present -->
                     <echo>Restore mysql-connector if present in Server/common/lib.....................</echo>
                     <copy todir="${install.dir}${staging.dir}/Deployment/Server/common/lib"
                           verbose="true" failonerror="false">
                         <fileset dir="${new.backup.dir}${staging.dir}/Server/common/lib">
-                            <include name="mysql-connector*.jar"/>
+                            <include name="mysql-connector-j-*.jar"/>
                         </fileset>
                     </copy>
                     <echo>Restore mysql-connector if present in Server/perc-lib again on re-upgrading upgraded environment............................................</echo>
                     <copy todir="${install.dir}${staging.dir}/Deployment/Server/common/lib"
                           verbose="true" failonerror="false">
                         <fileset dir="${new.backup.dir}${staging.dir}/Server/perc-lib">
-                            <include name="mysql-connector*.jar"/>
+                            <include name="mysql-connector-j-*.jar"/>
                         </fileset>
                     </copy>
                     <echo>Restore mysql-connector if present in Server/lib re-upgrading upgraded environment............................................</echo>
                     <copy todir="${install.dir}${staging.dir}/Deployment/Server/common/lib"
                           verbose="true" failonerror="false">
                         <fileset dir="${new.backup.dir}${staging.dir}/Server/lib">
-                            <include name="mysql-connector*.jar"/>
+                            <include name="mysql-connector-j-*.jar"/>
                         </fileset>
+                    </copy>
+                    <!-- Issue #5: rewrite the generic mysql-connector.jar contract path
+                         (PSJdbcUtils.MYSQL_DTS_DRIVER_LOCATION, InstallUtil.createLoadedConnection)
+                         from whatever mysql-connector-j-*.jar the distribution shipped in
+                         Deployment/Server/common/lib/, so installers and PSExecDTSSqlStmt
+                         continue to URLClassLoader-load it by the historical generic name. -->
+                    <echo>Installing mysql-connector.jar contract path from mysql-connector-j-*.jar..............</echo>
+                    <copy todir="${install.dir}${staging.dir}/Deployment/Server/common/lib"
+                          overwrite="true" force="true" verbose="true" failonerror="false">
+                        <fileset dir="${install.src}/Deployment/Server/common/lib">
+                            <include name="mysql-connector-j-*.jar"/>
+                        </fileset>
+                        <mapper type="glob" from="mysql-connector-j-*.jar" to="mysql-connector.jar"/>
                     </copy>
                     <copy todir="${install.dir}${staging.dir}" overwrite="true" force="true" verbose="true">
                         <fileset dir="${install.src}">

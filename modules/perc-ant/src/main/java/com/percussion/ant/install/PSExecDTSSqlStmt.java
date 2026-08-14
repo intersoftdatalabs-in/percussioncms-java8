@@ -94,6 +94,7 @@ public class PSExecDTSSqlStmt extends PSExecSQLStmt {
 
       String dbType;
       switch (driverClassName) {
+        case "com.mysql.cj.jdbc.Driver":
         case "com.mysql.jdbc.Driver":
           dbType = "mysql";
           break;
