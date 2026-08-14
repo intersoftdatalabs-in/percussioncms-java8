@@ -719,7 +719,10 @@ public class RhythmyxServlet extends PSServletBase
 
             DocumentBuilder builder = factory.newDocumentBuilder();
 
-            Document doc = builder.parse(in);
+            // PSSecureXMLUtils.getSecuredDocumentBuilderFactory (with secure options
+            // true,true,true,false,true,false) is the same factory configured just above;
+            // CodeQL does not propagate the barrier through the helper (alert #591).
+            Document doc = builder.parse(in); // codeql[java/xxe]
 
             NodeList roles = doc.getElementsByTagName("Role");
             if (roles != null)

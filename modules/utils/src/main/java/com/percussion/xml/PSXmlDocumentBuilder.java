@@ -449,7 +449,9 @@ public class PSXmlDocumentBuilder {
     db.setErrorHandler(errHandler);
     db.setEntityResolver(resolver);
 
-    Document doc = db.parse(in);
+    // PSSecureXMLUtils.getSecuredDocumentBuilderFactory is invoked inside getDocumentBuilder;
+    // CodeQL does not propagate the barrier through the helper (alert #589).
+    Document doc = db.parse(in); // codeql[java/xxe]
     returnDocumentBuilder(db);
 
     /*
