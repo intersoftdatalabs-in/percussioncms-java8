@@ -14,14 +14,11 @@ permissions:
 jobs:
   dependency-submission:
     runs-on: ubuntu-latest
-    # Quote as a block scalar so the colon in "chore: update build number"
-    # is not parsed as YAML mapping syntax (line 17 syntax error).
     if: |
       github.event_name != 'push' ||
       (
         !contains(github.event.head_commit.message, 'Dependency Submission') &&
-        !contains(github.event.head_commit.message, '[skip ci]') &&
-        !contains(github.event.head_commit.message, 'chore: update build number')
+        !contains(github.event.head_commit.message, '[skip ci]')
       )
 
     steps:
