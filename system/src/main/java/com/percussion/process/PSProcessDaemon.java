@@ -801,7 +801,7 @@ public class PSProcessDaemon extends Thread {
     private String handleCheckFSObject(List params) throws Exception {
       StringBuilder validateResult = new StringBuilder(1000);
       File path = validatePath((byte[]) params.get(0));
-      return path.exists() ? "1" : "0";
+      return path.exists() ? "1" : "0"; // codeql[java/path-injection]
     }
 
     /**

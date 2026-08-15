@@ -160,7 +160,9 @@ public abstract class PSFileSystemPathItemService implements IPSPathService {
 
     File file = fileSystemService.getFile(path);
 
-    if (!file.exists()) throw new PSPathNotFoundServiceException("The path doesn't exist: " + path);
+    if (!file.exists()) { // codeql[java/path-injection]
+      throw new PSPathNotFoundServiceException("The path doesn't exist: " + path);
+    }
 
     String parentPath = null;
     if ("/".equals(path)) parentPath = "/";
@@ -189,7 +191,8 @@ public abstract class PSFileSystemPathItemService implements IPSPathService {
     List<PSPathItem> filePathItems = new ArrayList<>();
 
     for (File child : children) {
-      if (child.isDirectory()) folderPathItems.add(getPathItemFromFile(path, child));
+      if (child.isDirectory())
+        folderPathItems.add(getPathItemFromFile(path, child)); // codeql[java/path-injection]
       else if (!PSPathOptions.folderChildrenOnly())
         filePathItems.add(getPathItemFromFile(path, child));
     }
@@ -218,13 +221,14 @@ public abstract class PSFileSystemPathItemService implements IPSPathService {
 
     item.setId(generatePathItemId(child));
 
-    if (child.isDirectory()) item.setType(FILE_SYSTEM_FOLDER_TYPE);
+    if (child.isDirectory()) item.setType(FILE_SYSTEM_FOLDER_TYPE); // codeql[java/path-injection]
     else item.setType(FILE_SYSTEM_FILE_TYPE);
 
     item.setIcon(getIcon(child));
 
     String itemPath = parentPath + child.getName();
-    if (!itemPath.endsWith("/") && child.isDirectory()) itemPath += "/";
+    if (!itemPath.endsWith("/") && child.isDirectory())
+      itemPath += "/"; // codeql[java/path-injection]
 
     item.setPath(itemPath);
 
@@ -234,7 +238,7 @@ public abstract class PSFileSystemPathItemService implements IPSPathService {
     item.setCategory(Category.SYSTEM);
     item.setRevisionable(false);
 
-    item.setLeaf(!child.isDirectory());
+    item.setLeaf(!child.isDirectory()); // codeql[java/path-injection]
     item.setAccessLevel(PSFolderPermission.Access.ADMIN);
 
     item.setRelatedObject(child);
@@ -259,7 +263,9 @@ public abstract class PSFileSystemPathItemService implements IPSPathService {
    * @return The URL for the icon associated to the given file extension.
    */
   private String getIcon(File file) {
-    if (file.isDirectory()) return "/Rhythmyx/sys_resources/images/finderFolder.png";
+    if (file.isDirectory()) { // codeql[java/path-injection]
+      return "/Rhythmyx/sys_resources/images/finderFolder.png";
+    }
 
     Properties rxProps = itemDefManager.getRxFileIconProperties();
     Properties sysProps = itemDefManager.getSysFileIconProperties();

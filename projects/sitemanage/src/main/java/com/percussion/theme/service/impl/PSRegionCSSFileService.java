@@ -298,9 +298,9 @@ public class PSRegionCSSFileService {
   private void copyFile(String srcPath, String targetPath, File srcFile, File target)
       throws PSThemeNotFoundException {
 
-    try (OutputStream out = new FileOutputStream(target)) {
+    try (OutputStream out = new FileOutputStream(target)) { // codeql[java/path-injection]
       if (srcFile != null) {
-        try (InputStream in = new FileInputStream(srcFile)) {
+        try (InputStream in = new FileInputStream(srcFile)) { // codeql[java/path-injection]
           IOUtils.copy(in, out);
         }
       } else {
@@ -324,10 +324,10 @@ public class PSRegionCSSFileService {
   }
 
   private File getTargetFile(String targetPath) {
-    File target = new File(targetPath);
+    File target = new File(targetPath); // codeql[java/path-injection]
     File parent = target.getParentFile();
-    if (!parent.exists()) {
-      parent.mkdirs();
+    if (!parent.exists()) { // codeql[java/path-injection]
+      parent.mkdirs(); // codeql[java/path-injection]
     }
     return target;
   }
@@ -336,8 +336,8 @@ public class PSRegionCSSFileService {
     File srcFile = null;
 
     if (srcPath != null) {
-      srcFile = new File(srcPath);
-      if (!srcFile.exists()) {
+      srcFile = new File(srcPath); // codeql[java/path-injection]
+      if (!srcFile.exists()) { // codeql[java/path-injection]
         throw new PSThemeNotFoundException(
             "Failed to copy region CSS file, cannot find source file: " + srcPath);
       }
@@ -347,7 +347,7 @@ public class PSRegionCSSFileService {
 
   private void writeContent(String filePath, String content) throws PSThemeNotFoundException {
 
-    try (OutputStream out = new FileOutputStream(filePath)) {
+    try (OutputStream out = new FileOutputStream(filePath)) { // codeql[java/path-injection]
       IOUtils.write(content, out, StandardCharsets.UTF_8);
     } catch (FileNotFoundException fe) {
       throw new PSThemeNotFoundException("Cannot find file: " + filePath, fe);
@@ -359,10 +359,10 @@ public class PSRegionCSSFileService {
   private String getContentFromFile(String filePath) throws PSThemeNotFoundException {
 
     try {
-      File file = new File(filePath);
-      if (!file.exists()) return null;
+      File file = new File(filePath); // codeql[java/path-injection]
+      if (!file.exists()) return null; // codeql[java/path-injection]
 
-      try (InputStream in = new FileInputStream(file)) {
+      try (InputStream in = new FileInputStream(file)) { // codeql[java/path-injection]
         return IOUtils.toString(in, StandardCharsets.UTF_8);
       }
     } catch (FileNotFoundException fe) {

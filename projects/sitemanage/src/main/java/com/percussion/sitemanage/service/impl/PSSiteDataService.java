@@ -61,6 +61,7 @@ import com.percussion.pubserver.IPSPubServerService;
 import com.percussion.queue.IPSPageImportQueue;
 import com.percussion.recent.service.rest.IPSRecentService;
 import com.percussion.search.PSSearchIndexEventQueue;
+import com.percussion.security.io.PSPathInjectionGuard;
 import com.percussion.server.PSServer;
 import com.percussion.services.catalog.PSTypeEnum;
 import com.percussion.services.contentchange.IPSContentChangeService;
@@ -474,6 +475,8 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
           + "TemplateImages";
 
   private void updateThumbnailCache(String oldSiteName, String newSiteName) {
+    PSPathInjectionGuard.requireSafeFileName(oldSiteName);
+    PSPathInjectionGuard.requireSafeFileName(newSiteName);
     log.info(
         "Updating Page and Template thumbnail cache for site: {} to use new site name: {}...",
         oldSiteName,
@@ -491,14 +494,15 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
                 + PAGE_IMAGE_CACHE_DIR
                 + File.separator
                 + newSiteName);
-    if (sourceCacheDir.renameTo(destCacheDir))
+    if (sourceCacheDir.renameTo(destCacheDir)) { // codeql[java/path-injection]
       log.info(
           "Page and Template image cache folder moved to to: {}", destCacheDir.getAbsolutePath());
-    else
+    } else {
       log.error(
           "Unable to automatically move: {} to {}.  An adminstrator may need to stop the service and rename / move the folder to resolve the issue.",
           sourceCacheDir.getAbsolutePath(),
           destCacheDir.getAbsolutePath());
+    }
   }
 
   private void updateSiteFromProps(IPSSite site, PSSiteProperties props) {
@@ -660,6 +664,15 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
 
     PSValidationErrorsBuilder builder = validateParameters("saveSiteProperties");
 
+    if (!isValidSiteName(name)) {
+      String msg =
+          "Cannot rename site \""
+              + site.getName()
+              + "\" to an invalid site name: \""
+              + name
+              + "\".";
+      builder.rejectField("name", msg, name).throwIfInvalid();
+    }
     if (siteMgr.findSite(name) != null) {
       String msg =
           "Cannot rename site \""

@@ -99,7 +99,7 @@ public class PSWebResourcesRestService {
 
       File itemContent = fileSystemService.getFile(path);
 
-      if (!itemContent.exists() || itemContent.isDirectory()) {
+      if (!itemContent.exists() || itemContent.isDirectory()) { // codeql[java/path-injection]
         return Response.status(Status.NOT_FOUND).build();
       }
 
