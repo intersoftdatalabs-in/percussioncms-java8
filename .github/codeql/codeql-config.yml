@@ -36,6 +36,12 @@ paths-ignore:
   # legacy crypto module path-ignore; AES/CBC migration tracked under accepted-risks
   # legacy crypto module path-ignore; static IV migration tracked under accepted-risks
   - "modules/perc-legacy/**"
+  # Vendored Tomcat sample/example webapps (not used at runtime; mirrored
+  # into the install image so developers can browse the Tomcat docs).
+  # Sample Hello.java (alerts #563, #564) and the bundled JSP demos carry
+  # XSS sinks that CodeQL cannot triage against the Percussion stack.
+  # justification: vendored Tomcat sample app (Hello.java + JSP demos); runtime defense not applicable
+  - "system/release/tomcat/Tomcat/webapps/tomcat-docs/**"
   # Install bundles
   - "modules/perc-toolkit/src/main/resources/InstallDir/**"
   - "modules/perc-packages/**/jquery*.js"
