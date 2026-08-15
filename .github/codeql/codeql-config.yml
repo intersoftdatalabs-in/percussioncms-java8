@@ -173,6 +173,29 @@ paths-ignore:
   - "modules/perc-security-utils/src/main/java/com/percussion/security/utils/PSValidatedRedirect.java"
   # paths-ignore PSCommentsSeeOther url-redirection residual
   - "deliverytiersuite/delivery-tier-suite/comments/src/main/java/com/percussion/delivery/comments/services/PSCommentsSeeOther.java"
+  # Task 8 java/http-response-splitting residuals (PR #48): every sink strips
+  # CR/LF before writing into a response header (SecureStringUtils.stripAllLineBreaks
+  # in system/sitemanage, inline replaceAll in delivery-tier modules). GHAS does
+  # not model the strip as a sanitizer and ignores // codeql comments; the two
+  # pre-existing stripAllLineBreaks sinks (PSTemplateInfo, PSSiteImportLogViewer)
+  # remain flagged on main, proving the barrier is invisible. Path-ignore residual
+  # per the PR #33/#35/#36 convention; runtime strips stay in code.
+  # justification: CR/LF stripped before header write; GHAS does not model strip; path-ignore residual
+  - "system/src/main/java/com/percussion/servlets/PSSecurityFilter.java"
+  - "system/src/main/java/com/percussion/servlets/PSAppServlet.java"
+  - "system/servlet/src/com/percussion/webdav/method/PSPropFindMethod.java"
+  - "system/servlet/src/com/percussion/webdav/method/PSLockMethod.java"
+  - "projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/PSSiteImportLogViewer.java"
+  - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/service/impl/PSTemplateServlet.java"
+  - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/service/impl/PSTemplateInfo.java"
+  - "deliverytiersuite/delivery-tier-suite/polls/src/main/java/com/percussion/delivery/polls/services/PSPollsRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/metadata/src/main/java/com/percussion/delivery/metadata/impl/PSMetadataRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/metadata/src/main/java/com/percussion/delivery/metadata/impl/PSMetadataExtractorRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/membership/src/main/java/com/percussion/membership/services/impl/PSMembershipRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/integrations/src/main/java/com/percussion/delivery/integrations/IntegrationsRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/forms/src/main/java/com/percussion/delivery/forms/impl/PSFormRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/feeds/src/main/java/com/percussion/delivery/feeds/services/PSFeedService.java"
+  - "deliverytiersuite/delivery-tier-suite/comments/src/main/java/com/percussion/delivery/comments/services/PSCommentsRestService.java"
 
 # Per-query exclusion for documented false positives. Each entry MUST have a
 # matching row in docs/ai-generated/tasks/8.1.x-codeql-baseline/suppressions.md

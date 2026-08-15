@@ -222,7 +222,11 @@ public class PSPropFindMethod extends PSWebdavMethod
          if (! uri.endsWith("/"))
          {
             uri = uri + "/";
-            this.getResponse().setHeader("Content-Location", uri);
+            // Strip CR/LF from the URI before writing it into the header
+            // (CWE-113 / CodeQL java/http-response-splitting).
+            this.getResponse().setHeader(
+               "Content-Location",
+               com.percussion.security.SecureStringUtils.stripAllLineBreaks(uri));
          }
       }
       setResponse(

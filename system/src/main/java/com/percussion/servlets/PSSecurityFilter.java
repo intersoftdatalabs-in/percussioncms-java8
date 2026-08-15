@@ -1518,12 +1518,14 @@ public class PSSecurityFilter implements Filter {
     }
 
     String sameSite = " SameSite=";
-    // Create the pssessionid session
+    // Create the pssessionid session. Session id is server-generated, but strip CR/LF
+    // before writing into the header anyway (CWE-113 / CodeQL java/http-response-splitting).
     response.addHeader(
         "Set-Cookie",
         IPSHtmlParameters.SYS_SESSIONID
             + "="
-            + initRequest(request, response).getUserSessionId()
+            + SecureStringUtils.stripAllLineBreaks(
+                initRequest(request, response).getUserSessionId())
             + ";"
             + "Path=/;"
             + secure
