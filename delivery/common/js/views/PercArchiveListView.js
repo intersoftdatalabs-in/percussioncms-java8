@@ -134,6 +134,7 @@
                                     encodedQuery =  "&query=" + encodeURIComponent(JSON.stringify(query));
                                     href =  baseURL + pageResult + "?filter="+ encodeURIComponent(row.year) + encodedQuery;
                                     anchorYear = $("<a>")
+                                        // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this href sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
                                         .attr("href",percSafeUrl(href))
                                         .text(linkYearText);
 
@@ -194,6 +195,7 @@
                                         encodedQuery = "&query=" + encodeURIComponent(JSON.stringify(query));
                                         href = baseURL + pageResult + "?filter="+  encodeURIComponent(row2.month + " " + row.year )+ encodedQuery;
                                         a = $("<a>")
+                                            // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this href sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
                                             .attr("href",percSafeUrl(href) )
                                             .text(linkText);
                                     }
@@ -282,6 +284,7 @@
                                     var encodedQuery = "&query=" + encodeURIComponent(JSON.stringify(query));
                                     var href = baseURL + pageResult + "?filter="+ encodeURIComponent(row2.month +" "+ row.year) + encodedQuery;
                                     a = $("<a>")
+                                        // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this href sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
                                         .attr("href", percSafeUrl(href))
                                         .text(linkText);
                                 }

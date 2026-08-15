@@ -79,6 +79,7 @@
                     if(!redirectUrl || "" === redirectUrl) {
                         redirectUrl = "/";
                     }
+                    // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this location.href sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
                     window.location.href=percSafeUrl(redirectUrl);
                 }
                 else {
@@ -265,8 +266,9 @@
                               else {
                                   var params = '';
                                   if ($.param.querystring()) {
-                                      params = '?' + $.param.querystring(); 
+                                      params = '?' + $.param.querystring();
                                   }
+                                  // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this location sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
                                   window.location = percSafeUrl(confirmation_page + params);
                               }
                           }

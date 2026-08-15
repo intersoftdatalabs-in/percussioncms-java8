@@ -84,8 +84,8 @@ define(['knockout','pubsub', 'utils'], function(ko,PubSub, utils) {
             }
         };
         function getParameterByName(win, name) {
-            // codeql[js/incomplete-sanitization] justification: added /g flag to make escaping global; re-review by 2027-07-31
-            name = name.replace(/[\[]/g, "\\[").replace(/[\]]/g, "\\]");
+            // codeql[js/incomplete-sanitization] justification: added /g flag + backslash escape; re-review by 2027-07-31
+            name = name.replace(/[\[\]\\]/g, "\\$&");
             var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
                 results = regex.exec(win.location.search);
             return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
