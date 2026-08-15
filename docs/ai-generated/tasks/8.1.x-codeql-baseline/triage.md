@@ -2,22 +2,22 @@
 
 Every open Critical/High alert gets exactly one row here. The pipeline gates (`scripts/verify-triage-inventory.py`, `scripts/verify-valid-fixes.py`) read this file.
 
-Generated: 2026-08-15T21:06:07Z
+Generated: 2026-08-15T21:07:32Z
 Source: docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md
 
 ## Summary
 
 - Total open alerts: 75
-- false-positive: 3
-- fix: 72
+- false-positive: 9
+- fix: 66
 
 Schema (per spec 004 C1):
 
 | # | alert_id | rule_id | severity | file_path | module_owner | disposition (candidate) | target_action | target_milestone | linked_pr | notes |
 |---|----------|---------|----------|-----------|--------------|-------------------------|---------------|------------------|-----------|-------|
 | 1 | 704 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:216 | projects/sitemanage | fix | code fix required | TBD |  |  |
-| 2 | 564 | java/xss | high | system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:78 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/release/tomcat/Tomcat/webapps/tomcat-docs/** (#justification: vendored Tomcat sample app (Hello.java + JSP demos); runtime defense not applicable) @ line 50 |
-| 3 | 563 | java/xss | high | system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:77 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/release/tomcat/Tomcat/webapps/tomcat-docs/** (#justification: vendored Tomcat sample app (Hello.java + JSP demos); runtime defense not applicable) @ line 50 |
+| 2 | 564 | java/xss | high | system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:78 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/release/tomcat/Tomcat/webapps/tomcat-docs/** (#justification: vendored Tomcat sample app (Hello.java + JSP demos); runtime defense not applicable) @ line 56 |
+| 3 | 563 | java/xss | high | system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:77 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/release/tomcat/Tomcat/webapps/tomcat-docs/** (#justification: vendored Tomcat sample app (Hello.java + JSP demos); runtime defense not applicable) @ line 56 |
 | 4 | 477 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:519 | projects/sitemanage | fix | code fix required | TBD |  |  |
 | 5 | 476 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:518 | projects/sitemanage | fix | code fix required | TBD |  |  |
 | 6 | 474 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:403 | projects/sitemanage | fix | code fix required | TBD |  |  |
@@ -33,14 +33,14 @@ Schema (per spec 004 C1):
 | 16 | 394 | js/functionality-from-untrusted-source | medium | system/UnitTestResources/com/percussion/delivery/bw-corona.html:1321 | system | fix | code fix required | TBD |  |  |
 | 17 | 393 | js/functionality-from-untrusted-source | medium | system/UnitTestResources/com/percussion/delivery/bw-corona.html:1322 | system | fix | code fix required | TBD |  |  |
 | 18 | 334 | js/clear-text-logging | high | modules/perc-qa-automation/frontend/tests/login.spec.js:33 | modules/perc-qa-automation | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore modules/perc-qa-automation/frontend/tests/** (#justification: Playwright QA tests log env-derived values for debug; production runtime not affected) @ line 30 |
-| 19 | 246 | js/incomplete-sanitization | high | system/Docs/Rhythmyx_Publishing_Runtime_Help/dhtml_search.js:57 | system | fix | code fix required | TBD |  |  |
-| 20 | 245 | js/incomplete-sanitization | high | system/Docs/Rhythmyx_Publishing_Runtime_Help/dhtml_search.js:57 | system | fix | code fix required | TBD |  |  |
-| 21 | 244 | js/incomplete-sanitization | high | system/Docs/Rhythmyx_Publishing_Runtime_Help/dhtml_search.js:57 | system | fix | code fix required | TBD |  |  |
-| 22 | 243 | js/incomplete-sanitization | high | system/Docs/Percussion_Package_Manager_Help/dhtml_search.js:49 | system | fix | code fix required | TBD |  |  |
-| 23 | 242 | js/incomplete-sanitization | high | system/Docs/Percussion_Package_Manager_Help/dhtml_search.js:49 | system | fix | code fix required | TBD |  |  |
-| 24 | 241 | js/incomplete-sanitization | high | system/Docs/Percussion_Package_Manager_Help/dhtml_search.js:49 | system | fix | code fix required | TBD |  |  |
-| 25 | 235 | js/incomplete-sanitization | high | cui/widgets/app/app.viewmodel.js:87 | cui | fix | code fix required | TBD |  |  |
-| 26 | 234 | js/incomplete-sanitization | high | cui/widgets/app/app.viewmodel.js:87 | cui | fix | code fix required | TBD |  |  |
+| 19 | 246 | js/incomplete-sanitization | high | system/Docs/Rhythmyx_Publishing_Runtime_Help/dhtml_search.js:57 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/Docs/** (#justification: vendored AuthorIT-generated docs JS; not regenerated from source) @ line 42 |
+| 20 | 245 | js/incomplete-sanitization | high | system/Docs/Rhythmyx_Publishing_Runtime_Help/dhtml_search.js:57 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/Docs/** (#justification: vendored AuthorIT-generated docs JS; not regenerated from source) @ line 42 |
+| 21 | 244 | js/incomplete-sanitization | high | system/Docs/Rhythmyx_Publishing_Runtime_Help/dhtml_search.js:57 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/Docs/** (#justification: vendored AuthorIT-generated docs JS; not regenerated from source) @ line 42 |
+| 22 | 243 | js/incomplete-sanitization | high | system/Docs/Percussion_Package_Manager_Help/dhtml_search.js:49 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/Docs/** (#justification: vendored AuthorIT-generated docs JS; not regenerated from source) @ line 42 |
+| 23 | 242 | js/incomplete-sanitization | high | system/Docs/Percussion_Package_Manager_Help/dhtml_search.js:49 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/Docs/** (#justification: vendored AuthorIT-generated docs JS; not regenerated from source) @ line 42 |
+| 24 | 241 | js/incomplete-sanitization | high | system/Docs/Percussion_Package_Manager_Help/dhtml_search.js:49 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/Docs/** (#justification: vendored AuthorIT-generated docs JS; not regenerated from source) @ line 42 |
+| 25 | 235 | js/incomplete-sanitization | high | cui/widgets/app/app.viewmodel.js:87 | cui | fix | code fix required | TBD |  | suppressions.md lists this alert under cui/widgets/app/app.viewmodel.js (linked_pr=this PR); path-ignore not yet applied |
+| 26 | 234 | js/incomplete-sanitization | high | cui/widgets/app/app.viewmodel.js:87 | cui | fix | code fix required | TBD |  | suppressions.md lists this alert under cui/widgets/app/app.viewmodel.js (linked_pr=this PR); path-ignore not yet applied |
 | 27 | 206 | js/unsafe-jquery-plugin | medium | system/Packages/perc.widget.calendar/sys__UserDependency--web_resources/widgets/calendar/js/jquery.qtip.js:256 | system | fix | code fix required | TBD |  |  |
 | 28 | 181 | js/xss-through-dom | high | system/UnitTestResources/com/percussion/delivery/bw-corona.html:1310 | system | fix | code fix required | TBD |  |  |
 | 29 | 180 | js/xss-through-dom | high | system/Packages/perc.widgets.image/sys__UserDependency--web_resources/widgets/image/lightbox/lightbox.js:231 | system | fix | code fix required | TBD |  |  |
