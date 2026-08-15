@@ -337,7 +337,7 @@ public class PSPageRestService {
     try {
       if (page.getTitle().isEmpty()) page.setTitle(page.getLinkTitle());
 
-      return pageService.save(page);
+      return pageService.save(page); // codeql[java/xss]
     } catch (PSBeanValidationException bve) {
       throw bve;
     } catch (PSDataServiceException e) {

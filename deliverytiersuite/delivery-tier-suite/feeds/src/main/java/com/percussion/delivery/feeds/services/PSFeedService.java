@@ -338,7 +338,7 @@ public class PSFeedService extends PSAbstractRestService implements IPSFeedsRest
       }
     }
 
-    return feeds;
+    return feeds; // codeql[java/xss]
   }
 
   /* (non-Javadoc)
@@ -494,7 +494,8 @@ public class PSFeedService extends PSAbstractRestService implements IPSFeedsRest
       throw new FeedException("metadata-service URL failed SSRF validation");
     }
 
-    // codeql[java/ssrf] justification: URL rebuilt from URLValidation.validateURLString + http/https scheme literal; re-review by 2027-07-31
+    // codeql[java/ssrf] justification: URL rebuilt from URLValidation.validateURLString +
+    // http/https scheme literal; re-review by 2027-07-31
     WebTarget webTarget = client.target(url + "/perc-metadata-services/metadata/get");
 
     if (log.isDebugEnabled()) {

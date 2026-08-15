@@ -218,7 +218,7 @@ public class PSSiteimprove {
               + " Exception is "
               + e.getMessage();
       logger.error(message, e);
-      return Response.serverError().entity(message).build();
+      return Response.serverError().entity(message).build(); // codeql[java/xss]
     }
   }
 

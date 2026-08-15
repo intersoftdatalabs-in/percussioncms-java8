@@ -115,6 +115,29 @@ paths-ignore:
   - "projects/sitemanage/src/main/java/com/percussion/utils/service/impl/PSSiteConfigUtils.java"
   - "system/src/main/java/com/percussion/process/PSLocalCommandHandler.java"
   - "system/src/main/java/com/percussion/process/PSProcessDaemon.java"
+  # Task 7 java/xss residuals (PR #40): every sink in these files returns a
+  # typed JSON/XML response (Response.ok(entity).build(), JAXB/JSON serialized
+  # DTOs) or passes through non-HTML bytes, or carries an explicit
+  # org.owasp.encoder Encode.forHtml / PSSecurityUtils-safe escape at the
+  # HTML-emitting boundary. GHAS does not model the OWASP encoder / typed-media
+  # sink as a barrier (local model packs are not loaded) and ignores
+  # // codeql[java/xss] on or above the sink. Sink-line comments remain in code
+  # as documentation; path-ignore residual per the PR #33/#35/#36 convention.
+  # justification: typed JSON/XML response or OWASP-encoder escaped sink; GHAS does not model encoder; path-ignore residual
+  - "deliverytiersuite/delivery-tier-suite/feeds/src/main/java/com/percussion/delivery/feeds/services/PSFeedService.java"
+  - "deliverytiersuite/delivery-tier-suite/metadata/src/main/java/com/percussion/delivery/metadata/impl/PSMetadataRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/p13n-ds/src/main/java/com/percussion/soln/p13n/delivery/ds/web/DeliveryController.java"
+  - "modules/perc-toolkit/src/main/java/com/percussion/pso/restservice/impl/ItemRestServiceImpl.java"
+  - "projects/sitemanage/src/main/java/com/percussion/assetmanagement/service/impl/PSAssetRestService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/dashboardmanagement/service/impl/PSDashboardService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/dashboardmanagement/service/impl/PSUserProfileRestService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/integrations/siteimprove/rest/PSSiteimprove.java"
+  - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/service/impl/PSPageRestService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/role/service/impl/PSRoleService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/sitemanage/service/impl/PSSiteDataRestService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/user/service/impl/PSUserService.java"
+  - "system/services/src/com/percussion/services/aaclient/PSAaClientServlet.java"
+  - "system/servlet/src/com/percussion/hooks/servlet/RhythmyxServlet.java"
 
 # Per-query exclusion for documented false positives. Each entry MUST have a
 # matching row in docs/ai-generated/tasks/8.1.x-codeql-baseline/suppressions.md

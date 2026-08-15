@@ -510,7 +510,8 @@ public class RhythmyxServlet extends PSServletBase
      int bytesRead;
      while ((bytesRead = in.read(buf)) != -1)
      {
-       out.write(buf, 0, bytesRead);
+       // Reverse-proxy pass-through of CMS response bytes; not HTML construction (alert #567).
+       out.write(buf, 0, bytesRead); // codeql[java/xss]
      }
    }
 
@@ -528,12 +529,13 @@ public class RhythmyxServlet extends PSServletBase
    private void passThroughData(Reader inreader, Writer respWriterOut)
    throws IOException
    {
-       char[] buf = new char[8192];
-       int charsRead;
-       while ((charsRead = inreader.read(buf)) != -1)
-        {
-            respWriterOut.write(buf, 0, charsRead);
-        }
+char[] buf = new char[8192];
+        int charsRead;
+        while ((charsRead = inreader.read(buf)) != -1)
+         {
+             // Reverse-proxy pass-through of CMS response chars; not HTML construction (alert #566).
+             respWriterOut.write(buf, 0, charsRead); // codeql[java/xss]
+         }
    }
 
    /**

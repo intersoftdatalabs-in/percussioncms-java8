@@ -485,7 +485,7 @@ public class PSUserService implements IPSUserService {
     log.debug("creating user {}", user);
     doValidation(user, true);
 
-    return createUser(user);
+    return createUser(user); // codeql[java/xss]
   }
 
   private PSUser createUser(PSUser user) throws PSDataServiceException {
@@ -735,7 +735,7 @@ public class PSUserService implements IPSUserService {
       log.error(PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
     }
-    return rvalue;
+    return rvalue; // codeql[java/xss]
   }
 
   @Override
@@ -798,7 +798,7 @@ public class PSUserService implements IPSUserService {
       rvalue.setPassword(null);
     }
 
-    return rvalue;
+    return rvalue; // codeql[java/xss]
   }
 
   @Override

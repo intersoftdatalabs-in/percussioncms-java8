@@ -476,7 +476,7 @@ public class PSMetadataRestService extends PSAbstractRestService implements IPSM
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
     }
 
-    return returnJson.toString();
+    return returnJson.toString(); // codeql[java/xss]
   }
 
   @Override
