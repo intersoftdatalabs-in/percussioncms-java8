@@ -30,6 +30,12 @@
     $.PercArchiveListView = {
         updateArchiveList : updateArchiveList
     };
+    function percSafeUrl(url)
+    {
+        var u = String(url);
+        if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(u)) {return "#";}
+        return u;
+    }
     function updateArchiveList()
     {
         $(".perc-archive-list").each(function(){
@@ -128,7 +134,7 @@
                                     encodedQuery =  "&query=" + encodeURIComponent(JSON.stringify(query));
                                     href =  baseURL + pageResult + "?filter="+ encodeURIComponent(row.year) + encodedQuery;
                                     anchorYear = $("<a>")
-                                        .attr("href",href)
+                                        .attr("href",percSafeUrl(href))
                                         .text(linkYearText);
 
                                 }
@@ -188,7 +194,7 @@
                                         encodedQuery = "&query=" + encodeURIComponent(JSON.stringify(query));
                                         href = baseURL + pageResult + "?filter="+  encodeURIComponent(row2.month + " " + row.year )+ encodedQuery;
                                         a = $("<a>")
-                                            .attr("href",href )
+                                            .attr("href",percSafeUrl(href) )
                                             .text(linkText);
                                     }
 
@@ -276,7 +282,7 @@
                                     var encodedQuery = "&query=" + encodeURIComponent(JSON.stringify(query));
                                     var href = baseURL + pageResult + "?filter="+ encodeURIComponent(row2.month +" "+ row.year) + encodedQuery;
                                     a = $("<a>")
-                                        .attr("href", href)
+                                        .attr("href", percSafeUrl(href))
                                         .text(linkText);
                                 }
 

@@ -24,6 +24,27 @@
     $.PercRssView = {
         updateRssFeed : updateRssFeed
     };
+
+    //Escapes a value so it can be safely used as html text or in an attribute value
+    function escapeHtml(value)
+    {
+        var s = ("undefined" === typeof (value) || null === value) ? "" : String(value);
+        return $('<div>').text(s).html().replace(/"/g, '&quot;');
+    }
+
+    //Only allows simple element names, falls back to the given default
+    function safeElem(name, defaultName)
+    {
+        return ("string" === typeof (name) && /^[a-zA-Z][a-zA-Z0-9]*$/.test(name)) ? name : defaultName;
+    }
+
+    //Blocks script bearing urls
+    function safeUrl(url)
+    {
+        var u = ("undefined" === typeof (url) || null === url) ? "" : String(url);
+        if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(u)) {return "#";}
+        return escapeHtml(u);
+    }
     
     function updateRssFeed()
     {
@@ -39,9 +60,9 @@
                 {
                     var feedTitleId = queryString.feedId +"_title";
                     currentFeedWidget.attr('aria-labelledby', feedTitleId);
-                    var titleElement = queryString.titleElement;
-                    var feedTitle = '<' + titleElement + ' id="' + feedTitleId + '" ';
-                    feedTitle += ' title="' + feed.title + '" class="perc-feed-title"> <a href="' + feed.link + '" target="_blank" rel="noopener noreferrer">' + feed.title + '</a> </'+titleElement+'>';
+                    var titleElement = safeElem(queryString.titleElement, "h2");
+                    var feedTitle = '<' + titleElement + ' id="' + escapeHtml(feedTitleId) + '" ';
+                    feedTitle += ' title="' + escapeHtml(feed.title) + '" class="perc-feed-title"> <a href="' + safeUrl(feed.link) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(feed.title) + '</a> </'+titleElement+'>';
                     currentFeedWidget.append(feedTitle);
                 } else  if (null !== feed.title && "undefined" !== typeof (feed.title)) {
                     currentFeedWidget.attr('aria-label', feed.title);
@@ -71,11 +92,11 @@
     function renderFeedItems(feedItems, queryString, itemLimit) {
         var feedItem = '';
         var itemAriaRole = queryString.itemAriaRole;
-        var wrappingElement = queryString.wrappingElement;
-        var itemElement = queryString.itemElement;
-        var itemTitleElement = queryString.itemTitleElement;
-        var itemDateElement = queryString.itemDateElement; 
-        var itemDescriptionElement = queryString.itemDescriptionElement;
+        var wrappingElement = safeElem(queryString.wrappingElement, 'none');
+        var itemElement = safeElem(queryString.itemElement, 'div');
+        var itemTitleElement = safeElem(queryString.itemTitleElement, 'h3');
+        var itemDateElement = safeElem(queryString.itemDateElement, 'p');
+        var itemDescriptionElement = safeElem(queryString.itemDescriptionElement, 'p');
         var itemIdPrefix = queryString.feedId +"_item_";
         var wrappingElemAriaLabel = queryString.wrappingElemAriaLabel;
 
@@ -87,7 +108,7 @@
                  feedItem += ' role="list" ';
             }
             if (null !== wrappingElemAriaLabel && "undefined" !== typeof (wrappingElemAriaLabel) && ("" !== wrappingElemAriaLabel)) {
-                feedItem += ' aria-label="' + wrappingElemAriaLabel + '" >';
+                feedItem += ' aria-label="' + escapeHtml(wrappingElemAriaLabel) + '" >';
             }else {
                 feedItem += ' >';
             }
@@ -101,11 +122,11 @@
 
             if(queryString.showItemTitle && null !== item.title)
             {
-                label='aria-labelledby="' + title_id + '"';
+                label='aria-labelledby="' + escapeHtml(title_id) + '"';
             }
             else
             {
-                label='aria-label="' + item.title + '"';
+                label='aria-label="' + escapeHtml(item.title) + '"';
             }
 
             feedItem += '<' +itemElement+' ';
@@ -114,12 +135,12 @@
                 feedItem += 'role="listitem" ';
             }
 
-            feedItem += 'id="'+id+'" class="perc-feed-item"' + label + '>';
+            feedItem += 'id="'+escapeHtml(id)+'" class="perc-feed-item"' + label + '>';
             
             
             if(queryString.showItemTitle && item.title)
             {
-                feedItem += '<'+itemTitleElement+' id="'+title_id+'" class="perc-feed-item-title"><a href="' + item.link + '" target="_blank" title="' + item.title + '" rel="noopener noreferrer">' + item.title + '</a> </'+itemTitleElement+'>';
+                feedItem += '<'+itemTitleElement+' id="'+escapeHtml(title_id)+'" class="perc-feed-item-title"><a href="' + safeUrl(item.link) + '" target="_blank" title="' + escapeHtml(item.title) + '" rel="noopener noreferrer">' + escapeHtml(item.title) + '</a> </'+itemTitleElement+'>';
             }
             
             if(queryString.showItemDate && item.updated)
@@ -132,26 +153,26 @@
                 formattedDate = formattedDate.replace('hh', date.getHours());
                 formattedDate = formattedDate.replace('nn', date.getMinutes());
 
-                feedItem += '<'+itemDateElement+' class="perc-feed-item-date">' + formattedDate + '</'+itemDateElement+'>';
+                feedItem += '<'+itemDateElement+' class="perc-feed-item-date">' + escapeHtml(formattedDate) + '</'+itemDateElement+'>';
             }
             
             if(queryString.showItemDescription && item.description)
             {
-                var description = $("<"+itemDescriptionElement+">").html(item.description);
+                var description = $("<"+itemDescriptionElement+">").text(item.description);
                 
                 if(queryString.itemRemoveHtml)
                 {
-                    description.html(description.text());
+                    description.text(description.text());
                 }
                 
                 if(!queryString.itemDescriptionEmpty)
                 {
                     //Truncate description
-                    description.html(description.html().substring(0, queryString.itemDescriptionLength));
+                    description.text(description.text().substring(0, queryString.itemDescriptionLength));
                     //If there are more description
                     if('' !== item.description.substring(queryString.itemDescriptionLength + 1))
                     {
-                        description.html(description.html().trim() + "...");
+                        description.text(description.text().trim() + "...");
                     }
                 }
 

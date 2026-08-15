@@ -34,6 +34,16 @@
         init : init
     };
     /**
+     * Returns the given url if it uses a safe scheme, otherwise returns the site root.
+     */
+    function percSafeUrl(url) {
+        var u = String(url);
+        if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(u)) {
+            return "/";
+        }
+        return u;
+    }
+    /**
      * Initialize and configure each instance of registration widget in the page.
      */
     function init() {
@@ -69,7 +79,7 @@
                     if(!redirectUrl || "" === redirectUrl) {
                         redirectUrl = "/";
                     }
-                    window.location.href=redirectUrl;
+                    window.location.href=percSafeUrl(redirectUrl);
                 }
                 else {
                     $(".perc-reg-confirmation-message").text(data.message);
@@ -257,7 +267,7 @@
                                   if ($.param.querystring()) {
                                       params = '?' + $.param.querystring(); 
                                   }
-                                  window.location = confirmation_page + params;
+                                  window.location = percSafeUrl(confirmation_page + params);
                               }
                           }
                           else

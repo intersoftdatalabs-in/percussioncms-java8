@@ -138,19 +138,19 @@
             
             // Tags
             $('.perc-blog-post-tag-container').find('a').each(function(){
-                var tag = ($(this).html().trim()).replace(",", "");
+                var tag = ($(this).text().trim()).replace(",", "");
                 var jsonQuery = {'criteria':["perc:tags LIKE '" + tag + "'"]};
                 var encodedQuery = "&query=" + encodeURIComponent(JSON.stringify(jsonQuery));
-                $(this).attr("href", blogIndexPage + "?filter="+ tag + encodedQuery);
+                $(this).attr("href", blogIndexPage + "?filter="+ encodeURIComponent(tag) + encodedQuery);
             });
             
             // Categories
             $('.perc-blog-post-category-container').find('a').each(function(){
                 var categoryPath = $(this).attr('data-categories');
-                var category = ($(this).html().trim()).replace(",", "");
+                var category = ($(this).text().trim()).replace(",", "");
                 var jsonQuery = {'criteria':["perc:category LIKE '" + categoryPath + "'"]};
                 var encodedQuery = "&query=" + encodeURIComponent(JSON.stringify(jsonQuery));
-                $(this).attr("href", blogIndexPage + "?filter="+ category + encodedQuery);
+                $(this).attr("href", blogIndexPage + "?filter="+ encodeURIComponent(category) + encodedQuery);
             });
         });
     }
