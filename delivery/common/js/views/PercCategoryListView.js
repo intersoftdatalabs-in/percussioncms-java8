@@ -40,6 +40,12 @@ var isPreviewMode;
     var baseURL;
     var strJSON;
     var nRow;
+    function percSafeUrl(url)
+    {
+        var u = String(url);
+        if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(u)) {return "#";}
+        return u;
+    }
     function updateCategoryList()
     {
         $(".perc-category-list").each(function(){
@@ -185,15 +191,15 @@ var isPreviewMode;
         if(isEditMode === "true" || "undefined" === typeof (pageResult) || "" === pageResult ){
             href = "#";
         }else{
-            href = baseURL + pageResult + "?filter=" + node.category + encodedQuery;
+            href = baseURL + pageResult + "?filter=" + encodeURIComponent(node.category) + encodedQuery;
         }
 
         var a = $("<a>")
-            .attr("href", href)
+            .attr("href", percSafeUrl(href))
             .attr("data-count", countTotal)
             .attr("title", nodeStr)
             .addClass("perc-node")
-            .append(nodeStr);
+            .text(nodeStr);
 
         return $("<li>")
             .addClass("perc-category-element")

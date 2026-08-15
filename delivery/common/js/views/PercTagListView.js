@@ -112,10 +112,10 @@
                             var query = JSON.parse( strJSON );
                             query.criteria.push("perc:tags = '" + tagEntry.tagName + "'");
                             var encodedQuery = "&query=" + encodeURIComponent(JSON.stringify(query));
-                            newListElem.find("a").attr("href", baseURL + pageResult + "?filter="+tagEntry.tagName + encodedQuery).html(linkText);
+                            newListElem.find("a").attr("href", baseURL + pageResult + "?filter="+encodeURIComponent(tagEntry.tagName) + encodedQuery).text(linkText);
                         }
                         else{
-                            newListElem.find("a").html(linkText);
+                            newListElem.find("a").text(linkText);
                         }
                         listRoot.append(newListElem);
                     }

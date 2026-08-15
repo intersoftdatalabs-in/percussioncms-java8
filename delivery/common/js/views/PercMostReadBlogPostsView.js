@@ -61,10 +61,18 @@
         });
     }
 
+    function safeHeadingElem(elemName, defaultName)
+    {
+        if ("string" === typeof (elemName) && /^h[1-6]$/i.test(elemName)) {
+            return elemName.toLowerCase();
+        }
+        return defaultName;
+    }
+
     function createTitleHtml(settings)
     {
         var title = "";
-        var elemName = settings.headingStyle || "h2";
+        var elemName = safeHeadingElem(settings.headingStyle, "h2");
         if (settings.listTitle) {
             title = $("<div/>")
                     .append($("<" + elemName + "/>")
@@ -81,7 +89,7 @@
     */
     function createEntryHtml(settings, entry)
     {
-        var headingElem = settings.headingStyle || 'h3';
+        var headingElem = safeHeadingElem(settings.headingStyle, 'h3');
         var pagePath = entry.folder + entry.name;
         var promotedPaths = settings.promotedPagePaths || "";
         promotedPaths = promotedPaths.split(";");
