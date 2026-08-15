@@ -112,7 +112,7 @@ class BufferedInputStream extends FilterInputStream {
 
     int left = end - pos;
     if (n <= left) {
-      pos += n;
+      pos = (int) (pos + n);
       return n;
     } else {
       pos = end;

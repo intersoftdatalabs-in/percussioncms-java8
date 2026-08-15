@@ -48,7 +48,7 @@ import org.junit.runner.RunWith;
 @Server(url = "http://localhost:9980/", siteName = "Site1", feedName = "feeds1")
 public class PSFeedServicePerformanceTest {
   private static final Logger log = LogManager.getLogger(PSFeedServicePerformanceTest.class);
-  private static int sum = 0;
+  private static long sum = 0;
   private static int Threshold = 0;
   private static String URL = "";
   private static String SITENAME = "";

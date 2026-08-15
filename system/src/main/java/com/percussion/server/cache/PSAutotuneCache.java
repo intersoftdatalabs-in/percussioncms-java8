@@ -194,14 +194,14 @@ public class PSAutotuneCache {
    * @return the number of MB to hold all large table data.
    */
   private long calcSpaceForLargeTables() {
-    long kb = 0;
+    double kb = 0;
     for (String key : largeTables.keySet()) {
       kb += ehcacheDbRowCountValues.get(key) * largeTables.get(key);
     }
     log.debug(
         "The current amount of MB allocated for entries in the cache for larger tables is: {}",
-        DF2.format((double) kb / KB_TO_MB));
-    return kb;
+        DF2.format(kb / KB_TO_MB));
+    return (long) kb;
   }
 
   /**
@@ -211,14 +211,14 @@ public class PSAutotuneCache {
    * @return a representation in bytes of how much space the small tables will consume.
    */
   private long calcSpaceForSmallerTables() {
-    long kb = 0;
+    double kb = 0;
     for (String key : smallTables.keySet()) {
       kb += ehcacheDbRowCountValues.get(key) * smallTables.get(key);
     }
     log.debug(
         "The current amount of MB allocated for entries in the cache for smaller tables are: {}",
-        DF2.format((double) kb / KB_TO_MB));
-    return kb;
+        DF2.format(kb / KB_TO_MB));
+    return (long) kb;
   }
 
   /**

@@ -137,7 +137,7 @@ final class RespInputStream extends InputStream implements GlobalConstants {
     int left = end - offset;
     if (buffer != null && !(left == 0 && interrupted)) {
       num = (num > left ? left : num);
-      offset += num;
+      offset = (int) (offset + num);
       return num;
     } else {
       long skpd = demux.skip(num, resph);
