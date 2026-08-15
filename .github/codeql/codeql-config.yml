@@ -33,6 +33,8 @@ paths-ignore:
   # modules upload-time vendored JS (tinymce plugins, codemirror, etc.)
   - "modules/perc-tinymce/src/main/resources/META-INF/resources/sys_resources/**"
   # Legacy crypto module — accepted-risk-only; PR #1347 documented
+  # legacy crypto module path-ignore; AES/CBC migration tracked under accepted-risks
+  # legacy crypto module path-ignore; static IV migration tracked under accepted-risks
   - "modules/perc-legacy/**"
   # Install bundles
   - "modules/perc-toolkit/src/main/resources/InstallDir/**"
