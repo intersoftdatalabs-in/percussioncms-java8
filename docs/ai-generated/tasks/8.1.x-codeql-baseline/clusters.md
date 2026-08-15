@@ -1,13 +1,13 @@
 # CodeQL Critical+High Clusters on 8.1.x (main)
 
-Generated: 2026-08-15T19:37:38Z
+Generated: 2026-08-15T20:00:50Z
 Source: docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md
 
 ## Summary
 
-- Total open alerts: 79
-- Critical+High open: 69
-- Cluster count: 7
+- Total open alerts: 75
+- Critical+High open: 65
+- Cluster count: 5
 
 ## Cluster Map
 
@@ -16,9 +16,7 @@ Source: docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md
 | `js/xss-through-dom` | high | 45 | TBD | |
 | `java/path-injection` | high | 9 | PR #1365 + #1362 + #1361 | |
 | `js/incomplete-sanitization` | high | 8 | TBD | |
-| `java/zipslip` | high | 3 | PR #1341 | |
-| `java/xss` | high | 2 | PR #1348 + #1344 + #1367 | |
-| `java/implicit-cast-in-compound-assignment` | high | 1 | TBD | |
+| `java/xss` | high | 2 | PR #1348 + #1344 + #1367 | 8.1.x: this PR (Tomcat sample) |
 | `js/clear-text-logging` | high | 1 | TBD | |
 
 ## Per-Cluster Detail
@@ -50,20 +48,10 @@ Source: docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md
 - Alert #242 — `system/Docs/Percussion_Package_Manager_Help/dhtml_search.js:49`
 - ... and 3 more
 
-### `java/zipslip` (3 alerts)
-
-- Alert #499 — `system/src/main/java/com/percussion/tools/InstallRxApp.java:85`
-- Alert #498 — `system/release/Install/src/com/percussion/installer/action/RxExtractJarFiles.java:76`
-- Alert #495 — `modules/perc-ant/src/main/java/com/percussion/ant/install/PSExtractJarFiles.java:73`
-
 ### `java/xss` (2 alerts)
 
 - Alert #564 — `system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:78`
 - Alert #563 — `system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:77`
-
-### `java/implicit-cast-in-compound-assignment` (1 alerts)
-
-- Alert #427 — `system/src/main/java/com/percussion/HTTPClient/RespInputStream.java:144`
 
 ### `js/clear-text-logging` (1 alerts)
 

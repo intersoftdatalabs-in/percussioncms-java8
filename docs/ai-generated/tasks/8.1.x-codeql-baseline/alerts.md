@@ -30,41 +30,6 @@ Generated: (python port — timestamp not embedded; see file mtime)
   - **Message:** Cross-site scripting vulnerability due to a user-provided value.
 
 
-- **Alert #499** — `java/zipslip` (high, CodeQL)
-  - **Tool:** CodeQL
-  - **State:** open
-  - **Created:** 2026-08-03T23:23:01Z
-  - **URL:** https://github.com/intersoftdatalabs-in/percussioncms-java8/security/code-scanning/499
-  - **Location:** system/src/main/java/com/percussion/tools/InstallRxApp.java:85
-  - **Message:** Unsanitized archive entry, which may contain '..', is used in a file system operation.
-Unsanitized archive entry, which may contain '..', is used in a file system operation.
-
-
-- **Alert #498** — `java/zipslip` (high, CodeQL)
-  - **Tool:** CodeQL
-  - **State:** open
-  - **Created:** 2026-08-03T23:23:01Z
-  - **URL:** https://github.com/intersoftdatalabs-in/percussioncms-java8/security/code-scanning/498
-  - **Location:** system/release/Install/src/com/percussion/installer/action/RxExtractJarFiles.java:76
-  - **Message:** Unsanitized archive entry, which may contain '..', is used in a file system operation.
-Unsanitized archive entry, which may contain '..', is used in a file system operation.
-Unsanitized archive entry, which may contain '..', is used in a file system operation.
-Unsanitized archive entry, which may contain '..', is used in a file system operation.
-Unsanitized archive entry, which may contain '..', is used in a file system operation.
-
-
-- **Alert #495** — `java/zipslip` (high, CodeQL)
-  - **Tool:** CodeQL
-  - **State:** open
-  - **Created:** 2026-08-03T23:23:01Z
-  - **URL:** https://github.com/intersoftdatalabs-in/percussioncms-java8/security/code-scanning/495
-  - **Location:** modules/perc-ant/src/main/java/com/percussion/ant/install/PSExtractJarFiles.java:73
-  - **Message:** Unsanitized archive entry, which may contain '..', is used in a file system operation.
-Unsanitized archive entry, which may contain '..', is used in a file system operation.
-Unsanitized archive entry, which may contain '..', is used in a file system operation.
-Unsanitized archive entry, which may contain '..', is used in a file system operation.
-
-
 - **Alert #477** — `java/path-injection` (high, CodeQL)
   - **Tool:** CodeQL
   - **State:** open
@@ -143,15 +108,6 @@ This path depends on a user-provided value.
   - **URL:** https://github.com/intersoftdatalabs-in/percussioncms-java8/security/code-scanning/454
   - **Location:** projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/helpers/impl/PSImportThemeHelper.java:257
   - **Message:** This path depends on a user-provided value.
-
-
-- **Alert #427** — `java/implicit-cast-in-compound-assignment` (high, CodeQL)
-  - **Tool:** CodeQL
-  - **State:** open
-  - **Created:** 2026-08-03T23:23:01Z
-  - **URL:** https://github.com/intersoftdatalabs-in/percussioncms-java8/security/code-scanning/427
-  - **Location:** system/src/main/java/com/percussion/HTTPClient/RespInputStream.java:144
-  - **Message:** Implicit cast of source type long to narrower destination type int.
 
 
 - **Alert #398** — `js/functionality-from-untrusted-source` (medium, CodeQL)
