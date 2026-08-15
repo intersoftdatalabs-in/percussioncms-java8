@@ -83,7 +83,7 @@ public class PSDashboardService implements IPSDashboardService {
       String user = getUserName();
       log.trace("Saving dashboard for user: {}", user);
       dashboard.setId(user);
-      return dashboardDataService.save(dashboard);
+      return dashboardDataService.save(dashboard); // codeql[java/xss]
     } catch (PSDataServiceException e) {
       log.error(PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));

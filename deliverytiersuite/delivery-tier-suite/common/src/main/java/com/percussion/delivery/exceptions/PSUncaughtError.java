@@ -18,7 +18,8 @@
 package com.percussion.delivery.exceptions;
 
 import com.percussion.error.PSExceptionUtils;
-import java.net.URL;
+import com.percussion.security.utils.PSRedirectValidation;
+import com.percussion.security.utils.PSValidatedRedirect;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Context;
@@ -47,17 +48,22 @@ public class PSUncaughtError extends Throwable implements ExceptionMapper<Throwa
             request.getHeader("referer"),
             response.getStatus(),
             exception.getLocalizedMessage());
-        String referer = request.getHeader("referer");
-        URL url = new URL(referer);
-        String hostRedirect = url.getHost();
-        Integer port = url.getPort();
-        String errorRedirect = "";
-        if (port != null && port > 0) {
-          errorRedirect = request.getScheme() + "://" + hostRedirect + ":" + port + "/error.html";
-        } else {
-          errorRedirect = request.getScheme() + "://" + hostRedirect + "/error.html";
+        // CWE-601 / java/unvalidated-url-redirection #598: never build the error redirect
+        // from the Referer header (open-redirect vector). Always use a local relative path.
+        String context = request.getContextPath();
+        if (context == null) {
+          context = "";
         }
-        response.sendRedirect(errorRedirect);
+        String errorPath = context + "/error.html";
+        String safe = PSRedirectValidation.validateInternalRedirectUrl(errorPath);
+        String rebuilt = safe == null ? null : PSRedirectValidation.rebuildInternalRedirect(safe);
+        if (rebuilt == null) {
+          rebuilt = PSRedirectValidation.rebuildInternalRedirect("/error.html");
+        }
+        if (rebuilt == null) {
+          rebuilt = "/error.html";
+        }
+        PSValidatedRedirect.send(response, rebuilt);
       } else {
         logErrorMessage(exception);
       }

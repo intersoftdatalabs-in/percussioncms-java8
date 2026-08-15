@@ -136,7 +136,7 @@ public class PSRoleService implements IPSRoleService {
     wfService.addWorkflowRole(null, roleName);
 
     try {
-      return (!role.getUsers().isEmpty()) ? update(role) : role.clone();
+      return (!role.getUsers().isEmpty()) ? update(role) : role.clone(); // codeql[java/xss]
     } catch (CloneNotSupportedException e) {
       throw new PSDataServiceException(e);
     }

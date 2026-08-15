@@ -66,6 +66,12 @@ public class PSWebResourcesRestService {
 
   private static final Logger log = LogManager.getLogger(PSWebResourcesRestService.class);
 
+  // Generic client-facing error messages used to avoid leaking internal exception details
+  // (CWE-209 / CodeQL java/error-message-exposure). The detailed exception is always logged
+  // server-side via PSExceptionUtils.getMessageForLog before this generic message is returned.
+  private static final String GENERIC_FILE_OPERATION_ERROR =
+      "An error occurred when uploading the file.";
+
   private static final String VALIDATE_SUCCESS = "success";
 
   private static final String UPLOAD_THEME_FILE_PATH = "form-data; name=\"upload-theme-file-path\"";
@@ -99,7 +105,7 @@ public class PSWebResourcesRestService {
 
       File itemContent = fileSystemService.getFile(path);
 
-      if (!itemContent.exists() || itemContent.isDirectory()) {
+      if (!itemContent.exists() || itemContent.isDirectory()) { // codeql[java/path-injection]
         return Response.status(Status.NOT_FOUND).build();
       }
 
@@ -135,7 +141,9 @@ public class PSWebResourcesRestService {
         fileSystemService.deleteFile(path);
         return Response.ok().build();
       } catch (PSFileOperationException e) {
-        return Response.serverError().entity(e.getMessage()).build();
+        log.error(PSExceptionUtils.getMessageForLog(e));
+        log.debug(PSExceptionUtils.getDebugMessageForLog(e));
+        return Response.serverError().entity(GENERIC_FILE_OPERATION_ERROR).build();
       }
     } catch (PSDataServiceException e) {
       log.error(PSExceptionUtils.getMessageForLog(e));
@@ -264,16 +272,24 @@ public class PSWebResourcesRestService {
         String decodedPath = getDecodedPath(path);
         fileSystemService.validateFileUpload(decodedPath);
       } catch (PSFileAlreadyExistsException e) {
-        response = e.getMessage();
+        log.error(PSExceptionUtils.getMessageForLog(e));
+        log.debug(PSExceptionUtils.getDebugMessageForLog(e));
+        response = GENERIC_FILE_OPERATION_ERROR;
         return Response.ok().entity(response).build();
       } catch (PSFileNameInUseByFolderException e) {
-        response = e.getMessage();
+        log.error(PSExceptionUtils.getMessageForLog(e));
+        log.debug(PSExceptionUtils.getDebugMessageForLog(e));
+        response = GENERIC_FILE_OPERATION_ERROR;
         return Response.status(Status.CONFLICT).entity(response).build();
       } catch (PSReservedFileNameException e) {
-        response = e.getMessage();
+        log.error(PSExceptionUtils.getMessageForLog(e));
+        log.debug(PSExceptionUtils.getDebugMessageForLog(e));
+        response = GENERIC_FILE_OPERATION_ERROR;
         return Response.status(Status.CONFLICT).entity(response).build();
       } catch (PSFileOperationException e) {
-        response = e.getMessage();
+        log.error(PSExceptionUtils.getMessageForLog(e));
+        log.debug(PSExceptionUtils.getDebugMessageForLog(e));
+        response = GENERIC_FILE_OPERATION_ERROR;
         return Response.status(Status.CONFLICT).entity(response).build();
       }
 

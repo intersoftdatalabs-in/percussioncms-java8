@@ -61,6 +61,7 @@ import com.percussion.pubserver.IPSPubServerService;
 import com.percussion.queue.IPSPageImportQueue;
 import com.percussion.recent.service.rest.IPSRecentService;
 import com.percussion.search.PSSearchIndexEventQueue;
+import com.percussion.security.io.PSPathInjectionGuard;
 import com.percussion.server.PSServer;
 import com.percussion.services.catalog.PSTypeEnum;
 import com.percussion.services.contentchange.IPSContentChangeService;
@@ -127,6 +128,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOCase;
@@ -474,6 +477,8 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
           + "TemplateImages";
 
   private void updateThumbnailCache(String oldSiteName, String newSiteName) {
+    PSPathInjectionGuard.requireSafeFileName(oldSiteName);
+    PSPathInjectionGuard.requireSafeFileName(newSiteName);
     log.info(
         "Updating Page and Template thumbnail cache for site: {} to use new site name: {}...",
         oldSiteName,
@@ -491,14 +496,15 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
                 + PAGE_IMAGE_CACHE_DIR
                 + File.separator
                 + newSiteName);
-    if (sourceCacheDir.renameTo(destCacheDir))
+    if (sourceCacheDir.renameTo(destCacheDir)) { // codeql[java/path-injection]
       log.info(
           "Page and Template image cache folder moved to to: {}", destCacheDir.getAbsolutePath());
-    else
+    } else {
       log.error(
           "Unable to automatically move: {} to {}.  An adminstrator may need to stop the service and rename / move the folder to resolve the issue.",
           sourceCacheDir.getAbsolutePath(),
           destCacheDir.getAbsolutePath());
+    }
   }
 
   private void updateSiteFromProps(IPSSite site, PSSiteProperties props) {
@@ -660,6 +666,15 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
 
     PSValidationErrorsBuilder builder = validateParameters("saveSiteProperties");
 
+    if (!isValidSiteName(name)) {
+      String msg =
+          "Cannot rename site \""
+              + site.getName()
+              + "\" to an invalid site name: \""
+              + name
+              + "\".";
+      builder.rejectField("name", msg, name).throwIfInvalid();
+    }
     if (siteMgr.findSite(name) != null) {
       String msg =
           "Cannot rename site \""
@@ -1796,12 +1811,17 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
         if (replaceVal != null) {
           for (String original : replaceMappings.keySet()) {
             String replacement = replaceMappings.get(original);
+            // Pattern.quote / Matcher.quoteReplacement treat the path components as literals;
+            // without them a site/folder name containing regex meta-characters would be
+            // interpreted as a pattern (CodeQL java/regex-injection, alerts #604-#606).
+            String quotedOriginal = Pattern.quote(original);
+            String quotedReplacement = Matcher.quoteReplacement(replacement);
             if (replaceVal.contains(original + '/')) {
-              replaceVal = replaceVal.replaceFirst(original + '/', replacement + '/');
+              replaceVal = replaceVal.replaceFirst(quotedOriginal + '/', quotedReplacement + '/');
             } else if (replaceVal.contains(original + '%')) {
-              replaceVal = replaceVal.replaceFirst(original + '%', replacement + '%');
+              replaceVal = replaceVal.replaceFirst(quotedOriginal + '%', quotedReplacement + '%');
             } else {
-              replaceVal = replaceVal.replaceFirst(original, replacement);
+              replaceVal = replaceVal.replaceFirst(quotedOriginal, quotedReplacement);
             }
           }
 
@@ -1875,7 +1895,9 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
       String copySiteName = copySite.getName();
       String origSiteName = origSite.getName();
 
-      String origPagePath = pagePath.replaceFirst(copySiteName, origSiteName);
+      String origPagePath =
+          pagePath.replaceFirst(
+              Pattern.quote(copySiteName), Matcher.quoteReplacement(origSiteName));
       PSPage origPage = pageDao.findPageByPath(origPagePath);
 
       Collection<String> assetIds = null;
@@ -2004,7 +2026,9 @@ public class PSSiteDataService extends PSAbstractDataService<PSSite, PSSiteSumma
           if (linkedSite != null && linkedSite.getId().equals(origSite.getId())) {
             // page is under the original site, need to update the link
             // to point to copied page
-            String copyPagePath = linkedPagePath.replaceFirst(origSite.getName(), copySiteName);
+            String copyPagePath =
+                linkedPagePath.replaceFirst(
+                    Pattern.quote(origSite.getName()), Matcher.quoteReplacement(copySiteName));
             PSPage copyPage = pageDao.findPageByPath(copyPagePath);
             if (copyPage != null) {
               widgetAssetRelationshipService.updateSharedRelationshipDependent(

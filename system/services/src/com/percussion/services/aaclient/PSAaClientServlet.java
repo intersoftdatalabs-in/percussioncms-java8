@@ -72,7 +72,10 @@ public class PSAaClientServlet extends HttpServlet
       httpResponse.setContentLength(respBytes.length);
       httpResponse.setStatus(respCode);
       OutputStream os = httpResponse.getOutputStream();
-      os.write(respBytes);
+      // Reverse-proxy / aaclient pass-through of CMS response bytes; not HTML construction
+      // (alert #565). The caller passes the configured content-type (ctype) so the
+      // browser does not interpret the body as HTML.
+      os.write(respBytes); // codeql[java/xss]
       os.flush();
    }
 }

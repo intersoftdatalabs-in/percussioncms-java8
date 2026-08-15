@@ -26,8 +26,8 @@ Operational guide for closing CodeQL (Critical/High) alerts on the 8.1.x release
    built distribution tree.
 7. **Task 10** — `accepted-risks.md` with re-review dates for unfixable
    sinks.
-8. **Task 12** — `CHANGELOG.md` entries per family with the
-   `GH_POST_PR_COMMIT_RUN_ID` placeholder.
+8. **Task 12** — do **not** add a `CHANGELOG.md` entry. Document the
+   family in the PR body and in `clusters.md` / `suppressions.md` instead.
 9. **Task 13** — sign-off PR re-runs the pipeline and asserts zero
    Critical/High open.
 

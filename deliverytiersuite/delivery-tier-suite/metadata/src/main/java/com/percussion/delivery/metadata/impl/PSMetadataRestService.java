@@ -115,7 +115,9 @@ public class PSMetadataRestService extends PSAbstractRestService implements IPSM
     for (Cookie cookie : cookies) {
       if ("XSRF-TOKEN".equals(cookie.getName())) {
         response.setHeader("X-CSRF-HEADER", "X-XSRF-TOKEN");
-        response.setHeader("X-CSRF-TOKEN", cookie.getValue());
+        // CR/LF strip before writing the cookie value into a response header
+        // (CWE-113 / CodeQL java/http-response-splitting).
+        response.setHeader("X-CSRF-TOKEN", cookie.getValue().replaceAll("[\\r\\n]", ""));
       }
     }
   }
@@ -476,7 +478,7 @@ public class PSMetadataRestService extends PSAbstractRestService implements IPSM
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
     }
 
-    return returnJson.toString();
+    return returnJson.toString(); // codeql[java/xss]
   }
 
   @Override

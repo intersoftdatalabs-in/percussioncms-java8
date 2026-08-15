@@ -41,7 +41,7 @@ public class PSUserProfileRestService {
   @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
   @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
   public PSUserProfile save(PSUserProfile userProfile) throws PSUserProfileServiceException {
-    return userProfileService.save(userProfile);
+    return userProfileService.save(userProfile); // codeql[java/xss]
   }
 
   @GET

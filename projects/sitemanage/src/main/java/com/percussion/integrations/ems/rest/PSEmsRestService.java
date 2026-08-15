@@ -73,6 +73,13 @@ public class PSEmsRestService {
   private IPSDeliveryInfoService deliveryService;
 
   private static final Logger log = LogManager.getLogger(PSEmsRestService.class);
+
+  // Generic client-facing error message used to avoid leaking internal exception details
+  // (CWE-209 / CodeQL java/error-message-exposure). The detailed exception is always logged
+  // server-side via PSExceptionUtils.getMessageForLog before this generic message is returned.
+  private static final String GENERIC_EMS_ERROR =
+      "An error occurred while communicating with the EMS integration service";
+
   /** * The license Override if any */
   private String licenseId = "";
 
@@ -126,7 +133,7 @@ public class PSEmsRestService {
     } catch (Exception e) {
       log.error(
           "Error pulling buildings from DTS. Error: {}", PSExceptionUtils.getMessageForLog(e));
-      return Response.serverError().entity(e.getMessage()).build();
+      return Response.serverError().entity(GENERIC_EMS_ERROR).build();
     }
     return Response.status(Status.OK).entity(ret).build();
   }
@@ -167,7 +174,7 @@ public class PSEmsRestService {
     } catch (Exception e) {
       log.error(
           "Error pulling Event Types from DTS. Error: {}", PSExceptionUtils.getMessageForLog(e));
-      return Response.serverError().entity(e.getMessage()).build();
+      return Response.serverError().entity(GENERIC_EMS_ERROR).build();
     }
 
     return Response.status(Status.OK).entity(ret).build();
@@ -205,7 +212,7 @@ public class PSEmsRestService {
       }
     } catch (Exception e) {
       log.error("Error pulling Groups from DTS. Error: {}", PSExceptionUtils.getMessageForLog(e));
-      return Response.serverError().entity(e.getMessage()).build();
+      return Response.serverError().entity(GENERIC_EMS_ERROR).build();
     }
 
     return Response.status(Status.OK).entity(ret).build();
@@ -253,7 +260,7 @@ public class PSEmsRestService {
       }
     } catch (Exception e) {
       log.error("Error pulling Groups from DTS. Error: {}", PSExceptionUtils.getMessageForLog(e));
-      return Response.serverError().entity(e.getMessage()).build();
+      return Response.serverError().entity(GENERIC_EMS_ERROR).build();
     }
 
     return Response.status(Status.OK).entity(ret).build();
@@ -292,7 +299,7 @@ public class PSEmsRestService {
       }
     } catch (Exception e) {
       log.error("Error pulling Groups from DTS. Error: {}", PSExceptionUtils.getMessageForLog(e));
-      return Response.serverError().entity(e.getMessage()).build();
+      return Response.serverError().entity(GENERIC_EMS_ERROR).build();
     }
 
     return Response.status(Status.OK).entity(ret).build();
@@ -332,7 +339,7 @@ public class PSEmsRestService {
     } catch (Exception e) {
       log.error(
           "Error pulling MC Locations from DTS. Error: {}", PSExceptionUtils.getMessageForLog(e));
-      return Response.serverError().entity(e.getMessage()).build();
+      return Response.serverError().entity(GENERIC_EMS_ERROR).build();
     }
 
     return Response.status(Status.OK).entity(ret).build();
@@ -372,7 +379,7 @@ public class PSEmsRestService {
     } catch (Exception e) {
       log.error(
           "Error pulling Event Types from DTS. Error: {}", PSExceptionUtils.getMessageForLog(e));
-      return Response.serverError().entity(e.getMessage()).build();
+      return Response.serverError().entity(GENERIC_EMS_ERROR).build();
     }
 
     return Response.status(Status.OK).entity(ret).build();
@@ -412,7 +419,7 @@ public class PSEmsRestService {
     } catch (Exception e) {
       log.error(
           "Error pulling MC Calendars from DTS. Error: {}", PSExceptionUtils.getMessageForLog(e));
-      return Response.serverError().entity(e.getMessage()).build();
+      return Response.serverError().entity(GENERIC_EMS_ERROR).build();
     }
 
     return Response.status(Status.OK).entity(ret).build();
@@ -461,7 +468,7 @@ public class PSEmsRestService {
     } catch (Exception e) {
       log.error(
           "Error pulling MC Events from DTS. Error: {}", PSExceptionUtils.getMessageForLog(e));
-      return Response.serverError().entity(e.getMessage()).build();
+      return Response.serverError().entity(GENERIC_EMS_ERROR).build();
     }
 
     return Response.ok(ret, MediaType.APPLICATION_JSON).build();
@@ -511,7 +518,7 @@ public class PSEmsRestService {
       log.error(
           "Error pulling MC Featured Events from DTS. Error: {}",
           PSExceptionUtils.getMessageForLog(e));
-      return Response.serverError().entity(e.getMessage()).build();
+      return Response.serverError().entity(GENERIC_EMS_ERROR).build();
     }
 
     return Response.status(Status.OK).entity(ret).build();

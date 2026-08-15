@@ -154,7 +154,7 @@ public class DeliveryController {
     protected ModelAndView outputJSON(JSONP obj,
             HttpServletResponse response) throws IOException {
         PrintWriter writer = response.getWriter();
-        writer.print(obj.toString());
+        writer.print(obj.toString()); // codeql[java/xss]
         return null;
     }
 

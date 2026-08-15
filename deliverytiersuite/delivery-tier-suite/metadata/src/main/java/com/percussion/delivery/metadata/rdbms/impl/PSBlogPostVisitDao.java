@@ -26,6 +26,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -240,7 +242,13 @@ public class PSBlogPostVisitDao implements IPSBlogPostVisitDao {
     List<PSDbBlogPostVisit> results = session.createQuery(criteriaQuery).getResultList();
 
     for (PSDbBlogPostVisit visit : results) {
-      visit.setPagepath(visit.getPagepath().replaceAll(prevSiteName, newSiteName));
+      // Pattern.quote / Matcher.quoteReplacement treat the site names as literals; without
+      // them a site name containing regex meta-characters would be interpreted as a pattern
+      // (CodeQL java/regex-injection, alert #602).
+      visit.setPagepath(
+          visit
+              .getPagepath()
+              .replaceAll(Pattern.quote(prevSiteName), Matcher.quoteReplacement(newSiteName)));
       session.saveOrUpdate(visit);
     }
   }

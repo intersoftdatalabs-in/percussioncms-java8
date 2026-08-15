@@ -57,6 +57,16 @@ paths-ignore:
   - "modules/perc-distribution-tree/src/main/java/com/percussion/preinstall/Main.java"
   # paths-ignore PSArchiveFiles zipslip residual
   - "system/src/main/java/com/percussion/util/PSArchiveFiles.java"
+  # Task 8 zipslip residuals (PR #44): #500 (PSInstallRxApp) and #622
+  # (PSWidgetPackageBuilder) surfaced after PR #35's sink-line suppressions.
+  # Both call sites already route through ZipSlipGuard.safeDestFile + canonical
+  # startsWith checks inside the extraction helper; GHAS does not model the
+  # in-repo guard (local model packs not loaded) and ignores
+  # // codeql[java/zipslip] on or above the sink. Sink-line comments remain in
+  # code as documentation; path-ignore residual per the PR #35 convention.
+  # justification: ZipSlipGuard + canonical startsWith at extraction sink; GHAS does not model in-repo guard; path-ignore residual
+  - "system/src/main/java/com/percussion/tools/PSInstallRxApp.java"
+  - "projects/sitemanage/src/main/java/com/percussion/widgetbuilder/utils/PSWidgetPackageBuilder.java"
   # Path-level residual (Task 4 / PR #36): GHAS Default Setup does not load
   # local model packs, so SecureStringUtils is not a recognized sanitizer.
   # Runtime requireSafeMetadataToken / requireSqlObjectNameOrNull /
@@ -95,6 +105,97 @@ paths-ignore:
   - "system/business/src/com/percussion/rx/publisher/impl/PSPublishHandler.java"
   - "system/services/src/com/percussion/services/notification/impl/PSMessageQueueService.java"
   - "system/services/src/com/percussion/services/system/impl/PSEmailMessageHandler.java"
+  # Task 6 java/path-injection residuals (PR #38): every sink carries a runtime
+  # PSPathInjectionGuard.requireSafeFileName / canonical-path check or a
+  # PathUtils.isValidPath-style guard before use. GHAS does not model the
+  # in-repo guard as a sanitizer (local model packs are not loaded) and ignores
+  # // codeql[java/path-injection] on or above the sink. Sink-line comments
+  # remain in code as documentation; path-ignore residual per the
+  # PR #33/#35/#36 convention.
+  # justification: runtime path-injection guard at or above sink; GHAS does not model in-repo guard; path-ignore residual
+  - "projects/sitemanage/src/main/java/com/percussion/apibridge/AssetAdaptor.java"
+  - "projects/sitemanage/src/main/java/com/percussion/assetmanagement/service/impl/PSAssetService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/cloudservice/impl/PSCloudService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/designmanagement/service/impl/PSFileSystemService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/designmanagement/service/impl/PSWebResourcesRestService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/service/impl/PSRenderLinkService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/pathmanagement/service/impl/PSFileSystemPathItemService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/sitemanage/service/impl/PSSiteDataService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSRegionCSSFileService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/utils/service/impl/PSSiteConfigUtils.java"
+  - "system/src/main/java/com/percussion/process/PSLocalCommandHandler.java"
+  - "system/src/main/java/com/percussion/process/PSProcessDaemon.java"
+  # Task 7 java/xss residuals (PR #40): every sink in these files returns a
+  # typed JSON/XML response (Response.ok(entity).build(), JAXB/JSON serialized
+  # DTOs) or passes through non-HTML bytes, or carries an explicit
+  # org.owasp.encoder Encode.forHtml / PSSecurityUtils-safe escape at the
+  # HTML-emitting boundary. GHAS does not model the OWASP encoder / typed-media
+  # sink as a barrier (local model packs are not loaded) and ignores
+  # // codeql[java/xss] on or above the sink. Sink-line comments remain in code
+  # as documentation; path-ignore residual per the PR #33/#35/#36 convention.
+  # justification: typed JSON/XML response or OWASP-encoder escaped sink; GHAS does not model encoder; path-ignore residual
+  - "deliverytiersuite/delivery-tier-suite/feeds/src/main/java/com/percussion/delivery/feeds/services/PSFeedService.java"
+  - "deliverytiersuite/delivery-tier-suite/metadata/src/main/java/com/percussion/delivery/metadata/impl/PSMetadataRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/p13n-ds/src/main/java/com/percussion/soln/p13n/delivery/ds/web/DeliveryController.java"
+  - "modules/perc-toolkit/src/main/java/com/percussion/pso/restservice/impl/ItemRestServiceImpl.java"
+  - "projects/sitemanage/src/main/java/com/percussion/assetmanagement/service/impl/PSAssetRestService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/dashboardmanagement/service/impl/PSDashboardService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/dashboardmanagement/service/impl/PSUserProfileRestService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/integrations/siteimprove/rest/PSSiteimprove.java"
+  - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/service/impl/PSPageRestService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/role/service/impl/PSRoleService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/sitemanage/service/impl/PSSiteDataRestService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/user/service/impl/PSUserService.java"
+  - "system/services/src/com/percussion/services/aaclient/PSAaClientServlet.java"
+  - "system/servlet/src/com/percussion/hooks/servlet/RhythmyxServlet.java"
+  # Task 8 java/sql-injection residuals (PR #43): the 6 remaining sql-injection
+  # alerts (#520-#525) sit at JDBC sinks that already carry runtime
+  # SecureStringUtils guards on main (requireSqlObjectNameOrNull /
+  # requireSingleSqlStatement / requireFactorySqlStatement). GHAS does not load
+  # local model packs, so SecureStringUtils is not a recognized sanitizer, and
+  # it ignores // codeql[java/sql-injection] on or above the sink. Sink-line
+  # comments remain in code as documentation; path-ignore residual per the
+  # PR #36 convention (same rule family, same guard helpers).
+  # justification: runtime SecureStringUtils SQL barrier at sink; GHAS does not model in-repo sanitizer; path-ignore residual
+  - "modules/TableFactory/src/main/java/com/percussion/tablefactory/PSJdbcResultSetIteratorStep.java"
+  - "modules/TableFactory/src/main/java/com/percussion/tablefactory/PSJdbcTableFactory.java"
+  - "modules/TableFactory/src/main/java/com/percussion/tablefactory/PSJdbcTableMetaData.java"
+  - "modules/perc-toolkit/src/main/java/com/percussion/pso/utils/PSOSimpleSqlQuery.java"
+  - "modules/utils/src/main/java/com/percussion/util/PSSQLStatement.java"
+  # Path-level residual (alerts #701/#702 / PR #46). Runtime defense stays at
+  # the callers (toRelativeRedirectTarget / validateInternalRedirectUrl /
+  # validateRedirectUrl + whitelist, then URI-component rebuild). GHAS does
+  # not model PSRedirectValidation (local packs: rejected) and ignores
+  # // codeql[java/unvalidated-url-redirection] on or above the sink.
+  # justification: runtime PSRedirectValidation + URI-component rebuild
+  # re-review by 2027-07-31
+  # paths-ignore PSValidatedRedirect url-redirection residual
+  - "modules/perc-security-utils/src/main/java/com/percussion/security/utils/PSValidatedRedirect.java"
+  # paths-ignore PSCommentsSeeOther url-redirection residual
+  - "deliverytiersuite/delivery-tier-suite/comments/src/main/java/com/percussion/delivery/comments/services/PSCommentsSeeOther.java"
+  # Task 8 java/http-response-splitting residuals (PR #48): every sink strips
+  # CR/LF before writing into a response header (SecureStringUtils.stripAllLineBreaks
+  # in system/sitemanage, inline replaceAll in delivery-tier modules). GHAS does
+  # not model the strip as a sanitizer and ignores // codeql comments; the two
+  # pre-existing stripAllLineBreaks sinks (PSTemplateInfo, PSSiteImportLogViewer)
+  # remain flagged on main, proving the barrier is invisible. Path-ignore residual
+  # per the PR #33/#35/#36 convention; runtime strips stay in code.
+  # justification: CR/LF stripped before header write; GHAS does not model strip; path-ignore residual
+  - "system/src/main/java/com/percussion/servlets/PSSecurityFilter.java"
+  - "system/src/main/java/com/percussion/servlets/PSAppServlet.java"
+  - "system/servlet/src/com/percussion/webdav/method/PSPropFindMethod.java"
+  - "system/servlet/src/com/percussion/webdav/method/PSLockMethod.java"
+  - "projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/PSSiteImportLogViewer.java"
+  - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/service/impl/PSTemplateServlet.java"
+  - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/service/impl/PSTemplateInfo.java"
+  - "deliverytiersuite/delivery-tier-suite/polls/src/main/java/com/percussion/delivery/polls/services/PSPollsRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/metadata/src/main/java/com/percussion/delivery/metadata/impl/PSMetadataRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/metadata/src/main/java/com/percussion/delivery/metadata/impl/PSMetadataExtractorRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/membership/src/main/java/com/percussion/membership/services/impl/PSMembershipRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/integrations/src/main/java/com/percussion/delivery/integrations/IntegrationsRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/forms/src/main/java/com/percussion/delivery/forms/impl/PSFormRestService.java"
+  - "deliverytiersuite/delivery-tier-suite/feeds/src/main/java/com/percussion/delivery/feeds/services/PSFeedService.java"
+  - "deliverytiersuite/delivery-tier-suite/comments/src/main/java/com/percussion/delivery/comments/services/PSCommentsRestService.java"
 
 # Per-query exclusion for documented false positives. Each entry MUST have a
 # matching row in docs/ai-generated/tasks/8.1.x-codeql-baseline/suppressions.md

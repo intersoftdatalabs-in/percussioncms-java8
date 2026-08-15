@@ -6,7 +6,7 @@ This file documents changes that have been made to API's / public interfaces.
 
 ### Editor decoration region grid
 
-See `CHANGELOG.md` (issue #2, 8.1.7 entry) for the full product / support note, including the temporary customer theme override snippet for sites already on 8.1.7+.
+See issue #2 (8.1.7) for the full product / support note, including the temporary customer theme override snippet for sites already on 8.1.7+.
 
 ### Test / Debug Tools
 

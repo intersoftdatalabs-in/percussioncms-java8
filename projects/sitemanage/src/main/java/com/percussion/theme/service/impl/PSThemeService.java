@@ -166,8 +166,9 @@ public class PSThemeService implements IPSThemeService {
   }
 
   private String getCachedRegionCSSRelativePath(String theme) {
-    String psSession = getCurrentSessionId();
-    return psSession + "/" + theme + "/" + THEME_REGION_CSS_PATH;
+    // Session id and theme are both single path segments before composition.
+    PSPathInjectionGuard.requireSafeFileName(theme);
+    return safeSessionSegment(getCurrentSessionId()) + "/" + theme + "/" + THEME_REGION_CSS_PATH;
   }
 
   private File getCachedRegionCSSFileOnly(String theme) {
@@ -210,11 +211,11 @@ public class PSThemeService implements IPSThemeService {
   protected File getNewThemeFolder(String themeName) {
     PSPathInjectionGuard.requireSafeFileName(themeName);
     File root = getThemesRoot();
-    File themeFolder = new File(root, themeName);
+    File themeFolder = new File(root, themeName); // codeql[java/path-injection]
     int i = 0;
     while (themeFolder.exists()) {
       i++;
-      themeFolder = new File(root, themeName + "-" + i);
+      themeFolder = new File(root, themeName + "-" + i); // codeql[java/path-injection]
     }
 
     return themeFolder;

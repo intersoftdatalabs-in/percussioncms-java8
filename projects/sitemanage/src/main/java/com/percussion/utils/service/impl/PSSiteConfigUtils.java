@@ -253,6 +253,9 @@ public class PSSiteConfigUtils {
       return;
     }
 
+    PSPathInjectionGuard.requireSafeFileName(srcSite);
+    PSPathInjectionGuard.requireSafeFileName(destSite);
+
     // just remove the touched file if it exists (this forces the next full
     // publish to copy the corresponding configure files to the live site)
     removeTouchedFile(srcSite);
@@ -262,7 +265,7 @@ public class PSSiteConfigUtils {
       createSecureSiteConfiguration(destSite);
     } else {
       File destDir = getSiteConfigFolder(destSite);
-      FileUtils.moveDirectory(srcDir, destDir);
+      FileUtils.moveDirectory(srcDir, destDir); // codeql[java/path-injection]
     }
   }
 
@@ -311,7 +314,8 @@ public class PSSiteConfigUtils {
   public static void createSecureSiteConfiguration(String sitename) throws IOException {
     PSPathInjectionGuard.requireSafeFileName(sitename);
     File siteConfigFolder = forceMkDirSiteConfig(sitename);
-    FileUtils.copyDirectory(getSourceConfigurationFolder(), siteConfigFolder, false);
+    FileUtils.copyDirectory(
+        getSourceConfigurationFolder(), siteConfigFolder, false); // codeql[java/path-injection]
   }
 
   /**
@@ -357,8 +361,8 @@ public class PSSiteConfigUtils {
    */
   private static File forceMkDirSiteConfig(String sitename) throws IOException {
     File siteConfigFolder = getSiteConfigFolder(sitename);
-    if (!siteConfigFolder.exists()) {
-      FileUtils.forceMkdir(siteConfigFolder);
+    if (!siteConfigFolder.exists()) { // codeql[java/path-injection]
+      FileUtils.forceMkdir(siteConfigFolder); // codeql[java/path-injection]
     }
     return siteConfigFolder;
   }

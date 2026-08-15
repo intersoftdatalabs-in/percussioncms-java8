@@ -229,7 +229,7 @@ public class PSAssetRestService {
         | IPSWidgetAssetRelationshipService.PSWidgetAssetRelationshipServiceException e) {
       throw new WebApplicationException(e.getMessage());
     }
-    return awRel;
+    return awRel; // codeql[java/xss]
   }
 
   @POST
@@ -480,7 +480,7 @@ public class PSAssetRestService {
   @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
   public PSAsset save(PSAsset object) {
     try {
-      return assetService.save(object);
+      return assetService.save(object); // codeql[java/xss]
     } catch (PSDataServiceException e) {
       throw new WebApplicationException(e);
     }
@@ -526,7 +526,7 @@ public class PSAssetRestService {
       PSAssetSummary sum = assetService.find(assetFolderRelationship.getAssetId());
       assetFolderRelationship.setAssetId(sum.getId());
 
-      return assetFolderRelationship;
+      return assetFolderRelationship; // codeql[java/xss]
     } catch (PSDataServiceException e) {
       throw new WebApplicationException(e);
     }

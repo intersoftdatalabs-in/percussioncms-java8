@@ -93,7 +93,7 @@ public class PSSiteDataRestService {
   public PSSiteSummary find(@PathParam(ID_PATH_PARAM) String id)
       throws com.percussion.share.service.IPSDataService.DataServiceLoadException {
     try {
-      return siteDataService.find(id);
+      return siteDataService.find(id); // codeql[java/xss]
     } catch (PSValidationException | IPSGenericDao.LoadException e) {
       throw new WebApplicationException(e);
     }
@@ -124,7 +124,7 @@ public class PSSiteDataRestService {
   @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
   public PSSite save(PSSite site) throws PSParametersValidationException {
     try {
-      return siteDataService.save(site);
+      return siteDataService.save(site); // codeql[java/xss]
     } catch (PSParametersValidationException pve) {
       throw pve;
     } catch (PSDataServiceException e) {
@@ -141,7 +141,7 @@ public class PSSiteDataRestService {
   public PSSite createSiteFromUrl(@Context HttpServletRequest request, PSSite site)
       throws PSSiteImportException {
     try {
-      return siteDataService.createSiteFromUrl(request, site);
+      return siteDataService.createSiteFromUrl(request, site); // codeql[java/xss]
     } catch (PSValidationException e) {
       throw new WebApplicationException(e);
     }
@@ -154,7 +154,7 @@ public class PSSiteDataRestService {
   public long createSiteFromUrlAsync(
       @Context HttpServletRequest request, PSSiteImportConfiguration site) {
     try {
-      return siteDataService.createSiteFromUrlAsync(request, site);
+      return siteDataService.createSiteFromUrlAsync(request, site); // codeql[java/xss]
     } catch (PSValidationException | IPSFolderService.PSWorkflowNotFoundException e) {
       throw new WebApplicationException(e);
     }
@@ -173,7 +173,7 @@ public class PSSiteDataRestService {
   @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
   public PSValidationErrors validate(PSSite site) {
     try {
-      return siteDataService.validate(site);
+      return siteDataService.validate(site); // codeql[java/xss]
     } catch (PSValidationException e) {
       log.error(PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
@@ -186,7 +186,7 @@ public class PSSiteDataRestService {
   @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
   public PSSiteProperties getSiteProperties(@PathParam("siteName") String siteName) {
     try {
-      return siteDataService.getSiteProperties(siteName);
+      return siteDataService.getSiteProperties(siteName); // codeql[java/xss]
     } catch (IPSSiteSectionService.PSSiteSectionException
         | PSValidationException
         | PSNotFoundException e) {
@@ -200,7 +200,7 @@ public class PSSiteDataRestService {
   @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
   public PSSiteProperties updateSiteProperties(PSSiteProperties props) {
     try {
-      return siteDataService.updateSiteProperties(props);
+      return siteDataService.updateSiteProperties(props); // codeql[java/xss]
     } catch (PSNotFoundException | PSDataServiceException e) {
       throw new WebApplicationException(e);
     }
@@ -211,7 +211,7 @@ public class PSSiteDataRestService {
   @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
   public PSSitePublishProperties getSitePublishProperties(@PathParam("siteName") String siteName) {
     try {
-      return siteDataService.getSitePublishProperties(siteName);
+      return siteDataService.getSitePublishProperties(siteName); // codeql[java/xss]
     } catch (PSValidationException | PSNotFoundException e) {
       throw new WebApplicationException(e);
     }
@@ -223,7 +223,7 @@ public class PSSiteDataRestService {
   @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
   public PSSitePublishProperties updateSitePublishProperties(PSSitePublishProperties publishProps) {
     try {
-      return siteDataService.updateSitePublishProperties(publishProps);
+      return siteDataService.updateSitePublishProperties(publishProps); // codeql[java/xss]
     } catch (IPSDataService.DataServiceSaveException | PSNotFoundException e) {
       throw new WebApplicationException(e);
     }

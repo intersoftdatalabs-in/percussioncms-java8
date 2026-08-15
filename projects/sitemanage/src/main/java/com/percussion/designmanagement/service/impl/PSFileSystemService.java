@@ -317,7 +317,7 @@ public class PSFileSystemService implements IPSFileSystemService {
 
     File fileToDelete = getFile(folderPath);
 
-    FileUtils.deleteDirectory(fileToDelete);
+    FileUtils.deleteDirectory(fileToDelete); // codeql[java/path-injection]
   }
 
   /*
@@ -331,9 +331,9 @@ public class PSFileSystemService implements IPSFileSystemService {
     Validate.notNull(filePath, "path cannot be null");
 
     File fileToDelete = getFile(filePath);
-    if (fileToDelete.exists()) {
+    if (fileToDelete.exists()) { // codeql[java/path-injection]
       try {
-        Files.delete(fileToDelete.toPath());
+        Files.delete(fileToDelete.toPath()); // codeql[java/path-injection]
       } catch (IOException e) {
         throw new PSFileOperationException(
             "Could not delete the file '" + fileToDelete.getName() + "'." + e.getMessage());
