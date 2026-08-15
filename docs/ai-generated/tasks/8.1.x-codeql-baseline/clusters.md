@@ -25,7 +25,7 @@ Source: docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md
 | `js/incomplete-multi-character-sanitization` | high | 8 | TBD | |
 | `js/redos` | high | 8 | TBD | |
 | `js/xss` | high | 8 | TBD | |
-| `java/implicit-cast-in-compound-assignment` | high | 7 | TBD | |
+| `java/implicit-cast-in-compound-assignment`  | high     | 7     | TBD                      | 8.1.x: this PR |
 | `java/regex-injection` | high | 6 | PR #1295 | |
 | `js/code-injection` | critical | 6 | TBD | |
 | `java/unsafe-deserialization` | critical | 4 | TBD | |
