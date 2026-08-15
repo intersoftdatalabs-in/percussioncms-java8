@@ -137,6 +137,9 @@ public class PSTemplateServlet extends HttpServlet {
    */
   private void handleExtractionError(PSExtractHTMLException e, HttpServletResponse response)
       throws IOException {
+    // Generic client-facing error message to avoid leaking internal exception details
+    // (CWE-209 / CodeQL java/error-message-exposure). The detailed exception is always
+    // logged server-side below.
     String errorMsg = e.getMessage();
 
     if (StringUtils.isBlank(errorMsg) && e.getCause() != null) {
@@ -150,7 +153,9 @@ public class PSTemplateServlet extends HttpServlet {
       if (e.getCause() != null) log.error("Got extraction error.", e.getCause());
       else log.error("Got extraction error.", e);
     }
-    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorMsg);
+    response.sendError(
+        HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+        "An error occurred while extracting the template.");
   }
 
   /**
