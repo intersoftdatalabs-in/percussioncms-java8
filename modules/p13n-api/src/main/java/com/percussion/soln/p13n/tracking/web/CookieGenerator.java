@@ -186,6 +186,9 @@ public class CookieGenerator {
 	public void removeCookie(HttpServletResponse response) {
 		Cookie cookie = createCookie("");
 		cookie.setMaxAge(0);
+		if (isCookieSecure()) {
+			cookie.setSecure(true);
+		}
 		response.addCookie(cookie);
 		if (logger.isDebugEnabled()) {
 			logger.debug("Removed cookie with name [" + getCookieName() + "]");
