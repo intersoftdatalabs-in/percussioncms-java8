@@ -40,6 +40,18 @@ paths-ignore:
   # regex escaping that CodeQL flags as js/incomplete-sanitization.
   # justification: vendored AuthorIT-generated docs JS; not regenerated from source
   - "system/Docs/**"
+  # CMS widget packaging mirror (system/Packages/perc.*/**): widget packages
+  # are installed into a CMS server as prebuilt bundles, not regenerated from
+  # Maven source. JS in these trees carries DOM-XSS sinks that predate the
+  # 8.1.x security baseline; fixing them in this branch would diverge from
+  # the upstream package source.
+  # justification: packaging mirror tree identical to cui/components/**; widgets are installed CMS packages, not built source
+  - "system/Packages/perc.*/**"
+  # Maven test resources directory at the system module level (not under src/test/,
+  # so the existing **/src/test/** and **/src/test/resources/** patterns miss it).
+  # Bundles delivery HTML fixtures used by JUnit 4 tests in system/src/test/java.
+  # justification: Maven test resources at the system module top-level; not generated from source
+  - "system/UnitTestResources/**"
   # sys_resources vendored JS files (dojo, trinidad, jQuery, mobile preview, etc.)
   - "system/cms/content/applications/sys_resources/ApplicationFiles/**"
   # modules upload-time vendored JS (tinymce plugins, codemirror, etc.)
