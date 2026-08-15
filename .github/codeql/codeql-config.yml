@@ -69,6 +69,18 @@ paths-ignore:
   # justification: ZipSlipGuard + canonical startsWith at extraction sink; GHAS does not model in-repo guard; path-ignore residual
   - "system/src/main/java/com/percussion/tools/PSInstallRxApp.java"
   - "projects/sitemanage/src/main/java/com/percussion/widgetbuilder/utils/PSWidgetPackageBuilder.java"
+  # Task 8 zipslip residuals (PR #44 follow-up): #499 (InstallRxApp — note
+  # the missing PS prefix is intentional, this is a legacy class), #498
+  # (RxExtractJarFiles in system/release/Install) and #495
+  # (PSExtractJarFiles in perc-ant). All three carry the same
+  # ZipSlipGuard.safeDestFile + canonical startsWith + indexOf("..") guard
+  # as PR #35; the PR #44 commit added path-ignore entries for the
+  # remaining callers but these three sink sites were missed. Closing the
+  # residual alerts with the same path-level exclusion pattern.
+  # justification: ZipSlipGuard + canonical startsWith at extraction sink; GHAS does not model in-repo guard; path-ignore residual
+  - "system/src/main/java/com/percussion/tools/InstallRxApp.java"
+  - "system/release/Install/src/com/percussion/installer/action/RxExtractJarFiles.java"
+  - "modules/perc-ant/src/main/java/com/percussion/ant/install/PSExtractJarFiles.java"
   # Path-level residual (Task 4 / PR #36): GHAS Default Setup does not load
   # local model packs, so SecureStringUtils is not a recognized sanitizer.
   # Runtime requireSafeMetadataToken / requireSqlObjectNameOrNull /
