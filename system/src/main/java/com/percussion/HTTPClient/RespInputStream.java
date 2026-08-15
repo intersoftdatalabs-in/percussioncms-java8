@@ -141,7 +141,7 @@ final class RespInputStream extends InputStream implements GlobalConstants {
       return num;
     } else {
       long skpd = demux.skip(num, resph);
-      if (resph.resp.got_headers) count += skpd;
+      if (resph.resp.got_headers) count = (int) (count + skpd);
       return skpd;
     }
   }
