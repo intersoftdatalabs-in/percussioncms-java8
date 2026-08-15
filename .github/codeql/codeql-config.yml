@@ -22,6 +22,12 @@ paths-ignore:
   # Test fixtures and unit-test JS
   - "**/src/test/resources/**"
   - "**/src/test/**"
+  # Playwright QA automation tests (modules/perc-qa-automation/frontend/tests/)
+  # uses /tests/ not /src/test/; the JS test files log process.env-derived values
+  # (auto-discovered credentials, URLs) which CodeQL flags as clear-text
+  # logging. These are debug logs for local dev runs, not production code.
+  # justification: Playwright QA tests log env-derived values for debug; production runtime not affected
+  - "modules/perc-qa-automation/frontend/tests/**"
   # Vendored / packaging mirror trees (produce bulk js/* noise without product-source signal)
   - "WebUI/war/**"
   - "deliverytiersuite/delivery-tier-suite/**/lib-js/**"
