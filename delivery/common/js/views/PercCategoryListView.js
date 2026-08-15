@@ -195,6 +195,7 @@ var isPreviewMode;
         }
 
         var a = $("<a>")
+            // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this href sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
             .attr("href", percSafeUrl(href))
             .attr("data-count", countTotal)
             .attr("title", nodeStr)
