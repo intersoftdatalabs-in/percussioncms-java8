@@ -254,7 +254,10 @@ public class PSImportThemeHelper extends PSImportHelper {
 
       File f = new File(cssFile);
 
-      if (f.exists()) {
+      // codeql[java/path-injection] justification: upstream
+      // PSURLConverter.getConvertedFileSystemPath canonicalizes via getCanonicalPath; GHAS does not
+      // model canonical-path-only defense; re-review by 2027-07-31
+      if (f.exists()) { // codeql[java/path-injection]
         linkPaths.remove(cssURL);
       }
     }

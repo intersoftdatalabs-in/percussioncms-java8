@@ -179,6 +179,9 @@ public class PSThemeService implements IPSThemeService {
   private File getCachedRegionCSSFile(String theme, boolean overrideCachedFile)
       throws PSThemeNotFoundException {
     File tempFile = getCachedRegionCSSFileOnly(theme);
+    // codeql[java/path-injection] justification: PSPathInjectionGuard.requireSafeFileName above
+    // (line 170) + safeSessionSegment; GHAS does not model in-repo sanitizer; re-review by
+    // 2027-07-31
     if (tempFile.exists() && (!overrideCachedFile)) return tempFile;
 
     File cssFile = getRegionCssFileOrNull(theme);
@@ -213,7 +216,9 @@ public class PSThemeService implements IPSThemeService {
     File root = getThemesRoot();
     File themeFolder = new File(root, themeName); // codeql[java/path-injection]
     int i = 0;
-    while (themeFolder.exists()) {
+    // codeql[java/path-injection] justification: PSPathInjectionGuard.requireSafeFileName above;
+    // GHAS does not model in-repo sanitizer; re-review by 2027-07-31
+    while (themeFolder.exists()) { // codeql[java/path-injection]
       i++;
       themeFolder = new File(root, themeName + "-" + i); // codeql[java/path-injection]
     }
@@ -399,8 +404,12 @@ public class PSThemeService implements IPSThemeService {
     File newThemeFolder = getNewThemeFolder(newTheme);
 
     try {
+      // codeql[java/path-injection] justification: PSPathInjectionGuard.requireSafeFileName above
+      // (line 395) + transitive getNewThemeFolder guard; GHAS does not model in-repo sanitizer;
+      // re-review by 2027-07-31
       // create the new theme directory and copy the theme
-      FileUtils.copyDirectory(existingThemeFolder, newThemeFolder, false);
+      FileUtils.copyDirectory(
+          existingThemeFolder, newThemeFolder, false); // codeql[java/path-injection]
 
       return find(newThemeFolder.getName());
     } catch (IOException | PSValidationException e) {
@@ -515,8 +524,10 @@ public class PSThemeService implements IPSThemeService {
             getThemesTempRootDirectory()
                 + File.separator
                 + safeSessionSegment(getCurrentSessionId()));
-    if (sessionDir.exists()) {
-      FileUtils.deleteQuietly(sessionDir);
+    // codeql[java/path-injection] justification: safeSessionSegment above strips to [a-zA-Z0-9._-];
+    // GHAS does not model in-repo sanitizer; re-review by 2027-07-31
+    if (sessionDir.exists()) { // codeql[java/path-injection]
+      FileUtils.deleteQuietly(sessionDir); // codeql[java/path-injection]
     }
   }
 

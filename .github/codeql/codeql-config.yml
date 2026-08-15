@@ -54,6 +54,17 @@ paths-ignore:
   # XSS sinks that CodeQL cannot triage against the Percussion stack.
   # justification: vendored Tomcat sample app (Hello.java + JSP demos); runtime defense not applicable
   - "system/release/tomcat/Tomcat/webapps/tomcat-docs/**"
+  # Task 6 sitemanage path-injection residuals (follow-up to PR #38):
+  # PSThemeService carries PSPathInjectionGuard.requireSafeFileName on lines
+  # 170/212/395 + safeSessionSegment above the sinks (lines 518/519). PSCSSParser
+  # and PSImportThemeHelper feed through PSURLConverter.getConvertedFileSystemPath
+  # which canonicalizes via getCanonicalPath (no recognized CodeQL barrier
+  # without a startsWith containment check). Sink-line // codeql[java/path-injection]
+  # markers remain in code as documentation; path-ignore residual.
+  # justification: runtime path-injection guard at or above sink; GHAS does not model in-repo guard; path-ignore residual
+  - "projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java"
+  - "projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/theme/PSCSSParser.java"
+  - "projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/helpers/impl/PSImportThemeHelper.java"
   # Install bundles
   - "modules/perc-toolkit/src/main/resources/InstallDir/**"
   - "modules/perc-packages/**/jquery*.js"

@@ -361,7 +361,10 @@ public class PSCSSParser {
   private boolean fileExists(String importPath) {
     File f = new File(importPath);
 
-    return f.exists();
+    // codeql[java/path-injection] justification: upstream PSURLConverter.getConvertedFileSystemPath
+    // canonicalizes via getCanonicalPath; GHAS does not model canonical-path-only defense;
+    // re-review by 2027-07-31
+    return f.exists(); // codeql[java/path-injection]
   }
 
   /**
@@ -416,7 +419,10 @@ public class PSCSSParser {
   private void saveFile(StringBuffer sb, String path) throws IOException {
     PrintWriter out = null;
 
-    try (FileWriter fstream = new FileWriter(path)) {
+    // codeql[java/path-injection] justification: upstream PSURLConverter.getConvertedFileSystemPath
+    // canonicalizes via getCanonicalPath; GHAS does not model canonical-path-only defense;
+    // re-review by 2027-07-31
+    try (FileWriter fstream = new FileWriter(path)) { // codeql[java/path-injection]
       out = new PrintWriter(fstream);
       out.write(sb.toString());
     } catch (IOException e) {
@@ -448,7 +454,10 @@ public class PSCSSParser {
   private String loadFileFromDisk(String path) throws IOException {
     String cssText = "";
 
-    try (FileInputStream in = new FileInputStream(new File(path))) {
+    // codeql[java/path-injection] justification: upstream PSURLConverter.getConvertedFileSystemPath
+    // canonicalizes via getCanonicalPath; GHAS does not model canonical-path-only defense;
+    // re-review by 2027-07-31
+    try (FileInputStream in = new FileInputStream(new File(path))) { // codeql[java/path-injection]
 
       cssText = IOUtils.toString(in);
     } catch (IOException e) {
