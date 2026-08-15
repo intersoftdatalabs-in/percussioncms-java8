@@ -19,27 +19,27 @@ Source: docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md
 | `java/xss` | high | 36 | PR #1348 + #1344 + #1367 | |
 | `js/useless-regexp-character-escape` | high | 36 | TBD | |
 | `java/sql-injection` | high | 9 | PR #1343 | |
-| `java/xxe` | critical | 9 | TBD | |
-| `js/bad-tag-filter` | high | 9 | TBD | |
-| `java/zipslip` | high | 8 | PR #1341 | 8.1.x: PR #35 |
-| `js/incomplete-multi-character-sanitization` | high | 8 | TBD | |
-| `js/redos` | high | 8 | TBD | |
-| `js/xss` | high | 8 | TBD | |
-| `java/implicit-cast-in-compound-assignment`  | high     | 7     | TBD                      | 8.1.x: this PR |
-| `java/regex-injection` | high | 6 | PR #1295 | |
-| `js/code-injection` | critical | 6 | TBD | |
-| `java/unsafe-deserialization` | critical | 4 | TBD | |
-| `js/insecure-randomness` | high | 4 | TBD | |
-| `js/unvalidated-dynamic-method-call` | high | 3 | TBD | |
-| `java/polynomial-redos` | high | 2 | PR #1294 | |
-| `java/ssrf` | critical | 2 | PR #1300 + #1364 | |
-| `java/weak-cryptographic-algorithm` | high | 2 | TBD | |
-| `js/polynomial-redos` | high | 2 | TBD | |
-| `java/insecure-trustmanager` | high | 1 | PR #1297 | |
-| `java/ldap-injection` | critical | 1 | PR #1345 + #1300 | |
-| `java/redos` | high | 1 | PR #1333 | |
-| `java/static-initialization-vector` | high | 1 | TBD | |
-| `java/tainted-numeric-cast` | critical | 1 | TBD | |
+| `java/xxe`                                   | critical | 9     | TBD                      | 8.1.x: PR #41 |
+| `js/bad-tag-filter`                          | high     | 9     | TBD                      |               |
+| `java/zipslip`                               | high     | 8     | PR #1341                 | 8.1.x: PR #35 |
+| `js/incomplete-multi-character-sanitization` | high     | 8     | TBD                      |               |
+| `js/redos`                                   | high     | 8     | TBD                      |               |
+| `js/xss`                                     | high     | 8     | TBD                      |               |
+| `java/implicit-cast-in-compound-assignment`  | high     | 7     | TBD                      | 8.1.x: PR #51 |
+| `java/regex-injection`                       | high     | 6     | PR #1295                 |               |
+| `js/code-injection`                          | critical | 6     | TBD                      |               |
+| `java/unsafe-deserialization`                | critical | 4     | TBD                      | 8.1.x: PR #41 |
+| `js/insecure-randomness`                     | high     | 4     | TBD                      |               |
+| `js/unvalidated-dynamic-method-call`         | high     | 3     | TBD                      |               |
+| `java/polynomial-redos`                      | high     | 2     | PR #1294                 |               |
+| `java/ssrf`                                  | critical | 2     | PR #1300 + #1364         |               |
+| `java/weak-cryptographic-algorithm`          | high     | 2     | TBD                      | 8.1.x: accepted-risk (legacy crypto migration) |
+| `js/polynomial-redos`                        | high     | 2     | TBD                      |               |
+| `java/insecure-trustmanager`                 | high     | 1     | PR #1297                 |               |
+| `java/ldap-injection`                        | critical | 1     | PR #1345 + #1300         |               |
+| `java/redos`                                 | high     | 1     | PR #1333                 |               |
+| `java/static-initialization-vector`          | high     | 1     | TBD                      | 8.1.x: accepted-risk (legacy crypto migration) |
+| `java/tainted-numeric-cast`                  | critical | 1     | TBD                      | 8.1.x: PR #34 |
 | `java/unvalidated-url-forward` | high | 1 | PR #1335 | |
 | `js/clear-text-logging` | high | 1 | TBD | |
 | `js/double-escaping` | high | 1 | TBD | |
