@@ -1,6 +1,6 @@
 # CodeQL Critical+High Clusters on 8.1.x (main)
 
-Generated: 2026-08-15T21:07:32Z
+Generated: 2026-08-15T21:10:13Z
 Source: docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md
 
 ## Summary
@@ -14,8 +14,8 @@ Source: docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md
 | Rule | Severity | Count | Reference 004 PR | Notes |
 |---|---|---|---|---|
 | `js/xss-through-dom` | high | 45 | TBD | |
-| `java/path-injection` | high | 9 | PR #1365 + #1362 + #1361 | |
-| `js/incomplete-sanitization` | high | 8 | TBD | 8.1.x: this PR (6 path-ignore + 2 code fix) |
+| `java/path-injection` | high | 9 | PR #1365 + #1362 + #1361 | 8.1.x: this PR |
+| `js/incomplete-sanitization` | high | 8 | TBD | 8.1.x: PR #57 (6 path-ignore + 2 code fix) |
 | `java/xss` | high | 2 | PR #1348 + #1344 + #1367 | 8.1.x: PR #55 (Tomcat sample) |
 | `js/clear-text-logging` | high | 1 | TBD | 8.1.x: PR #56 |
 

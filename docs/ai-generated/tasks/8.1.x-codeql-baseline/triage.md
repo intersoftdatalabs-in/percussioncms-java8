@@ -2,30 +2,30 @@
 
 Every open Critical/High alert gets exactly one row here. The pipeline gates (`scripts/verify-triage-inventory.py`, `scripts/verify-valid-fixes.py`) read this file.
 
-Generated: 2026-08-15T21:07:32Z
+Generated: 2026-08-15T21:10:12Z
 Source: docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md
 
 ## Summary
 
 - Total open alerts: 75
-- false-positive: 9
-- fix: 66
+- false-positive: 7
+- fix: 68
 
 Schema (per spec 004 C1):
 
 | # | alert_id | rule_id | severity | file_path | module_owner | disposition (candidate) | target_action | target_milestone | linked_pr | notes |
 |---|----------|---------|----------|-----------|--------------|-------------------------|---------------|------------------|-----------|-------|
-| 1 | 704 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:216 | projects/sitemanage | fix | code fix required | TBD |  |  |
-| 2 | 564 | java/xss | high | system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:78 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/release/tomcat/Tomcat/webapps/tomcat-docs/** (#justification: vendored Tomcat sample app (Hello.java + JSP demos); runtime defense not applicable) @ line 56 |
-| 3 | 563 | java/xss | high | system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:77 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/release/tomcat/Tomcat/webapps/tomcat-docs/** (#justification: vendored Tomcat sample app (Hello.java + JSP demos); runtime defense not applicable) @ line 56 |
-| 4 | 477 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:519 | projects/sitemanage | fix | code fix required | TBD |  |  |
-| 5 | 476 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:518 | projects/sitemanage | fix | code fix required | TBD |  |  |
-| 6 | 474 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:403 | projects/sitemanage | fix | code fix required | TBD |  |  |
-| 7 | 467 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:182 | projects/sitemanage | fix | code fix required | TBD |  |  |
-| 8 | 457 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/theme/PSCSSParser.java:451 | projects/sitemanage | fix | code fix required | TBD |  |  |
-| 9 | 456 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/theme/PSCSSParser.java:419 | projects/sitemanage | fix | code fix required | TBD |  |  |
-| 10 | 455 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/theme/PSCSSParser.java:364 | projects/sitemanage | fix | code fix required | TBD |  |  |
-| 11 | 454 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/helpers/impl/PSImportThemeHelper.java:257 | projects/sitemanage | fix | code fix required | TBD |  |  |
+| 1 | 704 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:216 | projects/sitemanage | fix | code fix required | TBD |  | suppressions.md lists this alert under projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java (linked_pr=this PR); path-ignore not yet applied |
+| 2 | 564 | java/xss | high | system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:78 | system | fix | code fix required | TBD |  | suppressions.md lists this alert under .github/codeql/codeql-config.yml (linked_pr=this PR); path-ignore not yet applied |
+| 3 | 563 | java/xss | high | system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:77 | system | fix | code fix required | TBD |  | suppressions.md lists this alert under .github/codeql/codeql-config.yml (linked_pr=this PR); path-ignore not yet applied |
+| 4 | 477 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:519 | projects/sitemanage | fix | code fix required | TBD |  | suppressions.md lists this alert under projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java (linked_pr=this PR); path-ignore not yet applied |
+| 5 | 476 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:518 | projects/sitemanage | fix | code fix required | TBD |  | suppressions.md lists this alert under projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java (linked_pr=this PR); path-ignore not yet applied |
+| 6 | 474 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:403 | projects/sitemanage | fix | code fix required | TBD |  | suppressions.md lists this alert under projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java (linked_pr=this PR); path-ignore not yet applied |
+| 7 | 467 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:182 | projects/sitemanage | fix | code fix required | TBD |  | suppressions.md lists this alert under projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java (linked_pr=this PR); path-ignore not yet applied |
+| 8 | 457 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/theme/PSCSSParser.java:451 | projects/sitemanage | fix | code fix required | TBD |  | suppressions.md lists this alert under projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/theme/PSCSSParser.java (linked_pr=this PR); path-ignore not yet applied |
+| 9 | 456 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/theme/PSCSSParser.java:419 | projects/sitemanage | fix | code fix required | TBD |  | suppressions.md lists this alert under projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/theme/PSCSSParser.java (linked_pr=this PR); path-ignore not yet applied |
+| 10 | 455 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/theme/PSCSSParser.java:364 | projects/sitemanage | fix | code fix required | TBD |  | suppressions.md lists this alert under projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/theme/PSCSSParser.java (linked_pr=this PR); path-ignore not yet applied |
+| 11 | 454 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/helpers/impl/PSImportThemeHelper.java:257 | projects/sitemanage | fix | code fix required | TBD |  | suppressions.md lists this alert under projects/sitemanage/src/main/java/com/percussion/sitemanage/importer/helpers/impl/PSImportThemeHelper.java (linked_pr=this PR); path-ignore not yet applied |
 | 12 | 398 | js/functionality-from-untrusted-source | medium | system/UnitTestResources/com/percussion/delivery/bw-corona.html:730 | system | fix | code fix required | TBD |  |  |
 | 13 | 397 | js/functionality-from-untrusted-source | medium | system/UnitTestResources/com/percussion/xsl/encoding/Yahoo-EUC-JP.xhtm:46 | system | fix | code fix required | TBD |  |  |
 | 14 | 396 | js/functionality-from-untrusted-source | medium | system/UnitTestResources/com/percussion/delivery/bw-corona.html:1317 | system | fix | code fix required | TBD |  |  |
