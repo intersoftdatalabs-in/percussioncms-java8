@@ -2,22 +2,22 @@
 
 Every open Critical/High alert gets exactly one row here. The pipeline gates (`scripts/verify-triage-inventory.py`, `scripts/verify-valid-fixes.py`) read this file.
 
-Generated: 2026-08-15T20:01:00Z
+Generated: 2026-08-15T21:06:07Z
 Source: docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md
 
 ## Summary
 
 - Total open alerts: 75
-- false-positive: 2
-- fix: 73
+- false-positive: 3
+- fix: 72
 
 Schema (per spec 004 C1):
 
 | # | alert_id | rule_id | severity | file_path | module_owner | disposition (candidate) | target_action | target_milestone | linked_pr | notes |
 |---|----------|---------|----------|-----------|--------------|-------------------------|---------------|------------------|-----------|-------|
 | 1 | 704 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:216 | projects/sitemanage | fix | code fix required | TBD |  |  |
-| 2 | 564 | java/xss | high | system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:78 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/release/tomcat/Tomcat/webapps/tomcat-docs/** (#justification: vendored Tomcat sample app (Hello.java + JSP demos); runtime defense not applicable) @ line 44 |
-| 3 | 563 | java/xss | high | system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:77 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/release/tomcat/Tomcat/webapps/tomcat-docs/** (#justification: vendored Tomcat sample app (Hello.java + JSP demos); runtime defense not applicable) @ line 44 |
+| 2 | 564 | java/xss | high | system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:78 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/release/tomcat/Tomcat/webapps/tomcat-docs/** (#justification: vendored Tomcat sample app (Hello.java + JSP demos); runtime defense not applicable) @ line 50 |
+| 3 | 563 | java/xss | high | system/release/tomcat/Tomcat/webapps/tomcat-docs/appdev/sample/src/mypackage/Hello.java:77 | system | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore system/release/tomcat/Tomcat/webapps/tomcat-docs/** (#justification: vendored Tomcat sample app (Hello.java + JSP demos); runtime defense not applicable) @ line 50 |
 | 4 | 477 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:519 | projects/sitemanage | fix | code fix required | TBD |  |  |
 | 5 | 476 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:518 | projects/sitemanage | fix | code fix required | TBD |  |  |
 | 6 | 474 | java/path-injection | high | projects/sitemanage/src/main/java/com/percussion/theme/service/impl/PSThemeService.java:403 | projects/sitemanage | fix | code fix required | TBD |  |  |
@@ -32,7 +32,7 @@ Schema (per spec 004 C1):
 | 15 | 395 | js/functionality-from-untrusted-source | medium | system/UnitTestResources/com/percussion/delivery/bw-corona.html:1318 | system | fix | code fix required | TBD |  |  |
 | 16 | 394 | js/functionality-from-untrusted-source | medium | system/UnitTestResources/com/percussion/delivery/bw-corona.html:1321 | system | fix | code fix required | TBD |  |  |
 | 17 | 393 | js/functionality-from-untrusted-source | medium | system/UnitTestResources/com/percussion/delivery/bw-corona.html:1322 | system | fix | code fix required | TBD |  |  |
-| 18 | 334 | js/clear-text-logging | high | modules/perc-qa-automation/frontend/tests/login.spec.js:33 | modules/perc-qa-automation | fix | code fix required | TBD |  |  |
+| 18 | 334 | js/clear-text-logging | high | modules/perc-qa-automation/frontend/tests/login.spec.js:33 | modules/perc-qa-automation | false-positive | no action; path-ignored in .github/codeql/codeql-config.yml | merged |  | paths-ignore modules/perc-qa-automation/frontend/tests/** (#justification: Playwright QA tests log env-derived values for debug; production runtime not affected) @ line 30 |
 | 19 | 246 | js/incomplete-sanitization | high | system/Docs/Rhythmyx_Publishing_Runtime_Help/dhtml_search.js:57 | system | fix | code fix required | TBD |  |  |
 | 20 | 245 | js/incomplete-sanitization | high | system/Docs/Rhythmyx_Publishing_Runtime_Help/dhtml_search.js:57 | system | fix | code fix required | TBD |  |  |
 | 21 | 244 | js/incomplete-sanitization | high | system/Docs/Rhythmyx_Publishing_Runtime_Help/dhtml_search.js:57 | system | fix | code fix required | TBD |  |  |
