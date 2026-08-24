@@ -219,12 +219,14 @@ public class MainDTSPreInstall {
         }
 
         if (entry.isDirectory()) {
-          // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
+          // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by
+          // 2027-07-31
           Files.createDirectory(newFile.toPath());
           continue;
         }
         System.out.println("Creating file " + newFile);
-        // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
+        // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by
+        // 2027-07-31
         Files.copy(archive.getInputStream(entry), newFile.toPath());
 
         // Preserve executable permissions for shell scripts
