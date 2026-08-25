@@ -30,12 +30,6 @@
     $.PercArchiveListView = {
         updateArchiveList : updateArchiveList
     };
-    function percSafeUrl(url)
-    {
-        var u = String(url);
-        if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(u)) {return "#";}
-        return u;
-    }
     function updateArchiveList()
     {
         $(".perc-archive-list").each(function(){
@@ -133,9 +127,9 @@
                                     query.criteria.push("dcterms:created <= '" + yearParam2 + "'");
                                     encodedQuery =  "&query=" + encodeURIComponent(JSON.stringify(query));
                                     href =  baseURL + pageResult + "?filter="+ encodeURIComponent(row.year) + encodedQuery;
+                                    if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(href)) { href = "#"; }
                                     anchorYear = $("<a>")
-                                        // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this href sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
-                                        .attr("href",percSafeUrl(href))
+                                        .attr("href", href)
                                         .text(linkYearText);
 
                                 }
@@ -194,9 +188,9 @@
                                         query.criteria.push("dcterms:created <= '" + dateParam2 + "'");
                                         encodedQuery = "&query=" + encodeURIComponent(JSON.stringify(query));
                                         href = baseURL + pageResult + "?filter="+  encodeURIComponent(row2.month + " " + row.year )+ encodedQuery;
+                                        if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(href)) { href = "#"; }
                                         a = $("<a>")
-                                            // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this href sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
-                                            .attr("href",percSafeUrl(href) )
+                                            .attr("href", href)
                                             .text(linkText);
                                     }
 
@@ -283,9 +277,9 @@
                                     query.criteria.push("dcterms:created <= '" + dateParam2 + "'");
                                     var encodedQuery = "&query=" + encodeURIComponent(JSON.stringify(query));
                                     var href = baseURL + pageResult + "?filter="+ encodeURIComponent(row2.month +" "+ row.year) + encodedQuery;
+                                    if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(href)) { href = "#"; }
                                     a = $("<a>")
-                                        // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this href sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
-                                        .attr("href", percSafeUrl(href))
+                                        .attr("href", href)
                                         .text(linkText);
                                 }
 

@@ -35,13 +35,6 @@
         trackBlogPost : trackBlogPost
     };
 
-    function percSafeUrl(url)
-    {
-        var u = String(url);
-        if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(u)) {return "#";}
-        return u;
-    }
-
     function updateBlogNav()
     {
         $(".perc-blog-navigation-container").each(function(){
@@ -148,18 +141,20 @@
                 var tag = ($(this).text().trim()).replace(",", "");
                 var jsonQuery = {'criteria':["perc:tags LIKE '" + tag + "'"]};
                 var encodedQuery = "&query=" + encodeURIComponent(JSON.stringify(jsonQuery));
-                // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this href sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
-                $(this).attr("href", percSafeUrl(blogIndexPage + "?filter="+ encodeURIComponent(tag) + encodedQuery));
+                var tagHref = blogIndexPage + "?filter="+ encodeURIComponent(tag) + encodedQuery;
+                if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(tagHref)) { tagHref = "#"; }
+                $(this).attr("href", tagHref);
             });
-            
+
             // Categories
             $('.perc-blog-post-category-container').find('a').each(function(){
                 var categoryPath = $(this).attr('data-categories');
                 var category = ($(this).text().trim()).replace(",", "");
                 var jsonQuery = {'criteria':["perc:category LIKE '" + categoryPath + "'"]};
                 var encodedQuery = "&query=" + encodeURIComponent(JSON.stringify(jsonQuery));
-                // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this href sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
-                $(this).attr("href", percSafeUrl(blogIndexPage + "?filter="+ encodeURIComponent(category) + encodedQuery));
+                var categoryHref = blogIndexPage + "?filter="+ encodeURIComponent(category) + encodedQuery;
+                if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(categoryHref)) { categoryHref = "#"; }
+                $(this).attr("href", categoryHref);
             });
         });
     }
