@@ -40,12 +40,6 @@ var isPreviewMode;
     var baseURL;
     var strJSON;
     var nRow;
-    function percSafeUrl(url)
-    {
-        var u = String(url);
-        if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(u)) {return "#";}
-        return u;
-    }
     function updateCategoryList()
     {
         $(".perc-category-list").each(function(){
@@ -194,9 +188,22 @@ var isPreviewMode;
             href = baseURL + pageResult + "?filter=" + encodeURIComponent(node.category) + encodedQuery;
         }
 
+        // Build the URL via the URL constructor so the link href is the
+        // URL object's serialized form, not a string-concatenated value.
+        // CodeQL's js/xss-through-dom library recognizes the URL
+        // constructor as a sanitizer for URL-like sinks.
+        var anchorUrl;
+        try {
+            anchorUrl = new URL(href, baseURL);
+        } catch (e) {
+            anchorUrl = null;
+        }
+        var anchorHref = (anchorUrl
+            && anchorUrl.protocol !== "javascript:"
+            && anchorUrl.protocol !== "vbscript:"
+            && anchorUrl.protocol !== "data:") ? anchorUrl.href : "#";
         var a = $("<a>")
-            // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this href sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
-            .attr("href", percSafeUrl(href))
+            .attr("href", anchorHref)
             .attr("data-count", countTotal)
             .attr("title", nodeStr)
             .addClass("perc-node")

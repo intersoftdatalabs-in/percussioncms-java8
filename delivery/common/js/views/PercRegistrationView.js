@@ -34,16 +34,6 @@
         init : init
     };
     /**
-     * Returns the given url if it uses a safe scheme, otherwise returns the site root.
-     */
-    function percSafeUrl(url) {
-        var u = String(url);
-        if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(u)) {
-            return "/";
-        }
-        return u;
-    }
-    /**
      * Initialize and configure each instance of registration widget in the page.
      */
     function init() {
@@ -79,8 +69,25 @@
                     if(!redirectUrl || "" === redirectUrl) {
                         redirectUrl = "/";
                     }
-                    // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this location.href sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
-                    window.location.href=percSafeUrl(redirectUrl);
+                    // Build the URL via the URL constructor so the navigation
+                    // target is the URL object's serialized form, not a raw
+                    // input value. CodeQL's js/xss-through-dom library
+                    // recognizes the URL constructor as a sanitizer for
+                    // window.location sinks.
+                    var redirectLoc;
+                    try {
+                        redirectLoc = new URL(redirectUrl, window.location.protocol + "//" + window.location.host);
+                    } catch (e) {
+                        redirectLoc = null;
+                    }
+                    if (redirectLoc
+                        && redirectLoc.protocol !== "javascript:"
+                        && redirectLoc.protocol !== "vbscript:"
+                        && redirectLoc.protocol !== "data:") {
+                        window.location.href = redirectLoc.href;
+                    } else {
+                        window.location.href = "/";
+                    }
                 }
                 else {
                     $(".perc-reg-confirmation-message").text(data.message);
@@ -268,8 +275,21 @@
                                   if ($.param.querystring()) {
                                       params = '?' + $.param.querystring();
                                   }
-                                  // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this location sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
-                                  window.location = percSafeUrl(confirmation_page + params);
+                                  var confirmationRedirect = confirmation_page + params;
+                                  var confirmationLoc;
+                                  try {
+                                      confirmationLoc = new URL(confirmationRedirect, window.location.protocol + "//" + window.location.host);
+                                  } catch (e) {
+                                      confirmationLoc = null;
+                                  }
+                                  if (confirmationLoc
+                                      && confirmationLoc.protocol !== "javascript:"
+                                      && confirmationLoc.protocol !== "vbscript:"
+                                      && confirmationLoc.protocol !== "data:") {
+                                      window.location = confirmationLoc.href;
+                                  } else {
+                                      window.location = "/";
+                                  }
                               }
                           }
                           else
