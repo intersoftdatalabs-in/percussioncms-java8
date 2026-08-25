@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# chkconfig: 2345 20 80
-# description: Description comes here....
+# chkconfig: 2345 99 01
+# description: Percussion CMS (Jetty) server - Rhythmyx
 # LSB Tags
 ### BEGIN INIT INFO
 # Provides:          ${rxjetty_service}
-# Required-Start:    $local_fs $network
-# Required-Stop:     $local_fs $network
+# Required-Start:    $local_fs $network $remote_fs
+# Should-Start:      $named mysqld mysql mariadb
+# Required-Stop:     $local_fs $network $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: Jetty start script.
@@ -91,6 +92,24 @@ NAME=$(echo $(basename $0) | sed -e 's/^[SK][0-9]*//' -e 's/\.sh$//')
 #   no effect if start-stop-daemon exists.  Useful when JETTY_USER does not
 #   have shell access, e.g. /bin/false
 #
+# WAIT_FOR_DB_HOST
+#   Optional. Hostname or IP of the database the CMS depends on. If set
+#   (with WAIT_FOR_DB_PORT), the start path will retry a TCP connection to
+#   host:port until the timeout elapses before invoking Jetty. This is the
+#   recommended way to make the init script survive a reboot when the DB is
+#   remote (e.g. AWS RDS) and there is no local mysqld init script to order
+#   against. Empty/unset disables the wait.
+#
+# WAIT_FOR_DB_PORT
+#   Optional. TCP port for WAIT_FOR_DB_HOST. Default: 3306.
+#
+# WAIT_FOR_DB_TIMEOUT
+#   Optional. Seconds to keep retrying the DB TCP probe before giving up.
+#   Default: 120. A value of 0 disables the wait (same as unset).
+#
+# WAIT_FOR_DB_INTERVAL
+#   Optional. Seconds between DB probe attempts. Default: 2.
+#
 
 usage()
 {
@@ -170,6 +189,127 @@ dumpEnv()
     echo "JETTY_START_LOG=  $JETTY_START_LOG"
     echo "JETTY_STATE    =  $JETTY_STATE"
     echo "RUN_CMD        =  ${RUN_CMD[*]}"
+}
+
+##################################################
+# Find the actual Java/Jetty PID for this install.
+#
+# Strategy:
+#   1. Trust JETTY_PID file if it points to a live process whose cmdline
+#      matches this JETTY_BASE.
+#   2. Otherwise, scan /proc/*/cmdline for a java process whose -Djetty.base
+#      matches JETTY_BASE (handles stale/missing PID file).
+#
+# Echoes the PID on stdout, nothing if no match.
+##################################################
+find_jetty_pid()
+{
+  local PID_FILE="$1"
+  local BASE="$2"
+  local pid matched_cmdline
+
+  # 1. Trust the PID file first
+  if [ -f "$PID_FILE" ]; then
+    pid=$(cat "$PID_FILE" 2>/dev/null)
+    if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+      if [ -r "/proc/$pid/cmdline" ]; then
+        matched_cmdline=$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null)
+        if [[ "$matched_cmdline" == *"java"* && "$matched_cmdline" == *"-Djetty.base=${BASE}"* ]]; then
+          echo "$pid"
+          return 0
+        fi
+      fi
+    fi
+    # PID file is stale or points to the wrong process; drop it so stop
+    # does not falsely report success.
+    rm -f "$PID_FILE"
+  fi
+
+  # 2. Scan /proc for a matching java process
+  if [ -d /proc ]; then
+    for pid in $(pgrep -f "java.*-Djetty.base=${BASE}" 2>/dev/null); do
+      if [ -r "/proc/$pid/cmdline" ] && kill -0 "$pid" 2>/dev/null; then
+        echo "$pid"
+        return 0
+      fi
+    done
+  fi
+
+  return 1
+}
+
+##################################################
+# Wait for the database to accept TCP connections.
+#
+# Used during start when the DB is remote (no local mysqld init script
+# to order against). Probes host:port with `nc -z` (fallback: bash
+# /dev/tcp) every WAIT_FOR_DB_INTERVAL seconds until WAIT_FOR_DB_TIMEOUT
+# elapses. No-op if WAIT_FOR_DB_HOST is unset.
+##################################################
+wait_for_db()
+{
+  local host="${WAIT_FOR_DB_HOST:-}"
+  local port="${WAIT_FOR_DB_PORT:-3306}"
+  local timeout="${WAIT_FOR_DB_TIMEOUT:-120}"
+  local interval="${WAIT_FOR_DB_INTERVAL:-2}"
+  local elapsed=0
+  local probe_cmd
+
+  if [ -z "$host" ] || [ "$timeout" -le 0 ]; then
+    return 0
+  fi
+
+  if type -P nc >/dev/null 2>&1; then
+    probe_cmd() { nc -z -w 2 "$host" "$port" >/dev/null 2>&1; }
+  else
+    # bash builtin /dev/tcp fallback (no -w support; rely on connection refused)
+    probe_cmd() { (echo > "/dev/tcp/${host}/${port}") >/dev/null 2>&1; }
+  fi
+
+  echo -n "Waiting for database ${host}:${port} "
+  while [ "$elapsed" -lt "$timeout" ]; do
+    if probe_cmd; then
+      echo "OK"
+      return 0
+    fi
+    sleep "$interval"
+    elapsed=$((elapsed + interval))
+    echo -n ". "
+  done
+  echo "TIMEOUT"
+  echo "ERROR: database ${host}:${port} did not become reachable within ${timeout}s" >&2
+  return 1
+}
+
+##################################################
+# Stop a PID with TERM, then KILL after a timeout.
+# Echoes progress to stdout. Returns 0 if the process is gone, 1 otherwise.
+##################################################
+stop_pid()
+{
+  local pid="$1"
+  local timeout="${STOP_TIMEOUT:-60}"
+  local elapsed=0
+
+  if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
+    return 0
+  fi
+
+  kill -TERM "$pid" 2>/dev/null || true
+  while kill -0 "$pid" 2>/dev/null; do
+    if [ "$elapsed" -ge "$timeout" ]; then
+      kill -KILL "$pid" 2>/dev/null || true
+      # give the kernel a moment to reap
+      sleep 1
+      if kill -0 "$pid" 2>/dev/null; then
+        return 1
+      fi
+      return 0
+    fi
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
+  return 0
 }
 
 
@@ -445,15 +585,23 @@ case "$ACTION" in
   start)
     echo -n "Starting Jetty: "
 
-    if (( NO_START )); then 
+    if (( NO_START )); then
       echo "Not starting ${NAME} - NO_START=1";
       exit
+    fi
+
+    # Optional: block until a (remote) DB is reachable so reboot works
+    # without a local mysqld init script to order against. No-op when
+    # WAIT_FOR_DB_HOST is unset; failure is non-fatal so installs with a
+    # healthy local DB still come up.
+    if ! wait_for_db; then
+      echo "WARNING: continuing Jetty start despite database not being reachable; CMS may fail until it is."
     fi
 
 	dtest=$(start-stop-daemon --test --oknodo -S -p"$JETTY_PID"  -d"$JETTY_BASE" -b -m -a "$JAVA" -- "${RUN_ARGS[@]}" start-log-file="$JETTY_LOGS/start.log" 2>&1 )
 
 
-if [ $UID -eq 2 ] && [[ "$dtest" !=  *"not found"* &&  "$dtest" !=  *"invalid argument"* ]]; then
+if [ $UID -eq 0 ] && [[ "$dtest" !=  *"not found"* &&  "$dtest" !=  *"invalid argument"* ]]; then
 
       unset CH_USER
       if [ -n "$JETTY_USER" ]
@@ -514,48 +662,66 @@ if [ $UID -eq 2 ] && [[ "$dtest" !=  *"not found"* &&  "$dtest" !=  *"invalid ar
 
   stop)
     echo -n "Stopping Jetty: "
-   dtest=$(start-stop-daemon --test --oknodo -K -p"$JETTY_PID" -d"$JETTY_BASE" -a "$JAVA" -s HUP 2>&1 )
 
+    # Locate the actual Java/Jetty PID for this install. This tolerates
+    # a missing, stale, or wrong PID file by falling back to /proc scan.
+    JETTY_PID_FILE="$JETTY_PID"
+    if [ -z "$JETTY_PID_FILE" ]; then
+      JETTY_PID_FILE="$JETTY_RUN/${NAME}.pid"
+    fi
+    PID=$(find_jetty_pid "$JETTY_PID_FILE" "$JETTY_BASE" 2>/dev/null)
 
-if [ $UID -eq 2 ] && [[ "$dtest" !=  *"not found"* &&  "$dtest" !=  *"invalid argument"* ]]; then
+    # Only delegate to start-stop-daemon when (a) we are root, (b) the
+    # binary exists and accepts the arguments, and (c) we have a real
+    # PID for this install. The previous version checked `$UID -eq 2`
+    # which is the `daemon` account, not root, so the start-stop-daemon
+    # path was effectively dead code.
+    USE_SSD="false"
+    if [ $UID -eq 0 ] && [ -n "$PID" ] && type -P start-stop-daemon >/dev/null 2>&1; then
+      dtest=$(start-stop-daemon --test --oknodo -K -p"$JETTY_PID_FILE" -d"$JETTY_BASE" -a "$JAVA" 2>&1)
+      if [[ "$dtest" != *"not found"* && "$dtest" != *"invalid argument"* ]]; then
+        USE_SSD="true"
+      fi
+    fi
 
-      start-stop-daemon -K -p"$JETTY_PID" -d"$JETTY_HOME" -a "$JAVA" -s HUP
-      
+    if [ "$USE_SSD" = "true" ]; then
+      # Default signal for start-stop-daemon -K is SIGTERM, which Jetty
+      # handles for a graceful shutdown. SIGHUP was the wrong signal here.
+      start-stop-daemon -K -p"$JETTY_PID_FILE" -d"$JETTY_BASE" -a "$JAVA"
+
       TIMEOUT=60
-      while running "$JETTY_PID"; do
+      while running "$JETTY_PID_FILE"; do
         if (( TIMEOUT-- == 0 )); then
-          start-stop-daemon -K -p"$JETTY_PID" -d"$JETTY_HOME" -a "$JAVA" -s KILL
+          start-stop-daemon -K -p"$JETTY_PID_FILE" -d"$JETTY_BASE" -a "$JAVA" -s KILL
         fi
 
         sleep 1
       done
     else
-      if [ ! -f "$JETTY_PID" ] ; then
-        echo "ERROR: no pid found at $JETTY_PID"
-        exit 1
+      if [ -z "$PID" ]; then
+        # No live Jetty process for this install. Nothing to stop; clear
+        # any leftover state files and exit 0 so `service ... stop` is
+        # idempotent and never leaves init in a confused state.
+        rm -f "$JETTY_PID_FILE" "$JETTY_RUN/${NAME}.pid" "$JETTY_BASE/${NAME}.state"
+        echo "OK (not running)"
+        exit 0
       fi
 
-      PID=$(cat "$JETTY_PID" 2>/dev/null)
-      if [ -z "$PID" ] ; then
-        echo "ERROR: no pid id found in $JETTY_PID"
-        exit 1
-      fi
-      kill "$PID" 2>/dev/null
-      
-      TIMEOUT=60
-      while running $JETTY_PID; do
-        if (( TIMEOUT-- == 0 )); then
-          kill -KILL "$PID" 2>/dev/null
-        fi
-
-        sleep 1
-      done
+      stop_pid "$PID"
+      STOP_RC=$?
     fi
 
-     rm -f $JETTY_RUN/${NAME}.pid
-     rm -f $JETTY_BASE/${NAME}.state
+    # Verify the JVM is actually gone. `kill` returning 0 is not proof -
+    # the PID may have been reused, or we may have signalled a parent
+    # shell rather than the JVM. Re-resolve and confirm.
+    if PID=$(find_jetty_pid "$JETTY_PID_FILE" "$JETTY_BASE" 2>/dev/null) && [ -n "$PID" ] && kill -0 "$PID" 2>/dev/null; then
+      echo "FAILED (Jetty PID $PID still alive)"
+      exit 1
+    fi
 
-    echo OK
+    rm -f "$JETTY_RUN/${NAME}.pid" "$JETTY_BASE/${NAME}.state"
+
+    echo "OK"
 
     ;;
 
