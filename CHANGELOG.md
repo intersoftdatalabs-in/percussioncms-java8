@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Common Changelog](https://common-changelog.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed Linux SysV / init.d `stop` for Percussion CMS leaving the Jetty JVM running (#6). `rxjetty.sh` had two bugs in the stop path: a UID check (`$UID -eq 2` was almost always false, so the `start-stop-daemon` branch was dead code) and the use of `SIGHUP` (which Java does not handle as a stop signal) instead of `SIGTERM`. The stop path now resolves the actual Jetty PID via a new `find_jetty_pid` helper that tolerates stale or missing PID files by scanning `/proc/*/cmdline` for a Java process matching `JETTY_BASE`, signals it `TERM` and escalates to `KILL` after `STOP_TIMEOUT` (default 60s), and re-verifies the JVM is gone before exiting 0. Stops are now idempotent: a second `service <name> stop` against a stopped service is a no-op rather than a failure.
+- Fixed init.d service starting before MySQL/MariaDB on reboot (#6). The shipped LSB header only declared `$local_fs $network`, and the chkconfig priority was `20 80` (start very early). The header now declares `Required-Start: $local_fs $network $remote_fs` and `Should-Start: $named mysqld mysql mariadb`, and the chkconfig line is raised to `2345 99 01` so the CMS starts as one of the last services on boot. `install-jetty-service.sh` now also registers `update-rc.d` with explicit late priorities `start 99 2 3 4 5 . stop 01 0 1 6 .` (and uses `K01` on the Solaris fallback) so SysV systems without chkconfig get the same ordering.
+- Fixed missing wait-for-database logic for installs with a remote DB (e.g. AWS RDS) that have no local `mysqld` init script for the CMS to order against. `rxjetty.sh` now exposes `WAIT_FOR_DB_HOST` / `WAIT_FOR_DB_PORT` / `WAIT_FOR_DB_TIMEOUT` / `WAIT_FOR_DB_INTERVAL` env vars (documented in the script header). When `WAIT_FOR_DB_HOST` is set, the start path probes `host:port` with `nc -z` (bash `/dev/tcp` fallback) until the timeout elapses before launching Jetty. A non-fatal warning is logged if the wait times out so a CMS without a reachable DB still comes up for diagnosis. `install-jetty-service.sh` now ships these vars (empty by default) in the `/etc/default/<service>` template and prints a hint at the end of install about configuring them for remote DBs.
+
 ## [8.1.7 Build 947] - 2026-07-03
 
 ### Fixed
