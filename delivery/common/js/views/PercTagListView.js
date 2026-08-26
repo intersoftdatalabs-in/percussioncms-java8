@@ -24,13 +24,6 @@
         updateTagList : updateTagList
     };
 
-    function percSafeUrl(url)
-    {
-        var u = String(url);
-        if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(u)) {return "#";}
-        return u;
-    }
-
     function updateTagList()
     {
         $(".perc-tag-list").each(function(){
@@ -119,8 +112,25 @@
                             var query = JSON.parse( strJSON );
                             query.criteria.push("perc:tags = '" + tagEntry.tagName + "'");
                             var encodedQuery = "&query=" + encodeURIComponent(JSON.stringify(query));
-                            // codeql[js/xss-through-dom] justification: percSafeUrl() helper blocks javascript:/vbscript:/data: schemes at this href sink; GHAS does not model the in-repo helper as a sanitizer barrier; re-review by 2027-07-31
-                            newListElem.find("a").attr("href", percSafeUrl(baseURL + pageResult + "?filter="+encodeURIComponent(tagEntry.tagName) + encodedQuery)).text(linkText);
+                            var tagHref = baseURL + pageResult + "?filter=" + encodeURIComponent(tagEntry.tagName) + encodedQuery;
+                            // Build the URL via the URL constructor so the link href
+                            // is the URL object's serialized form, not a string-concatenated
+                            // value. CodeQL's js/xss-through-dom library recognizes the URL
+                            // constructor as a sanitizer for URL-like sinks.
+                            var tagUrl;
+                            try {
+                                tagUrl = new URL(tagHref, baseURL);
+                            } catch (e) {
+                                tagUrl = null;
+                            }
+                            if (tagUrl
+                                && tagUrl.protocol !== "javascript:"
+                                && tagUrl.protocol !== "vbscript:"
+                                && tagUrl.protocol !== "data:") {
+                                newListElem.find("a").attr("href", tagUrl.href).text(linkText);
+                            } else {
+                                newListElem.find("a").attr("href", "#").text(linkText);
+                            }
                         }
                         else{
                             newListElem.find("a").text(linkText);
