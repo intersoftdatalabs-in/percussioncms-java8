@@ -194,6 +194,15 @@ echo in uninstall
     JETTY_PID=${JETTY_RUN}/rxjetty.pid
     JETTY_ARGS="--include-jetty-dir=${JETTY_DEFAULTS} jetty-started.xml"
     JETTY_USER=${RX_USER}
+    # Optional: start-time wait for the database (TCP probe) so the
+    # service survives a reboot even when the DB is remote (e.g. AWS
+    # RDS) and there is no local mysqld init script to order against.
+    # Leave WAIT_FOR_DB_HOST empty to disable. See rxjetty.sh header
+    # for the full set of WAIT_FOR_DB_* variables.
+    WAIT_FOR_DB_HOST=
+    WAIT_FOR_DB_PORT=3306
+    WAIT_FOR_DB_TIMEOUT=120
+    WAIT_FOR_DB_INTERVAL=2
 	  mkdir -p ${JETTY_RUN}
     chown -R "${RX_USER}:${RX_GROUP}" "/var/run/rxjetty/${SERVICE_NAME}"
     chmod -R ugo+rw /var/run/rxjetty/${SERVICE_NAME}
@@ -216,12 +225,13 @@ EOF
         chkconfig ${SERVICE_NAME} off > /dev/null 2>&1
         chkconfig ${SERVICE_NAME} on
     elif [[ $(type -P "update-rc.d") ]]; then
-        echo "using 'update-rc.d ${SERVICE_NAME} defaults' to add to server startup"
-        update-rc.d ${SERVICE_NAME} defaults
+        echo "using 'update-rc.d ${SERVICE_NAME} start 99 2 3 4 5 . stop 01 0 1 6 .' to add to server startup"
+        echo "Late start priority (99) keeps the CMS after mysqld/mariadb on SysV."
+        update-rc.d ${SERVICE_NAME} start 99 2 3 4 5 . stop 01 0 1 6 .
     elif [ -d "/etc/rc2.d" ]; then
         echo "Fall back to symbolic linking into /etc/rcx.d folders e.g. Solaris 9"
         ln /etc/init.d/${SERVICE_NAME} /etc/rc2.d/S99${SERVICE_NAME}
-        ln /etc/init.d/${SERVICE_NAME} /etc/rc0.d/K99${SERVICE_NAME}
+        ln /etc/init.d/${SERVICE_NAME} /etc/rc0.d/K01${SERVICE_NAME}
     else
         echo "Cannot find chkconfig or update-rc.d or /etc/rc2.d to run service on startup consult documentation on alternatives for your distro"
         echo ${distVersion}
@@ -231,6 +241,12 @@ EOF
     echo "  Start service with '${serviceCmd} start'"
     echo "  Stop service with '${serviceCmd} stop'"
     echo "  use '${serviceCmd}' without parameters to check other options"
+    echo "********"
+    echo "If your database is remote (e.g. AWS RDS) and there is no local"
+    echo "mysqld init script for the CMS to order against, edit"
+    echo "/etc/default/${SERVICE_NAME} and set WAIT_FOR_DB_HOST (and"
+    echo "optionally WAIT_FOR_DB_PORT / WAIT_FOR_DB_TIMEOUT) so the CMS"
+    echo "start waits for the DB to be reachable on reboot."
     echo "********"
 
 else # Uninstall
