@@ -78,7 +78,7 @@
         <axis.version>1.4.1</axis.version>
         <axiscore.version>1.4.2</axiscore.version>
         <batik.version>1.19</batik.version>
-        <bc.version>1.83</bc.version>
+        <bc.version>1.77</bc.version>
         <build.helper.maven.plugin.version>3.6.1</build.helper.maven.plugin.version>
         <build.profile.id>dev</build.profile.id>
         <buildId>0</buildId>
