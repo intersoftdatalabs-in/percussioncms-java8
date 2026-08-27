@@ -149,4 +149,10 @@ _remote.repositories
 .envrc
 .env
 
+# Per-developer agent override files (see AGENTS.md for the canonical rules).
+# These override AGENTS.md on a per-machine basis and must not be committed.
+AGENTS.local.md
+AGENTS.local.json
+AGENTS.local.yml
+
 .worktrees
