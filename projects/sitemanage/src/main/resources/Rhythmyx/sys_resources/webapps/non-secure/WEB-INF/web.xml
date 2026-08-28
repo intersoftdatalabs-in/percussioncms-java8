@@ -22,6 +22,20 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!-- T2.4 hardening (issue #94): adds standard security response headers
+         (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, etc.) to
+         every response, addressing several of the 45+ CVEs in Spring 5.3.x
+         and Spring Security 5.8.x. -->
+    <filter>
+        <filter-name>PSSecurityHeadersFilter</filter-name>
+        <filter-class>com.percussion.security.servlet.PSSecurityHeadersFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>PSSecurityHeadersFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <filter>
         <filter-name>CorsFilter</filter-name>
         <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
