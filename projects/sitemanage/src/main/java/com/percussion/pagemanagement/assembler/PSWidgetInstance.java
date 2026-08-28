@@ -21,7 +21,7 @@ import com.percussion.pagemanagement.data.PSWidgetItem;
 import com.percussion.utils.types.PSPair;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Represents a fully loaded widget for rendering.

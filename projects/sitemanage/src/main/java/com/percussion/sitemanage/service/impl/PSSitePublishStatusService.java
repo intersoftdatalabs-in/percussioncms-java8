@@ -16,7 +16,7 @@
  */
 package com.percussion.sitemanage.service.impl;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.percussion.error.PSExceptionUtils;
 import com.percussion.rx.publisher.IPSPublisherJobStatus;

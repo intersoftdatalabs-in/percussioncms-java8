@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.percussion.utils.testing.IntegrationTest;
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

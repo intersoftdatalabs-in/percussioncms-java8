@@ -28,7 +28,7 @@ import com.percussion.share.data.PSNoContent;
 import com.percussion.share.data.PSPagedItemList;
 import com.percussion.share.test.PSDataServiceRestClient;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class PSPathServiceRestClient extends PSDataServiceRestClient<PSPathItem> {
   public PSPathServiceRestClient(String url) {

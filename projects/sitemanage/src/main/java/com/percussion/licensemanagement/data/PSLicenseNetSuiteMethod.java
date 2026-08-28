@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 @XmlAccessorType(XmlAccessType.PUBLIC_MEMBER)
 @XmlType(

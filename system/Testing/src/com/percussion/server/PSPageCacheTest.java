@@ -25,7 +25,7 @@ import org.w3c.dom.Document;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import static org.apache.commons.lang.exception.ExceptionUtils.getFullStackTrace;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 
 public class PSPageCacheTest extends TestCase
 {
@@ -77,7 +77,7 @@ public class PSPageCacheTest extends TestCase
       }
       catch (Exception e)
       {
-         assertEquals("Exception caught" + getFullStackTrace(e), 0, 1);
+         assertEquals("Exception caught" + getStackTrace(e), 0, 1);
       }
 
    }

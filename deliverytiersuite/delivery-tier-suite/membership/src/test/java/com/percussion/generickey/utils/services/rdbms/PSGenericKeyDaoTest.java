@@ -26,7 +26,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.Root;
 import junit.framework.TestCase;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.junit.After;

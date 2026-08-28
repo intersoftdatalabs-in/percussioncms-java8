@@ -16,7 +16,7 @@
  */
 package com.percussion.pathmanagement.service.impl;
 
-import static org.apache.commons.lang.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notEmpty;
 import static org.springframework.util.StringUtils.trimLeadingCharacter;
 import static org.springframework.util.StringUtils.trimTrailingCharacter;
 
@@ -53,7 +53,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

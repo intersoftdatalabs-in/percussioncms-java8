@@ -44,8 +44,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -546,7 +546,7 @@ public abstract class PSSecurityStrategy
          PSErrorException error = new PSErrorException(code, 
             PSWebserviceErrors.createErrorMessage(code, 
                dguid.toString(), perm), 
-               ExceptionUtils.getFullStackTrace(new Exception()));
+               ExceptionUtils.getStackTrace(new Exception()));
          failedGuids.put(guid, error);
          isFailed = true;
       }

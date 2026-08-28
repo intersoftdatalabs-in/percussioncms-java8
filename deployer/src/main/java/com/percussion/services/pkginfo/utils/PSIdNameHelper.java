@@ -25,7 +25,7 @@ import com.percussion.services.pkginfo.data.PSIdName;
 import com.percussion.utils.guid.IPSGuid;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * The purpose of this class is to provide a set of utilities for converting package (formerly MSM)

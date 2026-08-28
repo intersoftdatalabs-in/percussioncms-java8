@@ -20,7 +20,7 @@ import com.percussion.share.async.impl.PSAsyncJob;
 import com.percussion.utils.thread.PSThreadInterruptedException;
 import com.percussion.utils.thread.PSThreadUtils;
 import java.util.Date;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 /**
  * A test job that takes in a number as it's config, and each time {@link #getStatus()} is called,

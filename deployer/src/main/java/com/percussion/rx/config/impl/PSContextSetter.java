@@ -24,7 +24,7 @@ import com.percussion.services.error.PSNotFoundException;
 import com.percussion.services.sitemgr.IPSPublishingContext;
 import com.percussion.utils.guid.IPSGuid;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This setter is used to set Context properties.

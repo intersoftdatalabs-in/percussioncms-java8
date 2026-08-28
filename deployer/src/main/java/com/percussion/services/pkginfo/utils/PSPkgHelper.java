@@ -38,7 +38,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /** Utility class which provides support for detecting modifications to packaged elements. */
 public class PSPkgHelper {

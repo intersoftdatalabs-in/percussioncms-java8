@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.percussion.webservices.transformation.converter.PSTemplateSlotConverter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.experimental.categories.Category;
 
 /**

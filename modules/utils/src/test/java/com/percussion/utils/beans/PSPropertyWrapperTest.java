@@ -17,7 +17,7 @@
 package com.percussion.utils.beans;
 
 import junit.framework.TestCase;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Unit test for the property wrapper class. Uses a static class to create objects to test with.

@@ -23,7 +23,7 @@ package com.percussion.widgets.image.services.impl;
       import com.percussion.widgets.image.services.ImageCacheManager;
       import net.sf.ehcache.Cache;
       import net.sf.ehcache.Element;
-      import org.apache.commons.lang.StringUtils;
+      import org.apache.commons.lang3.StringUtils;
       import org.apache.logging.log4j.Logger;
       import org.apache.logging.log4j.LogManager;
       

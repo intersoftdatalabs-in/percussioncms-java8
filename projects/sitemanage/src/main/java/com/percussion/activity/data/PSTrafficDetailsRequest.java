@@ -20,7 +20,7 @@ package com.percussion.activity.data;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.percussion.analytics.service.IPSAnalyticsProviderQueryService;
 import java.io.Serializable;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /** A request object used for getting the traffic details data from the rest service. */
 @JsonRootName(value = "TrafficDetailsRequest")

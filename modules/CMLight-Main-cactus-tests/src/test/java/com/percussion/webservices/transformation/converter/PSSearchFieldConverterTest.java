@@ -23,7 +23,7 @@ import java.util.List;
 
 import com.percussion.utils.testing.IntegrationTest;
 import com.percussion.webservices.transformation.converter.PSSearchFieldConverter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.experimental.categories.Category;
 
 /**

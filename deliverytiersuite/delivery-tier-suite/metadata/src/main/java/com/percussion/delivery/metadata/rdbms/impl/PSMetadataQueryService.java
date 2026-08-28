@@ -16,7 +16,7 @@
  */
 package com.percussion.delivery.metadata.rdbms.impl;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.percussion.delivery.metadata.IPSMetadataEntry;
 import com.percussion.delivery.metadata.IPSMetadataQueryService;
@@ -40,7 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.xml.bind.DatatypeConverter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.HibernateException;

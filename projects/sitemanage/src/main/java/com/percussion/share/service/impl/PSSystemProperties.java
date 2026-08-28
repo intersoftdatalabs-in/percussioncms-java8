@@ -20,7 +20,7 @@ import com.percussion.server.PSServer;
 import com.percussion.share.service.IPSSystemProperties;
 import com.percussion.util.PSSiteManageBean;
 import javax.ws.rs.ext.Provider;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 /** @author JaySeletz */
 @Provider

@@ -20,7 +20,7 @@ import com.percussion.i18n.PSI18nUtils;
 
 import java.text.MessageFormat;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * The base class for unchecked runtime exception in services package.

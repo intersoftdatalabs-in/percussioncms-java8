@@ -17,7 +17,7 @@
 package com.percussion.widgetbuilder.data;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 /** @author JaySeletz */
 @XmlRootElement(name = "WidgetBuilderValidationResult")

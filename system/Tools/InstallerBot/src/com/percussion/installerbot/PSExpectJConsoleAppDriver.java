@@ -18,7 +18,7 @@
 
 package com.percussion.installerbot;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import expectj.ExpectJ;
 import expectj.ExpectJException;

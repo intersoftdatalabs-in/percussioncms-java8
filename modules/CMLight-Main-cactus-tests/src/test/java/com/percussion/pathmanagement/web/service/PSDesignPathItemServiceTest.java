@@ -37,7 +37,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Ignore;
 
 @org.junit.experimental.categories.Category(IntegrationTest.class)

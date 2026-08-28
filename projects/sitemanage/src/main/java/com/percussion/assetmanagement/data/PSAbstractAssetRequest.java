@@ -17,7 +17,7 @@
 package com.percussion.assetmanagement.data;
 
 import java.io.InputStream;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /** Base class for all service requests to create assets during bulk upload. */
 public abstract class PSAbstractAssetRequest {

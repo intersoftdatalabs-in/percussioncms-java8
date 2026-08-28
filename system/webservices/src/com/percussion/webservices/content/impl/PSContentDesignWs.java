@@ -83,8 +83,8 @@ import com.percussion.webservices.PSWebserviceUtils;
 import com.percussion.webservices.content.IPSContentDesignWs;
 import com.percussion.webservices.content.IPSContentWs;
 import com.percussion.webservices.content.PSContentWsLocator;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -450,7 +450,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                PSWebserviceErrors.createErrorMessage(code,
                   PSItemDefinition.class.getName(), guid.getValue(), e
                      .getLocalizedMessage()), ExceptionUtils
-                  .getFullStackTrace(e));
+                  .getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -569,7 +569,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
             PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code, PSTemplateSlot.class
                   .getName(), guid.getValue(), e.getLocalizedMessage()),
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -682,7 +682,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                   PSWebserviceErrors.createErrorMessage(code, nodeDef
                      .getClass().getName(), nodeDef.getGUID().longValue(), e
                      .getLocalizedMessage()), ExceptionUtils
-                     .getFullStackTrace(e), e.getLocker(), e.getRemainigTime());
+                     .getStackTrace(e), e.getLocker(), e.getRemainigTime());
                results.addError(nodeDef.getGUID(), error);
             }
          }
@@ -694,7 +694,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
          PSErrorException error = new PSErrorException(code, PSWebserviceErrors
             .createErrorMessage(code, IPSNodeDefinition.class.getName(), guid
                .getValue(), e.getLocalizedMessage()), ExceptionUtils
-            .getFullStackTrace(e));
+            .getStackTrace(e));
          results.addError(contentTypeId, error);
       }
 
@@ -759,7 +759,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                   PSWebserviceErrors.createErrorMessage(code, nodeDef
                      .getClass().getName(), nodeDef.getGUID().longValue(), e
                      .getLocalizedMessage()), ExceptionUtils
-                     .getFullStackTrace(e), e.getLocker(), e.getRemainigTime());
+                     .getStackTrace(e), e.getLocker(), e.getRemainigTime());
                results.addError(nodeDef.getGUID(), error);
             }
          }
@@ -771,7 +771,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
          PSErrorException error = new PSErrorException(code, PSWebserviceErrors
             .createErrorMessage(code, IPSNodeDefinition.class.getName(), guid
                .getValue(), e.getLocalizedMessage()), ExceptionUtils
-            .getFullStackTrace(e));
+            .getStackTrace(e));
          results.addError(contentTypeId, error);
       }
 
@@ -812,7 +812,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                throw new PSLockErrorException(code, PSWebserviceErrors
                   .createErrorMessage(code, def.getClass().getName(), id
                      .longValue(), e.getLocalizedMessage()), ExceptionUtils
-                  .getFullStackTrace(e), e.getLocker(), e.getRemainigTime());
+                  .getStackTrace(e), e.getLocker(), e.getRemainigTime());
             }
          }
 
@@ -855,7 +855,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                throw new PSLockErrorException(code, PSWebserviceErrors
                   .createErrorMessage(code, def.getClass().getName(), id
                      .longValue(), e.getLocalizedMessage()), ExceptionUtils
-                  .getFullStackTrace(e), e.getLocker(), e.getRemainigTime());
+                  .getStackTrace(e), e.getLocker(), e.getRemainigTime());
             }
          }
 
@@ -907,7 +907,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
             PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code,
                   PSItemDefinition.class.getName(), guid.getValue()),
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -929,7 +929,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
             PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code,
                   PSItemDefinition.class.getName(), guid.getValue()),
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -963,7 +963,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                      PSWebserviceErrors.createErrorMessage(code, nodeDef
                         .getClass().getName(), nodeDef.getGUID().longValue(), e
                         .getLocalizedMessage()), ExceptionUtils
-                        .getFullStackTrace(e), e.getLocker(), e.getRemainigTime());
+                        .getStackTrace(e), e.getLocker(), e.getRemainigTime());
                   results.addError(nodeDef.getGUID(), error);
                }
             }
@@ -1015,7 +1015,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
             PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code, PSKeyword.class
                   .getName(), guid.getValue()), ExceptionUtils
-                  .getFullStackTrace(e));
+                  .getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -1065,7 +1065,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
             PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code, PSLocale.class
                   .getName(), guid.getValue()), ExceptionUtils
-                  .getFullStackTrace(new Exception()));
+                  .getStackTrace(new Exception()));
             results.addError(id, error);
          }
          else
@@ -1120,7 +1120,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
          catch (PSLockException e)
          {
             throw new PSLockErrorException(e.getErrorCode(), e.getMessage(),
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
          }
       }
 
@@ -1238,7 +1238,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                PSErrorException error = new PSErrorException(code,
                   PSWebserviceErrors.createErrorMessage(code, TYPE, guid
                      .toString()), ExceptionUtils
-                     .getFullStackTrace(new Exception()));
+                     .getStackTrace(new Exception()));
                results.addError(contentTypeId, error);
             }
             else
@@ -1248,7 +1248,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                PSErrorException error = new PSErrorException(code,
                   PSWebserviceErrors.createErrorMessage(code, TYPE, guid
                      .toString(), lock.getLocker(), lock.getRemainingTime()),
-                  ExceptionUtils.getFullStackTrace(new Exception()));
+                  ExceptionUtils.getStackTrace(new Exception()));
                results.addError(contentTypeId, error);
             }
          }
@@ -1259,7 +1259,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
          PSDesignGuid guid = new PSDesignGuid(contentTypeId);
          PSErrorException error = new PSErrorException(code, PSWebserviceErrors
             .createErrorMessage(code, TYPE, guid.toString()), ExceptionUtils
-            .getFullStackTrace(e));
+            .getStackTrace(e));
          results.addError(contentTypeId, error);
       }
       catch (Exception e)
@@ -1268,7 +1268,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
          PSDesignGuid guid = new PSDesignGuid(contentTypeId);
          PSErrorException error = new PSErrorException(code, PSWebserviceErrors
             .createErrorMessage(code, TYPE, guid.toString(), e
-               .getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               .getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
          results.addError(contentTypeId, error);
       }
 
@@ -1365,7 +1365,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                PSErrorException error = new PSErrorException(code,
                   PSWebserviceErrors.createErrorMessage(code, TYPE, guid
                      .toString()), ExceptionUtils
-                     .getFullStackTrace(new Exception()));
+                     .getStackTrace(new Exception()));
                results.addError(contentTypeId, error);
             }
             else
@@ -1375,7 +1375,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                PSErrorException error = new PSErrorException(code,
                   PSWebserviceErrors.createErrorMessage(code, TYPE, guid
                      .toString(), lock.getLocker(), lock.getRemainingTime()),
-                  ExceptionUtils.getFullStackTrace(new Exception()));
+                  ExceptionUtils.getStackTrace(new Exception()));
                results.addError(contentTypeId, error);
             }
          }
@@ -1386,7 +1386,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
          PSDesignGuid guid = new PSDesignGuid(contentTypeId);
          PSErrorException error = new PSErrorException(code, PSWebserviceErrors
             .createErrorMessage(code, TYPE, guid.toString()), ExceptionUtils
-            .getFullStackTrace(e));
+            .getStackTrace(e));
          results.addError(contentTypeId, error);
       }
       catch (Exception e)
@@ -1395,7 +1395,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
          PSDesignGuid guid = new PSDesignGuid(contentTypeId);
          PSErrorException error = new PSErrorException(code, PSWebserviceErrors
             .createErrorMessage(code, TYPE, guid.toString(), e
-               .getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               .getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
          results.addError(contentTypeId, error);
       }
 
@@ -1475,7 +1475,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                int code = IPSWebserviceErrors.UNABLE_SAVE_SHARED_DEF_VALIDATION;
                throw new PSErrorException(code, PSWebserviceErrors
                   .createErrorMessage(code, errMsg), ExceptionUtils
-                  .getFullStackTrace(new Exception()));
+                  .getStackTrace(new Exception()));
             }
             os.saveContentEditorSharedDefFile(def);
             if (!release)
@@ -1490,14 +1490,14 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                throw new PSLockErrorException(code, PSWebserviceErrors
                   .createErrorMessage(code, def.getClass().getName(), id
                      .longValue()), ExceptionUtils
-                  .getFullStackTrace(new Exception()));
+                  .getStackTrace(new Exception()));
             }
 
             int code = IPSWebserviceErrors.OBJECT_NOT_LOCKED_FOR_REQUESTOR;
             throw new PSLockErrorException(code, PSWebserviceErrors
                .createErrorMessage(code, def.getClass().getName(), id
                   .longValue(), lock.getLocker(), lock.getRemainingTime()),
-               ExceptionUtils.getFullStackTrace(new Exception()));
+               ExceptionUtils.getStackTrace(new Exception()));
          }
       }
       catch (PSLockException e)
@@ -1505,7 +1505,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
          int code = IPSWebserviceErrors.SAVE_FAILED;
          throw new PSLockErrorException(code, PSWebserviceErrors
             .createErrorMessage(code, def.getClass().getName(), id.longValue(),
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (IOException e)
       {
@@ -1559,7 +1559,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                throw new PSErrorException(code, PSWebserviceErrors
                   .createErrorMessage(code, def.getClass().getName(), id
                      .longValue(), errMsg), ExceptionUtils
-                  .getFullStackTrace(new Exception()));
+                  .getStackTrace(new Exception()));
             }
             os.saveContentEditorSystemDef(def);
             if (!release)
@@ -1574,14 +1574,14 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                throw new PSLockErrorException(code, PSWebserviceErrors
                   .createErrorMessage(code, def.getClass().getName(), id
                      .longValue()), ExceptionUtils
-                  .getFullStackTrace(new Exception()));
+                  .getStackTrace(new Exception()));
             }
 
             int code = IPSWebserviceErrors.OBJECT_NOT_LOCKED_FOR_REQUESTOR;
             throw new PSLockErrorException(code, PSWebserviceErrors
                .createErrorMessage(code, def.getClass().getName(), id
                   .longValue(), lock.getLocker(), lock.getRemainingTime()),
-               ExceptionUtils.getFullStackTrace(new Exception()));
+               ExceptionUtils.getStackTrace(new Exception()));
          }
       }
       catch (PSLockException e)
@@ -1589,7 +1589,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
          int code = IPSWebserviceErrors.SAVE_FAILED;
          throw new PSLockErrorException(code, PSWebserviceErrors
             .createErrorMessage(code, def.getClass().getName(), id.longValue(),
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (IOException e)
       {
@@ -1677,7 +1677,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                      PSErrorException error = new PSErrorException(code,
                         PSWebserviceErrors.createErrorMessage(code,
                            PSItemDefinition.class.getName(), guid.getValue()),
-                        ExceptionUtils.getFullStackTrace(new Exception()));
+                        ExceptionUtils.getStackTrace(new Exception()));
                      results.addError(id, error);
                   }
                   else
@@ -1688,7 +1688,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                         PSWebserviceErrors.createErrorMessage(code,
                            PSItemDefinition.class.getName(), guid.getValue(),
                            lock.getLocker(), lock.getRemainingTime()),
-                        ExceptionUtils.getFullStackTrace(new Exception()));
+                        ExceptionUtils.getStackTrace(new Exception()));
                      results.addError(id, error);
                   }
                }
@@ -1701,7 +1701,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                   PSWebserviceErrors.createErrorMessage(code,
                      PSItemDefinition.class.getName(), guid.getValue(), e
                         .getLocalizedMessage()), ExceptionUtils
-                     .getFullStackTrace(e));
+                     .getStackTrace(e));
                results.addError(id, error);
             }
          }
@@ -1780,7 +1780,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
             PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code, PSKeyword.class
                   .getName(), guid.getValue(), e.getLocalizedMessage()),
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -1873,7 +1873,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                   PSErrorException error = new PSErrorException(code,
                      PSWebserviceErrors.createErrorMessage(code, PSLocale.class
                         .getName(), guid.getValue()), ExceptionUtils
-                        .getFullStackTrace(new Exception()));
+                        .getStackTrace(new Exception()));
                   results.addError(id, error);
                }
                else
@@ -1884,7 +1884,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                      PSWebserviceErrors.createErrorMessage(code, PSLocale.class
                         .getName(), guid.getValue(), lock.getLocker(), lock
                         .getRemainingTime()), ExceptionUtils
-                        .getFullStackTrace(new Exception()));
+                        .getStackTrace(new Exception()));
                   results.addError(id, error);
                }
             }
@@ -1896,7 +1896,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
             PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code, PSLocale.class
                   .getName(), guid.getValue()), ExceptionUtils
-                  .getFullStackTrace(e));
+                  .getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -1992,7 +1992,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                throw new PSLockErrorException(code, PSWebserviceErrors
                   .createErrorMessage(code, PSAutoTranslation.class.getName(),
                      guid.longValue()), ExceptionUtils
-                  .getFullStackTrace(new Exception()));
+                  .getStackTrace(new Exception()));
             }
             else
             {
@@ -2001,7 +2001,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
                throw new PSLockErrorException(code, PSWebserviceErrors
                   .createErrorMessage(code, PSAutoTranslation.class.getName(),
                      guid.longValue()), ExceptionUtils
-                  .getFullStackTrace(new Exception()), lock.getLocker(), lock
+                  .getStackTrace(new Exception()), lock.getLocker(), lock
                   .getRemainingTime());
             }
          }
@@ -2009,7 +2009,7 @@ public class PSContentDesignWs extends PSContentBaseWs implements
       catch (PSLockException e)
       {
          throw new PSLockErrorException(e.getErrorCode(), e.getMessage(),
-            ExceptionUtils.getFullStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
       }
 
       if (release)

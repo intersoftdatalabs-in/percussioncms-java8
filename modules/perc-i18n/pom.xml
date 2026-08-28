@@ -94,11 +94,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>com.percussion</groupId>
             <artifactId>tablefactory</artifactId>
             <version>${project.parent.version}</version>

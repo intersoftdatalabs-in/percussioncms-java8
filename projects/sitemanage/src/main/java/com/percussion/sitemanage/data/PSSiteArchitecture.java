@@ -19,7 +19,7 @@ package com.percussion.sitemanage.data;
 import com.percussion.share.data.PSAbstractPersistantObject;
 import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @XmlRootElement(name = "SiteArchitecture")
 public class PSSiteArchitecture extends PSAbstractPersistantObject {

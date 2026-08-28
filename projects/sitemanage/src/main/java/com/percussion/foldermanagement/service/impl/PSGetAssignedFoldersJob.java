@@ -21,7 +21,7 @@ import com.percussion.foldermanagement.data.PSGetAssignedFoldersJobStatus;
 import com.percussion.foldermanagement.service.IPSFolderService;
 import com.percussion.share.async.impl.PSAsyncJob;
 import java.util.List;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

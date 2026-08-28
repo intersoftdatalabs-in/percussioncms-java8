@@ -102,8 +102,8 @@ import com.percussion.webservices.system.PSSystemWsLocator;
 import com.percussion.webservices.ui.IPSUiDesignWs;
 import com.percussion.webservices.ui.PSUiWsLocator;
 import com.percussion.xml.PSXmlDocumentBuilder;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
@@ -119,7 +119,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.apache.commons.lang.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notEmpty;
 
 /**
  * Utilities useful for all or multiple webservices.
@@ -615,7 +615,7 @@ public class PSWebserviceUtils
          PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code, cz.getName(), guid
                      .getValue()), ExceptionUtils
-                     .getFullStackTrace(new Exception()));
+                     .getStackTrace(new Exception()));
          results.addError(id, error);
       }
       else
@@ -625,7 +625,7 @@ public class PSWebserviceUtils
          PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code, cz.getName(), guid
                      .getValue(), lock.getLocker(), lock.getRemainingTime()),
-               ExceptionUtils.getFullStackTrace(new Exception()));
+               ExceptionUtils.getStackTrace(new Exception()));
          results.addError(id, error);
       }
    }
@@ -675,7 +675,7 @@ public class PSWebserviceUtils
          PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code, cz.getName(), guid
                      .getValue(), e.getLocalizedMessage()), ExceptionUtils
-                     .getFullStackTrace(e));
+                     .getStackTrace(e));
          results.addError(id, error);
       }
    }
@@ -701,7 +701,7 @@ public class PSWebserviceUtils
          }
          error = new PSErrorException(code, PSWebserviceErrors
                .createErrorMessage(code,displayName, id.longValue(), depTypes),
-               ExceptionUtils.getFullStackTrace(new Exception()));
+               ExceptionUtils.getStackTrace(new Exception()));
 
       }
       return error;
@@ -735,7 +735,7 @@ public class PSWebserviceUtils
                                .valueOf(children.get(0).getType())).getDisplayName(),
                      PSStringUtils.listToString(pair.getFirst(), ", "), pair
                            .getSecond()), ExceptionUtils
-               .getFullStackTrace(new Exception()));
+               .getStackTrace(new Exception()));
 
       }
       return error;
@@ -826,7 +826,7 @@ public class PSWebserviceUtils
          throw new PSErrorException(IPSWebserviceErrors.OBJECT_NOT_FOUND,
                PSWebserviceErrors.createErrorMessage(IPSWebserviceErrors.OBJECT_NOT_FOUND,
                      PSComponentSummary.class.getName(), id), ExceptionUtils
-                     .getFullStackTrace(new Exception()));
+                     .getStackTrace(new Exception()));
       }
 
       return summary;
@@ -956,7 +956,7 @@ public class PSWebserviceUtils
          log.error(PSExceptionUtils.getMessageForLog(e));
          throw new PSErrorException(IPSWebserviceErrors.OBJECT_NOT_FOUND_BY_NAME,
                PSWebserviceErrors.createErrorMessage(IPSWebserviceErrors.OBJECT_NOT_FOUND_BY_NAME, PSSlotType.class
-                     .getName(), name), ExceptionUtils.getFullStackTrace(e));
+                     .getName(), name), ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -1016,7 +1016,7 @@ public class PSWebserviceUtils
          throw new PSErrorException(IPSWebserviceErrors.OBJECT_NOT_FOUND,
                PSWebserviceErrors.createErrorMessage(IPSWebserviceErrors.OBJECT_NOT_FOUND,
                      IPSTemplateSlot.class.getName(), slotId), ExceptionUtils
-                     .getFullStackTrace(e));
+                     .getStackTrace(e));
 
       }
    }
@@ -1051,7 +1051,7 @@ public class PSWebserviceUtils
          throw new PSErrorException(IPSWebserviceErrors.OBJECT_NOT_FOUND,
                PSWebserviceErrors.createErrorMessage(IPSWebserviceErrors.OBJECT_NOT_FOUND,
                      IPSAssemblyTemplate.class.getName(), new PSDesignGuid(templateId).getValue()),
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -1083,7 +1083,7 @@ public class PSWebserviceUtils
         throw new PSErrorException(IPSWebserviceErrors.OBJECT_NOT_FOUND,
                PSWebserviceErrors.createErrorMessage(IPSWebserviceErrors.OBJECT_NOT_FOUND,
                      IPSAssemblyTemplate.class.getName(), new PSDesignGuid(templateId).getValue()),
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -1173,7 +1173,7 @@ public class PSWebserviceUtils
          throw new PSErrorException(IPSWebserviceErrors.FAILED_SAVE_RELATIONSHIPS,
                PSWebserviceErrors.createErrorMessage(IPSWebserviceErrors.FAILED_SAVE_RELATIONSHIPS, e
                      .getLocalizedMessage()), ExceptionUtils
-                     .getFullStackTrace(e));
+                     .getStackTrace(e));
 
       }
 
@@ -1241,7 +1241,7 @@ public class PSWebserviceUtils
 
          throw new PSErrorException(IPSWebserviceErrors.FAILED_SAVE_RELATIONSHIPS,
                PSWebserviceErrors.createErrorMessage(IPSWebserviceErrors.FAILED_SAVE_RELATIONSHIPS, PSExceptionUtils.getMessageForLog(e)), ExceptionUtils
-                     .getFullStackTrace(e));
+                     .getStackTrace(e));
       }
    }
 
@@ -1349,7 +1349,7 @@ public class PSWebserviceUtils
          throw new PSErrorException(IPSWebserviceErrors.ITEM_NOT_CHECKOUT_BY_USER,
                PSWebserviceErrors.createErrorMessage(IPSWebserviceErrors.ITEM_NOT_CHECKOUT_BY_USER, locator
                      .getId(), getUserName()), ExceptionUtils
-                     .getFullStackTrace(new Exception()));
+                     .getStackTrace(new Exception()));
       }
       else
       {
@@ -1690,7 +1690,7 @@ public class PSWebserviceUtils
          throw new PSErrorException(IPSWebserviceErrors.FAILED_LOAD_WORKFLOW,
                PSWebserviceErrors.createErrorMessage(IPSWebserviceErrors.FAILED_LOAD_WORKFLOW,
                      workflowId), ExceptionUtils
-                     .getFullStackTrace(new Exception()));
+                     .getStackTrace(new Exception()));
       }
 
       return wf;
@@ -1718,7 +1718,7 @@ public class PSWebserviceUtils
       throw new PSErrorException(IPSWebserviceErrors.CANNOT_FIND_WORKFLOW_STATE_ID,
             PSWebserviceErrors.createErrorMessage(IPSWebserviceErrors.CANNOT_FIND_WORKFLOW_STATE_ID, id, wf.getGUID()
                   .longValue(), wf.getName()), ExceptionUtils
-                  .getFullStackTrace(new Exception()));
+                  .getStackTrace(new Exception()));
    }
 
    /**
@@ -1769,7 +1769,7 @@ public class PSWebserviceUtils
          Throwable rootCause = PSExceptionHelper.findRootCause(e,false);
          PSErrorException error = new PSErrorException(IPSWebserviceErrors.FAILED_TRANSITION_ITEM,
                PSWebserviceErrors.createErrorMessage(IPSWebserviceErrors.FAILED_TRANSITION_ITEM, trigger, id),
-               ExceptionUtils.getFullStackTrace(rootCause),e);
+               ExceptionUtils.getStackTrace(rootCause),e);
          throw new PSErrorException("Failed transition due to server error.",error);
 
       }
@@ -1878,7 +1878,7 @@ public class PSWebserviceUtils
             PSErrorException error = new PSErrorException(code,
                   PSWebserviceErrors.createErrorMessage(code, PSAclImpl.class
                         .getName(), id.longValue()), ExceptionUtils
-                        .getFullStackTrace(e));
+                        .getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -2104,7 +2104,7 @@ public class PSWebserviceUtils
       {
          throw new PSErrorException(errorCode,
             PSWebserviceErrors.createErrorMessage(errorCode, e
-               .getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               .getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
 
       }
    }

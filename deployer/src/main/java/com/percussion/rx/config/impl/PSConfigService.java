@@ -51,7 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.xml.bind.JAXBException;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

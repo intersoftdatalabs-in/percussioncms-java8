@@ -21,7 +21,7 @@ import com.percussion.deployer.objectstore.idtypes.PSBindingIdContext;
 import com.percussion.deployer.objectstore.idtypes.PSBindingParamIdContext;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * A helper class for managing the ids found in a jexl binding. This class has a map of a binding

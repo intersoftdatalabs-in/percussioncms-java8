@@ -21,7 +21,7 @@ import com.percussion.services.content.data.PSAutoTranslation;
 import com.percussion.services.content.data.PSKeyword;
 import com.percussion.services.content.data.PSKeywordChoice;
 import com.percussion.utils.testing.IntegrationTest;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;

@@ -16,7 +16,7 @@
  */
 package com.percussion.feeds.service.impl;
 
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import com.percussion.cms.objectstore.PSInvalidContentTypeException;
 import com.percussion.cms.objectstore.PSRelationshipFilter;

@@ -17,8 +17,8 @@
 
 package com.percussion.searchmanagement.service.impl;
 
-import static org.apache.commons.lang.Validate.isTrue;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.isTrue;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import com.percussion.assetmanagement.service.impl.PSWidgetAssetRelationshipService;
 import com.percussion.cms.PSRelationshipChangeEvent;

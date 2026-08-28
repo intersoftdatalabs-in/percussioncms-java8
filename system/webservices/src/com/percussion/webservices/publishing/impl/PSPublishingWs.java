@@ -41,15 +41,15 @@ import com.percussion.webservices.IPSWebserviceErrors;
 import com.percussion.webservices.PSErrorException;
 import com.percussion.webservices.PSWebserviceErrors;
 import com.percussion.webservices.publishing.IPSPublishingWs;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notNull;
 
 /**
  * Wraps various methods of the filter, publisher, and site manager services.
@@ -201,7 +201,7 @@ public class PSPublishingWs implements IPSPublishingWs
          PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code,
                      IPSItemFilter.class.getName(), name), ExceptionUtils
-                     .getFullStackTrace(new Exception()));
+                     .getStackTrace(new Exception()));
          throw error;
       }
    }
@@ -224,7 +224,7 @@ public class PSPublishingWs implements IPSPublishingWs
          PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code,
                      IPSContentList.class.getName(), name), ExceptionUtils
-                     .getFullStackTrace(new Exception()));
+                     .getStackTrace(new Exception()));
          throw error;
       }
    }
@@ -251,7 +251,7 @@ public class PSPublishingWs implements IPSPublishingWs
          PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code,
                      IPSPublishingContext.class.getName(), contextname),
-                     ExceptionUtils.getFullStackTrace(new Exception()));
+                     ExceptionUtils.getStackTrace(new Exception()));
          throw error;
       }
    }
@@ -283,7 +283,7 @@ public class PSPublishingWs implements IPSPublishingWs
       PSErrorException error = new PSErrorException(code,
             PSWebserviceErrors.createErrorMessage(code,
                   IPSSite.class.getName(), sitename), ExceptionUtils
-                  .getFullStackTrace(new Exception()));
+                  .getStackTrace(new Exception()));
       throw error;
    }
    

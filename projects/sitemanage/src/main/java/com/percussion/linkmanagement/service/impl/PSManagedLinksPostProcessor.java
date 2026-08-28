@@ -30,7 +30,7 @@ import com.percussion.services.guidmgr.PSGuidManagerLocator;
 import com.percussion.share.spring.PSSpringWebApplicationContextUtils;
 import com.percussion.util.IPSHtmlParameters;
 import java.io.File;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 
 /**

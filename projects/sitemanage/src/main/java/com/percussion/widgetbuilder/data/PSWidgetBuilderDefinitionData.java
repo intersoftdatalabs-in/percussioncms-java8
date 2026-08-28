@@ -20,8 +20,8 @@ package com.percussion.widgetbuilder.data;
 import com.percussion.services.widgetbuilder.PSWidgetBuilderDefinition;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 @XmlRootElement(name = "WidgetBuilderDefinitionData")
 public class PSWidgetBuilderDefinitionData extends PSWidgetBuilderSummaryData {

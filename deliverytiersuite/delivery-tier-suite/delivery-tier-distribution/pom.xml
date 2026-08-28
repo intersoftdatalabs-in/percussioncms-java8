@@ -132,10 +132,6 @@
                     <artifactId>velocity</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>commons-logging</groupId>
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
@@ -184,11 +180,6 @@
                     <artifactId>log4j-slf4j2-impl</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>${commons.lang.version}</version>
         </dependency>
         <dependency>
             <groupId>com.percussion</groupId>
@@ -388,10 +379,6 @@
                     <artifactId>velocity</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>commons-logging</groupId>
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
@@ -549,10 +536,6 @@
                             <dependency>
                                 <groupId>com.zaxxer</groupId>
                                 <artifactId>HikariCP</artifactId>
-                            </dependency>
-                            <dependency>
-                                <groupId>commons-lang</groupId>
-                                <artifactId>commons-lang</artifactId>
                             </dependency>
                             <!-- log4j2 -->
                             <dependency>
@@ -1069,10 +1052,6 @@
                                     <dependency>
                                         <groupId>commons-logging</groupId>
                                         <artifactId>commons-logging</artifactId>
-                                    </dependency>
-                                    <dependency>
-                                        <groupId>commons-lang</groupId>
-                                        <artifactId>commons-lang</artifactId>
                                     </dependency>
                                     <dependency>
                                         <groupId>com.percussion</groupId>

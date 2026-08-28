@@ -20,7 +20,7 @@ package com.percussion.deployer.server;
 import com.percussion.deployer.objectstore.PSDeployComponentUtils;
 import com.percussion.design.objectstore.IPSObjectStoreErrors;
 import com.percussion.design.objectstore.PSUnknownNodeTypeException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 
 /**

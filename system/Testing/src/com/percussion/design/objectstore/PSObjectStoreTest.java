@@ -45,7 +45,7 @@ import java.util.Properties;
 import com.percussion.utils.testing.IntegrationTest;
 
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.junit.BeforeClass;
 import org.junit.Test;

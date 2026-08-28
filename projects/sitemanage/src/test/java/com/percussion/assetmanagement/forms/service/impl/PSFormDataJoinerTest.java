@@ -19,7 +19,7 @@ package com.percussion.assetmanagement.forms.service.impl;
 
 import static org.junit.Assert.assertEquals;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 

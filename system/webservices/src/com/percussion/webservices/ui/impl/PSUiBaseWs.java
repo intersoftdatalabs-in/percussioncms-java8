@@ -31,8 +31,8 @@ import com.percussion.webservices.IPSWebserviceErrors;
 import com.percussion.webservices.PSErrorException;
 import com.percussion.webservices.PSWebserviceErrors;
 import com.percussion.xml.PSXmlDocumentBuilder;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
@@ -165,7 +165,7 @@ public class PSUiBaseWs
          int code = IPSWebserviceErrors.FIND_FAILED;
          PSErrorException error = new PSErrorException(code, PSWebserviceErrors
             .createErrorMessage(code, PSAction.class.getName(), name, label, e
-               .getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               .getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
          throw error;
       }
    }

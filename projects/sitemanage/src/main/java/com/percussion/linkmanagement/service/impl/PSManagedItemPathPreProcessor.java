@@ -29,7 +29,7 @@ import com.percussion.server.PSRequestValidationException;
 import com.percussion.share.spring.PSSpringWebApplicationContextUtils;
 import com.percussion.util.IPSHtmlParameters;
 import java.io.File;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /** @author JaySeletz */
 public class PSManagedItemPathPreProcessor extends PSDefaultExtension

@@ -32,7 +32,7 @@ import com.percussion.theme.service.impl.PSThemeService;
 
 import com.percussion.utils.testing.IntegrationTest;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;

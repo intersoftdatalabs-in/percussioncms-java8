@@ -41,8 +41,8 @@ import com.percussion.webservices.faults.PSNotAuthorizedFault;
 import com.percussion.webservices.faults.PSUnknownRelationshipTypeFault;
 import com.percussion.webservices.faults.PSUseSpecificMethodsFault;
 import com.percussion.webservices.faults.PSUserNotMemberOfCommunityFault;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.rmi.RemoteException;
 import java.util.Calendar;
@@ -484,12 +484,12 @@ public class SystemSOAPImpl extends PSBaseSOAPImpl
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSUserNotMemberOfCommunityException e)
       {
          throw new PSUserNotMemberOfCommunityFault(e.getCode(), 
-            e.getErrorMessage(), ExceptionUtils.getFullStackTrace(e));
+            e.getErrorMessage(), ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -515,12 +515,12 @@ public class SystemSOAPImpl extends PSBaseSOAPImpl
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSInvalidLocaleException e)
       {
          throw new PSInvalidLocaleFault(e.getCode(), 
-            e.getErrorMessage(), ExceptionUtils.getFullStackTrace(e));
+            e.getErrorMessage(), ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -597,7 +597,7 @@ public class SystemSOAPImpl extends PSBaseSOAPImpl
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
    }
 }

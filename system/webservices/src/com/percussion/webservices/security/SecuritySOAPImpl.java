@@ -37,7 +37,7 @@ import java.util.List;
 import javax.security.auth.login.LoginException;
 import javax.servlet.ServletException;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * Server side implementations for web services defined in
@@ -72,7 +72,7 @@ public class SecuritySOAPImpl extends PSBaseSOAPImpl implements Security
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -101,7 +101,7 @@ public class SecuritySOAPImpl extends PSBaseSOAPImpl implements Security
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -131,32 +131,32 @@ public class SecuritySOAPImpl extends PSBaseSOAPImpl implements Security
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, "login", 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (IOException e)
       {
          throw new PSNotAuthenticatedFault(0, e.getLocalizedMessage(), 
-            ExceptionUtils.getFullStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
       }
       catch (ServletException e)
       {
          throw new PSNotAuthenticatedFault(0, e.getLocalizedMessage(), 
-            ExceptionUtils.getFullStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
       }
       catch (LoginException e)
       {
          throw new PSNotAuthenticatedFault(0, e.getLocalizedMessage(), 
-            ExceptionUtils.getFullStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
       }
       catch (PSInternalRequestCallException e)
       {
          throw new PSNotAuthenticatedFault(0, e.getLocalizedMessage(), 
-            ExceptionUtils.getFullStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
       }
       catch (Exception e)
       {
          throw new PSNotAuthenticatedFault(0, e.getLocalizedMessage(), 
-            ExceptionUtils.getFullStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -180,7 +180,7 @@ public class SecuritySOAPImpl extends PSBaseSOAPImpl implements Security
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, "logout", 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -204,12 +204,12 @@ public class SecuritySOAPImpl extends PSBaseSOAPImpl implements Security
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, "refreshSession", 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (LoginException e)
       {
          throw new PSInvalidSessionFault(0, e.getLocalizedMessage(), 
-            ExceptionUtils.getFullStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -238,7 +238,7 @@ public class SecuritySOAPImpl extends PSBaseSOAPImpl implements Security
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }   
    }
 }

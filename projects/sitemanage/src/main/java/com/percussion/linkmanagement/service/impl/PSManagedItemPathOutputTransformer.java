@@ -29,7 +29,7 @@ import com.percussion.server.IPSRequestContext;
 import com.percussion.share.spring.PSSpringWebApplicationContextUtils;
 import com.percussion.util.IPSHtmlParameters;
 import java.io.File;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Field output transformer to update the managed item paths on edit. This is a thin wrapper, calls

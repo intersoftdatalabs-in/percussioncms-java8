@@ -64,8 +64,8 @@ import com.percussion.webservices.system.IPSSystemDesignWs;
 import com.percussion.webservices.system.PSSystemWsLocator;
 import com.percussion.webservices.ui.IPSUiDesignWs;
 import com.percussion.webservices.ui.PSUiWsLocator;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.Subject;
@@ -269,7 +269,7 @@ public class PSSecurityDesignWs extends PSSecurityBaseWs implements
          PSErrorException error = new PSErrorException(code,
             PSWebserviceErrors.createErrorMessage(code, PSCommunity.class
                .getName(), guid.getValue()), ExceptionUtils
-               .getFullStackTrace(e));
+               .getStackTrace(e));
          results.addError(id, error);
       }
    
@@ -337,7 +337,7 @@ public class PSSecurityDesignWs extends PSSecurityBaseWs implements
          PSErrorException error = new PSErrorException(code, 
             PSWebserviceErrors.createErrorMessage(code, 
                PSCommunity.class.getName(), message), 
-            ExceptionUtils.getFullStackTrace(new Exception()));
+            ExceptionUtils.getStackTrace(new Exception()));
    
          PSErrorsException ex = new PSErrorsException();
          for (PSCommunity community : communities)
@@ -351,7 +351,7 @@ public class PSSecurityDesignWs extends PSSecurityBaseWs implements
          PSErrorException error = new PSErrorException(code, 
             PSWebserviceErrors.createErrorMessage(code, 
                PSCommunity.class.getName(), e.getLocalizedMessage()), 
-            ExceptionUtils.getFullStackTrace(new Exception()));
+            ExceptionUtils.getStackTrace(new Exception()));
    
          PSErrorsException ex = new PSErrorsException();
          for (PSCommunity community : communities)
@@ -396,7 +396,7 @@ public class PSSecurityDesignWs extends PSSecurityBaseWs implements
                   PSErrorException error = new PSErrorException(code, 
                      PSWebserviceErrors.createErrorMessage(code, 
                         PSCommunity.class.getName(), guid.getValue()), 
-                        ExceptionUtils.getFullStackTrace(new Exception()));
+                        ExceptionUtils.getStackTrace(new Exception()));
                   results.addError(id, error);
                }
                else
@@ -407,7 +407,7 @@ public class PSSecurityDesignWs extends PSSecurityBaseWs implements
                      PSWebserviceErrors.createErrorMessage(code, 
                         PSCommunity.class.getName(), guid.getValue(), 
                         lock.getLocker(), lock.getRemainingTime()), 
-                        ExceptionUtils.getFullStackTrace(new Exception()));
+                        ExceptionUtils.getStackTrace(new Exception()));
                   results.addError(id, error);
                }
             }
@@ -420,7 +420,7 @@ public class PSSecurityDesignWs extends PSSecurityBaseWs implements
                PSWebserviceErrors.createErrorMessage(code, 
                   PSCommunity.class.getName(), guid.getValue(),
                   e.getLocalizedMessage()), 
-                  ExceptionUtils.getFullStackTrace(e));
+                  ExceptionUtils.getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -797,7 +797,7 @@ public class PSSecurityDesignWs extends PSSecurityBaseWs implements
                throw new PSErrorException(code, 
                   PSWebserviceErrors.createErrorMessage(code, 
                      objectType.toString()), 
-                  ExceptionUtils.getFullStackTrace(new Exception()));
+                  ExceptionUtils.getStackTrace(new Exception()));
          }
       }
       

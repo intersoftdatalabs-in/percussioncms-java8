@@ -45,7 +45,7 @@ import com.percussion.services.sitemgr.PSSiteManagerLocator;
 import com.percussion.util.PSPurgableTempFile;
 import com.percussion.util.PSStopwatch;
 import com.percussion.utils.guid.IPSGuid;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,8 +65,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notNull;
 
 /**
  * Base delivery handler. This defines a basic mechanism that enables the

@@ -18,7 +18,7 @@ package com.percussion.sitemanage.importer.utils;
 
 import com.percussion.sitemanage.importer.IPSConnectivity;
 import java.io.IOException;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.jsoup.Connection;
 import org.jsoup.nodes.Document;
 

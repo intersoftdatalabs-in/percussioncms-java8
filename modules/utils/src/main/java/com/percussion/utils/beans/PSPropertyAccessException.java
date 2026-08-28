@@ -16,7 +16,7 @@
  */
 package com.percussion.utils.beans;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This exception represents an error with a property access. As it is not an expected error, it

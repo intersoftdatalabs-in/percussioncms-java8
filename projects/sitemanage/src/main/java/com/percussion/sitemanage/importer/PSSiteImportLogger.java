@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 /** @author JaySeletz */
 public class PSSiteImportLogger implements IPSSiteImportLogger {

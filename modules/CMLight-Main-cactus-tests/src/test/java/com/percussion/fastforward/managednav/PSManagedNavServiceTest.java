@@ -32,7 +32,7 @@ import com.percussion.webservices.content.PSContentWsLocator;
 import com.percussion.webservices.security.IPSSecurityWs;
 import com.percussion.webservices.security.PSSecurityWsLocator;
 import org.apache.cactus.ServletTestCase;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.experimental.categories.Category;

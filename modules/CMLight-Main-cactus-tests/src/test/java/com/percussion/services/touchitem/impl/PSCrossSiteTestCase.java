@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.notNull;
 
 @Category(IntegrationTest.class)
 public abstract class PSCrossSiteTestCase extends ServletTestCase

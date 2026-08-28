@@ -34,7 +34,7 @@ import com.percussion.utils.guid.IPSGuid;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @PSSiteManageBean
 public class DeliveryTypeAdaptor implements IDeliveryTypeAdaptor {

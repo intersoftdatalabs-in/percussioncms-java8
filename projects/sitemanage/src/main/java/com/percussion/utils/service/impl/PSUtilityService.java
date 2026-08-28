@@ -25,7 +25,7 @@ import com.percussion.security.PSEncryptor;
 import com.percussion.share.service.IPSSystemProperties;
 import com.percussion.utils.io.PathUtils;
 import com.percussion.utils.service.IPSUtilityService;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

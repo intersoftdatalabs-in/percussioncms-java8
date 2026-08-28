@@ -31,7 +31,7 @@ import com.percussion.util.PSStringTemplate.PSStringTemplateException;
 import com.percussion.workflow.PSWorkFlowUtils;
 import com.percussion.xml.PSXmlDocumentBuilder;
 import com.percussion.xml.PSXmlTreeWalker;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.w3c.dom.Document;

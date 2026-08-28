@@ -23,7 +23,7 @@ import com.percussion.services.pkginfo.IPSPkgUpdater;
 import com.percussion.services.pkginfo.utils.PSPkgHelper;
 import com.percussion.utils.guid.IPSGuid;
 import java.util.Collection;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This class facilitates the updating of package element version information after configuration

@@ -53,7 +53,7 @@ import java.util.Arrays;
 
 import junit.framework.AssertionFailedError;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

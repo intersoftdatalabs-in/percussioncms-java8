@@ -17,7 +17,7 @@
 package com.percussion.sitemanage.importer.helpers.impl;
 
 import com.percussion.sitemanage.importer.helpers.IPSImportHelper;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author LucasPiccoli

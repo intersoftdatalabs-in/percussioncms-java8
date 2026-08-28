@@ -38,7 +38,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Iterator;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -129,7 +129,7 @@ public class PSCompareRequestHandler implements IPSLoadableRequestHandler {
       }
       res = getComparisionResult(assemblyPage1, assemblyPage2, lang);
     } catch (Exception e) {
-      PSConsole.printMsg(HANDLER, ExceptionUtils.getFullStackTrace(e));
+      PSConsole.printMsg(HANDLER, ExceptionUtils.getStackTrace(e));
       res = e.getMessage();
     }
 

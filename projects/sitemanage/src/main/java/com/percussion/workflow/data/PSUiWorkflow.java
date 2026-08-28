@@ -20,7 +20,7 @@ import com.percussion.share.data.PSAbstractDataObject;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This class contains the structure of the object returned by the Rest method located in sitemanage

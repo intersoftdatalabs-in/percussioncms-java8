@@ -17,9 +17,9 @@
 package com.percussion.rx.config;
 
 import com.percussion.services.catalog.PSTypeEnum;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * This class encapsulates an error or warning validation result. This the a result of validating

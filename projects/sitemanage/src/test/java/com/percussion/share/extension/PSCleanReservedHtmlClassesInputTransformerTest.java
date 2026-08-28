@@ -18,7 +18,7 @@ package com.percussion.share.extension;
 
 import static org.junit.Assert.assertEquals;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.junit.Test;
 

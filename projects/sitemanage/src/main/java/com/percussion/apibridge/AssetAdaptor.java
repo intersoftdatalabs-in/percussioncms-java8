@@ -17,7 +17,7 @@
 
 package com.percussion.apibridge;
 
-import static org.apache.commons.lang.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notEmpty;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -97,9 +97,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.NullArgumentException;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -185,7 +184,7 @@ public class AssetAdaptor extends SiteManageAdaptorBase implements IAssetAdaptor
 
     // Type OR Path must be specified, error if both are blank.
     if (StringUtils.isBlank(path) && StringUtils.isBlank(type)) {
-      throw new NullArgumentException(StringUtils.isBlank(path) ? "path" : "type");
+      throw new NullPointerException(StringUtils.isBlank(path) ? "path" : "type");
     }
     try {
       path = URLDecoder.decode(path, "UTF-8");

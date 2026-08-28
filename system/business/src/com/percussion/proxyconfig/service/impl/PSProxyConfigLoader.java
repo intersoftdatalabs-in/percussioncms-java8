@@ -16,10 +16,10 @@
  */
 package com.percussion.proxyconfig.service.impl;
 
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.notNull;
 import static com.percussion.share.dao.PSSerializerUtils.unmarshalWithValidation;
 import static com.percussion.share.dao.PSSerializerUtils.marshal;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.percussion.error.PSExceptionUtils;
 import com.percussion.proxyconfig.data.PSProxyConfig;

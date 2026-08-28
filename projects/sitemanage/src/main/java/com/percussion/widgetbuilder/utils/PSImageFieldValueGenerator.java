@@ -21,7 +21,7 @@ import com.percussion.widgetbuilder.data.PSWidgetBuilderFieldData.FieldType;
 import java.io.IOException;
 import java.text.MessageFormat;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 /** @author JaySeletz */
 public class PSImageFieldValueGenerator extends PSBasicFieldValueGenerator

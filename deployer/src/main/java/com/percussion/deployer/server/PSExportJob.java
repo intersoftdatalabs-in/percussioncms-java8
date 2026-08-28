@@ -45,7 +45,7 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.w3c.dom.Document;
 

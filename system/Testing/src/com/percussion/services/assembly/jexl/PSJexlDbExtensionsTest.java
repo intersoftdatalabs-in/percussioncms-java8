@@ -19,7 +19,7 @@ package com.percussion.services.assembly.jexl;
 
 import com.percussion.error.PSExceptionUtils;
 import com.percussion.utils.testing.IntegrationTest;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;

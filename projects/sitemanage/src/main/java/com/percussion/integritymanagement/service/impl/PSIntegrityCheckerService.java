@@ -17,7 +17,7 @@
 
 package com.percussion.integritymanagement.service.impl;
 
-import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
+import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 
 import com.percussion.assetmanagement.data.PSAbstractAssetRequest;
 import com.percussion.assetmanagement.data.PSAbstractAssetRequest.AssetType;

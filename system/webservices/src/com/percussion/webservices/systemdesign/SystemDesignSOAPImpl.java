@@ -49,7 +49,7 @@ import com.percussion.webservices.system.PSRelationshipConfig;
 import com.percussion.webservices.system.PSSharedProperty;
 import com.percussion.webservices.system.PSSystemWsLocator;
 import com.percussion.webservices.system.RelationshipCategory;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -317,7 +317,7 @@ public class SystemDesignSOAPImpl extends PSBaseSOAPImpl implements SystemDesign
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorsException e)
       {
@@ -365,7 +365,7 @@ public class SystemDesignSOAPImpl extends PSBaseSOAPImpl implements SystemDesign
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorsException e)
       {
@@ -412,7 +412,7 @@ public class SystemDesignSOAPImpl extends PSBaseSOAPImpl implements SystemDesign
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, "findDependencies", 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -669,7 +669,7 @@ public class SystemDesignSOAPImpl extends PSBaseSOAPImpl implements SystemDesign
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, "loadSharedProperties", 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (RuntimeException e)
       {
@@ -720,7 +720,7 @@ public class SystemDesignSOAPImpl extends PSBaseSOAPImpl implements SystemDesign
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -782,7 +782,7 @@ public class SystemDesignSOAPImpl extends PSBaseSOAPImpl implements SystemDesign
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, PSWebserviceErrors
             .createErrorMessage(code, serviceName, e
-               .getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               .getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorsException e)
       {
@@ -834,7 +834,7 @@ public class SystemDesignSOAPImpl extends PSBaseSOAPImpl implements SystemDesign
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorResultsException e)
       {
@@ -1049,7 +1049,7 @@ public class SystemDesignSOAPImpl extends PSBaseSOAPImpl implements SystemDesign
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorsException e)
       {
@@ -1099,7 +1099,7 @@ public class SystemDesignSOAPImpl extends PSBaseSOAPImpl implements SystemDesign
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -1127,7 +1127,7 @@ public class SystemDesignSOAPImpl extends PSBaseSOAPImpl implements SystemDesign
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (RuntimeException e)
       {
@@ -1165,7 +1165,7 @@ public class SystemDesignSOAPImpl extends PSBaseSOAPImpl implements SystemDesign
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorsException e)
       {
@@ -1229,7 +1229,7 @@ public class SystemDesignSOAPImpl extends PSBaseSOAPImpl implements SystemDesign
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (RuntimeException e)
       {
@@ -1275,7 +1275,7 @@ public class SystemDesignSOAPImpl extends PSBaseSOAPImpl implements SystemDesign
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorsException e)
       {

@@ -65,8 +65,8 @@ import com.percussion.webservices.system.IPSSystemWs;
 import com.percussion.workflow.PSEntryNotFoundException;
 import com.percussion.workflow.PSTransitionInfo;
 import com.percussion.workflow.PSWorkFlowUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -332,7 +332,7 @@ public class PSSystemWs extends PSSystemBaseWs implements IPSSystemWs
             int code = IPSWebserviceErrors.USER_NOT_MEMBER_COMMUNITY;
             throw new PSUserNotMemberOfCommunityException(code,
                PSWebserviceErrors.createErrorMessage(code, name),
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
          }
 
          throw new RuntimeException("Failed to switch community: "
@@ -386,7 +386,7 @@ public class PSSystemWs extends PSSystemBaseWs implements IPSSystemWs
          int errcode = IPSWebserviceErrors.INVALID_LOCALE;
          throw new PSInvalidLocaleException(errcode, PSWebserviceErrors
             .createErrorMessage(errcode, code)+msgSfx.toString(), ExceptionUtils
-            .getFullStackTrace(new Exception()));
+            .getStackTrace(new Exception()));
       }
 
       PSRequest psReq = (PSRequest) PSRequestInfo

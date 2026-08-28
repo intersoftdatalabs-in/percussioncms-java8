@@ -26,7 +26,7 @@ import com.percussion.server.IPSRequestContext;
 import com.percussion.services.guidmgr.data.PSLegacyGuid;
 import com.percussion.utils.guid.IPSGuid;
 import java.io.File;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This rule will check to see if the page is a landing page and if so, the field this rule applies

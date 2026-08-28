@@ -20,7 +20,7 @@ import com.percussion.utils.testing.IntegrationTest;
 import com.percussion.utils.timing.PSStopwatch;
 import junit.framework.TestCase;
 import net.sf.ehcache.CacheManager;
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
