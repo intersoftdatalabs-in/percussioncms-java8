@@ -23,7 +23,7 @@ import com.percussion.services.catalog.data.PSObjectSummary;
 import com.percussion.services.workflow.IPSWorkflowService;
 import com.percussion.services.workflow.PSWorkflowServiceLocator;
 import com.percussion.utils.testing.IntegrationTest;
-import org.apache.commons.collections.IteratorUtils;
+import org.apache.commons.collections4.IteratorUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

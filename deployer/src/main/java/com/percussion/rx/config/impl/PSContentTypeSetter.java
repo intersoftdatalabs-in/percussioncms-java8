@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -337,8 +337,9 @@ public class PSContentTypeSetter extends PSSimplePropertySetter {
   @SuppressWarnings("unchecked")
   private ArrayList<String> iteratorToList(Iterator it) {
     ArrayList<String> list = new ArrayList<>();
-    CollectionUtils.addAll(list, it);
-
+    // commons-collections4 dropped `CollectionUtils.addAll(Collection, Iterator)`; loop
+    // instead. The raw `Iterator` means each element needs to be cast to String.
+    while (it.hasNext()) list.add((String) it.next());
     return list;
   }
 

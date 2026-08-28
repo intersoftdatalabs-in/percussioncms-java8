@@ -80,7 +80,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.logging.log4j.LogManager;
@@ -548,7 +547,10 @@ public class PSConditionalCloneHandler extends PSCloneHandler {
       Map childRowMappings)
       throws PSException {
     List<PSRelationship> createdRels = new ArrayList<>();
-    CollectionUtils.addAll(createdRels, request.getRelationships());
+    // commons-collections4 dropped `CollectionUtils.addAll(Collection, Iterator)`;
+    // PSRequest.getRelationships() still returns Iterator<Serializable>, so loop.
+    Iterator<Serializable> relIt = request.getRelationships();
+    while (relIt.hasNext()) createdRels.add((PSRelationship) relIt.next());
     psRelationships = removeFolderRelationships(psRelationships);
     if (psRelationships.isEmpty()) return;
 

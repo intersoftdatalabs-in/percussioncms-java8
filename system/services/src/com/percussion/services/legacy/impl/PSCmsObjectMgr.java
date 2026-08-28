@@ -85,7 +85,7 @@ import com.percussion.workflow.IPSWorkflowAppsContext;
 import com.percussion.workflow.PSStatesContext;
 import com.percussion.workflow.PSWorkflowAppsContext;
 import com.percussion.xml.PSXmlDocumentBuilder;
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;

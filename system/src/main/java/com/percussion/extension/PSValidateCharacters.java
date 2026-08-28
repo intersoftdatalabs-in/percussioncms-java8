@@ -23,7 +23,7 @@ import com.percussion.data.PSConversionException;
 import com.percussion.security.SecureStringUtils;
 import com.percussion.server.IPSRequestContext;
 import java.io.File;
-import org.apache.commons.collections.IteratorUtils;
+import org.apache.commons.collections4.IteratorUtils;
 
 /**
  * Field validation extension that checks if the given field has any of the given invalid

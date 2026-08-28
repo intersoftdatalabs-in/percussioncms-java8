@@ -33,7 +33,7 @@ import com.percussion.utils.timing.PSStopwatch;
 import com.percussion.utils.types.PSPair;
 import junit.framework.JUnit4TestAdapter;
 import org.apache.cactus.ServletTestCase;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;

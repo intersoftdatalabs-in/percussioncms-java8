@@ -19,7 +19,7 @@ package com.percussion.assetmanagement.service.impl;
 import static com.percussion.pathmanagement.service.impl.PSPathUtils.getFinderPath;
 import static com.percussion.share.service.exception.PSParameterValidationUtils.rejectIfNull;
 import static com.percussion.share.service.exception.PSParameterValidationUtils.validateParameters;
-import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;

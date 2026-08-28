@@ -25,7 +25,7 @@ import static com.percussion.utils.request.PSRequestInfoBase.setRequestInfo;
 import static com.percussion.webservices.PSWebserviceUtils.getItemSummary;
 import static com.percussion.webservices.PSWebserviceUtils.setUserName;
 import static java.util.Arrays.asList;
-import static org.apache.commons.collections.CollectionUtils.containsAny;
+import static org.apache.commons.collections4.CollectionUtils.containsAny;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.Validate.isTrue;

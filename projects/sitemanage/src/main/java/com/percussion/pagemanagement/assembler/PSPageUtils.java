@@ -150,8 +150,8 @@ import net.sf.ehcache.CacheManager;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
@@ -2561,7 +2561,12 @@ public class PSPageUtils extends PSJexlUtilBase {
       if (item.containsKey(name)) {
         NameAndValue nv = new NameAndValue();
         nv.name = name;
-        nv.value = MapUtils.getString(item, name);
+        // commons-collections4's `MapUtils.getString(Map, String)` has the
+        // signature `<K> String getString(Map<? super K, ?>, K)`. Casting to a
+        // raw `Map` is the simplest way to anchor the K-inference to String.
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        String value = MapUtils.getString((Map) item, name);
+        nv.value = value;
         return nv;
       }
     }

@@ -66,10 +66,6 @@
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>commons-collections</groupId>
-                    <artifactId>commons-collections</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>commons-betwixt</groupId>
                     <artifactId>commons-betwixt</artifactId>
                 </exclusion>

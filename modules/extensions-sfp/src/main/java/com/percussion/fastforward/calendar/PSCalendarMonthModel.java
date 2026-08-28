@@ -28,8 +28,8 @@ import java.util.List;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
-import org.apache.commons.collections.MultiHashMap;
-import org.apache.commons.collections.MultiMap;
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.logging.log4j.LogManager;
@@ -190,7 +190,7 @@ public class PSCalendarMonthModel extends PSJexlUtilBase {
       getModel().m_eventsByDay = null;
     } else {
       PSCalendarMonthModel model = getModel();
-      model.m_eventsByDay = new MultiHashMap();
+      model.m_eventsByDay = new ArrayListValuedHashMap();
       for (IPSAssemblyResult event : events) {
         Node event_node = event.getNode();
         if (event_node != null) {
@@ -253,5 +253,5 @@ public class PSCalendarMonthModel extends PSJexlUtilBase {
    * A mapping of events, keyed by day of the month (Integer), returning a list of
    * IPSAssemblyResult. Will be <code>null</code> until setEvents is called.
    */
-  private MultiMap m_eventsByDay;
+  private MultiValuedMap m_eventsByDay;
 }

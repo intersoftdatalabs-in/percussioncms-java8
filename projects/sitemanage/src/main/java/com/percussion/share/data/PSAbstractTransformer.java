@@ -20,8 +20,8 @@ import com.percussion.share.service.exception.PSDataServiceException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Transformer;
 
 public abstract class PSAbstractTransformer<OLD, NEW> implements Transformer {
 

@@ -31,8 +31,8 @@ import java.util.Iterator;
 
 import javax.security.auth.Subject;
 
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.iterators.FilterIterator;
+import org.apache.commons.collections4.Predicate;
+import org.apache.commons.collections4.iterators.FilterIterator;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;

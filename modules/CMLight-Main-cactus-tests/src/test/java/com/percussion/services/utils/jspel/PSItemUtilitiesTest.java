@@ -22,7 +22,7 @@ import java.util.Collection;
 
 import com.percussion.utils.testing.IntegrationTest;
 import org.apache.cactus.ServletTestCase;
-import org.apache.commons.collections.MultiMap;
+import org.apache.commons.collections4.MultiValuedMap;
 import org.junit.experimental.categories.Category;
 
 /**
@@ -36,7 +36,7 @@ public class PSItemUtilitiesTest extends ServletTestCase
    @SuppressWarnings("unchecked")
    public void testSiteInfo()
    {
-      MultiMap info = PSItemUtilities.getItemSiteInfo(376);
+      MultiValuedMap info = PSItemUtilities.getItemSiteInfo(376);
       assertEquals(1, info.size());
       
       Collection folders = info.values();

@@ -48,8 +48,8 @@ import java.util.TreeSet;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.iterators.FilterIterator;
+import org.apache.commons.collections4.Predicate;
+import org.apache.commons.collections4.iterators.FilterIterator;
 import org.apache.commons.lang3.StringUtils;
 
 /**

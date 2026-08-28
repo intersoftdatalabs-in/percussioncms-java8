@@ -45,7 +45,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import org.apache.commons.collections.list.AbstractListDecorator;
+import org.apache.commons.collections4.list.AbstractListDecorator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.util.StopWatch;
@@ -200,7 +200,7 @@ public class PSConcurrentRegionsAssembler implements IPSRegionsAssembler {
    * @author adamgent
    * @param <T> the type list holds.
    */
-  public static class FutureList<T> extends AbstractListDecorator {
+  public static class FutureList<T> extends AbstractListDecorator<T> {
 
     private Future<List<T>> futureList;
 
@@ -209,8 +209,10 @@ public class PSConcurrentRegionsAssembler implements IPSRegionsAssembler {
       this.futureList = futureList;
     }
 
+    // commons-collections4 renamed `getCollection()` / `getList()` to `decorated()`;
+    // the 4.x base class implements it as `protected` so we can call it directly here.
     @Override
-    protected Collection<T> getCollection() {
+    public List<T> decorated() {
       try {
         return futureList.get();
       } catch (InterruptedException e) {
@@ -223,12 +225,12 @@ public class PSConcurrentRegionsAssembler implements IPSRegionsAssembler {
 
     @Override
     public String toString() {
-      return getList().toString();
+      return decorated().toString();
     }
 
     @Override
     public Iterator<T> iterator() {
-      return getCollection().iterator();
+      return decorated().iterator();
     }
   }
 

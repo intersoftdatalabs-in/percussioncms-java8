@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.apache.commons.collections.CollectionUtils;
 
 /**
  * Utility methods for working with legacy Percussion CM System extensions. Many methods convert
@@ -133,8 +132,9 @@ public class PSLegacyExtensionUtils {
   public static List<String> getParameterNames(IPSExtensionDef extensionDef) {
     notNull(extensionDef);
     List<String> rvalue = new ArrayList<>();
+    // commons-collections4 dropped `CollectionUtils.addAll(Collection, Iterator)`; loop instead.
     Iterator<String> it = extensionDef.getRuntimeParameterNames();
-    CollectionUtils.addAll(rvalue, it);
+    while (it.hasNext()) rvalue.add(it.next());
     return rvalue;
   }
 }

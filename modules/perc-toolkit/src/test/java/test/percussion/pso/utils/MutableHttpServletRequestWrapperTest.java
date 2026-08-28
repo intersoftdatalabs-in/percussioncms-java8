@@ -16,7 +16,7 @@
  */
 package test.percussion.pso.utils;
 
-import static org.apache.commons.collections.CollectionUtils.*;
+import static org.apache.commons.collections4.CollectionUtils.*;
 import static org.junit.Assert.*;
 
 import com.percussion.pso.utils.MutableHttpServletRequestWrapper;
@@ -25,7 +25,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections4.Predicate;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;

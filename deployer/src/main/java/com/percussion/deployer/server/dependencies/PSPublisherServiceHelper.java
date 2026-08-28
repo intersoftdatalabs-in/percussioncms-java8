@@ -32,8 +32,8 @@ import com.percussion.utils.guid.IPSGuid;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.collections.IterableMap;
-import org.apache.commons.collections.map.HashedMap;
+import org.apache.commons.collections4.IterableMap;
+import org.apache.commons.collections4.map.HashedMap;
 
 /**
  * A util class to interface msm with the Publisher service
