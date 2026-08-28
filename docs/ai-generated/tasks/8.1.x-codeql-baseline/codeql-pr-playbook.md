@@ -33,16 +33,16 @@ Operational guide for closing CodeQL (Critical/High) alerts on the 8.1.x release
 
 ## Verification scripts
 
-| Script | Purpose |
-|---|---|
-| `scripts/fetch-gh-code-scanning-alerts.py` | CodeQL alerts → `alerts.md` |
-| `scripts/filter-stale-alerts.py` | Drop deleted-file rows |
-| `scripts/generate-clusters.py` | Critical/High → `clusters.md` |
-| `scripts/verify-triage-inventory.sh` | Requires `triage.md` (Task 13) |
-| `scripts/verify-valid-fixes.sh` | Every valid row has `linked_pr` |
-| `scripts/verify-suppressions.py` | Every row in `suppressions.md` is greppable |
-| `scripts/verify-pr-review-resolution.py` | Every closing PR has zero unresolved threads |
-| `scripts/verify-distribution-archive.py` | Vendor removals don't appear in distribution JARs |
+|                   Script                   |                      Purpose                      |
+|--------------------------------------------|---------------------------------------------------|
+| `scripts/fetch-gh-code-scanning-alerts.py` | CodeQL alerts → `alerts.md`                       |
+| `scripts/filter-stale-alerts.py`           | Drop deleted-file rows                            |
+| `scripts/generate-clusters.py`             | Critical/High → `clusters.md`                     |
+| `scripts/verify-triage-inventory.sh`       | Requires `triage.md` (Task 13)                    |
+| `scripts/verify-valid-fixes.sh`            | Every valid row has `linked_pr`                   |
+| `scripts/verify-suppressions.py`           | Every row in `suppressions.md` is greppable       |
+| `scripts/verify-pr-review-resolution.py`   | Every closing PR has zero unresolved threads      |
+| `scripts/verify-distribution-archive.py`   | Vendor removals don't appear in distribution JARs |
 
 ## Model pack files (`.github/codeql/models/`)
 
@@ -51,15 +51,15 @@ CodeQL rule family. Packs remain in-repo for documentation; GHA rejects
 local pack paths in the `packs:` input, so the runtime sanitizers +
 sink-line `// codeql[...]` comments are the enforcement layer.
 
-| Model | Rule family |
-|---|---|
-| `sql-object-name.model.yml` | `java/sql-injection` |
-| `path-injection-guard.model.yml` | `java/path-injection` |
-| `ldap-escape.model.yml` | `java/ldap-injection` |
-| `url-validation-ssrf.model.yml` | `java/ssrf` |
-| `xss-escape.model.yml` | `java/xss` |
-| `secure-xml-xxe.model.yml` | `java/xxe` |
-| `redirect-validation.model.yml` | `java/unvalidated-url-redirect` |
+|              Model               |           Rule family           |
+|----------------------------------|---------------------------------|
+| `sql-object-name.model.yml`      | `java/sql-injection`            |
+| `path-injection-guard.model.yml` | `java/path-injection`           |
+| `ldap-escape.model.yml`          | `java/ldap-injection`           |
+| `url-validation-ssrf.model.yml`  | `java/ssrf`                     |
+| `xss-escape.model.yml`           | `java/xss`                      |
+| `secure-xml-xxe.model.yml`       | `java/xxe`                      |
+| `redirect-validation.model.yml`  | `java/unvalidated-url-redirect` |
 
 ## Constraints
 
@@ -73,3 +73,4 @@ sink-line `// codeql[...]` comments are the enforcement layer.
   possible. Path-injection (Task 6) may exceed; split by module if so.
 - **Branch convention** — `codeql/<short-desc>` (no umbrella issue per
   user direction; AGENTS.md `security/<issue#>-<short-desc>` lifted).
+

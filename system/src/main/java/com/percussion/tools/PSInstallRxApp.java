@@ -120,7 +120,8 @@ public class PSInstallRxApp {
     File parent = file.getParentFile();
     if (null != parent && !parent.exists()) parent.mkdirs();
 
-    // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
+    // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by
+    // 2027-07-31
     FileOutputStream fos = new FileOutputStream(file);
     byte[] buffer = new byte[1024];
     int nRead = -1;

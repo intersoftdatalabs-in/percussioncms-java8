@@ -10,8 +10,6 @@ Generated: (python port — timestamp not embedded; see file mtime)
   - **URL:** https://github.com/intersoftdatalabs-in/percussioncms-java8/security/code-scanning/718
   - **Location:** delivery/common/js/views/PercTagListView.js:123
   - **Message:** DOM text is reinterpreted as HTML without escaping meta-characters.
-
-
 - **Alert #717** — `js/xss-through-dom` (high, CodeQL)
   - **Tool:** CodeQL
   - **State:** open
@@ -19,8 +17,6 @@ Generated: (python port — timestamp not embedded; see file mtime)
   - **URL:** https://github.com/intersoftdatalabs-in/percussioncms-java8/security/code-scanning/717
   - **Location:** delivery/common/js/views/PercBlogPostView.js:162
   - **Message:** DOM text is reinterpreted as HTML without escaping meta-characters.
-
-
 - **Alert #716** — `js/xss-through-dom` (high, CodeQL)
   - **Tool:** CodeQL
   - **State:** open
@@ -28,8 +24,6 @@ Generated: (python port — timestamp not embedded; see file mtime)
   - **URL:** https://github.com/intersoftdatalabs-in/percussioncms-java8/security/code-scanning/716
   - **Location:** delivery/common/js/views/PercBlogPostView.js:152
   - **Message:** DOM text is reinterpreted as HTML without escaping meta-characters.
-
-
 - **Alert #714** — `js/xss-through-dom` (high, CodeQL)
   - **Tool:** CodeQL
   - **State:** open
@@ -37,8 +31,6 @@ Generated: (python port — timestamp not embedded; see file mtime)
   - **URL:** https://github.com/intersoftdatalabs-in/percussioncms-java8/security/code-scanning/714
   - **Location:** delivery/common/js/views/PercRegistrationView.js:272
   - **Message:** DOM text is reinterpreted as HTML without escaping meta-characters.
-
-
 - **Alert #713** — `js/xss-through-dom` (high, CodeQL)
   - **Tool:** CodeQL
   - **State:** open
@@ -46,8 +38,6 @@ Generated: (python port — timestamp not embedded; see file mtime)
   - **URL:** https://github.com/intersoftdatalabs-in/percussioncms-java8/security/code-scanning/713
   - **Location:** delivery/common/js/views/PercRegistrationView.js:83
   - **Message:** DOM text is reinterpreted as HTML without escaping meta-characters.
-
-
 - **Alert #712** — `js/xss-through-dom` (high, CodeQL)
   - **Tool:** CodeQL
   - **State:** open
@@ -55,8 +45,6 @@ Generated: (python port — timestamp not embedded; see file mtime)
   - **URL:** https://github.com/intersoftdatalabs-in/percussioncms-java8/security/code-scanning/712
   - **Location:** delivery/common/js/views/PercCategoryListView.js:199
   - **Message:** DOM text is reinterpreted as HTML without escaping meta-characters.
-
-
 - **Alert #711** — `js/xss-through-dom` (high, CodeQL)
   - **Tool:** CodeQL
   - **State:** open
@@ -64,8 +52,6 @@ Generated: (python port — timestamp not embedded; see file mtime)
   - **URL:** https://github.com/intersoftdatalabs-in/percussioncms-java8/security/code-scanning/711
   - **Location:** delivery/common/js/views/PercArchiveListView.js:288
   - **Message:** DOM text is reinterpreted as HTML without escaping meta-characters.
-
-
 - **Alert #710** — `js/xss-through-dom` (high, CodeQL)
   - **Tool:** CodeQL
   - **State:** open
@@ -73,8 +59,6 @@ Generated: (python port — timestamp not embedded; see file mtime)
   - **URL:** https://github.com/intersoftdatalabs-in/percussioncms-java8/security/code-scanning/710
   - **Location:** delivery/common/js/views/PercArchiveListView.js:199
   - **Message:** DOM text is reinterpreted as HTML without escaping meta-characters.
-
-
 - **Alert #709** — `js/xss-through-dom` (high, CodeQL)
   - **Tool:** CodeQL
   - **State:** open

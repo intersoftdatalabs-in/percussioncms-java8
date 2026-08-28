@@ -11,9 +11,9 @@ Source: docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md
 
 ## Cluster Map
 
-| Rule | Severity | Count | Reference 004 PR | Notes |
-|---|---|---|---|---|
-| `js/xss-through-dom` | high | 9 | this PR | 8.1.x: code fix in this PR; inlined /^\s*(?:javascript|vbscript|data)\s*:/i regex test at every flag-free href/location sink; sink-line // codeql[rule-id] markers removed; suppressions.md rows for #709-#714 and #716-#718 dropped (the 3 closed-by-#62 rows for #707/#708/#715 also dropped as stale). Awaits next GHAS scan to dismiss. |
+|         Rule         | Severity | Count | Reference 004 PR |                         Notes                          |
+|----------------------|----------|-------|------------------|--------------------------------------------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `js/xss-through-dom` | high     | 9     | this PR          | 8.1.x: code fix in this PR; inlined /^\s*(?:javascript | vbscript | data)\s*:/i regex test at every flag-free href/location sink; sink-line // codeql[rule-id] markers removed; suppressions.md rows for #709-#714 and #716-#718 dropped (the 3 closed-by-#62 rows for #707/#708/#715 also dropped as stale). Awaits next GHAS scan to dismiss. |
 
 ## Per-Cluster Detail
 
@@ -28,3 +28,4 @@ Source: docs/ai-generated/tasks/8.1.x-codeql-baseline/alerts.md
 - Alert #711 — `delivery/common/js/views/PercArchiveListView.js:283`
 - Alert #710 — `delivery/common/js/views/PercArchiveListView.js:194`
 - Alert #709 — `delivery/common/js/views/PercArchiveListView.js:133`
+

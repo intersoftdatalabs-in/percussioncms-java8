@@ -141,7 +141,8 @@ public class PSWidgetPackageBuilder {
           }
 
           file.getParentFile().mkdirs();
-          // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
+          // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by
+          // 2027-07-31
           fout = new FileOutputStream(file);
 
           if (isTextFile(file)) {
