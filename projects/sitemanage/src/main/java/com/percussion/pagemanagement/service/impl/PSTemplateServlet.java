@@ -51,6 +51,14 @@ public class PSTemplateServlet extends HttpServlet {
 
   private static final int DEFAULT_BUFFER_SIZE = 20480; // 20KB.
 
+  // T2.6 hardening (issue #82): bound the multipart upload to prevent DoS via huge
+  // payloads against commons-fileupload 1.6.0 (which has 7 CVEs in that area).
+  // Values match the existing PSAssetUploadServlet config in WebUI/war/WEB-INF/web.xml
+  // (100MB file / 400MB request) but tuned for template XML files which are smaller.
+  private static final int UPLOAD_MEMORY_THRESHOLD = 1 << 20; // 1MB
+  private static final long UPLOAD_MAX_FILE_SIZE = 50L << 20; // 50MB
+  private static final long UPLOAD_MAX_REQUEST_SIZE = 100L << 20; // 100MB
+
   public PSTemplateServlet() {
     PSSpringWebApplicationContextUtils.injectDependencies(this);
   }
@@ -113,8 +121,15 @@ public class PSTemplateServlet extends HttpServlet {
 
     if (isMultipart) {
       try {
-        List<FileItem> items =
-            new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
+        // T2.6 hardening: configure commons-fileupload with explicit size limits.
+        // The previous `new ServletFileUpload(new DiskFileItemFactory())` had no
+        // bounds, leaving the server open to DoS via arbitrarily large uploads.
+        DiskFileItemFactory factory = new DiskFileItemFactory();
+        factory.setSizeThreshold(UPLOAD_MEMORY_THRESHOLD);
+        ServletFileUpload upload = new ServletFileUpload(factory);
+        upload.setFileSizeMax(UPLOAD_MAX_FILE_SIZE);
+        upload.setSizeMax(UPLOAD_MAX_REQUEST_SIZE);
+        List<FileItem> items = upload.parseRequest(request);
         for (FileItem item : items) {
           if (!item.isFormField()) {
             templateImported = importTemplate(siteId, item);

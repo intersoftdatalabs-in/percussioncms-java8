@@ -44,6 +44,45 @@ public class PSArchiveFiles {
 
   private static final Logger log = LogManager.getLogger(IPSConstants.PACKAGING_LOG);
 
+  // T2.6 hardening (issue #82): bound archive extraction to limit exposure to the
+  // 11 CVEs in commons-compress 1.28.0 (mostly zip-bomb / oversized-entry attacks).
+  // The path-traversal half is already covered by the ZipSlipGuard + canonical-path
+  // check below. These three limits cover the resource-exhaustion half.
+  // Defaults are tuned to "huge but realistic" (a 100MB war, 10K entries, 500MB total
+  // uncompressed); operators can override per-call by setting the system properties
+  // PSARCHIVE_MAX_ENTRY_SIZE / PSARCHIVE_MAX_ENTRIES / PSARCHIVE_MAX_TOTAL_SIZE.
+  private static final long DEFAULT_MAX_ENTRY_SIZE = 100L << 20; // 100MB per entry
+  private static final int DEFAULT_MAX_ENTRIES = 10_000; // 10K entries per archive
+  private static final long DEFAULT_MAX_TOTAL_SIZE = 500L << 20; // 500MB total uncompressed
+
+  private static long getMaxEntrySize() {
+    return readLongProp("PSARCHIVE_MAX_ENTRY_SIZE", DEFAULT_MAX_ENTRY_SIZE);
+  }
+
+  private static int getMaxEntries() {
+    return (int) readLongProp("PSARCHIVE_MAX_ENTRIES", DEFAULT_MAX_ENTRIES);
+  }
+
+  private static long getMaxTotalSize() {
+    return readLongProp("PSARCHIVE_MAX_TOTAL_SIZE", DEFAULT_MAX_TOTAL_SIZE);
+  }
+
+  private static long readLongProp(String name, long def) {
+    String v = System.getProperty(name);
+    if (v == null || v.isEmpty()) return def;
+    try {
+      return Long.parseLong(v.trim());
+    } catch (NumberFormatException nfe) {
+      log.warn(
+          "Ignoring non-numeric system property {}={} ({}); using default {}",
+          name,
+          v,
+          nfe.getMessage(),
+          def);
+      return def;
+    }
+  }
+
   /**
    * Opens the specified archive file. The classes calling this method are responsible for closing
    * this file.
@@ -344,9 +383,47 @@ public class PSArchiveFiles {
       pw.println("Extracting files from archive");
     }
 
+    // T2.6 hardening: read the size caps once per extraction so an attacker cannot
+    // cause repeated property lookups, and so the same limit is applied to every
+    // entry in this archive.
+    final long maxEntrySize = getMaxEntrySize();
+    final int maxEntries = getMaxEntries();
+    final long maxTotalSize = getMaxTotalSize();
+    int entriesSeen = 0;
+    long bytesSeen = 0L;
+
     for (Enumeration files = archiveFile.entries(); files.hasMoreElements(); ) {
       ZipEntry entry = (ZipEntry) files.nextElement();
       StringBuilder errorBuf = new StringBuilder();
+
+      // T2.6 hardening: enforce MAX_ENTRIES and per-entry / total uncompressed size
+      // caps before doing any directory or file work. These limits are what protect
+      // against the zip-bomb half of the commons-compress 1.28.0 CVE set.
+      if (++entriesSeen > maxEntries) {
+        throw new SecurityException(
+            "Archive rejected: too many entries (limit=" + maxEntries + ")");
+      }
+      final long entrySize = entry.getSize();
+      if (entrySize > maxEntrySize) {
+        throw new SecurityException(
+            "Archive rejected: entry '"
+                + entry.getName()
+                + "' uncompressed size "
+                + entrySize
+                + " exceeds limit "
+                + maxEntrySize);
+      }
+      if (entrySize > 0) {
+        bytesSeen += entrySize;
+        if (bytesSeen > maxTotalSize) {
+          throw new SecurityException(
+              "Archive rejected: total uncompressed size exceeds limit "
+                  + maxTotalSize
+                  + " (entry='"
+                  + entry.getName()
+                  + "')");
+        }
+      }
 
       // Check whether the directory exists for this file. If not, create it.
       String dir = "";
