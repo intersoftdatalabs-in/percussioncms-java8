@@ -134,7 +134,8 @@ public class PSTikaTextConvertor implements IPSLuceneTextConverter {
     WriteOutContentHandler handler = new WriteOutContentHandler(writeLimit);
     BodyContentHandler bodyhandler = new BodyContentHandler(handler);
 
-    try (TikaInputStream tis = TikaInputStream.get(is)) {
+    try (TikaInputStream tis =
+        TikaInputStream.get(com.percussion.security.io.PSTikaCap.truncate(is))) {
       // getFile() Forces tika to stream to temporary file. parse uses
       // hasFile to decide whether processing should be done
       // using file or in memory. We want to preserve memory.
