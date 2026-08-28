@@ -69,10 +69,14 @@ public class RxExtractJarFiles extends RxIAAction
          List<String> fileList = new ArrayList<>();
          JarFile jar = new JarFile(m_jarFile);
          
+         // T2.6 hardening (issue #89): cap the entry count, per-entry size, and total
+         // uncompressed bytes to limit exposure to commons-compress 1.28.0 zip-bomb CVEs.
+         com.percussion.security.io.PSZipBombGuard guard = new com.percussion.security.io.PSZipBombGuard();
          for (Enumeration entries = jar.entries(); entries.hasMoreElements(); )
          {
             // Get the next entry.
             JarEntry entry = (JarEntry) entries.nextElement();
+            guard.check(entry);
             String entryName = entry.getName();
             fileList.add(entryName);
          }
