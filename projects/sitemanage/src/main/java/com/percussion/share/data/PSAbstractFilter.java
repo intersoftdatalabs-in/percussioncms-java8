@@ -19,8 +19,8 @@ package com.percussion.share.data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
 
 public abstract class PSAbstractFilter<T> implements Predicate {
 

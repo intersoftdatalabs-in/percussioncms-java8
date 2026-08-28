@@ -18,8 +18,8 @@ package com.percussion.assetmanagement.dao.impl;
 
 import static com.percussion.share.rx.PSLegacyExtensionUtils.addParameters;
 import static java.text.MessageFormat.format;
-import static org.apache.commons.collections.MapUtils.getInteger;
-import static org.apache.commons.collections.MapUtils.getString;
+import static org.apache.commons.collections4.MapUtils.getInteger;
+import static org.apache.commons.collections4.MapUtils.getString;
 import static org.apache.commons.lang3.StringUtils.endsWith;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;

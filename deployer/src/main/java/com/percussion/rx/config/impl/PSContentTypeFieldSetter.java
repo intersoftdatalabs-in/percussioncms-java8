@@ -48,8 +48,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.IteratorUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -321,8 +321,11 @@ public class PSContentTypeFieldSetter extends PSSimplePropertySetter {
 
     // update excludes
     ArrayList<String> excNames = new ArrayList<>();
-    Iterator excludes = mapper.getSharedFieldExcludes();
-    CollectionUtils.addAll(excNames, excludes);
+    // commons-collections4 dropped `CollectionUtils.addAll(Collection, Iterator)`;
+    // `mapper.getSharedFieldExcludes()` returns raw Iterator, so we cast.
+    @SuppressWarnings("unchecked")
+    Iterator<String> excludes = mapper.getSharedFieldExcludes();
+    while (excludes.hasNext()) excNames.add(excludes.next());
     for (PSField f : shGroup.getFieldSet().getAllFields()) excNames.add(f.getSubmitName());
 
     mapper.setSharedFieldExcludes(excNames);

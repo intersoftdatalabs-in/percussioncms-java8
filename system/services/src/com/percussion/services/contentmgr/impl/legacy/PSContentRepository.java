@@ -93,8 +93,8 @@ import com.percussion.utils.jsr170.PSValueFactory;
 import com.percussion.utils.string.PSFolderStringUtils;
 import com.percussion.utils.string.PSXmlPIUtils;
 import com.percussion.utils.types.PSPair;
-import org.apache.commons.collections.MultiHashMap;
-import org.apache.commons.collections.MultiMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -869,7 +869,7 @@ public class PSContentRepository
     {
         Map<PSLegacyGuid, GeneratedClassBase> rval = new HashMap<>();
         Map<Long, Class> typeToClassMap = new HashMap<>();
-        MultiMap typeToIdsMap = new MultiHashMap();
+        MultiValuedMap typeToIdsMap = new ArrayListValuedHashMap();
         for (IPSGuid g : guids)
         {
             if (!(g instanceof PSLegacyGuid))

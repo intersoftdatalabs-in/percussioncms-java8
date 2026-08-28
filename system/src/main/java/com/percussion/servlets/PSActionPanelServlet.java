@@ -49,7 +49,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import org.apache.commons.collections.MultiMap;
+import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -97,7 +97,7 @@ public class PSActionPanelServlet extends HttpServlet {
     String url = getTargetUrl(targetType, contentid);
     int cid = Integer.parseInt(contentid);
 
-    MultiMap siteinfo = PSItemUtilities.getItemSiteInfo(cid);
+    MultiValuedMap siteinfo = PSItemUtilities.getItemSiteInfo(cid);
     boolean showpanel = false;
     Integer fid = StringUtils.isNotBlank(folderid) ? new Integer(folderid) : null;
     Long sid = StringUtils.isNotBlank(siteid) ? new Long(siteid) : null;

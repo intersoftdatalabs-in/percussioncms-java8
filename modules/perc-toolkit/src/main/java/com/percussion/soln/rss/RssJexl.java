@@ -17,7 +17,7 @@
 
 package com.percussion.soln.rss;
 
-import static org.apache.commons.collections.CollectionUtils.filter;
+import static org.apache.commons.collections4.CollectionUtils.filter;
 
 import com.percussion.extension.IPSExtensionDef;
 import com.percussion.extension.IPSJexlExpression;
@@ -41,7 +41,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.jcr.Node;
-import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections4.Predicate;
 
 public class RssJexl implements IPSJexlExpression {
 

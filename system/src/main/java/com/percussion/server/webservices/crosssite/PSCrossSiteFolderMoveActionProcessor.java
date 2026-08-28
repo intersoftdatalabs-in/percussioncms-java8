@@ -30,7 +30,7 @@ import com.percussion.xml.PSXmlDocumentBuilder;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 

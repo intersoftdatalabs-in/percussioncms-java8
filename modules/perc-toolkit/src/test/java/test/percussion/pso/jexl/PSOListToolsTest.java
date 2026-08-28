@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import junit.framework.TestCase;
-import org.apache.commons.collections.ListUtils;
+import org.apache.commons.collections4.ListUtils;
 
 @SuppressWarnings("unchecked")
 public class PSOListToolsTest extends TestCase {

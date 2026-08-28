@@ -21,7 +21,7 @@ import com.ibm.cadf.Messages;
 import com.ibm.cadf.exception.CADFException;
 import java.text.MessageFormat;
 import java.util.List;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class FederatedCredential extends Credential {

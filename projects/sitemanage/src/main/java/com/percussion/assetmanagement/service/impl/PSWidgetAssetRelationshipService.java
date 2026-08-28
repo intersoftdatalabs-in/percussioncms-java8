@@ -23,7 +23,7 @@ import static com.percussion.share.service.exception.PSParameterValidationUtils.
 import static com.percussion.share.spring.PSSpringWebApplicationContextUtils.getWebApplicationContext;
 import static com.percussion.webservices.PSWebserviceUtils.getItemSummary;
 import static java.util.Arrays.asList;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.split;
 import static org.apache.commons.lang3.Validate.notEmpty;

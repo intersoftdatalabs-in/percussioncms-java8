@@ -16,8 +16,8 @@
  */
 package com.percussion.pagemanagement.service.impl;
 
-import static org.apache.commons.collections.CollectionUtils.intersection;
-import static org.apache.commons.collections.CollectionUtils.isSubCollection;
+import static org.apache.commons.collections4.CollectionUtils.intersection;
+import static org.apache.commons.collections4.CollectionUtils.isSubCollection;
 import static org.apache.commons.lang3.Validate.isTrue;
 import static org.apache.commons.lang3.Validate.notEmpty;
 import static org.apache.commons.lang3.Validate.notNull;

@@ -29,8 +29,8 @@ import com.percussion.services.sitemgr.IPSSite;
 import com.percussion.services.sitemgr.IPSSiteManager;
 import com.percussion.services.sitemgr.PSSiteManagerLocator;
 import com.percussion.utils.request.PSRequestInfo;
-import org.apache.commons.collections.MultiHashMap;
-import org.apache.commons.collections.MultiMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -89,9 +89,9 @@ public class PSItemUtilities
     * @return the map from site name to folder path collection, where "*" is the
     *         special site name for no site
     */
-   public static MultiMap getItemSiteInfo(int contentid)
+   public static MultiValuedMap getItemSiteInfo(int contentid)
    {
-      MultiMap rval = new MultiHashMap();
+      MultiValuedMap rval = new ArrayListValuedHashMap();
       IPSCmsObjectMgr cms = PSCmsObjectMgrLocator.getObjectManager();
       IPSSiteManager smgr = PSSiteManagerLocator.getSiteManager();
       PSComponentSummary sum = cms.loadComponentSummary(contentid);
