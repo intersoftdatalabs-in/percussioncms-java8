@@ -28,7 +28,7 @@ import com.percussion.utils.guid.IPSGuid;
 import com.percussion.webservices.*;
 import com.percussion.webservices.aop.security.PSSecurityAopTest;
 import com.percussion.webservices.aop.security.data.PSMockDesignObject;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -108,7 +108,7 @@ public class PSSecurityAopTestImplBase
          PSErrorException error = new PSErrorException(code,
             PSWebserviceErrors.createErrorMessage(code,
                PSTypeEnum.INTERNAL.name(), dguid.longValue()),
-               ExceptionUtils.getFullStackTrace(new Exception()));
+               ExceptionUtils.getStackTrace(new Exception()));
          results.addError(dguid, error);
       }
 
@@ -147,7 +147,7 @@ public class PSSecurityAopTestImplBase
                   obj.getClass().getName(),
                   obj.getGuid().longValue(),
                   e.getLocalizedMessage()),
-                  ExceptionUtils.getFullStackTrace(e), e.getLocker(),
+                  ExceptionUtils.getStackTrace(e), e.getLocker(),
                   e.getRemainigTime());
          }
       }
@@ -252,7 +252,7 @@ public class PSSecurityAopTestImplBase
             PSWebserviceErrors.createErrorMessage(code,
                PSTypeEnum.INTERNAL.name(),
                desObj.getGuid().longValue()),
-               ExceptionUtils.getFullStackTrace(new Exception()));
+               ExceptionUtils.getStackTrace(new Exception()));
          ex.addError(desObj.getGuid(), error);
       }
 

@@ -16,8 +16,8 @@
  */
 package com.percussion.sitemanage.importer.theme;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.Validate.notNull;
 import static org.springframework.util.StringUtils.endsWithIgnoreCase;
 
 import com.percussion.services.assembly.impl.PSReplacementFilter;
@@ -35,7 +35,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Given an Url we can calculate his fully qualified URL, convert it to a theme link and get where

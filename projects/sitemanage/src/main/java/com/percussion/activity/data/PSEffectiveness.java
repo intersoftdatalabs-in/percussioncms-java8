@@ -17,7 +17,7 @@
 
 package com.percussion.activity.data;
 
-import static org.apache.commons.lang.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notEmpty;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
 import net.sf.oval.constraint.NotEmpty;

@@ -22,7 +22,7 @@ import com.percussion.services.guidmgr.PSGuidManagerLocator;
 import com.percussion.utils.guid.IPSGuid;
 import com.percussion.utils.testing.IntegrationTest;
 import org.apache.cactus.ServletTestCase;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;

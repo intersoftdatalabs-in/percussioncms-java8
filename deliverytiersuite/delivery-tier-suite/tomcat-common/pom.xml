@@ -70,10 +70,6 @@
                     <artifactId>commons-collections</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>commons-betwixt</groupId>
                     <artifactId>commons-betwixt</artifactId>
                 </exclusion>

@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.commons.lang.Validate.isTrue;
+import static org.apache.commons.lang3.Validate.isTrue;
 
 /**
  * Will save a stream of objects to be used later.

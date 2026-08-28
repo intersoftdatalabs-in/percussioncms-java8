@@ -40,7 +40,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.DefaultEditorKit;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 

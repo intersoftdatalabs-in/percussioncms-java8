@@ -16,10 +16,10 @@
  */
 package com.percussion.pagemanagement.dao.impl;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.apache.commons.lang.StringUtils.isNumeric;
-import static org.apache.commons.lang.Validate.isTrue;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
+import static org.apache.commons.lang3.Validate.isTrue;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import com.percussion.cms.objectstore.PSInvalidContentTypeException;
 import com.percussion.cms.objectstore.server.PSItemDefManager;
@@ -51,7 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

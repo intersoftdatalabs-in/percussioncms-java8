@@ -126,7 +126,7 @@ import javax.swing.WindowConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

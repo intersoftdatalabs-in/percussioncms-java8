@@ -58,8 +58,8 @@ import com.percussion.webservices.assembly.PSAssemblyWsLocator;
 import com.percussion.webservices.assembly.data.PSAssemblyTemplateWs;
 import com.percussion.webservices.content.IPSContentDesignWs;
 import com.percussion.webservices.content.PSContentWsLocator;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -258,7 +258,7 @@ public class PSAssemblyDesignWs extends PSAssemblyBaseWs implements
             PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code,
                   IPSAssemblyTemplate.class.getName(), guid.getValue()),
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -383,7 +383,7 @@ public class PSAssemblyDesignWs extends PSAssemblyBaseWs implements
                   PSWebserviceErrors.createErrorMessage(code,
                      IPSTemplateSlot.class.getName(), guid.getValue(), e
                         .getLocalizedMessage()), ExceptionUtils
-                     .getFullStackTrace(e));
+                     .getStackTrace(e));
                results.addError(id, error);
             }
          }
@@ -540,7 +540,7 @@ public class PSAssemblyDesignWs extends PSAssemblyBaseWs implements
             PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code,
                   IPSTemplateSlot.class.getName(), guid.getValue()),
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -610,7 +610,7 @@ public class PSAssemblyDesignWs extends PSAssemblyBaseWs implements
                   PSWebserviceErrors.createErrorMessage(code,
                         IPSAssemblyTemplate.class.getName(), guid.getValue(),
                         PSWebserviceErrors.appendMessages(e)), ExceptionUtils
-                        .getFullStackTrace(e));
+                        .getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -948,7 +948,7 @@ public class PSAssemblyDesignWs extends PSAssemblyBaseWs implements
                         PSErrorException error = new PSErrorException(code,
                         PSWebserviceErrors.createErrorMessage(code,
                         IPSTemplateSlot.class.getName(), guid.getValue()),
-                        ExceptionUtils.getFullStackTrace(new Exception()));
+                        ExceptionUtils.getStackTrace(new Exception()));
                         results.addError(id, error);
                      }else {
                         int code = IPSWebserviceErrors.OBJECT_NOT_LOCKED_FOR_REQUESTOR;
@@ -957,7 +957,7 @@ public class PSAssemblyDesignWs extends PSAssemblyBaseWs implements
                         PSWebserviceErrors.createErrorMessage(code,
                         IPSTemplateSlot.class.getName(), guid.getValue(),
                         lock.getLocker(), lock.getRemainingTime()),
-                        ExceptionUtils.getFullStackTrace(new Exception()));
+                        ExceptionUtils.getStackTrace(new Exception()));
                         results.addError(id, error);
                      }
                   }
@@ -983,7 +983,7 @@ public class PSAssemblyDesignWs extends PSAssemblyBaseWs implements
                   PSWebserviceErrors.createErrorMessage(code,
                      IPSTemplateSlot.class.getName(), guid.getValue(), e
                         .getLocalizedMessage()), ExceptionUtils
-                     .getFullStackTrace(e));
+                     .getStackTrace(e));
                results.addError(id, error);
             }
          }

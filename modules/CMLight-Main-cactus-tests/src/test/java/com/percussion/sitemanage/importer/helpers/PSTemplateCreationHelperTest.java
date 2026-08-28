@@ -41,7 +41,7 @@ import com.percussion.sitemanage.service.IPSSiteTemplateService;
 import com.percussion.utils.testing.IntegrationTest;
 import com.percussion.webservices.security.IPSSecurityWs;
 import org.apache.cactus.ServletTestCase;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.experimental.categories.Category;

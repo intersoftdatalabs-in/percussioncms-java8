@@ -168,10 +168,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
@@ -264,10 +260,6 @@
                 <exclusion>
                     <groupId>org.apache.velocity</groupId>
                     <artifactId>velocity</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>commons-logging</groupId>

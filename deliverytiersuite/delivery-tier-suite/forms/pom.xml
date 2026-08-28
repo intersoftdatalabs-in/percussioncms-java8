@@ -81,11 +81,6 @@
             <version>${guava.version}</version>
         </dependency>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>${commons.lang.version}</version>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons.io.version}</version>
@@ -167,10 +162,6 @@
                 <exclusion>
                     <groupId>org.apache.velocity</groupId>
                     <artifactId>velocity</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>commons-logging</groupId>

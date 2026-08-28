@@ -19,7 +19,7 @@ package com.percussion.services.error;
 import com.percussion.services.catalog.PSTypeEnum;
 import com.percussion.utils.guid.IPSGuid;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * PSDuplicateNameException is thrown when the name of an object is not unique.

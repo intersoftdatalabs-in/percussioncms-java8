@@ -17,7 +17,7 @@
 package com.percussion.searchmanagement.service.impl;
 
 import static com.percussion.webservices.PSWebserviceUtils.getWorkflow;
-import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
+import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
 
 import com.percussion.design.objectstore.PSField;
 import com.percussion.design.objectstore.PSFieldSet;
@@ -70,9 +70,9 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;

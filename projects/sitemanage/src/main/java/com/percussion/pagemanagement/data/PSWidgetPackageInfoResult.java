@@ -19,7 +19,7 @@ package com.percussion.pagemanagement.data;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 /** @author JaySeletz */
 @XmlRootElement(name = "WidgetPackageInfoResult")

@@ -25,7 +25,7 @@ package com.percussion.widgets.image.webservice;
       import java.awt.Rectangle;
       import java.io.ByteArrayInputStream;
       import java.io.InputStream;
-      import org.apache.commons.lang.Validate;
+      import org.apache.commons.lang3.Validate;
       import org.apache.logging.log4j.Logger;
       import org.apache.logging.log4j.LogManager;
       

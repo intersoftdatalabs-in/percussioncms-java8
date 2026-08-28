@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /** Class to handle packaging and deploying a variant definition. */
 public class PSVariantDefDependencyHandler extends PSDataObjectDependencyHandler {

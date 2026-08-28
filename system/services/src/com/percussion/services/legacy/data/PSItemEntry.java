@@ -27,9 +27,9 @@ import org.w3c.dom.Element;
 
 import java.util.Date;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notNull;
 
 /**
  * This class contains the skeleton information of an item, which is cached

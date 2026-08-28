@@ -39,7 +39,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
 
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.notNull;
 
 @Transactional
 @PSBaseBean("sys_pubserverdao")

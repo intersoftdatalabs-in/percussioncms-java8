@@ -25,7 +25,7 @@ import javax.faces.application.FacesMessage.Severity;
 import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Base class for validators, encapsulates message production

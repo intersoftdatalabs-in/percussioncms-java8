@@ -28,7 +28,7 @@ import com.percussion.sitemanage.importer.PSSiteImportLogger;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

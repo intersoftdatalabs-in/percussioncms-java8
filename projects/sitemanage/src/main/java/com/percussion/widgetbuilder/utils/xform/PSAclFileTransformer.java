@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 /**

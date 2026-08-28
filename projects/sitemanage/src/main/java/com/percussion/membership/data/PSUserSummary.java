@@ -23,7 +23,7 @@ import static com.percussion.share.dao.PSDateUtils.getDateToString;
 import com.percussion.share.service.IPSDataService.DataServiceLoadException;
 import java.text.ParseException;
 import java.util.Date;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Object to hold summary data about a registered user.

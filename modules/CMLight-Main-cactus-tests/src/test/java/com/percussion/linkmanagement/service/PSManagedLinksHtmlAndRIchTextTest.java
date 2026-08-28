@@ -40,7 +40,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import com.percussion.utils.testing.IntegrationTest;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

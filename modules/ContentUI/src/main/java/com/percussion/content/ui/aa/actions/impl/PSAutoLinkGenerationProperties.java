@@ -29,8 +29,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.text.StrTokenizer;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -231,9 +230,12 @@ public class PSAutoLinkGenerationProperties {
    */
   private Set<String> parse(String text, boolean lowerCase) {
     Set<String> tokens = new HashSet<String>();
-    StrTokenizer toker = StrTokenizer.getCSVInstance(text);
-    while (toker.hasNext()) {
-      String token = StringUtils.trimToNull(toker.nextToken());
+    // commons-lang 2.x had org.apache.commons.lang.text.StrTokenizer.getCSVInstance();
+    // that class is removed in commons-lang3 3.12+. Inline the CSV split with
+    // StringUtils.split (which trims per-token as part of its contract) and avoid
+    // adding a new commons-csv dependency for one call site.
+    for (String raw : StringUtils.split(text, ',')) {
+      String token = StringUtils.trimToNull(raw);
       if (token != null) tokens.add(lowerCase ? token.toLowerCase() : token);
     }
     return tokens;

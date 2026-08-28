@@ -72,7 +72,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import netscape.javascript.JSObject;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 public class PSSimpleSwingBrowser extends PSDesktopExplorerWindow {

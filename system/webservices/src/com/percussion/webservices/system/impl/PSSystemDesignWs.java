@@ -68,8 +68,8 @@ import com.percussion.webservices.PSWebserviceUtils;
 import com.percussion.webservices.system.IPSSystemDesignWs;
 import com.percussion.webservices.system.IPSSystemWs;
 import com.percussion.webservices.system.PSSystemWsLocator;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.FileNotFoundException;
@@ -193,7 +193,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
             int code = IPSWebserviceErrors.CREATE_EXTEND_LOCK_FAILED;
             PSLockErrorException error = new PSLockErrorException(code,
                PSWebserviceErrors.createErrorMessage(code, id.longValue(), e
-                  .getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e),
+                  .getLocalizedMessage()), ExceptionUtils.getStackTrace(e),
                e.getLocker(), e.getRemainigTime());
 
             results.addError(id, error);
@@ -302,7 +302,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
                   PSWebserviceErrors.createErrorMessage(code, 
                      PSAclImpl.class.getName(), guid.getValue(), 
                      e.getLocalizedMessage()), 
-                     ExceptionUtils.getFullStackTrace(e));
+                     ExceptionUtils.getStackTrace(e));
                results.addError(id, error);
             }
          }
@@ -537,7 +537,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
             int code = IPSWebserviceErrors.CREATE_EXTEND_LOCK_FAILED;
             PSLockErrorException error = new PSLockErrorException(code,
                PSWebserviceErrors.createErrorMessage(code, id.longValue(), e
-                  .getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e),
+                  .getLocalizedMessage()), ExceptionUtils.getStackTrace(e),
                e.getLocker(), e.getRemainigTime());
 
             errors.addError(id, error);
@@ -793,7 +793,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
          catch (PSLockException e)
          {
             throw new PSLockErrorException(e.getErrorCode(), e.getMessage(),
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
          }
       }
 
@@ -835,7 +835,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
             PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code, PSItemFilter.class
                   .getName(), guid.getValue()), ExceptionUtils
-                  .getFullStackTrace(e));
+                  .getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -911,7 +911,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
             PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code,
                   PSRelationshipConfig.class.getName(), guid.getValue()),
-               ExceptionUtils.getFullStackTrace(new Exception()));
+               ExceptionUtils.getStackTrace(new Exception()));
             results.addError(id, error);
          }
       }
@@ -981,7 +981,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
                   PSWebserviceErrors.createErrorMessage(code, property
                      .getClass().getName(), id.longValue(), e
                      .getLocalizedMessage()), ExceptionUtils
-                     .getFullStackTrace(e), e.getLocker(), e.getRemainigTime());
+                     .getStackTrace(e), e.getLocker(), e.getRemainigTime());
                errors.addError(id, error);
             }
          }
@@ -1065,7 +1065,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
                PSErrorException error = new PSErrorException(code, 
                   PSWebserviceErrors.createErrorMessage(code, className, 
                      guid.getValue()), 
-                  ExceptionUtils.getFullStackTrace(new Exception()));
+                  ExceptionUtils.getStackTrace(new Exception()));
                errors.put(id, error);
             }
             else
@@ -1076,7 +1076,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
                   PSWebserviceErrors.createErrorMessage(code, className, 
                      guid.getValue(), lock.getLocker(), 
                      lock.getRemainingTime()),
-                  ExceptionUtils.getFullStackTrace(new Exception()));
+                  ExceptionUtils.getStackTrace(new Exception()));
                errors.put(id, error);
             }
          }
@@ -1096,7 +1096,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
          PSErrorException error = new PSErrorException(code, 
             PSWebserviceErrors.createErrorMessage(code, 
                   className, guid.getValue()), 
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
          for (PSAclImpl acl : acls)
          {
             IPSGuid id = acl.getGUID();
@@ -1217,7 +1217,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
       catch (PSLockException e)
       {
          throw new PSLockErrorException(e.getErrorCode(), e.getMessage(),
-            ExceptionUtils.getFullStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
       }
 
       if (release)
@@ -1286,7 +1286,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
                   PSErrorException error = new PSErrorException(code,
                      PSWebserviceErrors.createErrorMessage(code,
                         PSItemFilter.class.getName(), guid.getValue()),
-                     ExceptionUtils.getFullStackTrace(new Exception()));
+                     ExceptionUtils.getStackTrace(new Exception()));
                   results.addError(id, error);
                }
                else
@@ -1297,7 +1297,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
                      PSWebserviceErrors.createErrorMessage(code,
                         PSItemFilter.class.getName(), guid.getValue(), lock
                            .getLocker(), lock.getRemainingTime()),
-                     ExceptionUtils.getFullStackTrace(new Exception()));
+                     ExceptionUtils.getStackTrace(new Exception()));
                   results.addError(id, error);
                }
             }
@@ -1309,7 +1309,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
             PSErrorException error = new PSErrorException(code,
                PSWebserviceErrors.createErrorMessage(code, PSItemFilter.class
                   .getName(), guid.getValue()), ExceptionUtils
-                  .getFullStackTrace(e));
+                  .getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -1452,7 +1452,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
                   PSErrorException error = new PSErrorException(code,
                      PSWebserviceErrors.createErrorMessage(code,
                         PSSharedProperty.class.getName(), guid.getValue()),
-                     ExceptionUtils.getFullStackTrace(new Exception()));
+                     ExceptionUtils.getStackTrace(new Exception()));
                   results.addError(id, error);
                }
                else
@@ -1463,7 +1463,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
                      PSWebserviceErrors.createErrorMessage(code,
                         PSSharedProperty.class.getName(), guid.getValue(), lock
                            .getLocker(), lock.getRemainingTime()),
-                     ExceptionUtils.getFullStackTrace(new Exception()));
+                     ExceptionUtils.getStackTrace(new Exception()));
                   results.addError(id, error);
                }
             }
@@ -1476,7 +1476,7 @@ public class PSSystemDesignWs extends PSSystemBaseWs implements
                PSWebserviceErrors.createErrorMessage(code,
                   PSSharedProperty.class.getName(), guid.getValue(), e
                      .getLocalizedMessage()), ExceptionUtils
-                  .getFullStackTrace(e));
+                  .getStackTrace(e));
             results.addError(id, error);
          }
 

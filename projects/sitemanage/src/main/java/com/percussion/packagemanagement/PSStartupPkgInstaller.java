@@ -45,7 +45,7 @@ import java.util.Calendar;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

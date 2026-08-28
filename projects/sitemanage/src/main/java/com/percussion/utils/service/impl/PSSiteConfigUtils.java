@@ -19,9 +19,9 @@ package com.percussion.utils.service.impl;
 import static com.percussion.pathmanagement.service.impl.PSSitePathItemService.SITE_ROOT;
 import static com.percussion.xml.PSXmlTreeWalker.GET_NEXT_ALLOW_CHILDREN;
 import static com.percussion.xml.PSXmlTreeWalker.GET_NEXT_ALLOW_SIBLINGS;
-import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.splitByWholeSeparator;
+import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.splitByWholeSeparator;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.percussion.error.PSExceptionUtils;

@@ -15,8 +15,8 @@
  */
 package com.percussion.utils.servlet;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import com.percussion.error.PSExceptionUtils;
 import java.io.IOException;

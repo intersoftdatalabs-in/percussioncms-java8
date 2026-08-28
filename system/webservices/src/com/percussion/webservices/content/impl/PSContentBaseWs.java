@@ -19,8 +19,8 @@ package com.percussion.webservices.content.impl;
 import com.percussion.webservices.IPSWebserviceErrors;
 import com.percussion.webservices.PSErrorException;
 import com.percussion.webservices.PSWebserviceErrors;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,7 +63,7 @@ public class PSContentBaseWs
       int code = IPSWebserviceErrors.OPERATION_FAILED_ERROR;
       throw new PSErrorException(code, PSWebserviceErrors.createErrorMessage(
          code, operation, e.getLocalizedMessage()), ExceptionUtils
-         .getFullStackTrace(e));
+         .getStackTrace(e));
    }
 
    /**
@@ -80,7 +80,7 @@ public class PSContentBaseWs
 
       int code = IPSWebserviceErrors.UNEXPECTED_ERROR;
       throw new PSErrorException(code, PSWebserviceErrors.createErrorMessage(
-         code, e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+         code, e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
 
    }
 }

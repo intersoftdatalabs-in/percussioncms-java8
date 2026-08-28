@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 import com.github.javafaker.Faker;
 import com.percussion.security.PSEncryptionException;
 import com.percussion.security.PSPasswordHandler;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;

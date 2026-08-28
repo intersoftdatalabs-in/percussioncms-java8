@@ -67,8 +67,8 @@ import com.percussion.webservices.faults.PSUnknownContentTypeFault;
 import org.apache.axis.Message;
 import org.apache.axis.MessageContext;
 import org.apache.axis.attachments.AttachmentPart;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -119,7 +119,7 @@ public class ContentSOAPImpl extends PSBaseSOAPImpl implements Content
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, 
                "loadTranslationSettings", e.getLocalizedMessage()), 
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
       }
    }
 
@@ -493,12 +493,12 @@ public class ContentSOAPImpl extends PSBaseSOAPImpl implements Content
       catch (PSUnknownChildException e)
       {
          throw new PSUnknownChildFault(e.getCode(), e.getLocalizedMessage(), 
-            ExceptionUtils.getFullStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
       }
       catch (PSInvalidStateException e)
       {
          throw new PSContractViolationFault(e.getCode(), 
-            e.getLocalizedMessage(), ExceptionUtils.getFullStackTrace(e));
+            e.getLocalizedMessage(), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorException e)
       {
@@ -540,7 +540,7 @@ public class ContentSOAPImpl extends PSBaseSOAPImpl implements Content
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSUnknownContentTypeException e)
       {
@@ -548,7 +548,7 @@ public class ContentSOAPImpl extends PSBaseSOAPImpl implements Content
          throw new PSUnknownContentTypeFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
                createItemsRequest.getContentType(),
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorException e)
       {
@@ -723,12 +723,12 @@ public class ContentSOAPImpl extends PSBaseSOAPImpl implements Content
       catch (PSUnknownChildException e)
       {
          throw new PSUnknownChildFault(e.getCode(), e.getLocalizedMessage(), 
-            ExceptionUtils.getFullStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
       }
       catch (PSInvalidStateException e)
       {
          throw new PSContractViolationFault(e.getCode(), 
-            e.getLocalizedMessage(), ExceptionUtils.getFullStackTrace(e));
+            e.getLocalizedMessage(), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorsException e)
       {
@@ -1247,7 +1247,7 @@ public class ContentSOAPImpl extends PSBaseSOAPImpl implements Content
       catch (PSUnknownChildException e)
       {
          throw new PSUnknownChildFault(e.getCode(), e.getLocalizedMessage(), 
-            ExceptionUtils.getFullStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorResultsException e)
       {
@@ -1602,7 +1602,7 @@ public class ContentSOAPImpl extends PSBaseSOAPImpl implements Content
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorResultsException e)
       {
@@ -1678,7 +1678,7 @@ public class ContentSOAPImpl extends PSBaseSOAPImpl implements Content
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorResultsException e)
       {
@@ -1733,7 +1733,7 @@ public class ContentSOAPImpl extends PSBaseSOAPImpl implements Content
          int code = IPSWebserviceErrors.INVALID_CONTRACT;
          throw new PSContractViolationFault(code, 
             PSWebserviceErrors.createErrorMessage(code, serviceName, 
-               e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+               e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorResultsException e)
       {
@@ -1934,12 +1934,12 @@ public class ContentSOAPImpl extends PSBaseSOAPImpl implements Content
       catch (PSUnknownChildException e)
       {
          throw new PSUnknownChildFault(e.getCode(), e.getLocalizedMessage(), 
-            ExceptionUtils.getFullStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
       }
       catch (PSInvalidStateException e)
       {
          throw new PSContractViolationFault(e.getCode(), 
-            e.getLocalizedMessage(), ExceptionUtils.getFullStackTrace(e));
+            e.getLocalizedMessage(), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorsException e)
       {
@@ -2018,12 +2018,12 @@ public class ContentSOAPImpl extends PSBaseSOAPImpl implements Content
       catch (PSUnknownChildException e)
       {
          throw new PSUnknownChildFault(e.getCode(), e.getLocalizedMessage(), 
-            ExceptionUtils.getFullStackTrace(e));
+            ExceptionUtils.getStackTrace(e));
       }
       catch (PSInvalidStateException e)
       {
          throw new PSContractViolationFault(e.getCode(), 
-            e.getLocalizedMessage(), ExceptionUtils.getFullStackTrace(e));
+            e.getLocalizedMessage(), ExceptionUtils.getStackTrace(e));
       }
       catch (PSErrorsException e)
       {

@@ -60,8 +60,8 @@ import com.percussion.webservices.PSWebserviceErrors;
 import com.percussion.webservices.PSWebserviceUtils;
 import com.percussion.webservices.ui.IPSUiDesignWs;
 import com.percussion.webservices.ui.data.ActionType;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,7 +76,7 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.commons.lang.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notEmpty;
 
 /**
  * The private ui design webservice implementations.
@@ -766,7 +766,7 @@ public class PSUiDesignWs extends PSUiBaseWs implements IPSUiDesignWs
             int code = IPSWebserviceErrors.OBJECT_NOT_FOUND;
             PSDesignGuid guid = new PSDesignGuid(id);
             PSErrorException error = new PSErrorException(code, PSWebserviceErrors.createErrorMessage(code,
-                  PSHierarchyNode.class.getName(), guid.getValue()), ExceptionUtils.getFullStackTrace(e));
+                  PSHierarchyNode.class.getName(), guid.getValue()), ExceptionUtils.getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -908,7 +908,7 @@ public class PSUiDesignWs extends PSUiBaseWs implements IPSUiDesignWs
             int code = IPSWebserviceErrors.OBJECT_NOT_FOUND;
             PSDesignGuid guid = new PSDesignGuid(id);
             PSErrorException error = new PSErrorException(code, PSWebserviceErrors.createErrorMessage(code,
-                  PSHierarchyNode.class.getName(), guid.getValue()), ExceptionUtils.getFullStackTrace(e));
+                  PSHierarchyNode.class.getName(), guid.getValue()), ExceptionUtils.getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -1098,7 +1098,7 @@ public class PSUiDesignWs extends PSUiBaseWs implements IPSUiDesignWs
                   PSDesignGuid guid = new PSDesignGuid(id);
                   PSErrorException error = new PSErrorException(code, PSWebserviceErrors.createErrorMessage(code,
                         PSHierarchyNode.class.getName(), guid.getValue()),
-                        ExceptionUtils.getFullStackTrace(new Exception()));
+                        ExceptionUtils.getStackTrace(new Exception()));
                   results.addError(id, error);
                }
                else
@@ -1107,7 +1107,7 @@ public class PSUiDesignWs extends PSUiBaseWs implements IPSUiDesignWs
                   PSDesignGuid guid = new PSDesignGuid(id);
                   PSErrorException error = new PSErrorException(code, PSWebserviceErrors.createErrorMessage(code,
                         PSHierarchyNode.class.getName(), guid.getValue(), lock.getLocker(), lock.getRemainingTime()),
-                        ExceptionUtils.getFullStackTrace(new Exception()));
+                        ExceptionUtils.getStackTrace(new Exception()));
                   results.addError(id, error);
                }
             }
@@ -1118,7 +1118,7 @@ public class PSUiDesignWs extends PSUiBaseWs implements IPSUiDesignWs
             PSDesignGuid guid = new PSDesignGuid(id);
             PSErrorException error = new PSErrorException(code, PSWebserviceErrors.createErrorMessage(code,
                   PSHierarchyNode.class.getName(), guid.getValue(), e.getLocalizedMessage()),
-                  ExceptionUtils.getFullStackTrace(e));
+                  ExceptionUtils.getStackTrace(e));
             results.addError(id, error);
          }
       }
@@ -1241,7 +1241,7 @@ public class PSUiDesignWs extends PSUiBaseWs implements IPSUiDesignWs
          {
             int code = IPSWebserviceErrors.FAILED_TO_OBTAIN_PATH_FROM_OBJECT_ID;
             PSErrorException error = new PSErrorException(code, PSWebserviceErrors.createErrorMessage(code,
-                  e.getLocalizedMessage()), ExceptionUtils.getFullStackTrace(e));
+                  e.getLocalizedMessage()), ExceptionUtils.getStackTrace(e));
             results.addError(id, error);
 
          }
@@ -1848,7 +1848,7 @@ public class PSUiDesignWs extends PSUiBaseWs implements IPSUiDesignWs
          {
             int code = IPSWebserviceErrors.OBJECT_NOT_FOUND;
             throw new PSErrorException(code, PSWebserviceErrors.createErrorMessage(code,
-                  objClass.getName(), guid.longValue()), ExceptionUtils.getFullStackTrace(new Exception()));
+                  objClass.getName(), guid.longValue()), ExceptionUtils.getStackTrace(new Exception()));
 
          }
 
@@ -1858,7 +1858,7 @@ public class PSUiDesignWs extends PSUiBaseWs implements IPSUiDesignWs
       {
          int code = IPSWebserviceErrors.LOAD_FAILED;
          throw new PSErrorException(code, PSWebserviceErrors.createErrorMessage(code,
-               objClass.getName(), guid.longValue()), ExceptionUtils.getFullStackTrace(e));
+               objClass.getName(), guid.longValue()), ExceptionUtils.getStackTrace(e));
 
       }
    }
@@ -1968,7 +1968,7 @@ public class PSUiDesignWs extends PSUiBaseWs implements IPSUiDesignWs
 
             int code = IPSWebserviceErrors.MISSING_HIERARCHY_NODE_FOR_PARENT;
             throw new PSErrorException(code, PSWebserviceErrors.createErrorMessage(code, name,
-                  parent), ExceptionUtils.getFullStackTrace(new Exception()));
+                  parent), ExceptionUtils.getStackTrace(new Exception()));
 
          }
          if (nodes.size() > 1)
@@ -1979,7 +1979,7 @@ public class PSUiDesignWs extends PSUiBaseWs implements IPSUiDesignWs
 
             int code = IPSWebserviceErrors.DUPLICATE_HIERARCHY_NODE_FOR_PARENT;
             throw new PSErrorException(code, PSWebserviceErrors.createErrorMessage(code, name,
-                  parent), ExceptionUtils.getFullStackTrace(new Exception()));
+                  parent), ExceptionUtils.getStackTrace(new Exception()));
          }
 
          PSHierarchyNode node = nodes.get(0);

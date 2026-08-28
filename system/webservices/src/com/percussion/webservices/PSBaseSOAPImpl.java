@@ -35,7 +35,7 @@ import org.apache.axis.attachments.AttachmentPart;
 import org.apache.axis.attachments.Attachments;
 import org.apache.axis.transport.http.HTTPConstants;
 import org.apache.commons.beanutils.Converter;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -196,7 +196,7 @@ public class PSBaseSOAPImpl
             logger.debug("Authentication Error Code:" + code, ex);
             throw new PSInvalidSessionFault(code,
                     PSWebserviceErrors.createErrorMessage(code, ex.toString()),
-                    ExceptionUtils.getFullStackTrace(ex));
+                    ExceptionUtils.getStackTrace(ex));
          }
     }
    
@@ -271,7 +271,7 @@ public class PSBaseSOAPImpl
       logger.error("SOAP Invalid Contract for service "+serviceName,e);
 
       throw new PSContractViolationFault(code,
-            PSWebserviceErrors.createErrorMessage(code, serviceName, e.toString()), ExceptionUtils.getFullStackTrace(e));
+            PSWebserviceErrors.createErrorMessage(code, serviceName, e.toString()), ExceptionUtils.getStackTrace(e));
    }   
    
    /**
@@ -305,7 +305,7 @@ public class PSBaseSOAPImpl
          throw new PSNotAuthorizedFault(code,
             PSWebserviceErrors.createErrorMessage(code, getRemoteUser(), 
                serviceName, e.toString()),
-               ExceptionUtils.getFullStackTrace(e));
+               ExceptionUtils.getStackTrace(e));
       }
       else
           logger.error("SOAP RuntimeException for service "+serviceName,e);

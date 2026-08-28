@@ -18,7 +18,7 @@
 package com.percussion.activity.data;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This object holds the activity details of the items under named site or site folder or type of

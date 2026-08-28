@@ -17,7 +17,7 @@
 package com.percussion.share.dao;
 
 import static com.percussion.share.test.PSMatchers.emptyString;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.notNull;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;

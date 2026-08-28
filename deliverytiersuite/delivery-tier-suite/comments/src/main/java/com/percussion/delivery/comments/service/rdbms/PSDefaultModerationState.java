@@ -21,7 +21,7 @@ import javax.persistence.Basic;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 

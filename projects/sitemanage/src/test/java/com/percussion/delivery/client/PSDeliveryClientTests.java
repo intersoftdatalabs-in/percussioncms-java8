@@ -27,7 +27,7 @@ import com.percussion.proxyconfig.data.PSProxyConfig;
 import com.percussion.utils.testing.IntegrationTest;
 import java.util.ArrayList;
 import net.sf.json.JSONArray;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

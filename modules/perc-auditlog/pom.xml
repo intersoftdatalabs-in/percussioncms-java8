@@ -51,11 +51,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>com.percussion</groupId>
             <artifactId>rxutils</artifactId>
             <version>${project.parent.version}</version>

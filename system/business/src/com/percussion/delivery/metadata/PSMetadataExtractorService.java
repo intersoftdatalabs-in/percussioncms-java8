@@ -23,8 +23,8 @@ import com.percussion.delivery.metadata.rdfa.PSTripleHandler;
 import com.percussion.delivery.metadata.extractor.data.PSMetadataEntry;
 import com.percussion.delivery.metadata.extractor.data.PSMetadataProperty;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -52,14 +52,14 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.apache.commons.lang.StringUtils.contains;
-import static org.apache.commons.lang.StringUtils.endsWith;
-import static org.apache.commons.lang.StringUtils.removeStart;
-import static org.apache.commons.lang.StringUtils.startsWith;
-import static org.apache.commons.lang.StringUtils.substringAfter;
-import static org.apache.commons.lang.StringUtils.substringBefore;
-import static org.apache.commons.lang.Validate.isTrue;
-import static org.apache.commons.lang.Validate.notEmpty;
+import static org.apache.commons.lang3.StringUtils.contains;
+import static org.apache.commons.lang3.StringUtils.endsWith;
+import static org.apache.commons.lang3.StringUtils.removeStart;
+import static org.apache.commons.lang3.StringUtils.startsWith;
+import static org.apache.commons.lang3.StringUtils.substringAfter;
+import static org.apache.commons.lang3.StringUtils.substringBefore;
+import static org.apache.commons.lang3.Validate.isTrue;
+import static org.apache.commons.lang3.Validate.notEmpty;
 
 /**
  * Responsible for extracting the metadata from a given page and returning a
@@ -486,7 +486,11 @@ public class PSMetadataExtractorService implements IPSMetadataExtractorService
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             String entityName = matcher.group(1);
-            String resolved = org.apache.commons.lang.StringEscapeUtils.unescapeHtml("&" + entityName + ";");
+            // commons-text 1.15.0 removed the legacy `StringEscapeUtils.unescapeHtml(...)`
+            // shortcut in favor of the static CharSequenceTranslator constants.
+            // UNESCAPE_HTML4 handles the same set of named HTML entities.
+            String resolved =
+                org.apache.commons.text.StringEscapeUtils.UNESCAPE_HTML4.translate("&" + entityName + ";");
             if (resolved.length() == 1) {
                 matcher.appendReplacement(sb, "&#" + (int) resolved.charAt(0) + ";");
             } else {

@@ -28,7 +28,7 @@ import com.percussion.utils.jdbc.IPSDatasourceConfig;
 import com.percussion.utils.jdbc.IPSDatasourceResolver;
 import com.percussion.utils.jdbc.PSDatasourceConfig;
 import com.percussion.utils.servlet.PSServletUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,9 +42,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.commons.lang.StringUtils.isNotEmpty;
-import static org.apache.commons.lang.StringUtils.isNumeric;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
+import static org.apache.commons.lang3.Validate.notNull;
 
 public class PSDatabasePubServerFilesService implements IPSDatabasePubServerFilesService
 {

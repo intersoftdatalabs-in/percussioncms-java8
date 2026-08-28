@@ -20,7 +20,7 @@ package com.percussion.delivery.metadata.rdfa;
 import com.percussion.delivery.metadata.PSMetadataExtractorService;
 import com.percussion.delivery.metadata.extractor.data.PSMetadataProperty;
 import com.percussion.error.PSExceptionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;

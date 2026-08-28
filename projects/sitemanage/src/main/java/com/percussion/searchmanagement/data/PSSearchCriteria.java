@@ -20,7 +20,7 @@ import java.util.Map;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @XmlRootElement(name = "SearchCriteria")
 @XmlAccessorType(XmlAccessType.FIELD)

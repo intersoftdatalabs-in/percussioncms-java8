@@ -17,7 +17,7 @@ package com.percussion.delivery.client;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Helpers for operator-friendly delivery-client failure messages: full action URL + HTTP method +

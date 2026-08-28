@@ -27,7 +27,7 @@ import com.percussion.sitemanage.service.impl.PSSiteDataService;
 import com.percussion.test.PSServletTestCase;
 import com.percussion.utils.testing.IntegrationTest;
 import com.percussion.webservices.security.PSSecurityWsLocator;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.experimental.categories.Category;

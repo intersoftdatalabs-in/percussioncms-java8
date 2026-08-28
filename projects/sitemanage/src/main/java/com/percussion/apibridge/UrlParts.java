@@ -17,7 +17,7 @@
 
 package com.percussion.apibridge;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 class UrlParts {
   String site = "";

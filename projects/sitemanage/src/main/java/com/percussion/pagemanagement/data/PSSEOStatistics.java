@@ -16,8 +16,8 @@
  */
 package com.percussion.pagemanagement.data;
 
-import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import java.util.HashSet;
@@ -26,7 +26,7 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 import net.sf.oval.constraint.NotBlank;
 import net.sf.oval.constraint.NotNull;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Encapsulates search engine optimization statistics for a Page. This includes the issues which

@@ -123,10 +123,6 @@
             <artifactId>tika-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.percussion</groupId>
             <artifactId>rxutils</artifactId>
             <version>8.1.8-SNAPSHOT</version>

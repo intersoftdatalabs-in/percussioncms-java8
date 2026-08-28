@@ -17,7 +17,7 @@
 
 package com.percussion.pubserver;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 

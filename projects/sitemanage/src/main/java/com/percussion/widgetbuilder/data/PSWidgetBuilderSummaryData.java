@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import com.percussion.services.widgetbuilder.PSWidgetBuilderDefinition;
 import com.percussion.share.data.PSAbstractPersistantObject;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Lightweight version of {@link PSWidgetBuilderDefinitionData} for serialization of summary data

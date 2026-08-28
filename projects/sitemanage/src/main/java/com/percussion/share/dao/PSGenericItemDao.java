@@ -16,10 +16,10 @@
  */
 package com.percussion.share.dao;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.apache.commons.lang.Validate.isTrue;
-import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.Validate.isTrue;
+import static org.apache.commons.lang3.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import com.percussion.cms.PSCmsException;
 import com.percussion.cms.objectstore.IPSFieldValue;

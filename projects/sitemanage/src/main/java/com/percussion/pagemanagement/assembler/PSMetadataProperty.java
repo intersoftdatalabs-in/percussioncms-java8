@@ -28,7 +28,7 @@ import javax.persistence.Embeddable;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
 import javax.persistence.ManyToOne;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /** @author davidpardini */
 public class PSMetadataProperty {

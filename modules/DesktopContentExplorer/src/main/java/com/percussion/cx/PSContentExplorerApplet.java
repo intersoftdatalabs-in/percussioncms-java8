@@ -87,7 +87,7 @@ import javax.swing.text.DefaultEditorKit;
 import javax.xml.parsers.ParserConfigurationException;
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;

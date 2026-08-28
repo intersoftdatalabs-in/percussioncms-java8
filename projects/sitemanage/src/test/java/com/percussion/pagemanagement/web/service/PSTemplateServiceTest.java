@@ -29,7 +29,7 @@ import com.percussion.share.test.PSRestTestCase;
 import com.percussion.share.test.PSTestDataCleaner;
 import com.percussion.utils.testing.IntegrationTest;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

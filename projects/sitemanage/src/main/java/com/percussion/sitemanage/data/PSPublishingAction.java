@@ -17,7 +17,7 @@
 
 package com.percussion.sitemanage.data;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class PSPublishingAction {
 

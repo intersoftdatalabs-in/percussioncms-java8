@@ -20,7 +20,7 @@ import com.percussion.pagemanagement.data.PSMetadataDocType;
 import com.percussion.pagemanagement.data.PSMetadataDocTypeOptions;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Provides utilities to convert the doc type value stored in DB, and to convert the value supplied

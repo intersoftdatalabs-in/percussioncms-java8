@@ -23,7 +23,7 @@ import com.percussion.servlets.PSSecurityFilter;
 import com.percussion.utils.request.PSRequestInfo;
 import com.percussion.utils.testing.IntegrationTest;
 import org.apache.cactus.ServletTestCase;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;

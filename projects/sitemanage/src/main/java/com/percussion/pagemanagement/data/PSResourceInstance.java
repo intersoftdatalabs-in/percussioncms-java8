@@ -16,7 +16,7 @@
  */
 package com.percussion.pagemanagement.data;
 
-import static org.apache.commons.lang.StringUtils.removeEnd;
+import static org.apache.commons.lang3.StringUtils.removeEnd;
 
 import com.percussion.pagemanagement.data.PSResourceDefinitionGroup.PSAssetResource;
 import com.percussion.share.data.IPSLinkableContentItem;
@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Represents a fully loaded resource ready for link/rendering processing.

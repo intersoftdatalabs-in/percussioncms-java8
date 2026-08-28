@@ -18,7 +18,7 @@ package com.percussion.services.schedule.data;
 
 import java.util.Comparator;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.CronTrigger;
 
 /**

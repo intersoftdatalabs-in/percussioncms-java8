@@ -39,7 +39,7 @@ import javafx.scene.web.WebView;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import netscape.javascript.JSObject;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 

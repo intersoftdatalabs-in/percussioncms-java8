@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "PathItem")

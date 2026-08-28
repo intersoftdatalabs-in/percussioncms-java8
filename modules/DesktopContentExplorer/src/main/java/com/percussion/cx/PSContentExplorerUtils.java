@@ -35,7 +35,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.xpath.XPathFactory;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 public class PSContentExplorerUtils {

@@ -17,7 +17,7 @@
 
 package com.percussion.pagemanagement.web.service;
 
-import static org.apache.commons.lang.Validate.*;
+import static org.apache.commons.lang3.Validate.*;
 
 import com.percussion.pagemanagement.data.PSHtmlMetadata;
 import com.percussion.pagemanagement.data.PSTemplate;

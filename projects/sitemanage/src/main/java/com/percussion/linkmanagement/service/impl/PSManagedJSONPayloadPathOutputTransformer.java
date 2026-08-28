@@ -28,7 +28,7 @@ import com.percussion.server.IPSRequestContext;
 import com.percussion.share.spring.PSSpringWebApplicationContextUtils;
 import com.percussion.util.IPSHtmlParameters;
 import java.io.File;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;

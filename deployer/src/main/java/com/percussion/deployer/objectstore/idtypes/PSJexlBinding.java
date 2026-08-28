@@ -16,7 +16,7 @@
  */
 package com.percussion.deployer.objectstore.idtypes;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * A binding can have name, will have index and value. Index is the location of this expression, in

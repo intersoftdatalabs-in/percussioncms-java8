@@ -16,7 +16,7 @@
  */
 package com.percussion.secure.data;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 /** @deprecated This class is part of the deprecated secure-membership module. */
 @Deprecated

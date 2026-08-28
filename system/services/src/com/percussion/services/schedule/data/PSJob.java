@@ -16,7 +16,7 @@
  */
 package com.percussion.services.schedule.data;
 
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import com.percussion.services.catalog.PSTypeEnum;
 import com.percussion.utils.guid.IPSGuid;
@@ -24,8 +24,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * It contains information for executing and notification of a job.

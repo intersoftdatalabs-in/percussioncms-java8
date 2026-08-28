@@ -22,7 +22,7 @@ import java.util.UUID;
 
 import com.percussion.utils.testing.IntegrationTest;
 import org.apache.cactus.ServletTestCase;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.helpers.IOUtils;
 import org.junit.Test;
 

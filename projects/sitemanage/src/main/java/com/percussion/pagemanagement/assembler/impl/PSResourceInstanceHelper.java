@@ -21,12 +21,12 @@ import static com.percussion.pagemanagement.assembler.PSResourceLinkAndLocationU
 import static com.percussion.pagemanagement.assembler.PSResourceLinkAndLocationUtils.validateAsPhysicalPath;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.apache.commons.lang.StringUtils.removeStart;
-import static org.apache.commons.lang.StringUtils.startsWith;
-import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.removeStart;
+import static org.apache.commons.lang3.StringUtils.startsWith;
+import static org.apache.commons.lang3.Validate.notEmpty;
+import static org.apache.commons.lang3.Validate.notNull;
 
 import com.percussion.assetmanagement.data.PSAsset;
 import com.percussion.assetmanagement.service.IPSAssetService;
@@ -61,7 +61,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,7 +126,14 @@ public class PSResourceInstanceHelper {
       Object rvalue = jexlEvaluator.evaluate(jexlScript);
       if (rvalue instanceof List) {
         List<PSResourceLinkAndLocation> links = (List) rvalue;
-        Validate.allElementsOfType(links, PSResourceLinkAndLocation.class);
+        // commons-lang3 dropped `Validate.allElementsOfType`; inline the check.
+        for (Object link : links) {
+          if (!(link instanceof PSResourceLinkAndLocation)) {
+            throw new IllegalArgumentException(
+                "Expected every list element to be a PSResourceLinkAndLocation but found: "
+                    + (link == null ? "null" : link.getClass().getName()));
+          }
+        }
         return links;
       } else if (rvalue instanceof PSResourceLinkAndLocation) {
         List<PSResourceLinkAndLocation> links = new ArrayList<>();
