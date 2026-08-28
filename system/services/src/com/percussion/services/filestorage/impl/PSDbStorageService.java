@@ -449,7 +449,10 @@ public class PSDbStorageService implements IPSFileStorageService, InitializingBe
       {
          // If we use a file in TikaInputStream the processing is done directly from this file otherwise
          // the contents are streamed to memory.
-         is = TikaInputStream.get(file);
+         // T2.1 hardening (issue #92): cap the Tika input at PSTikaCap.MAX_BYTES
+         // (default 100 MB) to limit exposure to commons-tika 2.9.x CVEs. Tika handles
+         // the EOF gracefully (returns a short parsed result rather than OOM).
+         is = TikaInputStream.get(com.percussion.security.io.PSTikaCap.truncate(new java.io.FileInputStream(file)));
          try
          {
             parser.parse(is, new DefaultHandler(), tikaMeta, context);
