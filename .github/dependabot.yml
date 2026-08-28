@@ -95,6 +95,11 @@ updates:
       # Shiro 2.x jars are already Java 11 bytecode; freeze automated bumps.
       - dependency-name: "org.apache.shiro*"
       - dependency-name: "org.apache.shiro:*"
+      # Bouncy Castle `jdk18on` 1.78+ is Java 11 bytecode; we pin the
+      # `jdk15to18` line via <bc.version> in the root pom (Java 5 bytecode).
+      # Block Dependabot from re-bundling the wrong artifact line.
+      - dependency-name: "org.bouncycastle*"
+      - dependency-name: "org.bouncycastle:*"
       # Jackrabbit 2.21+ is Java 11 (2.20.x is last Java 8 line we track).
       - dependency-name: "org.apache.jackrabbit*"
       - dependency-name: "org.apache.jackrabbit:*"
