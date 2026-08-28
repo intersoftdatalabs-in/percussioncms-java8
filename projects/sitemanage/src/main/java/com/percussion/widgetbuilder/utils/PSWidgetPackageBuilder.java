@@ -119,7 +119,12 @@ public class PSWidgetPackageBuilder {
       zin = new ZipInputStream(in);
 
       ZipEntry entry = zin.getNextEntry();
+      // T2.6 hardening (issue #89): cap the entry count, per-entry size, and total
+      // uncompressed bytes to limit exposure to commons-compress 1.28.0 zip-bomb CVEs.
+      com.percussion.security.io.PSZipBombGuard guard =
+          new com.percussion.security.io.PSZipBombGuard();
       while (entry != null) {
+        guard.check(entry);
         if (!entry.isDirectory()) {
 
           String resolvePath = resolvePath(entry.getName(), packageSpec);

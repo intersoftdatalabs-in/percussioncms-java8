@@ -80,6 +80,10 @@ public class PSInstallRxApp {
 
     Enumeration e = m_JF.entries();
 
+    // T2.6 hardening (issue #89): cap the entry count, per-entry size, and total
+    // uncompressed bytes to limit exposure to commons-compress 1.28.0 zip-bomb CVEs.
+    com.percussion.security.io.PSZipBombGuard guard =
+        new com.percussion.security.io.PSZipBombGuard();
     while (e.hasMoreElements()) {
       entry = (ZipEntry) e.nextElement();
       name = entry.getName();

@@ -67,9 +67,14 @@ public class PSExtractJarFiles extends PSAction {
       List fileList = new ArrayList();
       try (JarFile jar = new JarFile(jarFile)) {
         if ((filesToExtract == null) || (filesToExtract.length == 0)) {
+          // T2.6 hardening (issue #89): cap the entry count, per-entry size, and total
+          // uncompressed bytes to limit exposure to commons-compress 1.28.0 zip-bomb CVEs.
+          com.percussion.security.io.PSZipBombGuard guard =
+              new com.percussion.security.io.PSZipBombGuard();
           for (Enumeration entries = jar.entries(); entries.hasMoreElements(); ) {
             // Get the next entry.
             JarEntry entry = (JarEntry) entries.nextElement();
+            guard.check(entry);
             String entryName = entry.getName();
             if (!((entryName.endsWith(File.separator)) || (entryName.endsWith("/"))))
               fileList.add(entryName);
