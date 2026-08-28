@@ -43,11 +43,11 @@ import org.junit.Test;
  *       {@code !important} (or hard-coded px heights/widths) so responsive customer themes that set
  *       {@code height/width: auto} win in the CMS chrome &mdash; issue #2 / GH-2352.
  *   <li>Decoration must not declare {@code hspan_*} column widths at all, because it loads
- *       <em>before</em> the site theme in the editor/preview header (see
- *       {@code PSHTMLHeaderImporterTest}: {@code perc_decoration.css} is link index 0,
- *       {@code perc_theme.css} follows). Forcing a width would either override the default
- *       theme's fixed 160/640/800/960 grid at the same cascade tier, or be defeated by an
- *       {@code !important} counter in responsive themes (the original symptom).
+ *       <em>before</em> the site theme in the editor/preview header (see {@code
+ *       PSHTMLHeaderImporterTest}: {@code perc_decoration.css} is link index 0, {@code
+ *       perc_theme.css} follows). Forcing a width would either override the default theme's fixed
+ *       160/640/800/960 grid at the same cascade tier, or be defeated by an {@code !important}
+ *       counter in responsive themes (the original symptom).
  * </ul>
  */
 public class VspanFooterAlignmentCssTest {
@@ -106,8 +106,7 @@ public class VspanFooterAlignmentCssTest {
           Pattern.compile("min-height\\s*:\\s*" + floor + "px").matcher(body).find());
     }
     assertTrue(
-        THEME_CSS_PATH + ": expected at least vspan_2/4/6/8 rules, found " + blocks,
-        blocks >= 4);
+        THEME_CSS_PATH + ": expected at least vspan_2/4/6/8 rules, found " + blocks, blocks >= 4);
   }
 
   @Test
@@ -150,11 +149,7 @@ public class VspanFooterAlignmentCssTest {
               + body.replace('\n', ' '),
           Pattern.compile("min-height\\s*:\\s*0(?![0-9])").matcher(body).find());
       assertTrue(
-          rel
-              + " .vspan_"
-              + span
-              + " must use height: auto: "
-              + body.replace('\n', ' '),
+          rel + " .vspan_" + span + " must use height: auto: " + body.replace('\n', ' '),
           Pattern.compile("(?<!min-|max-)height\\s*:\\s*auto").matcher(body).find());
       String floor = VSPAN_FLOOR_PX.get(span);
       assertFalse(
@@ -170,9 +165,7 @@ public class VspanFooterAlignmentCssTest {
     }
     assertTrue(rel + ": expected at least vspan_2/4/6/8 rules, found " + blocks, blocks >= 4);
     for (Map.Entry<String, Integer> e : counts.entrySet()) {
-      assertTrue(
-          rel + " .vspan_" + e.getKey() + " count=" + e.getValue(),
-          e.getValue() >= 1);
+      assertTrue(rel + " .vspan_" + e.getKey() + " count=" + e.getValue(), e.getValue() >= 1);
     }
   }
 

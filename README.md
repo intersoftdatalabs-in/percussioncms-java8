@@ -28,11 +28,11 @@ Intersoft Data Labs assumed full responsibility for support, maintenance, and on
 
 ## Current Status (August 2026)
 
-| Version / line | Status | Notes |
-|----------------|--------|--------|
-| **8.1.7** | Current stable release on this repo | Security hardening, WCAG-oriented accessibility work, Google Analytics 4, REST fixes, and ongoing 8.1.x maintenance |
-| **8.1.x (`main`)** | Active maintenance (this repository) | JDK **1.8 only**. Security fixes, regression fixes, and carefully capped dependency updates |
-| **8.2 / Java 21** | Active development (separate repo) | See [percussioncms](https://github.com/intersoftdatalabs-in/percussioncms) — not built from this tree |
+|   Version / line   |                Status                |                                                        Notes                                                        |
+|--------------------|--------------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| **8.1.7**          | Current stable release on this repo  | Security hardening, WCAG-oriented accessibility work, Google Analytics 4, REST fixes, and ongoing 8.1.x maintenance |
+| **8.1.x (`main`)** | Active maintenance (this repository) | JDK **1.8 only**. Security fixes, regression fixes, and carefully capped dependency updates                         |
+| **8.2 / Java 21**  | Active development (separate repo)   | See [percussioncms](https://github.com/intersoftdatalabs-in/percussioncms) — not built from this tree               |
 
 **Stay on a current 8.1.x release** when you must remain on Java 8. Recent 8.1.x builds include important security patches.
 
@@ -89,11 +89,11 @@ Documentation: [percussioncmshelp.intsof.com](https://percussioncmshelp.intsof.c
 
 ### Requirements
 
-| Requirement | Notes |
-|-------------|--------|
-| **JDK 8** | Required. Amazon Corretto 8 or Eclipse Temurin 8 recommended. Set `JAVA_HOME` / `JAVA_HOME_8` to a **1.8** install only. |
-| **Git** | Including Git LFS (`git lfs pull` before building modules that use LFS) |
-| **Maven** | Prefer the repo wrapper + env scripts below (do not assume a system Maven on a newer JDK) |
+| Requirement |                                                          Notes                                                           |
+|-------------|--------------------------------------------------------------------------------------------------------------------------|
+| **JDK 8**   | Required. Amazon Corretto 8 or Eclipse Temurin 8 recommended. Set `JAVA_HOME` / `JAVA_HOME_8` to a **1.8** install only. |
+| **Git**     | Including Git LFS (`git lfs pull` before building modules that use LFS)                                                  |
+| **Maven**   | Prefer the repo wrapper + env scripts below (do not assume a system Maven on a newer JDK)                                |
 
 This line **must not** introduce language features, APIs, or dependencies that require Java 11+.
 
@@ -154,20 +154,20 @@ cd <installation-directory>\jetty\ && StartJetty.bat
 
 Default CMS URL: `http://localhost:9992/`
 
-Default Admin & Contributor users are generated with dynamically generated temporary passwords at startup.  These are written to <installation-directory>/var/config/generated/passwords.  These passwords should be changed and the password file deleted after post installation login. 
+Default Admin & Contributor users are generated with dynamically generated temporary passwords at startup.  These are written to <installation-directory>/var/config/generated/passwords.  These passwords should be changed and the password file deleted after post installation login.
 
 ---
 
 ## Key modules
 
-| Module | Path | Description |
-|--------|------|-------------|
-| CMS core | `system` | Server core |
-| WebUI | `WebUI` | Primary UI |
-| sitemanage | `projects/sitemanage` | Backend for the primary UI |
-| rest | `rest` | Public REST API |
-| DTS | `deliverytiersuite/delivery-tier-suite` | Delivery-tier services |
-| Distribution | `modules/perc-distribution-tree` | Installable CMS distribution |
+|    Module    |                  Path                   |         Description          |
+|--------------|-----------------------------------------|------------------------------|
+| CMS core     | `system`                                | Server core                  |
+| WebUI        | `WebUI`                                 | Primary UI                   |
+| sitemanage   | `projects/sitemanage`                   | Backend for the primary UI   |
+| rest         | `rest`                                  | Public REST API              |
+| DTS          | `deliverytiersuite/delivery-tier-suite` | Delivery-tier services       |
+| Distribution | `modules/perc-distribution-tree`        | Installable CMS distribution |
 
 ---
 
@@ -177,8 +177,8 @@ We welcome contributions that keep the **8.1.x / Java 8** line healthy: bug fixe
 
 Please see:
 
-- [CONTRIBUTING.md](CONTRIBUTING.md) — process and orientation  
-- [AGENTS.md](AGENTS.md) — coding, build, and PR conventions for this repo  
+- [CONTRIBUTING.md](CONTRIBUTING.md) — process and orientation
+- [AGENTS.md](AGENTS.md) — coding, build, and PR conventions for this repo
 
 **Do not** land Java 11+ only dependencies or language features on `main`.  
 For Java 21 / 8.2 work, open PRs against [percussioncms](https://github.com/intersoftdatalabs-in/percussioncms).
@@ -187,10 +187,10 @@ For Java 21 / 8.2 work, open PRs against [percussioncms](https://github.com/inte
 
 ## Related repositories
 
-| Repository | Role |
-|------------|------|
-| **[percussioncms-java8](https://github.com/intersoftdatalabs-in/percussioncms-java8)** (this repo) | Java 8 LTS — **8.1.x** maintenance |
-| **[percussioncms](https://github.com/intersoftdatalabs-in/percussioncms)** | Active product line — **Java 21 / 8.2** development |
+|                                             Repository                                             |                        Role                         |
+|----------------------------------------------------------------------------------------------------|-----------------------------------------------------|
+| **[percussioncms-java8](https://github.com/intersoftdatalabs-in/percussioncms-java8)** (this repo) | Java 8 LTS — **8.1.x** maintenance                  |
+| **[percussioncms](https://github.com/intersoftdatalabs-in/percussioncms)**                         | Active product line — **Java 21 / 8.2** development |
 
 ---
 

@@ -128,7 +128,8 @@ public class PSExtractJarFiles extends PSAction {
           if (!fJarFile.createNewFile()) throw new IOException("Unable to create file.");
 
           try (InputStream is = jf.getInputStream(jf.getEntry((String) fileList.get(k)))) {
-            // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by 2027-07-31
+            // codeql[java/zipslip] justification: ZipSlipGuard + canonical startsWith; re-review by
+            // 2027-07-31
             try (FileOutputStream fos = new FileOutputStream(fJarFile)) {
               while ((bytesRead = is.read(buffer)) != -1) {
                 fos.write(buffer, 0, bytesRead);
