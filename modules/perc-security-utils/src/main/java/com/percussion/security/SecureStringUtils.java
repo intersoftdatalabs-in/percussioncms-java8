@@ -16,7 +16,6 @@
 
 package com.percussion.security;
 
-import com.github.javafaker.Faker;
 import com.ibm.icu.text.Normalizer2;
 import com.percussion.error.PSExceptionUtils;
 import java.io.IOException;
@@ -1509,13 +1508,37 @@ public class SecureStringUtils {
     return Encode.forHtml(str);
   }
 
-  public static String generateRandomPassword() {
-    Faker f = Faker.instance(getSecureRandom());
+  /** Alphanumeric alphabet for {@link #generateRandomPassword()}. */
+  private static final char[] PASSWORD_ALPHABET =
+      ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789").toCharArray();
 
-    char[] password = f.lorem().characters(6, 20, true, true).toCharArray();
-    char[] special = new char[] {'@', '$', '%', '^', '&', '*'};
-    for (int i = 0; i < f.random().nextInt(6); i++) {
-      password[f.random().nextInt(password.length)] = special[f.random().nextInt(special.length)];
+  /** Special characters that may replace positions in a generated password. */
+  private static final char[] PASSWORD_SPECIALS = new char[] {'@', '$', '%', '^', '&', '*'};
+
+  /**
+   * Generates a random password of 6-20 alphanumeric characters with 0-5 of the positions
+   * overwritten by a special character ({@code @ $ % ^ & *}). All randomness is sourced from {@link
+   * SecureRandom} via {@link #getSecureRandom()}.
+   *
+   * <p>Previously this method used {@code com.github.javafaker.Faker.lorem().characters(...)} for
+   * the alphanumeric base, which transitively pulled in {@code org.yaml:snakeyaml:1.23-android} (16
+   * CVEs). Replaced with a direct {@link SecureRandom} draw in this slice (issue #98).
+   */
+  public static String generateRandomPassword() {
+    SecureRandom random = getSecureRandom();
+
+    // Length 6-20 inclusive (was f.lorem().characters(6, 20, ...)).
+    int length = 6 + random.nextInt(15);
+    char[] password = new char[length];
+    for (int i = 0; i < length; i++) {
+      password[i] = PASSWORD_ALPHABET[random.nextInt(PASSWORD_ALPHABET.length)];
+    }
+
+    // 0-5 positions get overwritten with a special char (was f.random().nextInt(6)).
+    int specials = random.nextInt(6);
+    for (int i = 0; i < specials; i++) {
+      password[random.nextInt(password.length)] =
+          PASSWORD_SPECIALS[random.nextInt(PASSWORD_SPECIALS.length)];
     }
     return new String(password);
   }
