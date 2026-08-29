@@ -18,9 +18,9 @@ package com.percussion.user.service.impl;
 
 import static org.junit.Assert.assertTrue;
 
-import com.github.javafaker.Faker;
 import com.percussion.security.PSEncryptionException;
 import com.percussion.security.PSPasswordHandler;
+import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,9 +31,9 @@ public class PSDefaultPasswordEncryptionBeanTest {
 
   @Test
   public void shouldCreateHashesThatVerifyWithPasswordHandler() throws Exception {
-    Faker faker = new Faker();
-
-    String testPassword = faker.aquaTeenHungerForce().character().toString();
+    // Was com.github.javafaker.Faker.aquaTeenHungerForce().character().toString(); switched to
+    // UUID to drop the javafaker -> snakeyaml:1.23-android transitive (T2.x.2 hardening).
+    String testPassword = "test-" + UUID.randomUUID();
     String beanPassword = filter.encrypt(testPassword);
     String systemPassword = encrypt(testPassword);
 

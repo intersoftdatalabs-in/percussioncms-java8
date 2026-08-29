@@ -18,7 +18,6 @@ package com.percussion.delivery.metadata;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.javafaker.Faker;
 import com.percussion.delivery.metadata.IPSMetadataProperty.VALUETYPE;
 import com.percussion.delivery.metadata.data.PSMetadataBlogResult;
 import com.percussion.delivery.metadata.data.PSMetadataQuery;
@@ -1492,16 +1491,17 @@ public class PSMetadataQueryServiceTest extends TestCase {
       ents.add(e);
     }
 
-    Faker faker = new Faker();
-
+    // Was com.github.javafaker.Faker; switched to deterministic per-entry text to drop the
+    // javafaker -> snakeyaml:1.23-android transitive (T2.x.2 hardening). Tests don't assert
+    // on the specific content; they just need varied text per entry.
     for (int i = 0; i < ENTRY_COUNT; i++) {
       e =
           createEntry(
               "portal",
               "/noticias/destacadas/noticias-destacadas-2021/",
-              faker.chuckNorris().fact(),
+              "linktext-" + entryIdx,
               getTime(getRandomNumber(2010, 2021), getRandomNumber(1, 12), getRandomNumber(1, 28)),
-              faker.hitchhikersGuideToTheGalaxy().quote(),
+              "abstract-" + entryIdx,
               "Noticias-Noticia-Single",
               "page",
               entryIdx++);
@@ -1551,8 +1551,8 @@ public class PSMetadataQueryServiceTest extends TestCase {
       String template,
       String type,
       int idx) {
-    Faker faker = new Faker();
-
+    // Was com.github.javafaker.Faker; switched to per-idx category names to drop the
+    // javafaker -> snakeyaml:1.23-android transitive (T2.x.2 hardening).
     String name = "page" + idx + ".html";
     String pagepath = "/" + testsite + folder + name;
     PSDbMetadataEntry entry = new PSDbMetadataEntry(name, folder, pagepath, type, testsite);
@@ -1564,15 +1564,15 @@ public class PSMetadataQueryServiceTest extends TestCase {
     entry.addProperty(new PSDbMetadataProperty("dcterms:abstract", abstr));
     entry.addProperty(new PSDbMetadataProperty("dcterms:references", "bote, health"));
     entry.addProperty(new PSDbMetadataProperty("perc:testIndex", idx));
-    String catl1 = faker.animal().name();
-    String catl2 = faker.animal().name();
+    String catl1 = "cat-" + idx + "-a";
+    String catl2 = "cat-" + idx + "-b";
     entry.addProperty(new PSDbMetadataProperty("perc:category", "/Categories/" + catl1));
     entry.addProperty(
         new PSDbMetadataProperty(
-            "perc:category", "/Categories/" + catl1 + "/" + faker.animal().name()));
+            "perc:category", "/Categories/" + catl1 + "/" + "cat-" + idx + "-c"));
     entry.addProperty(
         new PSDbMetadataProperty(
-            "perc:category", "/Categories/" + catl1 + "/" + catl2 + "/" + faker.animal().name()));
+            "perc:category", "/Categories/" + catl1 + "/" + catl2 + "/" + "cat-" + idx + "-d"));
     entry.addProperty(new PSDbMetadataProperty("perc:type", type));
     entry.addProperty(new PSDbMetadataProperty("perc:reverseIndex", 10000 - idx));
     return entry;
