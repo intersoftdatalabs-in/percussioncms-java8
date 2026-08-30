@@ -41,7 +41,7 @@ public class PSBeanProperties implements IPSBeanPropertiesInternal {
     File f = getPropertiesFile();
     if (!f.exists()) return;
 
-    m_props = (Map<String, Object>) PSConfigUtils.loadObjectFromFile(f);
+    m_props = PSConfigUtils.loadObjectFromFile(f, HashMap.class);
   }
 
   /** Saves current properties into the properties file. */

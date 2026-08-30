@@ -121,4 +121,47 @@ public final class PSXStreamSecurity {
           ".*\\.bound\\..*"
         });
   }
+
+  /**
+   * Allowlist a set of specific project classes by fully-qualified name. This is the per-class
+   * allowlist counterpart to the legacy {@code allowTypesByWildcard("com.percussion.**")} pattern.
+   *
+   * <p>Call this after {@link #setupDefaultSecurity(XStream)}. Each class is added to the allowlist
+   * via {@link XStream#allowTypes(Class[])}, so only the named classes (and their declared fields)
+   * are deserializable, not the entire {@code com.percussion.**} namespace.
+   *
+   * <p>T2.x.5 hardening (issue #107): prefer this over the wildcard pattern.
+   *
+   * @param xs the XStream instance
+   * @param classes the classes to allowlist (varargs; null entries are ignored)
+   */
+  public static void allowProjectTypes(XStream xs, Class<?>... classes) {
+    for (Class<?> c : classes) {
+      if (c != null) {
+        xs.allowTypes(new Class<?>[] {c});
+      }
+    }
+  }
+
+  /**
+   * Allowlist a set of specific project packages by wildcard. Unlike the broad {@code
+   * com.percussion.**} pattern that allows every class in the project's namespace, this accepts an
+   * explicit list of narrower package patterns (typically one or two specific sub-packages).
+   *
+   * <p>Use this when the set of serializable classes is large but bounded to a known package (e.g.
+   * {@code com.percussion.services.publisher.data.**}). Avoid {@code **} at the top of the pattern;
+   * each entry should resolve to a specific leaf package.
+   *
+   * <p>T2.x.5 hardening (issue #107): prefer this over the wildcard pattern.
+   *
+   * @param xs the XStream instance
+   * @param packagePatterns narrow package wildcards (e.g. "com.percussion.foo.bar.**"); null
+   *     entries are ignored
+   */
+  public static void allowProjectPackages(XStream xs, String... packagePatterns) {
+    if (packagePatterns == null || packagePatterns.length == 0) {
+      return;
+    }
+    xs.allowTypesByWildcard(packagePatterns);
+  }
 }

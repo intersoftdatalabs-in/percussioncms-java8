@@ -801,14 +801,13 @@ public class PSConfigService implements IPSConfigService {
   /*
    * //see base class method for details
    */
-  @SuppressWarnings("unchecked")
   public Collection<String> loadCommunityVisibility(String pkgName) {
     File f = getConfigFile(ConfigTypes.VISIBILITY, pkgName);
     if (!f.exists()) {
       return Collections.emptySet();
     }
 
-    return (Collection<String>) PSConfigUtils.loadObjectFromFile(f);
+    return PSConfigUtils.loadObjectFromFile(f, HashSet.class);
   }
 
   /*
