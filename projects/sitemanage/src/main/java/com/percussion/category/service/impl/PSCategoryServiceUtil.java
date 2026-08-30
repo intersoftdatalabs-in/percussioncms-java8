@@ -19,6 +19,9 @@ package com.percussion.category.service.impl;
 
 import static com.percussion.share.service.exception.PSParameterValidationUtils.validateParameters;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.category.data.PSCategory;
 import com.percussion.category.data.PSCategoryNode;
 import com.percussion.category.marshaller.PSCategoryMarshaller;
@@ -42,13 +45,18 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 public class PSCategoryServiceUtil {
   public static final String DUMMYROOT = "dummyroot";
   private static final Logger log = LogManager.getLogger(PSCategoryServiceUtil.class);
+
+  /**
+   * Jackson ObjectMapper for in-memory JSON construction. T2.x.7 hardening (issue #111): replaced
+   * jettison {@code JSONObject} / {@code JSONArray} with Jackson {@code ObjectNode} / {@code
+   * ArrayNode}.
+   */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+
   private static final String CATEGORIES_UPDATE =
       "perc-metadata-services/metadata/categories/update/";
 
@@ -299,19 +307,19 @@ public class PSCategoryServiceUtil {
     return forPublish;
   }
 
-  private static JSONArray findModifiedCategories(
+  private static ArrayNode findModifiedCategories(
       List<PSCategoryNode> categories,
       String oldPrefix,
       String newPrefix,
       boolean hasParentChanged) {
 
-    JSONArray jsonArray = new JSONArray();
+    ArrayNode jsonArray = MAPPER.createArrayNode();
     boolean thisParentChanged = false;
     log.debug("Finding modified categories.");
 
     try {
       for (PSCategoryNode parent : categories) {
-        JSONObject obj = new JSONObject();
+        ObjectNode obj = MAPPER.createObjectNode();
         if (StringUtils.isNotBlank(parent.getPreviousCategoryName())
             && StringUtils.isNotBlank(parent.getTitle())) {
           thisParentChanged = true;
@@ -322,7 +330,7 @@ public class PSCategoryServiceUtil {
             obj.put("previousCategoryName", oldPrefix + "/" + parent.getPreviousCategoryName());
             obj.put("title", oldPrefix + "/" + parent.getTitle());
           }
-          jsonArray.put(obj);
+          jsonArray.add(obj);
 
           if (StringUtils.isBlank(newPrefix)) newPrefix = oldPrefix;
 
@@ -332,12 +340,12 @@ public class PSCategoryServiceUtil {
             obj.put("previousCategoryName", oldPrefix + "/" + parent.getTitle());
             obj.put("title", newPrefix + "/" + parent.getTitle());
 
-            jsonArray.put(obj);
+            jsonArray.add(obj);
           }
         }
 
         if (parent.getChildNodes() != null && !parent.getChildNodes().isEmpty()) {
-          JSONArray temp = null;
+          ArrayNode temp = null;
 
           if (thisParentChanged)
             temp =
@@ -363,13 +371,16 @@ public class PSCategoryServiceUtil {
                       false);
           }
 
-          for (int i = 0; i < temp.length(); i++) {
-            jsonArray.put(temp.get(i));
+          for (int i = 0; i < temp.size(); i++) {
+            jsonArray.add(temp.get(i));
           }
         }
       }
 
-    } catch (JSONException e) {
+    } catch (RuntimeException e) {
+      // T2.x.7: ObjectNode/ArrayNode builders don't throw checked exceptions,
+      // but defensive catch retained for any runtime errors from the
+      // underlying mapper (e.g. class construction failures).
       log.error(
           "Error occurred while creating json object for category to be published. - PSCategoryServiceUtil.getCategoriesForPublish()",
           e);

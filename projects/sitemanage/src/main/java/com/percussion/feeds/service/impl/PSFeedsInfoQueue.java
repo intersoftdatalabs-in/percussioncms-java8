@@ -16,6 +16,10 @@
  */
 package com.percussion.feeds.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.delivery.client.IPSDeliveryClient.HttpMethodType;
 import com.percussion.delivery.client.IPSDeliveryClient.PSDeliveryActionOptions;
 import com.percussion.delivery.client.PSDeliveryClient;
@@ -30,9 +34,6 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,6 +54,14 @@ public class PSFeedsInfoQueue implements InitializingBean {
 
   /** Logger for this service. */
   public static final Logger log = LogManager.getLogger(PSFeedsInfoQueue.class);
+
+  /**
+   * Jackson ObjectMapper used for in-memory JSON construction. T2.x.7 hardening (issue #111):
+   * replaced jettison {@code JSONObject} / {@code JSONArray} with Jackson {@code ObjectNode} /
+   * {@code ArrayNode}; jettison 1.5.4 is the latest (and effectively unmaintained) of a line
+   * carrying 5 CVEs.
+   */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   @Autowired
   public PSFeedsInfoQueue(
@@ -166,14 +175,14 @@ public class PSFeedsInfoQueue implements InitializingBean {
     private boolean checkForData(Collection<PSMetadata> prodResults) {
 
       for (PSMetadata p : prodResults) {
-        JSONArray json;
+        ArrayNode json;
         try {
-          json = new JSONObject(p.getData()).getJSONArray("descriptors");
-        } catch (JSONException e) {
+          json = (ArrayNode) MAPPER.readTree(p.getData()).get("descriptors");
+        } catch (JsonProcessingException e) {
           log.error("Error parsing FeedDescriptors from Metadata store. Stopping Feed Publish", e);
           return false;
         }
-        if (json.length() > 0) {
+        if (json.size() > 0) {
           return true;
         }
       }
@@ -186,7 +195,7 @@ public class PSFeedsInfoQueue implements InitializingBean {
         String key = data.getKey();
         String val = data.getData();
         try {
-          JSONObject descriptors = new JSONObject(val);
+          ObjectNode descriptors = (ObjectNode) MAPPER.readTree(val);
           // Add connection info
           descriptors.put("serviceUrl", deliveryInfo.getUrl());
           descriptors.put("serviceUser", deliveryInfo.getUsername());

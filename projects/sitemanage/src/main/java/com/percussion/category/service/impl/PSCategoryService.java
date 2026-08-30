@@ -19,6 +19,7 @@ package com.percussion.category.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.category.dao.IPSCategoryDao;
 import com.percussion.category.data.PSCategory;
 import com.percussion.category.data.PSCategoryLockInfo;
@@ -56,8 +57,6 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -69,6 +68,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class PSCategoryService implements IPSCategoryService {
 
   private static final Logger log = LogManager.getLogger(PSCategoryService.class);
+
+  /**
+   * Jackson ObjectMapper for in-memory JSON construction. T2.x.7 hardening (issue #111): replaced
+   * jettison {@code JSONObject} / {@code JSONArray} with Jackson {@code ObjectNode} / {@code
+   * ArrayNode}.
+   */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private IPSUserService userService;
   private IPSDeliveryInfoService deliveryService;
@@ -328,32 +334,25 @@ public class PSCategoryService implements IPSCategoryService {
   @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN, MediaType.APPLICATION_XML})
   public String getLockInfo() {
 
-    JSONObject jsonObject = null;
+    ObjectNode jsonObject = null;
 
     if (PSCategoryLockInfo.isFileLocked()) jsonObject = PSCategoryLockInfo.getLockInfo();
 
     if (jsonObject != null) {
-      try {
-        // make sure the object is valid
-        jsonObject.get("userName");
+      // T2.x.7 hardening (issue #111): jettison's JSONObject.get returned
+      // null on missing keys; Jackson's ObjectNode.get returns null too.
+      // The check is now simply: if userName is present, return.
+      if (jsonObject.has("userName")) {
         return jsonObject.toString();
-      } catch (JSONException e) {
-        log.error(
-            "JSON Exception occurred while reading from the json object - PSCategoryService.getLockInfo()",
-            new PSDataServiceException("Could not read lock information file"));
       }
+      log.error(
+          "Json object is missing userName field - PSCategoryService.getLockInfo()",
+          new PSDataServiceException("Could not read lock information file"));
     } else {
-      try {
-        jsonObject = new JSONObject();
-        jsonObject.put("userName", "");
-        jsonObject.put("sessionId", "");
-        jsonObject.put("sitename", "");
-      } catch (JSONException e) {
-        log.error(
-            "JSON Exception occurred while creating empty json object - PSCategoryService.getLockInfo()",
-            new WebApplicationException(
-                "No lock on category tab. Could not create an empty json to return from api."));
-      }
+      jsonObject = MAPPER.createObjectNode();
+      jsonObject.put("userName", "");
+      jsonObject.put("sessionId", "");
+      jsonObject.put("sitename", "");
     }
     return jsonObject.toString();
   }
@@ -364,16 +363,17 @@ public class PSCategoryService implements IPSCategoryService {
   @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN, MediaType.APPLICATION_XML})
   public void lockCategoryTab(@PathParam("date") String date) {
 
-    JSONObject jsonObject = null;
+    ObjectNode jsonObject = null;
 
     if (PSCategoryLockInfo.isFileLocked()) jsonObject = PSCategoryLockInfo.getLockInfo();
     try {
       if (jsonObject != null) {
 
-        if (!(jsonObject.get("userName")).equals(userService.getCurrentUser().getName())) {
+        if (!(jsonObject.path("userName").asText())
+            .equals(userService.getCurrentUser().getName())) {
           PSCategoryLockInfo.removeLockInfo();
           PSCategoryLockInfo.writeLockInfoToFile(userService, date);
-        } else if (!(jsonObject.get("creationDate")).equals(date)) {
+        } else if (!(jsonObject.path("creationDate").asText()).equals(date)) {
           PSCategoryLockInfo.removeLockInfo();
           PSCategoryLockInfo.writeLockInfoToFile(userService, date);
         }
@@ -381,7 +381,7 @@ public class PSCategoryService implements IPSCategoryService {
       } else {
         PSCategoryLockInfo.writeLockInfoToFile(userService, date);
       }
-    } catch (JSONException | PSDataServiceException e) {
+    } catch (PSDataServiceException e) {
       log.error(
           "JSON Exception occurred while reading from the json object - PSCategoryService.overrideCatTabLock()",
           new WebApplicationException("Could not read lock information file"));

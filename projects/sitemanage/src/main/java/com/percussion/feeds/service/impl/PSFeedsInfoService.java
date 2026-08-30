@@ -18,6 +18,9 @@ package com.percussion.feeds.service.impl;
 
 import static org.apache.commons.lang3.Validate.notNull;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.cms.objectstore.PSInvalidContentTypeException;
 import com.percussion.cms.objectstore.PSRelationshipFilter;
 import com.percussion.cms.objectstore.server.PSItemDefManager;
@@ -64,9 +67,6 @@ import javax.jcr.query.Row;
 import javax.jcr.query.RowIterator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -94,6 +94,13 @@ public class PSFeedsInfoService implements IPSFeedsInfoService {
 
   /** Logger for this service. */
   public static final Logger log = LogManager.getLogger(PSFeedsInfoService.class);
+
+  /**
+   * Jackson ObjectMapper for in-memory JSON construction. T2.x.7 hardening (issue #111): replaced
+   * jettison {@code JSONObject} / {@code JSONArray} with Jackson {@code ObjectNode} / {@code
+   * ArrayNode}.
+   */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   @Autowired
   public PSFeedsInfoService(
@@ -167,7 +174,7 @@ public class PSFeedsInfoService implements IPSFeedsInfoService {
       } else if (emptyFeedSetSent.contains(site.getSiteId())) {
         emptyFeedSetSent.remove(site.getSiteId());
       }
-    } catch (JSONException | IPSGenericDao.LoadException | IPSGenericDao.SaveException e) {
+    } catch (IPSGenericDao.LoadException | IPSGenericDao.SaveException e) {
       throw new PSFeedInfoServiceException("Error occurred while trying to create descriptors.", e);
     }
   }
@@ -178,12 +185,11 @@ public class PSFeedsInfoService implements IPSFeedsInfoService {
    * @param site assumed not <code>null</code>.
    * @param feeds assumed not <code>null</code>.
    * @return the json string never <code>null</code> or empty.
-   * @throws JSONException
    * @throws PSFeedInfoServiceException
    */
   private String createDescriptorsJson(
       IPSSite site, Collection<PSFeedInfo> feeds, String serverType, String adminURL)
-      throws JSONException, PSFeedInfoServiceException {
+      throws PSFeedInfoServiceException {
     PSDeliveryInfo deliveryInfo =
         deliveryInfoService.findByService(PSDeliveryInfo.SERVICE_FEEDS, serverType, adminURL);
     if (deliveryInfo == null) {
@@ -209,11 +215,11 @@ public class PSFeedsInfoService implements IPSFeedsInfoService {
       throw new RuntimeException(error);
     }
 
-    JSONObject obj = new JSONObject();
-    JSONArray descriptors = new JSONArray();
+    ObjectNode obj = MAPPER.createObjectNode();
+    ArrayNode descriptors = MAPPER.createArrayNode();
     obj.put("site", site.getName());
     for (PSFeedInfo feed : feeds) {
-      JSONObject d = new JSONObject();
+      ObjectNode d = MAPPER.createObjectNode();
       d.put("name", feed.getName());
       d.put("site", site.getName());
       d.put("description", feed.getDesc());
@@ -221,7 +227,7 @@ public class PSFeedsInfoService implements IPSFeedsInfoService {
       d.put("title", feed.getTitle());
       d.put("query", feed.getQuery());
       d.put("type", feed.getType());
-      descriptors.put(d);
+      descriptors.add(d);
     }
     obj.put("descriptors", descriptors);
     return obj.toString();
