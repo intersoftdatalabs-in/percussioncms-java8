@@ -194,7 +194,11 @@ public class PSSecureXMLUtils {
 
   public static XStream getSecuredXStream() {
     XStream xs = new XStream(new DomDriver());
-    // TODO: 01-04-2022   whitelist specific classes
+    // T2.x.4 hardening (issue #104): apply the post-1.4.7 XStream baseline
+    // (NoTypePermission.NONE + primitives + null + collection hierarchies)
+    // and the project's gadget-chain deny list, then re-allow the
+    // com.percussion.** wildcard for project DTOs.
+    PSXStreamSecurity.setupDefaultSecurity(xs);
     xs.allowTypesByWildcard(new String[] {"com.percussion.**"});
     return xs;
   }

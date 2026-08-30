@@ -17,6 +17,7 @@
 
 package com.percussion.soln.rx.assembly;
 
+import com.percussion.security.xml.PSXStreamSecurity;
 import com.percussion.services.assembly.IPSAssemblyItem;
 import com.percussion.services.assembly.IPSAssemblyResult;
 import com.thoughtworks.xstream.XStream;
@@ -37,6 +38,12 @@ public class XStreamAssemblyResult extends MutableAssemblyResult implements IPSA
   private XStream getXStream() {
     if (xstream == null) {
       xstream = new XStream();
+      // T2.x.4 hardening (issue #104): apply the shared security baseline
+      // and allow com.percussion.** for project DTOs. This site is
+      // currently write-only (toXML), but defense in depth: if a future
+      // contributor adds a fromXML call, the instance is already hardened.
+      PSXStreamSecurity.setupDefaultSecurity(xstream);
+      xstream.allowTypesByWildcard(new String[] {"com.percussion.**"});
     }
 
     return xstream;

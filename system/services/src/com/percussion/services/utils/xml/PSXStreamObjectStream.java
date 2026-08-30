@@ -16,20 +16,14 @@
  */
 package com.percussion.services.utils.xml;
 
+import com.percussion.security.xml.PSXStreamSecurity;
 import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.security.CGLIBProxyTypePermission;
-import com.thoughtworks.xstream.security.NoTypePermission;
-import com.thoughtworks.xstream.security.NullPermission;
-import com.thoughtworks.xstream.security.PrimitiveTypePermission;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 /**
  * 
@@ -45,23 +39,20 @@ public class PSXStreamObjectStream<T> extends PSObjectStream<T>
    private XStream m_xstream = new XStream();
 
    /***
-    * Initialize the xstream security framework
+    * Initialize the xstream security framework.
+    *
+    * <p>T2.x.4 hardening (issue #104): delegates to the shared
+    * {@link PSXStreamSecurity#setupDefaultSecurity(XStream)} helper so this
+    * site uses the same post-1.4.7 baseline and the project's gadget-chain
+    * deny list as the other 4 XStream init sites in the project. The
+    * {@code com.percussion.**} wildcard is re-applied after the helper so
+    * project classes remain deserializable.
     */
    private static void initSecurityFramework(XStream stream){
-      stream.addPermission(NoTypePermission.NONE);
-      stream.addPermission(NullPermission.NULL);
-      stream.addPermission(PrimitiveTypePermission.PRIMITIVES);
-      stream.addPermission(CGLIBProxyTypePermission.PROXIES);
-      stream.allowTypeHierarchy(Collection.class);
-      stream.allowTypeHierarchy(Set.class);
-      stream.allowTypeHierarchy(List.class);
-      stream.allowTypeHierarchy(String.class);
+      PSXStreamSecurity.setupDefaultSecurity(stream);
       stream.allowTypesByWildcard(new String[] {
               "com.percussion.**"
       });
-
-      stream.denyTypesByWildcard(new String[]{ "sun.reflect.**", "sun.tracing.**", "com.sun.corba.**" });
-      stream.denyTypesByRegExp(new String[]{ ".*\\.ws\\.client\\.sei\\..*", ".*\\$ProxyLazyValue", "com\\.sun\\.jndi\\..*Enumerat(?:ion|tor),.*\\$URLData" });
    }
 
    public PSXStreamObjectStream() throws IOException

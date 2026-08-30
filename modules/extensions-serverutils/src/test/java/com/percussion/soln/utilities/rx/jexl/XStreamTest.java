@@ -19,6 +19,7 @@ package com.percussion.soln.utilities.rx.jexl;
 
 import static junit.framework.Assert.*;
 
+import com.percussion.security.xml.PSXStreamSecurity;
 import com.thoughtworks.xstream.XStream;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
@@ -28,6 +29,10 @@ public class XStreamTest {
   @Test
   public void shouldWriteXML() throws UnsupportedEncodingException {
     XStream xs = new XStream();
+    // T2.x.4 hardening (issue #104): apply the shared baseline for
+    // consistency with the other XStream init sites. The String round-trip
+    // is unaffected because String is in the default type-hierarchy allow.
+    PSXStreamSecurity.setupDefaultSecurity(xs);
     // Might fail because of local encoding problems.
     byte[] bs =
         xs.toXML("Why and when to upgrade to Rhythmyx 6.x and what’s included.").getBytes("UTF-8");
