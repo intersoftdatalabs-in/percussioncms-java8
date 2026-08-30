@@ -17,6 +17,7 @@
 
 package com.percussion.utils.container.jboss;
 
+import com.percussion.security.utils.PSBeanUtilsSafe;
 import com.percussion.utils.container.IPSJndiDatasource;
 import com.percussion.utils.container.PSJndiDatasourceImpl;
 import com.percussion.utils.jdbc.PSJdbcUtils;
@@ -32,7 +33,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -160,7 +160,11 @@ public class PSJBossJndiDatasource extends PSJndiDatasourceImpl
 
   public PSJBossJndiDatasource(IPSJndiDatasource ds) {
     try {
-      BeanUtils.copyProperties(this, ds);
+      // T2.x.6 hardening (issue #109): use the safe wrapper to block
+      // class-injection gadget chains via the "class" / "classLoader"
+      // properties. The source `ds` is a JNDI datasource lookup result,
+      // which is historically a gadget chain source (see Log4Shell).
+      PSBeanUtilsSafe.copyProperties(this, ds);
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }

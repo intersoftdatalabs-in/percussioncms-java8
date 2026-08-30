@@ -17,6 +17,7 @@
 package com.percussion.services.utils.xml;
 
 import com.percussion.error.PSExceptionUtils;
+import com.percussion.security.utils.PSBeanUtilsSafe;
 import com.percussion.security.xml.PSSecureXMLUtils;
 import com.percussion.security.xml.PSXmlSecurityOptions;
 import com.percussion.services.catalog.PSTypeEnum;
@@ -38,7 +39,6 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.betwixt.IntrospectionConfiguration;
 import org.apache.commons.betwixt.XMLIntrospector;
 import org.apache.commons.betwixt.io.BeanReader;
@@ -460,7 +460,9 @@ public class PSXmlSerializationHelper {
     }
     Object restored = readFromXML(xmlsource, object != null ? object.getClass() : null);
     try {
-      BeanUtils.copyProperties(object, restored);
+      // T2.x.6 hardening (issue #109): use the safe wrapper to block
+      // class-injection gadget chains via the "class" / "classLoader" properties.
+      PSBeanUtilsSafe.copyProperties(object, restored);
       return object;
     } catch (Exception e) {
       // Find underlying cause Exception.

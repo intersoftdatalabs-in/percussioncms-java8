@@ -20,6 +20,7 @@ package com.percussion.soln.jcr;
 import static org.apache.commons.lang3.Validate.notEmpty;
 import static org.apache.commons.lang3.Validate.notNull;
 
+import com.percussion.security.utils.PSBeanUtilsSafe;
 import com.percussion.services.contentmgr.IPSNodeDefinition;
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
@@ -81,17 +82,21 @@ public class NodeUtils {
         Property p = node.getProperty(propName);
         Class<?> type = d.getPropertyType();
         if (type.isAssignableFrom(Long.class)) {
-          PropertyUtils.setProperty(object, d.getName(), p.getLong());
+          // T2.x.6 hardening (issue #109): use the safe wrapper to block
+          // class-injection gadget chains via the "class" / "classLoader"
+          // properties. `d.getName()` is a JCR PropertyDefinition name, which
+          // is a string that could be "class" if the JCR schema is hostile.
+          PSBeanUtilsSafe.setProperty(object, d.getName(), p.getLong());
         } else if (type.isAssignableFrom(Double.class)) {
-          PropertyUtils.setProperty(object, d.getName(), p.getDouble());
+          PSBeanUtilsSafe.setProperty(object, d.getName(), p.getDouble());
         } else if (type.isAssignableFrom(String.class)) {
-          PropertyUtils.setProperty(object, d.getName(), p.getString());
+          PSBeanUtilsSafe.setProperty(object, d.getName(), p.getString());
         } else if (type.isAssignableFrom(Boolean.class)) {
-          PropertyUtils.setProperty(object, d.getName(), p.getBoolean());
+          PSBeanUtilsSafe.setProperty(object, d.getName(), p.getBoolean());
         } else if (type.isAssignableFrom(Date.class)) {
-          PropertyUtils.setProperty(object, d.getName(), p.getDate().getTime());
+          PSBeanUtilsSafe.setProperty(object, d.getName(), p.getDate().getTime());
         } else if (type.isAssignableFrom(Calendar.class)) {
-          PropertyUtils.setProperty(object, d.getName(), p.getDate());
+          PSBeanUtilsSafe.setProperty(object, d.getName(), p.getDate());
         } else if (type.isAssignableFrom(List.class)) {
           List<String> vs = new ArrayList<String>();
           if (p.getDefinition().isMultiple()) {
@@ -102,7 +107,7 @@ public class NodeUtils {
           } else {
             vs.add(p.getString());
           }
-          PropertyUtils.setProperty(object, d.getName(), vs);
+          PSBeanUtilsSafe.setProperty(object, d.getName(), vs);
         } else {
           log.warn("Do not know how to convert type: " + type + " for property: " + propName);
         }
