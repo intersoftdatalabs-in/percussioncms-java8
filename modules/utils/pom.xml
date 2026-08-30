@@ -67,10 +67,7 @@
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jasypt</groupId>
-            <artifactId>jasypt</artifactId>
-        </dependency>
+        <!-- T2.x.8b hardening (issue #121): jasypt 1.9.3 removed. -->
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>

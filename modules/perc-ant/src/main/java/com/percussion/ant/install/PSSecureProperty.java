@@ -18,7 +18,6 @@
 package com.percussion.ant.install;
 
 import com.percussion.error.PSExceptionUtils;
-import com.percussion.legacy.security.deprecated.PSLegacyEncrypter;
 import com.percussion.security.PSEncryptionException;
 import com.percussion.security.PSEncryptor;
 import com.percussion.security.ToDoVulnerability;
@@ -37,11 +36,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
-import org.jasypt.exceptions.EncryptionInitializationException;
-import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
-import org.jasypt.util.text.BasicTextEncryptor;
 
 /**
  * Encrypts properties in a properties file that are specified to be encrypted.
@@ -78,7 +72,9 @@ public class PSSecureProperty {
 
       Properties props = new Properties();
       boolean modified = false;
-      String ky = k == null ? PSLegacyEncrypter.SECURE_PROPERTY_DEFAULT_KEY : k;
+      // T2.x.8b hardening (issue #121): the `k` (key) parameter is now
+      // ignored; the project's own PSEncryptor manages its own key.
+      // The parameter is kept for binary compatibility.
 
       log.debug("loading properties from file: {}", filepath.getAbsolutePath());
       try (FileInputStream is = new FileInputStream(filepath)) {
@@ -199,28 +195,19 @@ public class PSSecureProperty {
     }
 
     try {
-      // Attempt using the updated encryptor
+      // T2.x.8b hardening (issue #121): the jasypt BasicTextEncryptor and
+      // StandardPBEStringEncryptor fallbacks have been removed along
+      // with the jasypt 1.9.3 dep. The project's own PSEncryptor
+      // (BC + JCA) is the only decryption path. The strong format
+      // ENC2(...) is handled by PSEncryptor; the legacy ENC(...)
+      // format (from the old jasypt BasicTextEncryptor) is no longer
+      // supported and will throw.
       decryptedValue =
           PSEncryptor.decryptString(
               PathUtils.getRxDir().getAbsolutePath().concat(PSEncryptor.SECURE_DIR),
               encryptedValue);
     } catch (PSEncryptionException e) {
-      log.debug("Decrypting using legacy algorithm");
-      String ky = k == null ? PSLegacyEncrypter.SECURE_PROPERTY_DEFAULT_KEY : k;
-
-      try {
-        BasicTextEncryptor textEncryptor = new BasicTextEncryptor();
-        textEncryptor.setPassword(ky);
-        decryptedValue = textEncryptor.decrypt(encryptedValue);
-      } catch (EncryptionOperationNotPossibleException | EncryptionInitializationException e1) {
-        log.debug("Decrypting using legacy AES algorithm");
-        try {
-          StandardPBEStringEncryptor pbe = getStrongEncryptor(ky);
-          decryptedValue = pbe.decrypt(encryptedValue);
-        } catch (EncryptionOperationNotPossibleException | EncryptionInitializationException e2) {
-          log.error("Unable to decrypt property:{}", e2.getMessage());
-        }
-      }
+      log.error("Unable to decrypt property:{}", e.getMessage());
     }
     return decryptedValue;
   }
@@ -259,19 +246,11 @@ public class PSSecureProperty {
   }
 
   /**
-   * Helper to create a standard PBE encryptor.
-   *
-   * @param password the password to set, assumed not <code>null</code> or empty.
-   * @return A StandardPBEStringEncryptor, never <code>null</code> or empty.
+   * T2.x.8b hardening (issue #121): the jasypt-based {@code getStrongEncryptor} helper has been
+   * removed along with the jasypt 1.9.3 dep. The project's own {@code PSEncryptor} is the only
+   * encryption path.
    */
-  private static StandardPBEStringEncryptor getStrongEncryptor(String password) {
-    StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
-    encryptor.setProvider(new BouncyCastleProvider());
-    encryptor.setAlgorithm(ENC_AES_ALGORITHM);
-    encryptor.setPassword(password);
-
-    return encryptor;
-  }
+  // getStrongEncryptor removed in T2.x.8b
 
   private static final String ERROR_FILEPATH = "The filepath cannot be null!!!!!";
 
@@ -292,6 +271,6 @@ public class PSSecureProperty {
   /** Constant for the strong encryption using AES. */
   private static final String AES_ENCRYPTION = "ENC2";
 
-  /** Constant for the encryption algorithm. */
-  private static final String ENC_AES_ALGORITHM = "PBEWITHSHA256AND128BITAES-CBC-BC";
+  // T2.x.8b hardening (issue #121): the jasypt-based ENC_AES_ALGORITHM
+  // constant has been removed along with the jasypt 1.9.3 dep.
 }

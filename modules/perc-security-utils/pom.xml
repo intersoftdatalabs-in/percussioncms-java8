@@ -60,11 +60,7 @@
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15to18</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jasypt</groupId>
-            <artifactId>jasypt</artifactId>
-            <scope>compile</scope>
-        </dependency>
+        <!-- T2.x.8b hardening (issue #121): jasypt 1.9.3 removed. -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
