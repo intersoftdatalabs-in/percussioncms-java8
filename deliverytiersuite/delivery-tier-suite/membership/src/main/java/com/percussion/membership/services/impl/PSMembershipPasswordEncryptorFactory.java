@@ -17,7 +17,6 @@ package com.percussion.membership.services.impl;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.jasypt.util.password.PasswordEncryptor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.MessageDigestPasswordEncoder;
@@ -71,7 +70,7 @@ public class PSMembershipPasswordEncryptorFactory {
     ENCODER = dpe;
   }
 
-  public static PasswordEncryptor getPasswordEncryptor() {
+  public static PSPasswordEncryptor getPasswordEncryptor() {
     return new PSPasswordEncryptorAdapter(ENCODER);
   }
 }

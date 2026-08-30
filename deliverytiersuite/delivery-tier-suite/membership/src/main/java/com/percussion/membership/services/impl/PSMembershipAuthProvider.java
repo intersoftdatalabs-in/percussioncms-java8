@@ -22,7 +22,6 @@ import com.percussion.membership.services.IPSAuthProvider;
 import com.percussion.membership.services.IPSMembershipDao;
 import com.percussion.membership.services.PSAuthenticationFailedException;
 import org.apache.commons.lang3.Validate;
-import org.jasypt.util.password.PasswordEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,7 +49,7 @@ public class PSMembershipAuthProvider implements IPSAuthProvider {
       throw new PSAuthenticationFailedException(LOGIN_ERROR_MESSAGE);
     }
 
-    PasswordEncryptor passwordEncryptor =
+    PSPasswordEncryptor passwordEncryptor =
         PSMembershipPasswordEncryptorFactory.getPasswordEncryptor();
     if (!passwordEncryptor.checkPassword(password, member.getPassword())) {
       throw new PSAuthenticationFailedException(LOGIN_ERROR_MESSAGE);

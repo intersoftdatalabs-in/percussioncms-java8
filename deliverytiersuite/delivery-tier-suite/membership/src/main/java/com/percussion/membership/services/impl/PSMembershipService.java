@@ -41,7 +41,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.jasypt.util.password.PasswordEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -495,7 +494,7 @@ public class PSMembershipService implements IPSMembershipService {
    */
   private String encryptPassword(String password) {
     String encryptedPassword = StringUtils.EMPTY;
-    PasswordEncryptor passwordEncryptor =
+    PSPasswordEncryptor passwordEncryptor =
         PSMembershipPasswordEncryptorFactory.getPasswordEncryptor();
     encryptedPassword = passwordEncryptor.encryptPassword(password);
 

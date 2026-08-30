@@ -15,27 +15,21 @@
  */
 package com.percussion.membership.services.impl;
 
-import org.jasypt.util.password.PasswordEncryptor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Adapter that implements jasypt's {@link PasswordEncryptor} interface but delegates the actual
- * encoding and verification to Spring Security's {@link PasswordEncoder}.
+ * Adapter that implements the project-local {@link PSPasswordEncryptor} interface but delegates the
+ * actual encoding to Spring Security's {@link PasswordEncoder}.
  *
- * <p>T2.x.8a hardening (issue #119): this adapter lets the membership service keep its existing
- * {@code PasswordEncryptor}-typed dependency while the actual implementation is BCrypt (via {@code
- * DelegatingPasswordEncoder}). Call sites do not need code changes.
+ * <p>T2.x.8a hardening (issue #119) introduced this adapter to use BCrypt under the hood. T2.x.8b
+ * hardening (issue #121) renamed the interface from jasypt's {@code PasswordEncryptor} to the
+ * project-local {@code PSPasswordEncryptor} so the jasypt 1.9.3 dep can be removed.
  *
- * <p>The shim has two methods:
- *
- * <ul>
- *   <li>{@link #encryptPassword(String)} — produces a new hash using the default encoder (BCrypt).
- *   <li>{@link #checkPassword(String, String)} — verifies a raw password against a stored hash. The
- *       stored hash may be in any format supported by the {@code DelegatingPasswordEncoder}
- *       (BCrypt, SHA-256, etc.) — the encoder picks the right algorithm based on the prefix.
- * </ul>
+ * <p>Call sites see {@link PSPasswordEncryptor}; the actual implementation is Spring Security's
+ * {@code DelegatingPasswordEncoder} (BCrypt for new passwords, SHA-256 for legacy hashes via the
+ * default-for-matches).
  */
-class PSPasswordEncryptorAdapter implements PasswordEncryptor {
+class PSPasswordEncryptorAdapter implements PSPasswordEncryptor {
 
   private final PasswordEncoder delegate;
 
