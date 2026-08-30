@@ -17,6 +17,9 @@
 
 package com.percussion.category.data;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.server.PSRequest;
 import com.percussion.server.PSUserSessionManager;
 import com.percussion.share.service.exception.PSDataServiceException;
@@ -30,18 +33,23 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 public class PSCategoryLockInfo {
 
   private static final Logger log = LogManager.getLogger(PSCategoryLockInfo.class);
   private static final String LOCKINFOFILE = "lock_info.json";
 
+  /**
+   * Jackson ObjectMapper for in-memory JSON construction. T2.x.7 hardening (issue #111): replaced
+   * jettison {@code JSONObject} / {@code JSONArray} with Jackson {@code ObjectNode} / {@code
+   * ArrayNode}.
+   */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+
   public static void writeLockInfoToFile(IPSUserService userService, String date)
       throws PSDataServiceException {
 
-    JSONObject lockInfo = new JSONObject();
+    ObjectNode lockInfo = MAPPER.createObjectNode();
     File file = new File(LOCKINFOFILE);
 
     String userName = userService.getCurrentUser().getName();
@@ -57,7 +65,7 @@ public class PSCategoryLockInfo {
 
     } catch (FileNotFoundException e) {
       log.error("File not found exception - PSCategoryService.writeLockInfoToFile()", e);
-    } catch (JSONException e) {
+    } catch (JsonProcessingException e) {
       log.error("Json exception with the Json Object - PSCategoryService.writeLockInfoToFile()", e);
     } catch (IOException e) {
       log.error("IO exception with FileWriter - PSCategoryService.writeLockInfoToFile()", e);
@@ -66,7 +74,7 @@ public class PSCategoryLockInfo {
 
   public static boolean isFileLocked() {
 
-    JSONObject jsonObject = getLockInfo();
+    ObjectNode jsonObject = getLockInfo();
     if (jsonObject != null) {
       return true;
     }
@@ -74,12 +82,12 @@ public class PSCategoryLockInfo {
   }
 
   @SuppressWarnings("unused")
-  public static JSONObject getLockInfo() {
+  public static ObjectNode getLockInfo() {
 
     File file = new File(LOCKINFOFILE);
     FileInputStream is = null;
     byte[] lockInfo = new byte[1000];
-    JSONObject jsonObject = null;
+    ObjectNode jsonObject = null;
 
     if (file.exists()) {
 
@@ -93,7 +101,7 @@ public class PSCategoryLockInfo {
           return null;
         }
 
-        jsonObject = new JSONObject(new String(lockInfo, "UTF-8"));
+        jsonObject = (ObjectNode) MAPPER.readTree(new String(lockInfo, "UTF-8"));
 
         if (isLockStale(jsonObject)) {
           removeLockInfo();
@@ -103,8 +111,6 @@ public class PSCategoryLockInfo {
         log.error("File not found with FileReader - PSCategoryService.getLockInfo()", e);
       } catch (IOException e) {
         log.error("IO exception with FileReader - PSCategoryService.getLockInfo()", e);
-      } catch (JSONException e) {
-        log.error("Json exception with the Json Object - PSCategoryService.getLockInfo()", e);
       } finally {
         try {
           // FB: NP_GUARANTEED_DEREF_ON_EXCEPTION_PATH NC 1-16-16
@@ -122,24 +128,19 @@ public class PSCategoryLockInfo {
     return jsonObject;
   }
 
-  private static boolean isLockStale(JSONObject jsonObject) {
+  private static boolean isLockStale(ObjectNode jsonObject) {
     if (jsonObject == null) {
       return false;
     }
 
-    try {
-      String sessionId = jsonObject.getString("sessionId");
-      if (StringUtils.isNotBlank(sessionId)) {
-        if (PSUserSessionManager.getUserSession(sessionId) == null) {
-          log.debug(
-              "Removing stale category tab lock for sessionId: {} - session no longer exists",
-              sessionId);
-          return true;
-        }
+    String sessionId = jsonObject.path("sessionId").asText();
+    if (StringUtils.isNotBlank(sessionId)) {
+      if (PSUserSessionManager.getUserSession(sessionId) == null) {
+        log.debug(
+            "Removing stale category tab lock for sessionId: {} - session no longer exists",
+            sessionId);
+        return true;
       }
-    } catch (JSONException e) {
-      log.error(
-          "JSON Exception occurred while validating lock - PSCategoryLockInfo.isLockStale()", e);
     }
 
     return false;

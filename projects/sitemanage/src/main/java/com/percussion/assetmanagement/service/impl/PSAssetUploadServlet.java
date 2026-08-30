@@ -15,6 +15,8 @@
  */
 package com.percussion.assetmanagement.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.assetmanagement.data.PSAsset;
 import com.percussion.error.PSExceptionUtils;
 import com.percussion.security.SecureStringUtils;
@@ -32,8 +34,6 @@ import javax.servlet.http.Part;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
  * Servlet responsible for uploading a file and creating an asset from it. It will check-in the
@@ -45,6 +45,13 @@ import org.codehaus.jettison.json.JSONObject;
 @MultipartConfig
 public class PSAssetUploadServlet extends HttpServlet {
   private static final long serialVersionUID = 1L;
+
+  /**
+   * Jackson ObjectMapper for in-memory JSON construction. T2.x.7 hardening (issue #111): replaced
+   * jettison {@code JSONObject} / {@code JSONArray} with Jackson {@code ObjectNode} / {@code
+   * ArrayNode}.
+   */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   /** Utility method to get file name from HTTP header content-disposition */
   private String getFileName(Part part) {
@@ -96,7 +103,7 @@ public class PSAssetUploadServlet extends HttpServlet {
       // See documentation at https://github.com/blueimp/jQuery-File-Upload
       // {"files":[{"thumbnailUrl":"https://jquery-file-upload.appspot.com/image%2Fjpeg/5760114746625974273/oyster.jpeg.80x80.png","name":"oyster.jpeg","url":"https://jquery-file-upload.appspot.com/image%2Fjpeg/5760114746625974273/oyster.jpeg","deleteType":"DELETE","type":"image/jpeg","deleteUrl":"https://jquery-file-upload.appspot.com/image%2Fjpeg/5760114746625974273/oyster.jpeg","size":10420}]}
       if (newAsset != null) {
-        JSONObject jsonObject = new JSONObject();
+        ObjectNode jsonObject = MAPPER.createObjectNode();
         jsonObject.put("result", newAsset.getName());
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -129,13 +136,13 @@ public class PSAssetUploadServlet extends HttpServlet {
     response.setCharacterEncoding("UTF-8");
     try (PrintWriter w = response.getWriter()) {
       try {
-        JSONObject err = new JSONObject();
+        ObjectNode err = MAPPER.createObjectNode();
         err.put("error", message != null ? message : "Upload failed.");
         if (fileName != null && !fileName.isEmpty()) {
           err.put("name", fileName);
         }
         w.print(err.toString());
-      } catch (JSONException je) {
+      } catch (RuntimeException je) {
         logger.warn("Failed to build JSON error response for upload failure", je);
         w.print("{\"error\":\"Upload failed. See server logs for details.\"}");
       }

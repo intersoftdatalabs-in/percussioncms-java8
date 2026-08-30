@@ -20,6 +20,10 @@ import static com.percussion.share.dao.PSFolderPathUtils.concatPath;
 import static org.apache.commons.lang3.Validate.notEmpty;
 import static org.apache.commons.lang3.Validate.notNull;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.cms.PSSingleValueBuilder;
 import com.percussion.cms.objectstore.PSComponentSummary;
 import com.percussion.design.objectstore.PSLocator;
@@ -76,9 +80,6 @@ import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -96,6 +97,13 @@ public class PSManagedLinkService implements IPSManagedLinkService {
   public static final int UNASSIGNED_PARENT_ID = -1;
 
   private static final Logger log = LogManager.getLogger(PSManagedLinkService.class);
+
+  /**
+   * Jackson ObjectMapper for in-memory JSON construction. T2.x.7 hardening (issue #111): replaced
+   * jettison {@code JSONObject} / {@code JSONArray} with Jackson {@code ObjectNode} / {@code
+   * ArrayNode}.
+   */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private IPSManagedLinkDao dao;
 
@@ -267,54 +275,59 @@ public class PSManagedLinkService implements IPSManagedLinkService {
   @Override
   public String renderLinksInJSON(
       PSRenderLinkContext linkContext, String jsonPayload, Boolean isStaging) {
-    JSONObject object = null;
-    JSONArray objectArray = new JSONArray();
+    ObjectNode object = null;
+    ArrayNode objectArray = null;
 
     try {
       if (log.isDebugEnabled()) log.debug("Parsing JSON Payload: {}", jsonPayload);
-      object = new JSONObject(jsonPayload);
+      object = (ObjectNode) MAPPER.readTree(jsonPayload);
 
       log.debug("Done parsing payload, parsing {} array.", PERC_CONFIG);
 
-      try {
-        objectArray = object.getJSONArray(PERC_CONFIG);
+      // T2.x.7: PERC_CONFIG may be missing or not an array. In jettison,
+      // getJSONArray threw JSONException for both; in Jackson, get returns
+      // null for missing, and a non-array JsonNode for type-mismatch.
+      // Both cases mean "no managed links in this payload", which the
+      // caller treats as a skip signal (returns null).
+      if (object.get(PERC_CONFIG) instanceof ArrayNode) {
+        objectArray = (ArrayNode) object.get(PERC_CONFIG);
         log.debug("Done parsing payload array");
-      } catch (JSONException js) {
+      } else {
         // Unable to get the array so log an error that it is missing
         log.error(
             "An error occurred while trying to manage links in a JSONPayload field. Error: {}",
-            PSExceptionUtils.getMessageForLog(js));
-        log.debug("An error occurred while trying to manage links in a JSONPayload field.", js);
+            "PERC_CONFIG is missing or not an array");
         return null;
       }
 
       String newPath = "";
 
-      for (int i = 0; i < objectArray.length(); i++) {
+      for (int i = 0; i < objectArray.size(); i++) {
         PSManagedLink mLink = null;
         log.debug("Processing payload entry {}", i);
-        JSONObject entry = objectArray.getJSONObject(i);
+        ObjectNode entry = (ObjectNode) objectArray.get(i);
 
         // Images
         if (entry.has(PERC_IMAGEPATH)) {
           if (entry.has(PERC_IMAGEPATH_LINKID)) {
-            if (!StringUtils.isBlank(entry.getString(PERC_IMAGEPATH_LINKID))) {
+            if (!StringUtils.isBlank(entry.path(PERC_IMAGEPATH_LINKID).asText())) {
               if (log.isDebugEnabled())
                 log.debug(
                     "Getting updated path for Image entry: {} with current path of {}",
-                    entry.getString(PERC_IMAGEPATH_LINKID),
-                    entry.get(PERC_IMAGEPATH));
+                    entry.path(PERC_IMAGEPATH_LINKID).asText(),
+                    entry.path(PERC_IMAGEPATH).asText());
               mLink =
-                  dao.findLinkByLinkId(Integer.parseInt(entry.getString(PERC_IMAGEPATH_LINKID)));
+                  dao.findLinkByLinkId(
+                      Integer.parseInt(entry.path(PERC_IMAGEPATH_LINKID).asText()));
               newPath = renderHref(mLink, linkContext, isStaging);
               if (log.isDebugEnabled())
                 log.debug(
                     "Updating payload for Image entry: {} with new path of {}",
-                    entry.getString(PERC_IMAGEPATH_LINKID),
+                    entry.path(PERC_IMAGEPATH_LINKID).asText(),
                     newPath);
 
               entry.put(PERC_IMAGEPATH, newPath);
-              objectArray.put(i, entry);
+              objectArray.set(i, entry);
               if (log.isDebugEnabled()) log.debug("Done updating links.");
             }
           }
@@ -323,22 +336,23 @@ public class PSManagedLinkService implements IPSManagedLinkService {
         // Files
         if (entry.has(PERC_FILEPATH)) {
           if (entry.has(PERC_FILEPATH_LINKID)) {
-            if (!StringUtils.isBlank(entry.getString(PERC_FILEPATH_LINKID))) {
+            if (!StringUtils.isBlank(entry.path(PERC_FILEPATH_LINKID).asText())) {
               if (log.isDebugEnabled())
                 log.debug(
                     "Getting updated path for File entry: {} with current path of {}",
-                    entry.getString(PERC_FILEPATH_LINKID),
-                    entry.get(PERC_FILEPATH));
-              mLink = dao.findLinkByLinkId(Integer.parseInt(entry.getString(PERC_FILEPATH_LINKID)));
+                    entry.path(PERC_FILEPATH_LINKID).asText(),
+                    entry.path(PERC_FILEPATH).asText());
+              mLink =
+                  dao.findLinkByLinkId(Integer.parseInt(entry.path(PERC_FILEPATH_LINKID).asText()));
               newPath = renderHref(mLink, linkContext, isStaging);
               if (log.isDebugEnabled())
                 log.debug(
                     "Updating payload for File entry: {} with new path of {}",
-                    entry.getString(PERC_FILEPATH_LINKID),
+                    entry.path(PERC_FILEPATH_LINKID).asText(),
                     newPath);
 
               entry.put(PERC_FILEPATH, newPath);
-              objectArray.put(i, entry);
+              objectArray.set(i, entry);
               if (log.isDebugEnabled()) log.debug("Done updating links.");
             }
           }
@@ -347,21 +361,22 @@ public class PSManagedLinkService implements IPSManagedLinkService {
         // Pages
         if (entry.has(PERC_PAGEPATH)) {
           if (entry.has(PERC_PAGEPATH_LINKID)) {
-            if (!StringUtils.isBlank(entry.getString(PERC_PAGEPATH_LINKID))) {
+            if (!StringUtils.isBlank(entry.path(PERC_PAGEPATH_LINKID).asText())) {
               if (log.isDebugEnabled())
                 log.debug(
                     "Getting updated path for Page entry: {} with current path of {}",
-                    entry.getString(PERC_PAGEPATH_LINKID),
-                    entry.get(PERC_PAGEPATH));
-              mLink = dao.findLinkByLinkId(Integer.parseInt(entry.getString(PERC_PAGEPATH_LINKID)));
+                    entry.path(PERC_PAGEPATH_LINKID).asText(),
+                    entry.path(PERC_PAGEPATH).asText());
+              mLink =
+                  dao.findLinkByLinkId(Integer.parseInt(entry.path(PERC_PAGEPATH_LINKID).asText()));
               newPath = renderHref(mLink, linkContext, isStaging);
               if (log.isDebugEnabled())
                 log.debug(
                     "Updating payload for Page entry: {} with new path of {}",
-                    entry.getString(PERC_PAGEPATH_LINKID),
+                    entry.path(PERC_PAGEPATH_LINKID).asText(),
                     newPath);
               entry.put(PERC_PAGEPATH, newPath);
-              objectArray.put(i, entry);
+              objectArray.set(i, entry);
               if (log.isDebugEnabled()) log.debug("Done updating.");
             }
           }
@@ -369,9 +384,9 @@ public class PSManagedLinkService implements IPSManagedLinkService {
       }
 
       log.debug("Updating return payload.");
-      object.put(PERC_CONFIG, objectArray);
+      object.set(PERC_CONFIG, objectArray);
       log.debug("Done updating.");
-    } catch (JSONException ex) {
+    } catch (JsonProcessingException ex) {
       if (jsonPayload == null) {
         jsonPayload = "";
       }
