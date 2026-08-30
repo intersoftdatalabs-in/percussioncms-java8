@@ -35,6 +35,7 @@ import com.percussion.rx.design.IPSDesignModel;
 import com.percussion.rx.design.IPSDesignModelFactory;
 import com.percussion.rx.design.PSDesignModelFactoryLocator;
 import com.percussion.rx.design.impl.PSLocationSchemeModel;
+import com.percussion.security.xml.PSXStreamSecurity;
 import com.percussion.server.IPSInternalRequest;
 import com.percussion.server.IPSRequestContext;
 import com.percussion.server.PSRequest;
@@ -48,10 +49,6 @@ import com.percussion.utils.string.PSPatternMatch;
 import com.percussion.xml.PSXmlDocumentBuilder;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.DomDriver;
-import com.thoughtworks.xstream.security.CGLIBProxyTypePermission;
-import com.thoughtworks.xstream.security.NoTypePermission;
-import com.thoughtworks.xstream.security.NullPermission;
-import com.thoughtworks.xstream.security.PrimitiveTypePermission;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.text.MessageFormat;
@@ -61,7 +58,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -72,14 +68,11 @@ import org.w3c.dom.Document;
 public class PSConfigUtils {
 
   private static void initSecurityFramework(XStream stream) {
-    stream.addPermission(NoTypePermission.NONE);
-    stream.addPermission(NullPermission.NULL);
-    stream.addPermission(PrimitiveTypePermission.PRIMITIVES);
-    stream.addPermission(CGLIBProxyTypePermission.PROXIES);
-    stream.allowTypeHierarchy(Collection.class);
-    stream.allowTypeHierarchy(Set.class);
-    stream.allowTypeHierarchy(List.class);
-    stream.allowTypeHierarchy(String.class);
+    // T2.x.4 hardening (issue #104): delegate to the shared helper so all
+    // XStream init sites use the same post-1.4.7 baseline + gadget-chain
+    // deny list. The com.percussion.** wildcard allowlist is applied after
+    // setupDefaultSecurity so project classes remain deserializable.
+    PSXStreamSecurity.setupDefaultSecurity(stream);
     stream.allowTypesByWildcard(new String[] {"com.percussion.**"});
   }
   /**
