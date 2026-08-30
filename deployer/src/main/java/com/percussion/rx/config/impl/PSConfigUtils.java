@@ -67,13 +67,41 @@ import org.w3c.dom.Document;
 
 public class PSConfigUtils {
 
-  private static void initSecurityFramework(XStream stream) {
+  private static void initSecurityFramework(XStream stream, Class<?> type) {
     // T2.x.4 hardening (issue #104): delegate to the shared helper so all
     // XStream init sites use the same post-1.4.7 baseline + gadget-chain
-    // deny list. The com.percussion.** wildcard allowlist is applied after
-    // setupDefaultSecurity so project classes remain deserializable.
+    // deny list. The per-class allowlist (T2.x.5 hardening) replaces the
+    // previous com.percussion.** wildcard. The {@code type} parameter is
+    // the concrete class passed by the caller; combined with the JDK
+    // collection / String / primitive type hierarchies from
+    // setupDefaultSecurity, this allows the known config file formats
+    // (HashSet<String>, HashMap<String, Object>, etc.) without exposing
+    // every class in the project's namespace.
     PSXStreamSecurity.setupDefaultSecurity(stream);
-    stream.allowTypesByWildcard(new String[] {"com.percussion.**"});
+    if (type != null) {
+      PSXStreamSecurity.allowProjectTypes(stream, type);
+      // For Map<String, Object> values, the concrete value classes that
+      // are actually serialized by the bean properties file are: String,
+      // Number subclasses (Long, Integer, Double), Boolean, and the JDK
+      // collections. We allow the concrete impls used by the callers
+      // (HashSet, HashMap) and the common value types. The XStream
+      // String type-hierarchy permission from setupDefaultSecurity covers
+      // String; primitives are covered by PrimitiveTypePermission; the
+      // collection hierarchies cover List/Set/Map.
+      PSXStreamSecurity.allowProjectTypes(
+          stream,
+          // JDK collection impls used in the config files
+          java.util.HashSet.class,
+          java.util.HashMap.class,
+          java.util.ArrayList.class,
+          // Common value types for Map<String, Object> in bean properties
+          java.lang.Long.class,
+          java.lang.Integer.class,
+          java.lang.Double.class,
+          java.lang.Float.class,
+          java.lang.Boolean.class,
+          java.math.BigDecimal.class);
+    }
   }
   /**
    * Convenient method to execute the supplied url and return the resulting document.
@@ -250,15 +278,15 @@ public class PSConfigUtils {
    * @param f the file contains the object. It may not be <code>null</code> or empty.
    * @return the loaded object. It may be <code>null</code> if the file does not exist.
    */
-  public static Object loadObjectFromFile(File f) {
+  public static <T> T loadObjectFromFile(File f, Class<T> type) {
     if (!f.exists()) return null;
 
     try {
       XStream xs = new XStream(new DomDriver());
-      initSecurityFramework(xs);
+      initSecurityFramework(xs, type);
 
       String str = FileUtils.readFileToString(f, PSCharSets.rxJavaEnc());
-      return xs.fromXML(str);
+      return (T) xs.fromXML(str, type);
     } catch (Exception e) {
       String errMsg = "Failed to load: \"" + f.getAbsolutePath() + "\".";
       log.error(errMsg, e);
@@ -289,7 +317,7 @@ public class PSConfigUtils {
     // save the object to the file
     try {
       XStream xs = new XStream(new DomDriver());
-      initSecurityFramework(xs);
+      initSecurityFramework(xs, obj.getClass());
 
       String str = xs.toXML(obj);
       FileUtils.writeStringToFile(f, str, PSCharSets.rxJavaEnc());

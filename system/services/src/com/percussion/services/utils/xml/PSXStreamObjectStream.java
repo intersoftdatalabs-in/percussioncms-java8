@@ -24,9 +24,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Date;
 
 /**
- * 
+ *
  * An implementation of {@link PSObjectStream} that uses
  * the popular XML Serialization XStream.
  * @author adamgent
@@ -44,15 +45,28 @@ public class PSXStreamObjectStream<T> extends PSObjectStream<T>
     * <p>T2.x.4 hardening (issue #104): delegates to the shared
     * {@link PSXStreamSecurity#setupDefaultSecurity(XStream)} helper so this
     * site uses the same post-1.4.7 baseline and the project's gadget-chain
-    * deny list as the other 4 XStream init sites in the project. The
-    * {@code com.percussion.**} wildcard is re-applied after the helper so
-    * project classes remain deserializable.
+    * deny list as the other 4 XStream init sites in the project.
+    *
+    * <p>T2.x.5 hardening (issue #107): the per-class allowlist
+    * replaces the previous {@code com.percussion.**} wildcard. The
+    * production caller is {@code PSPublisherService.publishByJob()},
+    * which streams {@code IPSPubItemStatus} / {@code PSPubItem} items.
+    * {@code Date} is allowed explicitly because {@code PSPubItem.date}
+    * is a {@code java.util.Date} field. If a future caller needs to
+    * serialize additional types, this allowlist must be extended.
     */
    private static void initSecurityFramework(XStream stream){
       PSXStreamSecurity.setupDefaultSecurity(stream);
-      stream.allowTypesByWildcard(new String[] {
-              "com.percussion.**"
-      });
+      // Per-class allowlist (T2.x.5): the only production caller of this
+      // stream is PSPublisherService.publishByJob(), which streams
+      // IPSPubItemStatus / PSPubItem items. Date is the only non-primitive
+      // field type on PSPubItem. If more classes are added to the publisher
+      // stream, extend this allowlist.
+      PSXStreamSecurity.allowProjectTypes(
+          stream,
+          com.percussion.services.publisher.IPSPubItemStatus.class,
+          com.percussion.services.publisher.data.PSPubItem.class,
+          Date.class);
    }
 
    public PSXStreamObjectStream() throws IOException

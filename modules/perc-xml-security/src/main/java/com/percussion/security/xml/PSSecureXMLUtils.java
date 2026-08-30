@@ -17,8 +17,6 @@
 
 package com.percussion.security.xml;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.DomDriver;
 import java.io.StringReader;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -190,17 +188,6 @@ public class PSSecureXMLUtils {
         "javax.xml.stream.isSupportingExternalEntities", options.isEnableExternalEntities());
 
     return xif;
-  }
-
-  public static XStream getSecuredXStream() {
-    XStream xs = new XStream(new DomDriver());
-    // T2.x.4 hardening (issue #104): apply the post-1.4.7 XStream baseline
-    // (NoTypePermission.NONE + primitives + null + collection hierarchies)
-    // and the project's gadget-chain deny list, then re-allow the
-    // com.percussion.** wildcard for project DTOs.
-    PSXStreamSecurity.setupDefaultSecurity(xs);
-    xs.allowTypesByWildcard(new String[] {"com.percussion.**"});
-    return xs;
   }
 
   public static SAXParserFactory getSecuredSaxParserFactory(
