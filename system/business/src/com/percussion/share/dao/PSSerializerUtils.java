@@ -22,6 +22,7 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
+import com.percussion.security.utils.PSBeanUtilsSafe;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -194,7 +195,11 @@ public class PSSerializerUtils
     public static <T> void copyFullToSummary(T from, T to) {
         try
         {
-            BeanUtils.copyProperties(to, from);
+            // T2.x.6 hardening (issue #109): use the safe wrapper to block
+            // class-injection gadget chains via the "class" / "classLoader"
+            // properties. The source `from` is the deserialization result
+            // of an XML or JSON round-trip.
+            PSBeanUtilsSafe.copyProperties(to, from);
         }
         catch (IllegalAccessException | InvocationTargetException e)
         {
