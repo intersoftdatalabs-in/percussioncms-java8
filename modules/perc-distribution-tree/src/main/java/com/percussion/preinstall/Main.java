@@ -233,10 +233,13 @@ public class Main {
               .collect(Collectors.toList());
 
       // copy each entry in the dest path
-      // T2.6 hardening (issue #89): cap the entry count, per-entry size, and total
-      // uncompressed bytes to limit exposure to commons-compress 1.28.0 zip-bomb CVEs.
+      // T2.6 hardening (issue #89): the default 10k-entry / 500 MB caps are for
+      // attacker-controlled archives. The archive here is perc-distribution-tree.jar
+      // itself, a build-controlled trusted artifact (145k+ entries in 8.1.x), so
+      // disable the caps. The ZipSlipGuard + canonical-path checks below still apply.
       com.percussion.security.io.PSZipBombGuard guard =
-          new com.percussion.security.io.PSZipBombGuard();
+          new com.percussion.security.io.PSZipBombGuard(
+              Integer.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE);
       for (ZipEntry entry : entries) {
         currentLineNo.getAndIncrement();
         guard.check(entry);
