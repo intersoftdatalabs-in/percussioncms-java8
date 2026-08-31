@@ -16,6 +16,8 @@
  */
 package com.percussion.share.dao;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.percussion.error.PSExceptionUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
@@ -26,14 +28,11 @@ import com.percussion.security.utils.PSBeanUtilsSafe;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.codehaus.jettison.mapped.MappedNamespaceConvention;
-import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -152,25 +151,22 @@ public class PSSerializerUtils
     }
     
     /**
-     * Will convert an object into an XML representation but in JSON format.
-     * This is useful for determining what the REST services JSON output of an object is.
+     * Will convert an object into a JSON string using Jackson directly.
      * <p>
-     * This is <strong>not</strong> a object->JSON conversion but rather a
-     * object->XML->JSON conversion.
-     * 
+     * This is the actual REST services JSON form for {@code object} (replaces the
+     * previous object→JAXB→XML→jettison-mapped-JSON pipeline used by the deprecated
+     * {@code MappedXMLStreamWriter} bridge, which produced a JSON approximation of
+     * the XML view rather than the real JSON). Used by test utilities to inspect
+     * what the REST endpoints would emit for a given domain object.
+     *
      * @param <T> object type.
-     * @param object
-     * @return a JSON object representing an XML document.
-     * @throws Exception Cannot marshal the object.
+     * @param object the object to serialize. Must not be {@code null}.
+     * @return a JSON string representation of the object.
+     * @throws JsonProcessingException if Jackson cannot serialize the object.
      */
-    public static <T> String getJsonXmlFromObject(T object) throws Exception {
-        StringWriter sw = new StringWriter();
-        JAXBContext context = JAXBContext.newInstance(object.getClass());
-        Marshaller m = context.createMarshaller();
-        MappedNamespaceConvention c = new MappedNamespaceConvention();
-        XMLStreamWriter xw  = new MappedXMLStreamWriter(c, sw);
-        m.marshal(object, xw);
-        return sw.getBuffer().toString();
+    public static <T> String getJsonXmlFromObject(T object) throws JsonProcessingException {
+        notNull(object);
+        return new ObjectMapper().writeValueAsString(object);
     }
     
     public static <T> List<T> copyFullToSummaries(List<? extends T> froms, Class<T> type) {
