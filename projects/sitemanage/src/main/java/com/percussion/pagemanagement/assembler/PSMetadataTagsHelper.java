@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.servlet.ServletException;
-import net.sf.json.JSONException;
 
 /** @author davidpardini */
 public class PSMetadataTagsHelper {
@@ -114,7 +113,7 @@ public class PSMetadataTagsHelper {
     }
   }
 
-  private Map sortByAlphaOrder(Map<String, Integer> tagsMap) throws JSONException {
+  private Map sortByAlphaOrder(Map<String, Integer> tagsMap) throws Exception {
     List list = new LinkedList(tagsMap.entrySet());
     Collections.sort(
         list,
@@ -134,7 +133,7 @@ public class PSMetadataTagsHelper {
     return result;
   }
 
-  private Map sortByCountOrder(Map<String, Integer> tagObjects) throws JSONException {
+  private Map sortByCountOrder(Map<String, Integer> tagObjects) throws Exception {
     List list = new LinkedList(tagObjects.entrySet());
     Collections.sort(
         list,

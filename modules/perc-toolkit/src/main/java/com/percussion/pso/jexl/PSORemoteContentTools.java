@@ -16,6 +16,8 @@
 
 package com.percussion.pso.jexl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.percussion.extension.IPSJexlExpression;
 import com.percussion.extension.IPSJexlMethod;
 import com.percussion.extension.IPSJexlParam;
@@ -23,7 +25,6 @@ import com.percussion.extension.PSJexlUtilBase;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
@@ -231,14 +232,14 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
    * @throws IOException
    */
   @IPSJexlMethod(
-      description = "Returns JSONObject based on a URL.",
+      description = "Returns JsonNode based on a URL.",
       params = {
         @IPSJexlParam(
             name = "urlString",
             description = "url to pull content from, include query params if desired")
       },
-      returns = "Returns a net.sf.json.JSONObject")
-  public JSONObject getRemoteJSONContent(String urlString)
+      returns = "Returns a com.fasterxml.jackson.databind.JsonNode")
+  public JsonNode getRemoteJSONContent(String urlString)
       throws IllegalArgumentException, IOException {
     HttpClient client = new HttpClient();
     GetMethod get = new GetMethod(urlString);
@@ -259,7 +260,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
       get.releaseConnection();
     }
 
-    return JSONObject.fromObject(responseBody);
+    return MAPPER.readTree(responseBody);
   }
 
   /**
@@ -273,7 +274,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
    * @throws IOException
    */
   @IPSJexlMethod(
-      description = "Returns JSONObject based on a URL.",
+      description = "Returns JsonNode based on a URL.",
       params = {
         @IPSJexlParam(
             name = "urlString",
@@ -281,8 +282,8 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
         @IPSJexlParam(name = "username", description = "username"),
         @IPSJexlParam(name = "password", description = "password")
       },
-      returns = "Returns a net.sf.json.JSONObject")
-  public JSONObject getRemoteJSONContent(String urlString, String username, String password)
+      returns = "Returns a com.fasterxml.jackson.databind.JsonNode")
+  public JsonNode getRemoteJSONContent(String urlString, String username, String password)
       throws IllegalArgumentException, IOException {
     HttpClient client = new HttpClient();
     GetMethod get = new GetMethod(urlString);
@@ -312,7 +313,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
       get.releaseConnection();
     }
 
-    return JSONObject.fromObject(responseBody);
+    return MAPPER.readTree(responseBody);
   }
 
   /**
@@ -325,15 +326,15 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
    * @throws IOException
    */
   @IPSJexlMethod(
-      description = "Returns JSONObject based on a URL.",
+      description = "Returns JsonNode based on a URL.",
       params = {
         @IPSJexlParam(
             name = "urlString",
             description = "url to pull content from, include query params if desired"),
         @IPSJexlParam(name = "headers", description = "map of headers to set")
       },
-      returns = "Returns a net.sf.json.JSONObject")
-  public JSONObject getRemoteJSONContent(String urlString, Map<String, String> headers)
+      returns = "Returns a com.fasterxml.jackson.databind.JsonNode")
+  public JsonNode getRemoteJSONContent(String urlString, Map<String, String> headers)
       throws IllegalArgumentException, IOException {
     HttpClient client = new HttpClient();
     GetMethod get = new GetMethod(urlString);
@@ -355,7 +356,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
       get.releaseConnection();
     }
 
-    JSONObject jsonObject = JSONObject.fromObject(responseBody);
+    JsonNode jsonObject = MAPPER.readTree(responseBody);
     return jsonObject;
   }
 
@@ -371,7 +372,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
    * @throws IOException
    */
   @IPSJexlMethod(
-      description = "Returns JSONObject based on a URL.",
+      description = "Returns JsonNode based on a URL.",
       params = {
         @IPSJexlParam(
             name = "urlString",
@@ -380,8 +381,8 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
         @IPSJexlParam(name = "username", description = "username"),
         @IPSJexlParam(name = "password", description = "password")
       },
-      returns = "Returns a net.sf.json.JSONObject")
-  public JSONObject getRemoteJSONContent(
+      returns = "Returns a com.fasterxml.jackson.databind.JsonNode")
+  public JsonNode getRemoteJSONContent(
       String urlString, Map<String, String> headers, String username, String password)
       throws IllegalArgumentException, IOException {
     HttpClient client = new HttpClient();
@@ -416,7 +417,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
       get.releaseConnection();
     }
 
-    return JSONObject.fromObject(responseBody);
+    return MAPPER.readTree(responseBody);
   }
 
   /**
@@ -629,4 +630,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
       throws IllegalArgumentException, IOException {
     return getRemoteXMLContent(urlString, headers, username, password);
   }
+
+  /** T2.17.4c hardening (issue #149): shared Jackson ObjectMapper. */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 }

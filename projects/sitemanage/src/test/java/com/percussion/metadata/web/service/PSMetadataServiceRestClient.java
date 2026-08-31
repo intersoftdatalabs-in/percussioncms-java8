@@ -17,6 +17,9 @@
 
 package com.percussion.metadata.web.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.dashboardmanagement.data.PSDashboardConfiguration;
 import com.percussion.dashboardmanagement.data.PSGadget;
 import com.percussion.error.PSExceptionUtils;
@@ -24,11 +27,8 @@ import com.percussion.metadata.data.PSMetadata;
 import com.percussion.share.dao.PSSerializerUtils;
 import com.percussion.share.test.PSDataServiceRestClient;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.ws.rs.core.MediaType;
-import net.sf.json.JSONObject;
 
 public class PSMetadataServiceRestClient extends PSDataServiceRestClient<PSMetadata> {
 
@@ -50,7 +50,7 @@ public class PSMetadataServiceRestClient extends PSDataServiceRestClient<PSMetad
     //        dashboardConfigWithEmptyGadgetList = metadataJson.toString();
   }
 
-  public void save(JSONObject obj) {
+  public void save(JsonNode obj) {
     POST(getPath(), obj.toString());
   }
 
@@ -61,13 +61,14 @@ public class PSMetadataServiceRestClient extends PSDataServiceRestClient<PSMetad
       String response = GET(concatPath(getPath(), GADGETS_KEY));
       PSMetadata metadata = PSSerializerUtils.unmarshal(response, PSMetadata.class);
 
-      JSONObject jsonObject =
-          (JSONObject) JSONObject.fromObject(metadata.getData()).get("DashboardConfig");
-      Map classMap = new HashMap();
-      classMap.put("gadgets", PSGadget.class);
-      config =
-          (PSDashboardConfiguration)
-              JSONObject.toBean(jsonObject, PSDashboardConfiguration.class, classMap);
+      // T2.17.4c hardening (issue #149): migrated from json-lib
+      // JSONObject.fromObject + JSONObject.toBean (with classMap for
+      // polymorphic deserialization) to Jackson readTree + readValue.
+      // The gadgets field type is already declared on PSDashboardConfiguration,
+      // so Jackson can determine the runtime type without a classMap.
+      JsonNode root = MAPPER.readTree(metadata.getData());
+      JsonNode jsonObject = root.get("DashboardConfig");
+      config = MAPPER.treeToValue(jsonObject, PSDashboardConfiguration.class);
     } catch (Exception e) {
       log.error(PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
@@ -95,12 +96,12 @@ public class PSMetadataServiceRestClient extends PSDataServiceRestClient<PSMetad
     }
   }
 
-  private JSONObject getMetadataJsonForSpecificGadgetSettings(
+  private ObjectNode getMetadataJsonForSpecificGadgetSettings(
       PSDashboardConfiguration dashboardConfig) {
-    JSONObject userConfig = new JSONObject();
+    ObjectNode userConfig = MAPPER.createObjectNode();
 
     for (PSGadget gad : dashboardConfig.getGadgets()) {
-      JSONObject specificGadgetSettings = new JSONObject();
+      ObjectNode specificGadgetSettings = MAPPER.createObjectNode();
 
       for (String prefName : gad.getSettings().keySet())
         specificGadgetSettings.put(prefName, gad.getSettings().get(prefName));
@@ -108,23 +109,23 @@ public class PSMetadataServiceRestClient extends PSDataServiceRestClient<PSMetad
       userConfig.put("mid_" + gad.getInstanceId(), specificGadgetSettings);
     }
 
-    JSONObject userPrefJson = new JSONObject();
+    ObjectNode userPrefJson = MAPPER.createObjectNode();
     userPrefJson.put("userprefs", userConfig);
 
     PSMetadata metadata = new PSMetadata(GADGETS_PREFS_KEY, "\"" + userPrefJson.toString() + "\"");
-    JSONObject metadataJson = new JSONObject();
-    metadataJson.put("metadata", JSONObject.fromObject(metadata));
+    ObjectNode metadataJson = MAPPER.createObjectNode();
+    metadataJson.put("metadata", MAPPER.valueToTree(metadata));
 
     return metadataJson;
   }
 
-  private JSONObject getMetadataJson(PSDashboardConfiguration dashboardConfig) {
-    JSONObject dashboardConfigJson = new JSONObject();
-    dashboardConfigJson.put("DashboardConfig", JSONObject.fromObject(dashboardConfig));
+  private ObjectNode getMetadataJson(PSDashboardConfiguration dashboardConfig) {
+    ObjectNode dashboardConfigJson = MAPPER.createObjectNode();
+    dashboardConfigJson.put("DashboardConfig", MAPPER.valueToTree(dashboardConfig));
 
     PSMetadata metadata = new PSMetadata(GADGETS_KEY, "\"" + dashboardConfigJson.toString() + "\"");
-    JSONObject metadataJson = new JSONObject();
-    metadataJson.put("metadata", JSONObject.fromObject(metadata));
+    ObjectNode metadataJson = MAPPER.createObjectNode();
+    metadataJson.put("metadata", MAPPER.valueToTree(metadata));
 
     return metadataJson;
   }
@@ -146,4 +147,7 @@ public class PSMetadataServiceRestClient extends PSDataServiceRestClient<PSMetad
 
     saveGadgets(newGadgetList);
   }
+
+  /** T2.17.4c hardening (issue #149): shared Jackson ObjectMapper. */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 }

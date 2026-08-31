@@ -76,10 +76,9 @@
 		<dependency org="javax.mail" name="mail" rev="1.4"/>  
 		<!-- We will get the deps for XFire explicitly above this comment.  -->  
 		<dependency org="org.codehaus.xfire" name="xfire-all" rev="1.2.6" conf="default-&gt;master"/>  
-		<!-- json-lib and ezmorph-->  
 		<dependency org="commons-beanutils" name="commons-beanutils" rev="1.7.0" conf="default"/>  
 		<dependency org="net.sf.ezmorph" name="ezmorph" rev="1.0.4" conf="default-&gt;master"/>  
-		<dependency org="net.sf.json-lib" name="json-lib" rev="2.2.1" conf="default"/>  
+		  
 		<!-- test dependencies here -->  
 		<dependency org="org.jmock" name="jmock" rev="2.4.0" conf="test-&gt;*"/>  
 		<dependency org="org.jmock" name="jmock-junit4" rev="2.4.0" conf="test-&gt;*"/>  

@@ -17,6 +17,7 @@
 package com.percussion.pubserver.impl;
 
 import com.amazonaws.regions.Regions;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.percussion.delivery.data.PSDeliveryInfo;
 import com.percussion.delivery.service.IPSDeliveryInfoService;
 import com.percussion.delivery.service.PSDeliveryInfoServiceLocator;
@@ -41,8 +42,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -221,8 +220,8 @@ public class PSPubServerRestService {
   @GET
   @Path("/availableDrivers")
   @Produces(MediaType.TEXT_PLAIN)
-  public String getAvailableDrivers() {
-    return JSONObject.fromObject(service.getAvailableDrivers()).toString();
+  public String getAvailableDrivers() throws com.fasterxml.jackson.core.JsonProcessingException {
+    return MAPPER.writeValueAsString(MAPPER.valueToTree(service.getAvailableDrivers()));
   }
 
   /**
@@ -233,7 +232,7 @@ public class PSPubServerRestService {
   @GET
   @Path("/availableRegions")
   @Produces(MediaType.TEXT_PLAIN)
-  public String getAvailableRegions() {
+  public String getAvailableRegions() throws com.fasterxml.jackson.core.JsonProcessingException {
     Regions[] regions = Regions.values();
     if (regions != null) {
       String[] regionNames = new String[regions.length];
@@ -241,7 +240,7 @@ public class PSPubServerRestService {
         Regions region = regions[i];
         regionNames[i] = region.getName();
       }
-      return JSONArray.fromObject(regionNames).toString();
+      return MAPPER.writeValueAsString(MAPPER.valueToTree(regionNames));
     }
     return null;
   }
@@ -249,13 +248,14 @@ public class PSPubServerRestService {
   @GET
   @Path("/availablePublishingServer/{publishServerType}")
   @Produces(MediaType.TEXT_PLAIN)
-  public String getAvailablePublishingServer(@PathParam("publishServerType") String publishServer) {
+  public String getAvailablePublishingServer(@PathParam("publishServerType") String publishServer)
+      throws com.fasterxml.jackson.core.JsonProcessingException {
     psDeliveryInfoService =
         (PSDeliveryInfoService) PSDeliveryInfoServiceLocator.getDeliveryInfoService();
     List<String> serverList = psDeliveryInfoService.getAdminUrls(publishServer);
     serverList.add(IPSPubServerService.DEFAULT_DTS);
 
-    return JSONArray.fromObject(serverList.toArray()).toString();
+    return MAPPER.writeValueAsString(MAPPER.valueToTree(serverList.toArray()));
   }
   /**
    * Get if EC2 instance
@@ -289,7 +289,8 @@ public class PSPubServerRestService {
       @PathParam("siteId") String siteId,
       @PathParam("publishType") String publishType,
       @PathParam("driver") String driver,
-      @PathParam("serverType") String serverType) {
+      @PathParam("serverType") String serverType)
+      throws com.fasterxml.jackson.core.JsonProcessingException {
     try {
       PSParameterValidationUtils.rejectIfBlank("defaultFolderLocation", "siteId", siteId);
       PSParameterValidationUtils.rejectIfBlank("defaultFolderLocation", "publishType", publishType);
@@ -306,9 +307,13 @@ public class PSPubServerRestService {
   @GET
   @Path("/availableDeliveryServers")
   @Produces(MediaType.TEXT_PLAIN)
-  public String getAvailableDeliveryServers() {
+  public String getAvailableDeliveryServers()
+      throws com.fasterxml.jackson.core.JsonProcessingException {
     IPSDeliveryInfoService svc = PSDeliveryInfoServiceLocator.getDeliveryInfoService();
 
-    return JSONObject.fromObject(svc.findAll()).toString();
+    return MAPPER.writeValueAsString(MAPPER.valueToTree(svc.findAll()));
   }
+
+  /** T2.17.4c hardening (issue #149): shared Jackson ObjectMapper. */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 }
