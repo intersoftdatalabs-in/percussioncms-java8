@@ -25,7 +25,10 @@ import com.percussion.server.PSServer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -37,9 +40,16 @@ import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.HttpHeaders;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MimeTypeException;
-import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.CompositeParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.html.HtmlParser;
+import org.apache.tika.parser.microsoft.OfficeParser;
+import org.apache.tika.parser.microsoft.ooxml.OOXMLParser;
+import org.apache.tika.parser.microsoft.rtf.RTFParser;
+import org.apache.tika.parser.pdf.PDFParser;
+import org.apache.tika.parser.txt.TXTParser;
+import org.apache.tika.parser.xml.XMLParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.apache.tika.sax.WriteOutContentHandler;
 import org.xml.sax.SAXException;
@@ -47,6 +57,32 @@ import org.xml.sax.SAXException;
 /**
  * Uses Apache Tika to extract text from many different document types. This is added as a
  * replacement for most of the old system text converters
+ *
+ * <p>T2.1 hardening (issue #137, completing the #92 input-cap work): the parser set used by this
+ * converter is an explicit allowlist built from {@link CompositeParser} with seven individual
+ * parsers (text, HTML, XML, PDF, legacy Office, OOXML, RTF). For any media type not claimed by one
+ * of those parsers, Tika's {@code CompositeParser} falls back to {@code EmptyParser} and the
+ * document is parsed as empty. The previous implementation used {@code AutoDetectParser}, which
+ * loads every parser Tika discovers on the classpath via the standard service-loader mechanism --
+ * including image OCR, audio transcription, video metadata parsers, and any parser added in a
+ * future Tika minor upgrade. The strict allowlist closes the file-type- confusion CVE class in
+ * {@code tika-parsers-standard-package:2.9.4}: a document with a misleading Content-Type header is
+ * parsed by no parser (rather than by an unexpected parser), and the addition of a new Tika parser
+ * does not silently enter the trusted surface.
+ *
+ * <p>The allowlist is built once, lazily, from the {@link TikaConfig} loaded by {@link
+ * #getTikaConfig()}, so the existing {@code tika-config.xml} restrictions (which exclude the {@code
+ * ExecutableParser} and {@code SQLite3Parser} and the {@code image/jpeg}, {@code application/pdf},
+ * and {@code application/x-sqlite3} MIME types from the default parser) remain in effect. The
+ * strict allowlist above is the *outer* surface; the configured parser is the *inner* surface; both
+ * must allow a type for it to be parsed.
+ *
+ * <p>The original T2.1 work (#92) added the {@link
+ * com.percussion.security.io.PSTikaCap#truncate(InputStream)} input cap and the {@code
+ * TikaInputStream.get(File)} streaming path. This PR layers the parser allowlist on top of those
+ * defenses. Recursive embedded-document parsing is intentionally preserved -- the indexer needs the
+ * text from inside OOXML / OLE2 compound documents, so we do not set a custom {@code
+ * EmbeddedDocumentExtractor} that returns {@code false} from {@code shouldParseEmbedded()}.
  */
 public class PSTikaTextConvertor implements IPSLuceneTextConverter {
   /** Reference to log for this class */
@@ -61,6 +97,13 @@ public class PSTikaTextConvertor implements IPSLuceneTextConverter {
 
   /** Creating a new TikaConfig object takes a long time, so we will create a singleton */
   private static TikaConfig m_tikaConfig = null;
+
+  /**
+   * Strict parser allowlist (T2.1 hardening, issue #137). Built once from the {@link TikaConfig}
+   * loaded by {@link #getTikaConfig()}, used in place of {@code AutoDetectParser} in {@link
+   * #getConvertedText(InputStream, String)}. See the class Javadoc for the security contract.
+   */
+  private static Parser m_strictParser = null;
 
   /*
    * Default write limit, just under 10M
@@ -122,13 +165,48 @@ public class PSTikaTextConvertor implements IPSLuceneTextConverter {
     }
   }
 
+  /**
+   * Returns the strict-parser {@link CompositeParser} used in place of {@code AutoDetectParser} for
+   * the indexer. The allowlist is exactly seven parsers: text, HTML, XML, PDF, legacy Office
+   * (single parser handles .doc / .xls / .ppt via the OLE2 / POIFS container), OOXML (single parser
+   * handles .docx / .xlsx / .pptx), and RTF. For any media type not claimed by one of those
+   * parsers, {@link CompositeParser} falls back to {@code EmptyParser} and the document is parsed
+   * as empty.
+   *
+   * <p>Built once per JVM and cached. Initialization order matters: {@link #m_tikaConfig} must be
+   * populated by {@link #getTikaConfig()} before this is called.
+   */
+  private static synchronized Parser getStrictParser() {
+    if (m_strictParser == null) {
+      List<Parser> parsers = new ArrayList<>(7);
+      // T2.1 hardening (issue #137): the seven parsers below are the entire surface this
+      // project exposes to Tika. Any new Tika parser added in a future minor upgrade (image
+      // OCR, audio, video, anything) MUST be added here explicitly to be reachable from the
+      // indexer. This is the "explicit allowlist" pattern recommended by OWASP for file-format
+      // detection surfaces.
+      parsers.add(new TXTParser()); // text/*
+      parsers.add(new HtmlParser()); // text/html, application/xhtml+xml
+      parsers.add(new XMLParser()); // text/xml, application/xml, application/rdf+xml
+      parsers.add(new PDFParser()); // application/pdf
+      parsers.add(new OfficeParser()); // legacy application/msword, application/vnd.ms-excel,
+      // application/vnd.ms-powerpoint
+      parsers.add(new OOXMLParser()); // modern OOXML (docx/xlsx/pptx and templates)
+      parsers.add(new RTFParser()); // application/rtf
+
+      m_strictParser =
+          new CompositeParser(
+              m_tikaConfig.getMediaTypeRegistry(), Collections.unmodifiableList(parsers));
+    }
+    return m_strictParser;
+  }
+
   public String getConvertedText(InputStream is, String mimetype)
       throws PSExtensionProcessingException {
     if (!m_mimeTypes.contains(mimetype)) return "";
 
     getTikaConfig();
 
-    Parser parser = new AutoDetectParser(m_tikaConfig);
+    Parser parser = getStrictParser();
     Metadata metadata = new Metadata();
     metadata.set(HttpHeaders.CONTENT_TYPE, mimetype);
     WriteOutContentHandler handler = new WriteOutContentHandler(writeLimit);
