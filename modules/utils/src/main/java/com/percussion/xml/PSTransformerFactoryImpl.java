@@ -19,6 +19,7 @@ package com.percussion.xml;
 
 import com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl;
 import java.net.URI;
+import javax.xml.XMLConstants;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -28,9 +29,30 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.XMLFilter;
 
+/**
+ * Percussion's project-wide {@link TransformerFactory} implementation (Xalan/XSLTC backed).
+ *
+ * <p>T2.12 hardening (issue #135): the JDK's default Xalan-backed {@code
+ * TransformerFactory.newInstance()} does not enforce JAXP's secure-processing attributes, which is
+ * the underlying cause of the XSLT external-resource CVE class in 2.12.x (XXE in stylesheet imports
+ * / xsl:include, fetch of remote DTDs, etc.). This implementation sets {@link
+ * XMLConstants#FEATURE_SECURE_PROCESSING}, {@link XMLConstants#ACCESS_EXTERNAL_DTD} (empty), and
+ * {@link XMLConstants#ACCESS_EXTERNAL_STYLESHEET} (empty) in the constructor so that every {@code
+ * TransformerFactory.newInstance()} call in the project is safe by default.
+ *
+ * <p>Callers that genuinely need to load remote DTDs or external stylesheets can override these on
+ * the per-instance basis via the inherited {@link #setFeature(String, boolean)} and {@link
+ * #setAttribute(String, Object)} setters; the project's standard practice (see {@code
+ * PSSecureXMLUtils}) is to keep the empty-string default and override only at the call site that
+ * needs the override, with the override logged.
+ */
 public class PSTransformerFactoryImpl extends TransformerFactoryImpl {
+
+  private static final Logger log = LogManager.getLogger(PSTransformerFactoryImpl.class);
 
   private void forceResolver() {
     // noop
@@ -40,6 +62,40 @@ public class PSTransformerFactoryImpl extends TransformerFactoryImpl {
   public PSTransformerFactoryImpl() {
     super();
     forceResolver();
+    applySecureProcessingDefaults();
+  }
+
+  /**
+   * T2.12 hardening (issue #135): enforce JAXP secure-processing attributes on every Transformer
+   * created by this factory. The constructor catches the checked exceptions from {@link
+   * TransformerFactory#setFeature} and {@link TransformerFactory#setAttribute} and logs at WARN --
+   * the missing attribute is treated as not-enforced rather than as a fatal initialization error,
+   * matching the {@code PSSecureXMLUtils} posture.
+   */
+  private void applySecureProcessingDefaults() {
+    try {
+      super.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+    } catch (TransformerConfigurationException e) {
+      log.warn(
+          "T2.12 hardening: could not enforce FEATURE_SECURE_PROCESSING=true on"
+              + " TransformerFactory: {}",
+          e.getMessage());
+    }
+    try {
+      super.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+    } catch (IllegalArgumentException e) {
+      log.warn(
+          "T2.12 hardening: could not enforce ACCESS_EXTERNAL_DTD='' on TransformerFactory: {}",
+          e.getMessage());
+    }
+    try {
+      super.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+    } catch (IllegalArgumentException e) {
+      log.warn(
+          "T2.12 hardening: could not enforce ACCESS_EXTERNAL_STYLESHEET='' on TransformerFactory:"
+              + " {}",
+          e.getMessage());
+    }
   }
 
   /**

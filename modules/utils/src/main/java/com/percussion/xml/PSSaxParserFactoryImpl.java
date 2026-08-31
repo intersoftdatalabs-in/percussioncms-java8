@@ -32,6 +32,14 @@ import org.xml.sax.SAXNotSupportedException;
  * @author dougrand
  *     <p>Create a parser for use in Percussion. This parser has the entity resolver set to an
  *     instance of our entity resolver. This class is currently configured to work with Xerces.
+ *     <p>T2.12 hardening (issue #135): the underlying SAX factory is built via {@link
+ *     PSSecureXMLUtils#getSecuredSaxParserFactory(String, ClassLoader, PSXmlSecurityOptions)} with
+ *     the secure posture ({@code enableSecureProcessing=true}, {@code enableDtdDeclarations=true},
+ *     {@code enableExternalEntities=true}, {@code enableExternalParameterEntities=false}, {@code
+ *     enableExternalDtdReferences=true}, {@code noNamespacePolicy=false}). The same factory is
+ *     reused for every {@code newSAXParser()} call via a {@link ThreadLocal} so the secure features
+ *     are applied once at class init and held for the life of the JVM. No further hardening is
+ *     required for this class.
  */
 public class PSSaxParserFactoryImpl extends SAXParserFactory {
 

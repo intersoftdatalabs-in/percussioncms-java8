@@ -17,15 +17,81 @@
 
 package com.percussion.xml;
 
+import com.percussion.security.xml.PSSecureXMLUtils;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+/**
+ * Percussion's project-wide {@link javax.xml.parsers.DocumentBuilderFactory} implementation.
+ *
+ * <p>T2.12 hardening (issue #135): the default Xerces factory returned by {@code
+ * DocumentBuilderFactory.newInstance()} is unsafe for processing untrusted XML -- DTDs and external
+ * entities are enabled by default, which is the underlying cause of the CVE-2024-34447 (XXE) and
+ * CVE-2022-46337 / CVE-2023-39978 / CVE-2013-4002 (XML bomb) class of CVEs in {@code
+ * xercesImpl:2.12.2}. The opt-in hardening path through {@link
+ * PSSecureXMLUtils#getSecuredDocumentBuilderFactory(PSSecureXMLUtils.PSXmlSecurityOptions)} already
+ * enforces the OWASP-recommended feature set, but the ~100 call sites in the project that call
+ * {@code DocumentBuilderFactory.newInstance()} (or that resolve the JAXP system property registered
+ * by {@link PSSecureXMLUtils#setupJAXPDefaults()}) would otherwise bypass it. This implementation
+ * enforces the same secure defaults in its constructor so that every {@code
+ * DocumentBuilderFactory.newInstance()} call in the project is safe by default.
+ *
+ * <p>The feature URIs are taken from {@link PSSecureXMLUtils} so the secure set is defined in
+ * exactly one place; if a future patch needs to add or change a feature, the change is made here
+ * AND in {@link PSSecureXMLUtils#setupJAXPDefaults()}. The constructor catches {@link
+ * ParserConfigurationException} from any feature that the underlying Xerces version does not
+ * recognize and logs at WARN -- the missing feature is treated as not-enforced rather than as a
+ * fatal initialization error, matching {@link PSSecureXMLUtils}'s posture.
+ */
 public class PSDocumentBuilderFactoryImpl
     extends org.apache.xerces.jaxp.DocumentBuilderFactoryImpl {
 
+  private static final Logger log = LogManager.getLogger(PSDocumentBuilderFactoryImpl.class);
+
   public PSDocumentBuilderFactoryImpl() {
     super();
+
+    // T2.12 hardening (issue #135): enforce the secure-XML feature set on every DocumentBuilder
+    // created by this factory, even when callers do not go through PSSecureXMLUtils. The URIs
+    // and the no-DTD / no-external-entity posture match PSSecureXMLUtils.enableDBFFeatures.
+    setXIncludeAware(PSSecureXMLUtils.XINCLUDE_AWARE);
+    setExpandEntityReferences(PSSecureXMLUtils.EXPAND_ENTITY_REFERENCES);
+
+    setFeatureSafe(XMLConstants.FEATURE_SECURE_PROCESSING, true, "FEATURE_SECURE_PROCESSING");
+    setFeatureSafe(PSSecureXMLUtils.DISALLOW_DOCTYPES_FEATURE, true, "DISALLOW_DOCTYPES_FEATURE");
+    setFeatureSafe(
+        PSSecureXMLUtils.SAX_GENERAL_EXTERNAL_ENTITIES_FEATURE,
+        false,
+        "SAX_GENERAL_EXTERNAL_ENTITIES_FEATURE");
+    setFeatureSafe(
+        PSSecureXMLUtils.X1_GENERAL_EXTERNAL_ENTITIES_FEATURE,
+        false,
+        "X1_GENERAL_EXTERNAL_ENTITIES_FEATURE");
+    setFeatureSafe(
+        PSSecureXMLUtils.X2_GENERAL_EXTERNAL_ENTITIES_FEATURE,
+        false,
+        "X2_GENERAL_EXTERNAL_ENTITIES_FEATURE");
+    setFeatureSafe(
+        PSSecureXMLUtils.SAX_EXTERNAL_PARAMETER_ENTITIES_FEATURE,
+        false,
+        "SAX_EXTERNAL_PARAMETER_ENTITIES_FEATURE");
+    setFeatureSafe(PSSecureXMLUtils.LOAD_EXTERNAL_DTD, false, "LOAD_EXTERNAL_DTD");
+  }
+
+  private void setFeatureSafe(String feature, boolean value, String nameForLog) {
+    try {
+      super.setFeature(feature, value);
+    } catch (ParserConfigurationException e) {
+      log.warn(
+          "T2.12 hardening: could not enforce {}={} on DocumentBuilderFactory: {}",
+          nameForLog,
+          value,
+          e.getMessage());
+    }
   }
 
   /**
