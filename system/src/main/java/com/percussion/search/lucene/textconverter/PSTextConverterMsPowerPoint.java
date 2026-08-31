@@ -10,7 +10,6 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -20,6 +19,7 @@ import com.percussion.extension.IPSExtensionDef;
 import com.percussion.extension.PSExtensionException;
 import com.percussion.extension.PSExtensionProcessingException;
 import com.percussion.search.lucene.IPSLuceneConstants;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,9 +29,19 @@ import org.apache.poi.xslf.usermodel.XMLSlideShow;
 
 /**
  * Extracts the text from input stream corresponding to Microsoft Power Point file using POI api.
- * Gets the plain text from the slides and notes.
+ * Gets the plain text from the slides and notes. The input is bounded at {@value #MAX_INPUT_BYTES}
+ * bytes (see {@link PSTextConverterUtils#readAndCap}) before the POI parsers are invoked; oversized
+ * inputs are rejected with an exception before any parser can be loaded.
  */
 public class PSTextConverterMsPowerPoint implements IPSLuceneTextConverter {
+
+  /**
+   * Hard cap on the input PowerPoint file size. 64 MiB matches the value used by the T2.9 PDFBox
+   * hardening (#128) and is well above any reasonable text-extraction workload for full-text
+   * indexing. Tunable in one place; raise with caution (the resulting byte array is held in memory
+   * for the duration of the parse).
+   */
+  private static final long MAX_INPUT_BYTES = 64L * 1024L * 1024L;
 
   /*
    * (non-Javadoc)
@@ -41,8 +51,15 @@ public class PSTextConverterMsPowerPoint implements IPSLuceneTextConverter {
       throws PSExtensionProcessingException {
     String resultText = "";
     try {
-      POITextExtractor ppext = getTextExtractor(mimetype, is);
-      resultText = ppext.getText();
+      // T2.10 hardening: read into a bounded byte array first so a crafted or oversized
+      // PowerPoint file is rejected before POI's HSLF (legacy .ppt) or XSLF (.pptx) parser can
+      // be instantiated. Both parsers buffer the full presentation and have been the subject of
+      // OOM / resource-exhaustion CVEs on 5.2.x; this caps the attack surface at MAX_INPUT_BYTES.
+      byte[] data = PSTextConverterUtils.readAndCap(is, MAX_INPUT_BYTES);
+      try (InputStream bounded = new ByteArrayInputStream(data)) {
+        POITextExtractor ppext = getTextExtractor(mimetype, bounded);
+        resultText = ppext.getText();
+      }
     } catch (IOException e) {
       throw new PSExtensionProcessingException(m_className, e);
     }
