@@ -10,22 +10,20 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
       package com.percussion.widgets.image.web.impl;
 
+      import com.fasterxml.jackson.databind.JsonNode;
+      import com.fasterxml.jackson.databind.ObjectMapper;
       import com.percussion.error.PSExceptionUtils;
       import com.percussion.util.PSBaseBean;
       import com.percussion.widgets.image.data.CachedImageMetaData;
       import com.percussion.widgets.image.data.ImageData;
       import com.percussion.widgets.image.services.ImageCacheManager;
       import com.percussion.widgets.image.services.ImageResizeManager;
-      import net.sf.json.JSON;
-      import net.sf.json.JSONObject;
-      import net.sf.json.JSONSerializer;
       import org.apache.commons.lang3.Validate;
       import org.apache.logging.log4j.LogManager;
       import org.apache.logging.log4j.Logger;
@@ -59,13 +57,13 @@
               ModelAndView mav = new ModelAndView("imageWidgetJSONView");
               try {
                   CachedImageMetaData cimd = resizeImage(bean);
-                  JSON json = JSONSerializer.toJSON(cimd);
+                  JsonNode json = MAPPER.valueToTree(cimd);
                   mav.addObject(getModelObjectName(), json);
               } catch (Exception ex) {
                   String emsg = "Unexpected exception " + PSExceptionUtils.getMessageForLog(ex);
                   log.error(emsg);
                   log.debug(ex);
-                  JSON json = new JSONObject().accumulate("error", emsg);
+                  JsonNode json = MAPPER.createObjectNode().put("error", emsg);
                   mav.addObject(getModelObjectName(), json);
               }
 
@@ -147,4 +145,11 @@
           public void setImageResizeManager(ImageResizeManager imageResizeManager) {
               this.imageResizeManager = imageResizeManager;
           }
+
+          /**
+           * Shared Jackson {@link ObjectMapper}. T2.17 migration (issue #139): replaces the
+           * json-lib {@code JSONSerializer.toJSON(Object)} POJO-conversion call with Jackson's
+           * {@code ObjectMapper#valueToTree(Object)}.
+           */
+          private static final ObjectMapper MAPPER = new ObjectMapper();
       }
