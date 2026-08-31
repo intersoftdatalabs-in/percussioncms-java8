@@ -10,20 +10,15 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package com.percussion.share.dao;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.percussion.error.PSExceptionUtils;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONException;
-import net.sf.json.JSONNull;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 import com.percussion.security.utils.PSBeanUtilsSafe;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.logging.log4j.LogManager;
@@ -47,6 +42,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static org.apache.commons.lang3.StringUtils.removeEnd;
@@ -166,7 +162,7 @@ public class PSSerializerUtils
      */
     public static <T> String getJsonXmlFromObject(T object) throws JsonProcessingException {
         notNull(object);
-        return new ObjectMapper().writeValueAsString(object);
+        return MAPPER.writeValueAsString(object);
     }
     
     public static <T> List<T> copyFullToSummaries(List<? extends T> froms, Class<T> type) {
@@ -239,39 +235,51 @@ public class PSSerializerUtils
      * <strong>Blank and empty strings will return null</strong>
      * <em>
      * This should be used for simple JSON values and not complex objects.
-     * Use either JAXB or json-lib for complex values.
+     * Use Jackson for complex values.
      * </em>
      * @param json either a JSON string, number, array or object.
      * @return either a list, number, string, map or <code>null</code>.
      * 
      */
     public static Object getObjectFromJson(String json) {
+        if (json == null || json.isEmpty()) {
+            return null;
+        }
         try
         {
-            JSONArray obj = JSONArray.fromObject('[' + json + ']');
+            // T2.17.2 hardening (issue #141): migrated from json-lib
+            // JSONArray.fromObject('[' + json + ']') to Jackson's ObjectMapper.readTree
+            // + convertValue. The wrapping in '[ ... ]' preserves the previous
+            // contract (parse a single JSON value, return the unwrapped Java
+            // equivalent); the unwrapping is done by inspecting the first
+            // array element's node type. JSONNull is Jackson's NullNode.
+            JsonNode arr = MAPPER.readTree('[' + json + ']');
             
-            if (obj.isEmpty())
+            if (arr.size() == 0) {
                 return null;
+            }
             
-            Object pre = obj.get(0);
-            Object data = null;
-            if (pre instanceof JSONArray) {
-                data = new ArrayList<Object>((JSONArray) pre);
+            JsonNode pre = arr.get(0);
+            if (pre == null || pre.isNull()) {
+                return null;
             }
-            else if( pre instanceof JSONObject) {
-                data = JSONObject.toBean((JSONObject)pre);
+            
+            if (pre.isArray()) {
+                return MAPPER.convertValue(pre, ArrayList.class);
+            } else if (pre.isObject()) {
+                return MAPPER.convertValue(pre, Map.class);
+            } else if (pre.isTextual()) {
+                return pre.asText();
+            } else if (pre.isBoolean()) {
+                return pre.asBoolean();
+            } else if (pre.isNumber()) {
+                return pre.numberValue();
             }
-            else if( pre instanceof JSONNull) {
-                data = null;
-            }
-            else {
-                data = pre;
-            }   
-            return data;
+            return pre.asText();
         }
-        catch (JSONException e)
+        catch (JsonProcessingException e)
         {
-            if(log.isDebugEnabled())
+            if (log.isDebugEnabled())
                 log.warn("Bad json string: {}" , json);
             return json;
         }    
@@ -283,11 +291,26 @@ public class PSSerializerUtils
      * @return never <code>null</code>.
      */
     public static String getJsonFromObject(Object obj) {
-      String data = JSONSerializer.toJSON(Collections.singletonList(obj)).toString();
-      data = removeStart(data, "[");
-      data = removeEnd(data, "]");
-      return data;
+      // T2.17.2 hardening (issue #141): migrated from json-lib
+      // JSONSerializer.toJSON(Collections.singletonList(obj)).toString() to Jackson's
+      // ObjectMapper.writeValueAsString(...). The bracket-stripping is preserved to
+      // keep the same single-value JSON output (no surrounding '[' ']').
+      try {
+        String data = MAPPER.writeValueAsString(Collections.singletonList(obj));
+        data = removeStart(data, "[");
+        data = removeEnd(data, "]");
+        return data;
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+      }
     }
+
+    /**
+     * Shared Jackson {@link ObjectMapper}. Created once per class; the Jackson
+     * documentation guarantees thread-safety of {@link ObjectMapper} instances
+     * when they are configured once and used by multiple threads.
+     */
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
      * The log instance to use for this class, never <code>null</code>.
