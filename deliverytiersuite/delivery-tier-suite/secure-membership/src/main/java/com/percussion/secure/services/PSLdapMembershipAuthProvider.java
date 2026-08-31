@@ -32,6 +32,7 @@ import javax.naming.ldap.InitialLdapContext;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.DistinguishedName;
 import org.springframework.ldap.core.support.DefaultDirObjectFactory;
+import org.springframework.ldap.support.LdapEncoder;
 import org.springframework.ldap.support.LdapUtils;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -54,6 +55,16 @@ import org.springframework.util.StringUtils;
 
 /**
  * Works to provide authentication for Active Directory users using Spring Security
+ *
+ * <p>Input validation contract (T2.19 hardening, issue #133): user-supplied usernames are rejected
+ * if they contain NUL bytes or C0/C1 control characters at the entry point ({@link
+ * #doAuthentication}), and the principal that is substituted into the configured {@code
+ * userSearchFilter} is escaped via {@link LdapEncoder#filterEncode(String)} before it reaches
+ * {@link SpringSecurityLdapTemplate#searchForSingleEntryInternal}. JNDI's {@code search(String,
+ * Object[], SearchControls)} substitution does not escape LDAP filter metacharacters itself;
+ * without this, a principal containing {@code (}, {@code )}, {@code *}, {@code \} or NUL would be
+ * interpreted as filter syntax, allowing an authenticated low-privileged user to broaden the user
+ * search to other directory entries. See Spring Security CVE-2023-46527.
  *
  * @author Shweta Patel
  * @deprecated This class is part of the deprecated secure-membership module.
@@ -134,6 +145,14 @@ public class PSLdapMembershipAuthProvider extends AbstractLdapAuthenticationProv
   @Override
   protected DirContextOperations doAuthentication(UsernamePasswordAuthenticationToken auth) {
     String username = auth.getName();
+    // T2.19 hardening (issue #133): reject NUL bytes and C0/C1 control characters at the
+    // entry point. JNDI's filter substitution (see searchForUser below) treats these as
+    // ordinary characters, so a principal containing them could terminate the search filter
+    // early or be misinterpreted by the LDAP server. LDAP usernames are restricted to printable
+    // characters by RFC 4519; reject anything that is not.
+    if (username == null || containsControlOrNul(username)) {
+      throw badCredentials();
+    }
     String password = (String) auth.getCredentials();
     DirContextOperations ctxOps = null;
 
@@ -335,8 +354,33 @@ public class PSLdapMembershipAuthProvider extends AbstractLdapAuthenticationProv
 
     String searchRoot = rootDn != null ? rootDn : searchRootFromPrincipal(bindPrincipal);
 
+    // T2.19 hardening (issue #133): JNDI's ctx.search(...) substitution does NOT escape LDAP
+    // filter metacharacters -- it only expands the {0} placeholder. Without this encoding, an
+    // authenticated principal containing '(', ')', '*', '\' or NUL would break out of the
+    // filter and broaden the search to arbitrary directory entries. LdapEncoder.filterEncode
+    // is a no-op for principals without metacharacters, so existing valid usernames flow
+    // through unchanged. See Spring Security CVE-2023-46527.
+    final String encodedBindPrincipal = LdapEncoder.filterEncode(bindPrincipal);
+
     return SpringSecurityLdapTemplate.searchForSingleEntryInternal(
-        ctx, searchCtls, searchRoot, searchFilter, new Object[] {bindPrincipal});
+        ctx, searchCtls, searchRoot, searchFilter, new Object[] {encodedBindPrincipal});
+  }
+
+  /**
+   * Returns true if {@code s} contains a NUL byte or any C0/C1 Unicode control character. Used by
+   * {@link #doAuthentication} to fast-fail obviously-malformed principals before they reach the
+   * LDAP server. The C0 range (U+0000-U+001F) and DEL (U+007F) plus C1 (U+0080-U+009F) are
+   * excluded; everything else (including non-ASCII printable characters) is accepted to preserve
+   * compatibility with i18n directory deployments.
+   */
+  private static boolean containsControlOrNul(String s) {
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      if (c < 0x20 || c == 0x7F || (c >= 0x80 && c <= 0x9F)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private String searchRootFromPrincipal(String bindPrincipal) {
