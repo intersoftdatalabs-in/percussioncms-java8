@@ -21,6 +21,8 @@ import static com.percussion.share.service.exception.PSParameterValidationUtils.
 import static com.percussion.share.web.service.PSRestServicePathConstants.FIND_ALL_PATH;
 import static org.apache.commons.lang3.Validate.notNull;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.assetmanagement.forms.data.PSFormSummary;
 import com.percussion.assetmanagement.forms.data.PSFormSummaryList;
 import com.percussion.assetmanagement.forms.service.IPSFormDataService;
@@ -47,8 +49,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,17 +124,16 @@ public class PSFormDataService implements IPSFormDataService {
       List<PSFormSummary> result = new ArrayList<>();
 
       PSDeliveryClient deliveryClient = new PSDeliveryClient();
-      JSONObject getJson = new JSONObject();
-      getJson =
+      ObjectNode getJson =
           deliveryClient.getJsonObject(
               new PSDeliveryActionOptions(
                   server, FORM_INFO_URL + "list", HttpMethodType.GET, true));
-      JSONArray formInfo = (JSONArray) getJson.get("formsInfo");
+      ArrayNode formInfo = (ArrayNode) getJson.path("formsInfo");
 
       for (int i = 0; i < formInfo.size(); i++) {
         PSFormSummary sum;
-        JSONObject formObj = formInfo.getJSONObject(i);
-        String name = formObj.getString(NAME_FIELD);
+        ObjectNode formObj = (ObjectNode) formInfo.get(i);
+        String name = formObj.path(NAME_FIELD).asText();
         if (!formDataMap.containsKey(name)) {
           sum = new PSFormSummary();
           sum.setName(name);
@@ -193,19 +192,17 @@ public class PSFormDataService implements IPSFormDataService {
 
       String url = processor.getUrl() + FORM_INFO_URL + name;
       PSDeliveryClient deliveryClient = new PSDeliveryClient();
-      JSONObject getJson = new JSONObject();
-
-      getJson =
+      ObjectNode getJson =
           deliveryClient.getJsonObject(
               new PSDeliveryActionOptions(
                   processor, FORM_INFO_URL + name, HttpMethodType.GET, true));
-      JSONArray formInfo = (JSONArray) getJson.get("formsInfo");
+      ArrayNode formInfo = (ArrayNode) getJson.path("formsInfo");
 
       if (!formInfo.isEmpty()) {
         sum = new PSFormSummary();
         sum.setName(name);
 
-        mergeFormData(formInfo.getJSONObject(0), sum);
+        mergeFormData((ObjectNode) formInfo.get(0), sum);
       }
 
       return sum;
@@ -289,10 +286,10 @@ public class PSFormDataService implements IPSFormDataService {
    * @param obj form json object.
    * @param sum form summary.
    */
-  private void mergeFormData(JSONObject obj, PSFormSummary sum) {
-    int totalSubmissions = obj.getInt(TOTALFORMS_FIELD);
+  private void mergeFormData(ObjectNode obj, PSFormSummary sum) {
+    int totalSubmissions = obj.path(TOTALFORMS_FIELD).asInt();
     sum.setNewSubmissions(
-        sum.getNewSubmissions() + (totalSubmissions - obj.getInt(EXPORTEDFORMS_FIELD)));
+        sum.getNewSubmissions() + (totalSubmissions - obj.path(EXPORTEDFORMS_FIELD).asInt()));
     sum.setTotalSubmissions(sum.getTotalSubmissions() + totalSubmissions);
   }
 

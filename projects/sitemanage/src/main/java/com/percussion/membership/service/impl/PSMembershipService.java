@@ -18,6 +18,9 @@
 /** */
 package com.percussion.membership.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.delivery.client.IPSDeliveryClient.HttpMethodType;
 import com.percussion.delivery.client.IPSDeliveryClient.PSDeliveryActionOptions;
 import com.percussion.delivery.client.PSDeliveryClient;
@@ -44,8 +47,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,14 +81,14 @@ public class PSMembershipService implements IPSMembershipService {
       List<PSUserSummary> summaries = new ArrayList<>();
 
       PSDeliveryClient deliveryClient = new PSDeliveryClient();
-      JSONArray users = deliveryClient.getJsonArray(new PSDeliveryActionOptions(server, url));
+      ArrayNode users = deliveryClient.getJsonArray(new PSDeliveryActionOptions(server, url));
       for (int i = 0; i < users.size(); i++) {
-        JSONObject userSum = users.getJSONObject(i);
+        ObjectNode userSum = (ObjectNode) users.get(i);
         PSUserSummary userSummary = new PSUserSummary();
-        userSummary.setEmail(userSum.getString("email"));
-        userSummary.setCreatedDate(userSum.getString("createdDate"));
-        userSummary.setStatus(userSum.getString("status"));
-        userSummary.setGroups(userSum.getString("groups"));
+        userSummary.setEmail(userSum.path("email").asText());
+        userSummary.setCreatedDate(userSum.path("createdDate").asText());
+        userSummary.setStatus(userSum.path("status").asText());
+        userSummary.setGroups(userSum.path("groups").asText());
         summaries.add(userSummary);
       }
 
@@ -97,6 +98,13 @@ public class PSMembershipService implements IPSMembershipService {
       throw new WebApplicationException(e);
     }
   }
+
+  /**
+   * T2.17.3 hardening (issue #143): shared Jackson ObjectMapper, created once per class.
+   * Thread-safe per Jackson documentation; used for the small request-body objects built locally in
+   * this class.
+   */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   @Override
   @PUT
@@ -119,7 +127,7 @@ public class PSMembershipService implements IPSMembershipService {
       String url = "/" + PSDeliveryInfo.SERVICE_MEMBERSHIP + MEMBERSHIP + ADMIN_ACCOUNT;
 
       PSDeliveryClient deliveryClient = new PSDeliveryClient();
-      JSONObject accountJson = new JSONObject();
+      ObjectNode accountJson = MAPPER.createObjectNode();
       accountJson.put("email", account.getEmail());
       accountJson.put("action", account.getAction());
       deliveryClient.push(
@@ -188,7 +196,7 @@ public class PSMembershipService implements IPSMembershipService {
           "/" + PSDeliveryInfo.SERVICE_MEMBERSHIP + MEMBERSHIP + ADMIN_USER_GROUP + "/" + site;
 
       PSDeliveryClient deliveryClient = new PSDeliveryClient();
-      JSONObject accountJson = new JSONObject();
+      ObjectNode accountJson = MAPPER.createObjectNode();
       accountJson.put("email", userGroup.getEmail());
       accountJson.put("groups", userGroup.getGroups());
       deliveryClient.push(

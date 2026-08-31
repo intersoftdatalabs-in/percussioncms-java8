@@ -16,6 +16,10 @@
  */
 package com.percussion.delivery.client;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.delivery.data.PSDeliveryInfo;
 import com.percussion.error.PSExceptionUtils;
 import com.percussion.proxyconfig.data.PSProxyConfig;
@@ -23,10 +27,6 @@ import com.percussion.proxyconfig.service.IPSProxyConfigService;
 import com.percussion.proxyconfig.service.PSProxyConfigServiceLocator;
 import com.percussion.server.PSServer;
 import com.percussion.error.PSMissingBeanConfigurationException;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.Header;
@@ -311,12 +311,26 @@ public class PSDeliveryClient extends HttpClient implements IPSDeliveryClient
     }
 
     /**
-     * @return A JSON of the received data.
+     * @return A JsonNode of the received data.
      */
-    private JSON getJson()
+    private JsonNode getJson()
     {
-        return net.sf.json.JSONSerializer.toJSON(pushOrGet(MediaType.APPLICATION_JSON));
+        // T2.17.3 hardening (issue #143): migrated from json-lib
+        // JSONSerializer.toJSON(String) to Jackson ObjectMapper.readTree(String).
+        // The string is the response body from the delivery tier; readTree returns
+        // the parsed tree or throws JsonProcessingException on parse error (which
+        // is caught by the surrounding try/catch in getJsonObject/getJsonArray).
+        try {
+            return MAPPER.readTree(pushOrGet(MediaType.APPLICATION_JSON));
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new PSDeliveryClientException("Error parsing delivery response: " + e.getMessage(), e);
+        }
     }
+
+    /**
+     * Shared Jackson ObjectMapper. Created once per class; thread-safe per Jackson docs.
+     */
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
      * A low level function that simply sends some content using the corresponding
@@ -363,16 +377,16 @@ public class PSDeliveryClient extends HttpClient implements IPSDeliveryClient
      * Requests a JSON Object from a delivery server. Requires that
      * <code>this.url</code> is already set.
      *
-     * @return A JSONObject of the response from the server. If there is no data
-     *         returned, returns an empty JSONObject. Will never be
+     * @return An ObjectNode (Jackson) of the response from the server. If there is no data
+     *         returned, returns an empty ObjectNode. Will never be
      *         <code>null</code>, may be empty.
      * @throws PSDeliveryClientException if the remote server did not return
      *             JSON of the expected type.
      *
      */
-    private JSONObject getJsonObject()
+    private ObjectNode getJsonObject()
     {
-        JSON obj;
+        JsonNode obj;
         try
         {
             obj = getJson();
@@ -382,19 +396,19 @@ public class PSDeliveryClient extends HttpClient implements IPSDeliveryClient
             throw new PSDeliveryClientException("Error in executing the HTTP method: " + ex.getMessage());
         }
 
-        if (obj instanceof JSONNull)
-            obj = new JSONObject();
-        else if (!(obj instanceof JSONObject))
+        if (obj == null || obj.isNull() || obj.isMissingNode())
+            return MAPPER.createObjectNode();
+        if (!(obj instanceof ObjectNode))
             throw new PSDeliveryClientException("Expected JSONObject, got ".concat(obj.getClass().toString()));
 
-        return (JSONObject) obj;
+        return (ObjectNode) obj;
     }
 
     /*
      * (non-Javadoc)
      * @see com.percussion.delivery.client.IPSDeliveryClient#getJsonObject(com.percussion.delivery.client.IPSDeliveryClient.PSDeliveryActionOptions)
      */
-    public JSONObject getJsonObject(PSDeliveryActionOptions actionOptions)
+    public ObjectNode getJsonObject(PSDeliveryActionOptions actionOptions)
     {
         prepare(actionOptions, null);
         return getJsonObject();
@@ -404,7 +418,7 @@ public class PSDeliveryClient extends HttpClient implements IPSDeliveryClient
      * (non-Javadoc)
      * @see com.percussion.delivery.client.IPSDeliveryClient#getJsonObject(com.percussion.delivery.client.IPSDeliveryClient.PSDeliveryActionOptions, java.lang.Object)
      */
-    public JSONObject getJsonObject(PSDeliveryActionOptions actionOptions,Object requestMessageBody)
+    public ObjectNode getJsonObject(PSDeliveryActionOptions actionOptions,Object requestMessageBody)
     {
         prepare(actionOptions, requestMessageBody);
         return getJsonObject();
@@ -414,16 +428,16 @@ public class PSDeliveryClient extends HttpClient implements IPSDeliveryClient
      * Requests a JSON Array from a delivery server. Requires that
      * <code>this.url</code> is already set.
      *
-     * @return A JSONArray of the response from the server. If there is no data
-     *         returned, returns an empty JSONArray. Will never be
+     * @return An ArrayNode (Jackson) of the response from the server. If there is no data
+     *         returned, returns an empty ArrayNode. Will never be
      *         <code>null</code>, may be empty.
      * @throws PSDeliveryClientException if the remote server did not return
      *             JSON of the expected type.
      *
      */
-    private JSONArray getJsonArray()
+    private ArrayNode getJsonArray()
     {
-        JSON obj;
+        JsonNode obj;
         try
         {
             obj = getJson();
@@ -433,19 +447,19 @@ public class PSDeliveryClient extends HttpClient implements IPSDeliveryClient
             throw new PSDeliveryClientException("Error in executing the HTTP method: " + ex.getMessage());
         }
 
-        if (obj instanceof JSONNull)
-            obj = new JSONArray();
-        else if (!(obj instanceof JSONArray))
+        if (obj == null || obj.isNull() || obj.isMissingNode())
+            return MAPPER.createArrayNode();
+        if (!(obj instanceof ArrayNode))
             throw new PSDeliveryClientException("Expected JSONArray, got ".concat(obj.getClass().toString()));
 
-        return (JSONArray) obj;
+        return (ArrayNode) obj;
     }
 
     /*
      * (non-Javadoc)
      * @see com.percussion.delivery.client.IPSDeliveryClient#getJsonArray(com.percussion.delivery.client.IPSDeliveryClient.PSDeliveryActionOptions)
      */
-    public JSONArray getJsonArray(PSDeliveryActionOptions actionOptions)
+    public ArrayNode getJsonArray(PSDeliveryActionOptions actionOptions)
     {
         prepare(actionOptions, null);
         return getJsonArray();
@@ -455,7 +469,7 @@ public class PSDeliveryClient extends HttpClient implements IPSDeliveryClient
      * (non-Javadoc)
      * @see com.percussion.delivery.client.IPSDeliveryClient#getJsonArray(com.percussion.delivery.client.IPSDeliveryClient.PSDeliveryActionOptions, java.lang.Object)
      */
-    public JSONArray getJsonArray(PSDeliveryActionOptions actionOptions, Object requestMessageBody)
+    public ArrayNode getJsonArray(PSDeliveryActionOptions actionOptions, Object requestMessageBody)
     {
         prepare(actionOptions, requestMessageBody);
         return getJsonArray();
