@@ -10,22 +10,21 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
 package com.percussion.widgets.image.web.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.server.PSServer;
 import com.percussion.util.PSBaseBean;
 import com.percussion.widgets.image.data.CachedImageMetaData;
 import com.percussion.widgets.image.data.ImageData;
 import com.percussion.widgets.image.services.ImageCacheManager;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -74,7 +73,7 @@ public class BinaryUploadController
       ModelAndView modelAndView = new ModelAndView(getViewName());
       modelAndView.addAllObjects(RequestContextUtils.getInputFlashMap(request));
 
-      JSONArray results;
+      ArrayNode results;
 
       try
       {
@@ -86,7 +85,7 @@ public class BinaryUploadController
          String emsg = "Unexpected Exception " + ex.getMessage();
          log.error(ex.getMessage());
          log.debug(ex);
-         JSONObject error = new JSONObject();
+         ObjectNode error = MAPPER.createObjectNode();
          error.put("error", emsg);
          modelAndView.addObject(getModelObjectName(), error);
          return modelAndView;
@@ -95,10 +94,10 @@ public class BinaryUploadController
       return modelAndView;
    }
 
-   protected JSONArray buildResults(HttpServletRequest request)
+   protected ArrayNode buildResults(HttpServletRequest request)
          throws PSBinaryUploadException
    {
-      JSONArray results = new JSONArray();
+      ArrayNode results = MAPPER.createArrayNode();
       if ((request instanceof MultipartHttpServletRequest))
       {
          try
@@ -116,7 +115,7 @@ public class BinaryUploadController
 
                {
                   CachedImageMetaData cachedData = storeImage(mpFile);
-                  JSON json = JSONSerializer.toJSON(cachedData);
+                  JsonNode json = MAPPER.valueToTree(cachedData);
                   results.add(json);
                }
                else
@@ -141,11 +140,11 @@ public class BinaryUploadController
       return results;
    }
 
-   protected JSON buildError(String message)
+   protected JsonNode buildError(String message)
 
    {
-      JSONObject json = new JSONObject();
-      json.element("error", message);
+      ObjectNode json = MAPPER.createObjectNode();
+      json.put("error", message);
       return json;
    }
 
@@ -227,4 +226,11 @@ public class BinaryUploadController
       this.viewName = viewName;
    }
 
+   /**
+    * Shared Jackson {@link ObjectMapper}. T2.17 migration (issue #139): replaces the json-lib
+    * {@code JSONSerializer.toJSON(Object)} POJO-conversion call with Jackson's
+    * {@code ObjectMapper#valueToTree(Object)}. The mapper is created once and is the only
+    * state held in the controller besides the Spring-injected services.
+    */
+   private static final ObjectMapper MAPPER = new ObjectMapper();
 }
