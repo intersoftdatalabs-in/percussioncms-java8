@@ -124,7 +124,7 @@
                <PSExtensionMethodParam description="String of comma separated template ids" name="templateIds" type="java.lang.String"/>
             </Parameters>
          </PSExtensionMethod>
-         <PSExtensionMethod description="Gets the processed list of pages that have set supplied calendar." name="getPagesForCalendar" returntype="net.sf.json.JSONArray">
+         <PSExtensionMethod description="Gets the processed list of pages that have set supplied calendar." name="getPagesForCalendar" returntype="com.fasterxml.jackson.databind.node.ArrayNode">
             <Parameters>
                <PSExtensionMethodParam description="The name of the calendar" name="calendarName" type="java.lang.String"/>
             </Parameters>

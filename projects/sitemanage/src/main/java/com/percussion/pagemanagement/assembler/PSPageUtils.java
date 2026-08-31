@@ -27,6 +27,10 @@ import static org.apache.commons.lang3.Validate.isTrue;
 import static org.apache.commons.lang3.Validate.notEmpty;
 import static org.apache.commons.lang3.Validate.notNull;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.analytics.service.IPSAnalyticsProviderService;
 import com.percussion.category.data.PSCategory;
 import com.percussion.category.data.PSCategoryNode;
@@ -147,9 +151,6 @@ import net.htmlparser.jericho.OutputDocument;
 import net.htmlparser.jericho.Source;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -185,6 +186,13 @@ public class PSPageUtils extends PSJexlUtilBase {
 
   private static final String WEB_RESOURCES = "web_resources";
   private static final String CATEGORY_URL = "../rx_resources/category/category.xml";
+
+  /**
+   * T2.17.4c hardening (issue #149): shared Jackson ObjectMapper for the JEXL methods
+   * (createJsonObject, createJsonArray) and the getPagesForCalendar / getCategoryDropDownValues
+   * utility methods.
+   */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private CacheManager cacheMgr;
   private Cache linkCache;
@@ -1042,12 +1050,23 @@ public class PSPageUtils extends PSJexlUtilBase {
       params = {@IPSJexlParam(name = "metadata", description = "Metadata string")},
       returns = "Map of key/value pairs")
   public Map<String, String> parseSoProMetadata(String metadata) {
-    JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON(metadata);
+    // T2.17.4c hardening (issue #149): migrated from json-lib
+    // JSONSerializer.toJSON(String) to Jackson ObjectMapper.readTree(String).
+    // The readTree call returns a JsonNode whose keySet() iterates the
+    // top-level field names; get(name) returns the JsonNode for each value.
+    JsonNode jsonObject;
+    try {
+      jsonObject = MAPPER.readTree(metadata);
+    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+      log.error("T2.17.4c: failed to parse metadata JSON: {}", e.getMessage());
+      return new ConcurrentHashMap<>();
+    }
     Map<String, String> map = new ConcurrentHashMap<>();
 
-    for (Object key : jsonObject.keySet()) {
-      Object value = jsonObject.get(key);
-      map.put(key.toString(), value.toString());
+    for (java.util.Iterator<String> it = jsonObject.fieldNames(); it.hasNext(); ) {
+      String key = it.next();
+      JsonNode value = jsonObject.get(key);
+      map.put(key, value.asText());
     }
 
     return map;
@@ -1707,11 +1726,11 @@ public class PSPageUtils extends PSJexlUtilBase {
   @IPSJexlMethod(
       description = "Gets the processed list of pages that have set supplied calendar.",
       params = {@IPSJexlParam(name = "calendarName", description = "The name of the calendar")},
-      returns = "JSONArray object")
-  public JSONArray getPagesForCalendar(String calendarName)
+      returns = "ArrayNode object (Jackson)")
+  public ArrayNode getPagesForCalendar(String calendarName)
       throws RepositoryException, ParseException {
     try {
-      JSONArray pagesForCal = new JSONArray();
+      ArrayNode pagesForCal = MAPPER.createArrayNode();
       List<Integer> ids = pageDao.getPageIdsByFieldNameAndValue("page_calendar", calendarName);
 
       // Convert input string into a date
@@ -1756,7 +1775,7 @@ public class PSPageUtils extends PSJexlUtilBase {
         if (fields.get("page_end_date") != null) {
           endDate = inputFormat.parse((String) fields.get("page_end_date"));
         }
-        JSONObject pageCalItem = new JSONObject();
+        ObjectNode pageCalItem = MAPPER.createObjectNode();
         pageCalItem.put("title", title);
         pageCalItem.put("summary", summary);
         pageCalItem.put(
@@ -1775,7 +1794,7 @@ public class PSPageUtils extends PSJexlUtilBase {
     } catch (PSDataServiceException e) {
       log.error(PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
-      return new JSONArray();
+      return MAPPER.createArrayNode();
     }
   }
 
@@ -2052,7 +2071,13 @@ public class PSPageUtils extends PSJexlUtilBase {
 
       // Get the persisted drop down field value.
 
-      JSONArray jsonArray = JSONArray.fromObject(fieldValue);
+      ArrayNode jsonArray;
+      try {
+        jsonArray = (ArrayNode) MAPPER.readTree(fieldValue);
+      } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+        log.error("T2.17.4c: failed to parse field value JSON: {}", e.getMessage());
+        return templateMap;
+      }
 
       // Get the categories from the category xml, so that the relevant
       // map can be populated.
@@ -2061,11 +2086,12 @@ public class PSPageUtils extends PSJexlUtilBase {
       if (category.getTopLevelNodes() != null && !category.getTopLevelNodes().isEmpty()) {
         List<PSCategoryNode> nodes = category.getTopLevelNodes();
         for (int n = 0; n < jsonArray.size(); n++) {
-          JSONObject jObj = jsonArray.getJSONObject(n);
+          ObjectNode jObj = (ObjectNode) jsonArray.get(n);
 
-          for (Object key : jObj.keySet()) {
-            if (((String) key).equalsIgnoreCase("id")) {
-              parentNode = getParentNode(nodes, jObj.getString((String) key), parentNode);
+          for (java.util.Iterator<String> it = jObj.fieldNames(); it.hasNext(); ) {
+            String key = it.next();
+            if (key.equalsIgnoreCase("id")) {
+              parentNode = getParentNode(nodes, jObj.path(key).asText(), parentNode);
               if (parentNode != null) {
                 nodes = parentNode.getChildNodes();
                 if (!parentNode.equals(prevParentNode)) {
@@ -2073,7 +2099,7 @@ public class PSPageUtils extends PSJexlUtilBase {
                 }
                 prevParentNode = parentNode;
               }
-              nodeList = getCategoryList(nodes, jObj.getString((String) key));
+              nodeList = getCategoryList(nodes, jObj.path(key).asText());
               templateMap.put(fieldName + fieldCounter, nodeList);
             }
           }
@@ -2385,13 +2411,18 @@ public class PSPageUtils extends PSJexlUtilBase {
    * @return
    */
   @IPSJexlMethod(
-      description = "createJsonObject can be used to convert a JSON string into a JSONObject.",
+      description = "createJsonObject can be used to convert a JSON string into a JsonNode.",
       params = {@IPSJexlParam(name = "jsonString", description = "A valid JSON string")},
-      returns = "A net.sf.json.JSONObject instance ")
-  public JSONObject createJsonObject(String jsonString) {
-    JSONObject jsonObj = null;
+      returns = "A com.fasterxml.jackson.databind.JsonNode instance ")
+  public JsonNode createJsonObject(String jsonString) {
+    JsonNode jsonObj = null;
     try {
-      jsonObj = (JSONObject) JSONSerializer.toJSON(jsonString);
+      // T2.17.4c hardening (issue #149): migrated from json-lib
+      // JSONSerializer.toJSON(String) to Jackson ObjectMapper.readTree(String).
+      // readTree returns the parsed tree or throws JsonProcessingException
+      // on parse error; we catch and log just like the previous
+      // implementation.
+      jsonObj = MAPPER.readTree(jsonString);
     } catch (Exception e) {
       log.error("Error processing json string: {}", jsonString);
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
@@ -2405,25 +2436,25 @@ public class PSPageUtils extends PSJexlUtilBase {
    * @return
    */
   @IPSJexlMethod(
-      description = "createJsonArray can be used to convert a JSON Object into a JSONArray.",
+      description = "createJsonArray can be used to convert a JSON Object into an ArrayNode.",
       params = {
-        @IPSJexlParam(name = "jsonObj", description = "A valid net.sf.json.JSONObject"),
+        @IPSJexlParam(
+            name = "jsonObj",
+            description = "A valid com.fasterxml.jackson.databind.JsonNode"),
         @IPSJexlParam(name = "name", description = "The name of the array")
       },
-      returns = "A valid net.sf.json.JSONArray instance, may be empty.")
-  public JSONArray createJsonArray(JSONObject jsonObj, String name) {
+      returns = "A valid com.fasterxml.jackson.databind.node.ArrayNode instance, may be empty.")
+  public ArrayNode createJsonArray(JsonNode jsonObj, String name) {
     if (name == null || name.trim().equals("")) {
       throw new IllegalArgumentException("name is required");
     }
 
-    JSONArray ret = new JSONArray();
+    ArrayNode ret = MAPPER.createArrayNode();
 
     if (jsonObj != null) {
-      try {
-        ret = jsonObj.getJSONArray(name);
-      } catch (Exception e) {
-        log.error("Error processing json string: {}", PSExceptionUtils.getMessageForLog(e));
-        log.debug(PSExceptionUtils.getDebugMessageForLog(e));
+      JsonNode found = jsonObj.path(name);
+      if (found.isArray()) {
+        ret = (ArrayNode) found;
       }
     }
     return ret;

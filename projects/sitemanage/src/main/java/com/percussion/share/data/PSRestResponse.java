@@ -18,7 +18,8 @@
 package com.percussion.share.data;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
-import net.sf.json.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * A generic REST response data object.
@@ -39,7 +40,7 @@ public class PSRestResponse {
    */
   @SuppressWarnings("unchecked")
   public PSRestResponse(boolean responseType) {
-    JSONObject res = new JSONObject();
+    ObjectNode res = MAPPER.createObjectNode();
     if (responseType) {
       status = PSRestResponseStatus.SUCCESS;
       res.put(DEFAULT_MESSAGE, DEFAULT_SUCCESS_MESSAGE);
@@ -83,4 +84,7 @@ public class PSRestResponse {
       "Your request has been successfully completed.";
   private static final String DEFAULT_ERROR_MESSAGE =
       "Unexpected error occurred while executing your request.";
+
+  /** T2.17.4c hardening (issue #149): shared Jackson ObjectMapper. */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 }
