@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 
 import java.io.UnsupportedEncodingException;
 
-import net.sf.json.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -77,7 +77,7 @@ public class VisitorTrackingServiceIntegrationTest {
         throws UnsupportedEncodingException {
         String content = response.getContentAsString();
         log.debug("Convert JSON is: " + content);
-        Object obj = JSONObject.toBean(JSONObject.fromObject(content), VisitorTrackingResponse.class);
+        Object obj = MAPPER.readValue(content, VisitorTrackingResponse.class);
         return (VisitorTrackingResponse) obj;
     }
     
@@ -100,4 +100,10 @@ public class VisitorTrackingServiceIntegrationTest {
                 response.getCookie(VisitorTrackingWebUtils.VISITOR_PROFILE_ID_COOKIE_NAME));
     }
 
+    /**
+     * T2.17.4a hardening (issue #145): shared Jackson ObjectMapper for the
+     * {@code MAPPER.readValue} migration of the {@code JSONObject.toBean}/
+     * {@code JSONObject.fromObject} call.
+     */
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 }

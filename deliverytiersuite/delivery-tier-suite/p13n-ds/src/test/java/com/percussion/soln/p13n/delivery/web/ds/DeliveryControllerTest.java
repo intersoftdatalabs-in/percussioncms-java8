@@ -26,7 +26,7 @@ import java.util.HashSet;
 
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.json.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -205,7 +205,7 @@ public class DeliveryControllerTest {
         context.assertIsSatisfied();
         String actualJsonString = response.getContentAsString();
         DeliveryResponse actualResponse = (DeliveryResponse) 
-            JSONObject.toBean(JSONObject.fromObject(actualJsonString), DeliveryResponse.class);
+            MAPPER.readValue(actualJsonString, DeliveryResponse.class);
         ;
         assertEquals("Response status should be an error",
                 "ERROR",actualResponse.getStatus());
@@ -401,5 +401,11 @@ public class DeliveryControllerTest {
      * The log instance to use for this class, never <code>null</code>.
      */
     private static final Log log = LogFactory.getLog(DeliveryControllerTest.class);
-    
+
+    /**
+     * T2.17.4a hardening (issue #145): shared Jackson ObjectMapper for the
+     * {@code MAPPER.readValue} migration of the {@code JSONObject.toBean}/
+     * {@code JSONObject.fromObject} call.
+     */
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 }

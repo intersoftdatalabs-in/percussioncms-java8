@@ -26,7 +26,7 @@ import java.util.Map;
 
 import javax.servlet.http.Cookie;
 
-import net.sf.json.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -220,11 +220,16 @@ public class VisitorTrackingControllerTest  {
         context.assertIsSatisfied();
         String actualJsonString = response.getContentAsString();
         VisitorTrackingResponse actualResponse = (VisitorTrackingResponse)
-        JSONObject.toBean(JSONObject.fromObject(actualJsonString), VisitorTrackingResponse.class);
+        MAPPER.readValue(actualJsonString, VisitorTrackingResponse.class);
         
         assertEquals("Response status should be an error",
                 "ERROR",actualResponse.getStatus());
     }
 
-    
+    /**
+     * T2.17.4a hardening (issue #145): shared Jackson ObjectMapper for the
+     * {@code MAPPER.readValue} migration of the {@code JSONObject.toBean}/
+     * {@code JSONObject.fromObject} call.
+     */
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 }

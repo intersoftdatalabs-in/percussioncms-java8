@@ -19,7 +19,7 @@ package com.percussion.soln.p13n.delivery.ds;
 
 import static integrationtest.spring.SpringSetup.*;
 import static org.junit.Assert.*;
-import net.sf.json.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -122,10 +122,14 @@ public class DSDeliveryTest  {
     }
     
     public DeliveryResponse getDeliveryResponse(MockHttpServletResponse response) throws Exception {
-        JSONObject obj = JSONObject.fromObject(response.getContentAsString());
-        DeliveryResponse dr = (DeliveryResponse) JSONObject.toBean(obj, DeliveryResponse.class);
-        return dr;
+        // T2.17.4a hardening (issue #145): migrated from json-lib
+        // JSONObject.toBean(JSONObject.fromObject(json), Class) to Jackson
+        // MAPPER.readValue(json, Class).
+        return MAPPER.readValue(response.getContentAsString(), DeliveryResponse.class);
     }
+
+    /** T2.17.4a hardening (issue #145): shared Jackson ObjectMapper. */
+    private static final ObjectMapper MAPPER = new ObjectMapper();
     
 
 }
