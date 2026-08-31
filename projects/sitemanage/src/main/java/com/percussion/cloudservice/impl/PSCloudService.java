@@ -17,6 +17,8 @@
 
 package com.percussion.cloudservice.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.cloudservice.IPSCloudService;
 import com.percussion.cloudservice.data.PSCloudLicenseType;
 import com.percussion.cloudservice.data.PSCloudServiceInfo;
@@ -43,7 +45,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -100,7 +101,7 @@ public class PSCloudService implements IPSCloudService {
   @Path("/activestates")
   @Produces(MediaType.TEXT_PLAIN)
   public String getActiveState() {
-    JSONObject states = new JSONObject();
+    ObjectNode states = MAPPER.createObjectNode();
     for (PSCloudLicenseType type : PSCloudLicenseType.values()) {
       Boolean valid = isValidLicense(type);
       states.put(type.toString(), valid);
@@ -219,7 +220,7 @@ public class PSCloudService implements IPSCloudService {
    * @return Stringified json object of client identity. {"id":"License String","type":"CM1"}
    */
   public String generateClientIdentity(PSModuleLicense poLic) {
-    JSONObject ci = new JSONObject();
+    ObjectNode ci = MAPPER.createObjectNode();
     ci.put("id", poLic.getKey());
     ci.put("type", CLOUD_SERVICE_TYPE_CM1);
     ci.put("token", poLic.getHandshake());
@@ -337,4 +338,7 @@ public class PSCloudService implements IPSCloudService {
 
     return pageData;
   }
+
+  /** T2.17.4b hardening (issue #147): shared Jackson ObjectMapper. */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 }

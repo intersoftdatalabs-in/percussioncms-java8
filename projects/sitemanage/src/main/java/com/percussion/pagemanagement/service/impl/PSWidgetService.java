@@ -16,6 +16,9 @@
  */
 package com.percussion.pagemanagement.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.percussion.metadata.data.PSMetadata;
 import com.percussion.metadata.service.IPSMetadataService;
 import com.percussion.pagemanagement.dao.IPSWidgetDao;
@@ -44,10 +47,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import net.sf.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -121,6 +122,9 @@ public class PSWidgetService implements IPSWidgetService {
 
   public List<PSWidgetSummary> findByType(String type, String filterDisabledWidgets)
       throws PSDataServiceException {
+    // T2.17.4b hardening (issue #147): MAPPER.readTree throws JsonProcessingException;
+    // catch and rethrow as a runtime exception (the surrounding PSDataServiceException
+    // contract doesn't expose json-specific parse errors).
     if (StringUtils.isBlank(type)) type = "All";
     List<String> disabledWidgets = new ArrayList<>();
     boolean filter =
@@ -132,11 +136,13 @@ public class PSWidgetService implements IPSWidgetService {
       if (md != null) {
         String data = md.getData();
         if (StringUtils.isNotBlank(data)) {
-          JSONArray jsonArray = JSONArray.fromObject(data);
-          @SuppressWarnings("unchecked")
-          Iterator<String> iter = jsonArray.iterator();
-          while (iter.hasNext()) {
-            disabledWidgets.add(iter.next());
+          try {
+            ArrayNode jsonArray = (ArrayNode) MAPPER.readTree(data);
+            for (JsonNode node : jsonArray) {
+              disabledWidgets.add(node.asText());
+            }
+          } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new RuntimeException("T2.17.4b: failed to parse widget configuration JSON", e);
           }
         }
       }
@@ -344,4 +350,7 @@ public class PSWidgetService implements IPSWidgetService {
 
   /** The log instance to use for this class, never <code>null</code>. */
   private static final Logger log = LogManager.getLogger(PSWidgetService.class);
+
+  /** T2.17.4b hardening (issue #147): shared Jackson ObjectMapper. */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 }

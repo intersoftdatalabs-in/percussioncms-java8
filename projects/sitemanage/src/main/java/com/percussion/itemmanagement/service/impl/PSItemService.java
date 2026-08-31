@@ -22,6 +22,9 @@ import static com.percussion.webservices.PSWebserviceUtils.getStateById;
 import static com.percussion.webservices.PSWebserviceUtils.getWorkflow;
 import static java.util.Arrays.asList;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.assetmanagement.dao.IPSAssetDao;
 import com.percussion.assetmanagement.data.PSAsset;
 import com.percussion.assetmanagement.data.PSReportFailedToRunException;
@@ -128,8 +131,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -510,14 +511,14 @@ public class PSItemService implements IPSItemService {
   @Path("siteimpact/asset/{assetId}")
   @Produces(MediaType.TEXT_PLAIN)
   public String getAssetSiteImpact(@PathParam("assetId") String assetId) {
-    JSONObject result = new JSONObject();
+    ObjectNode result = MAPPER.createObjectNode();
     Set<String> ownerPages = new HashSet<>();
     Set<String> ownerTemplates = new HashSet<>();
     try {
       fillOwners(assetId, ownerPages, ownerTemplates);
 
       getManagedLinkOwners(assetId, ownerPages, ownerTemplates, MAX_PAGES_SITEIMPACT);
-      JSONArray pageArray = new JSONArray();
+      ArrayNode pageArray = MAPPER.createArrayNode();
       for (String page : ownerPages) {
         PSItemProperties itemProps = null;
         try {
@@ -530,10 +531,10 @@ public class PSItemService implements IPSItemService {
           log.debug(PSExceptionUtils.getDebugMessageForLog(e));
         }
         if (itemProps != null) {
-          pageArray.add(itemProps);
+          pageArray.add(MAPPER.valueToTree(itemProps));
         }
       }
-      JSONArray templateArray = new JSONArray();
+      ArrayNode templateArray = MAPPER.createArrayNode();
       for (String templateId : ownerTemplates) {
         PSTemplateSummary template = null;
         try {
@@ -548,10 +549,10 @@ public class PSItemService implements IPSItemService {
 
         List<IPSSite> sites = folderHelper.getItemSites(templateId);
         if (sites != null && !sites.isEmpty()) {
-          JSONObject templateItem = new JSONObject();
+          ObjectNode templateItem = MAPPER.createObjectNode();
 
           if (template != null) {
-            templateItem.put("template", template);
+            templateItem.set("template", MAPPER.valueToTree(template));
           }
 
           if (sites != null) {
@@ -559,10 +560,10 @@ public class PSItemService implements IPSItemService {
           }
           templateArray.add(templateItem);
         } else {
-          JSONObject templateItem = new JSONObject();
+          ObjectNode templateItem = MAPPER.createObjectNode();
 
           if (null != template) {
-            templateItem.put("template", template);
+            templateItem.set("template", MAPPER.valueToTree(template));
           }
 
           templateArray.add(templateItem);
@@ -1760,4 +1761,7 @@ public class PSItemService implements IPSItemService {
 
   /** Logger for this service. */
   public static final Logger log = LogManager.getLogger(PSItemService.class);
+
+  /** T2.17.4b hardening (issue #147): shared Jackson ObjectMapper. */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 }

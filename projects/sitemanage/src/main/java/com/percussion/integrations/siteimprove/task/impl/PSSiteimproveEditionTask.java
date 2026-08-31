@@ -17,6 +17,8 @@
 
 package com.percussion.integrations.siteimprove.task.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterators;
 import com.percussion.extension.IPSExtensionDef;
 import com.percussion.integrations.siteimprove.data.PSSiteImproveSiteConfigurations;
@@ -47,7 +49,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -286,7 +287,7 @@ public class PSSiteimproveEditionTask implements IPSEditionTask {
    */
   private Map<String, String> obtainToken(String credentialsData) throws Exception {
 
-    JSONObject credentialsJSON = JSONObject.fromObject(credentialsData);
+    JsonNode credentialsJSON = MAPPER.readTree(credentialsData);
 
     Map<String, String> credentials = new HashMap<>();
 
@@ -302,11 +303,11 @@ public class PSSiteimproveEditionTask implements IPSEditionTask {
       throw new Exception(message);
     }
 
-    credentials.put(SITE_NAME, credentialsJSON.getString(SITE_NAME));
-    credentials.put(TOKEN, credentialsJSON.getString(TOKEN));
-    credentials.put("siteProtocol", credentialsJSON.getString("siteProtocol"));
-    credentials.put("defaultDocument", credentialsJSON.getString("defaultDocument"));
-    credentials.put("canonicalDist", credentialsJSON.getString("canonicalDist"));
+    credentials.put(SITE_NAME, credentialsJSON.path(SITE_NAME).asText());
+    credentials.put(TOKEN, credentialsJSON.path(TOKEN).asText());
+    credentials.put("siteProtocol", credentialsJSON.path("siteProtocol").asText());
+    credentials.put("defaultDocument", credentialsJSON.path("defaultDocument").asText());
+    credentials.put("canonicalDist", credentialsJSON.path("canonicalDist").asText());
 
     return credentials;
   }
@@ -321,7 +322,7 @@ public class PSSiteimproveEditionTask implements IPSEditionTask {
   private PSSiteImproveSiteConfigurations obtainSiteConfiguration(String siteConfigurationData)
       throws Exception {
 
-    JSONObject siteConfigurationJson = JSONObject.fromObject(siteConfigurationData);
+    JsonNode siteConfigurationJson = MAPPER.readTree(siteConfigurationData);
 
     if (!siteConfigurationJson.has(DO_PRODUCTION)) {
       String message = "Site improve configuration details were missing the production setting";
@@ -356,13 +357,13 @@ public class PSSiteimproveEditionTask implements IPSEditionTask {
     }
 
     PSSiteImproveSiteConfigurations siteConfiguration = new PSSiteImproveSiteConfigurations();
-    siteConfiguration.setDoProduction(siteConfigurationJson.getBoolean(DO_PRODUCTION));
-    siteConfiguration.setDoStaging(siteConfigurationJson.getBoolean(DO_STAGING));
+    siteConfiguration.setDoProduction(siteConfigurationJson.path(DO_PRODUCTION).asBoolean());
+    siteConfiguration.setDoStaging(siteConfigurationJson.path(DO_STAGING).asBoolean());
     siteConfiguration.setDoAssetsScanExclude(
-        siteConfigurationJson.getBoolean(DO_ASSETS_SCAN_EXCLUDE));
-    siteConfiguration.setDoPreview(siteConfigurationJson.getBoolean(DO_PREVIEW));
+        siteConfigurationJson.path(DO_ASSETS_SCAN_EXCLUDE).asBoolean());
+    siteConfiguration.setDoPreview(siteConfigurationJson.path(DO_PREVIEW).asBoolean());
     siteConfiguration.setIsSiteImproveEnabled(
-        siteConfigurationJson.getBoolean(IS_SITEIMPROVE_ENABLED));
+        siteConfigurationJson.path(IS_SITEIMPROVE_ENABLED).asBoolean());
 
     return siteConfiguration;
   }
@@ -436,4 +437,7 @@ public class PSSiteimproveEditionTask implements IPSEditionTask {
   public void setMetadataService(IPSMetadataService metadataService) {
     this.metadataService = metadataService;
   }
+
+  /** T2.17.4b hardening (issue #147): shared Jackson ObjectMapper. */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 }

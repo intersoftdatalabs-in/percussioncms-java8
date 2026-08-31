@@ -17,6 +17,8 @@
 
 package com.percussion.delivery;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.assetmanagement.data.PSReportFailedToRunException;
 import com.percussion.cms.objectstore.PSFolder;
 import com.percussion.comments.data.PSComment;
@@ -66,7 +68,6 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import net.sf.json.JSONObject;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang3.StringUtils;
@@ -939,8 +940,7 @@ public class PSDeliveryContentGenerator extends PSGenericContentGenerator<Delive
       PSDeliveryClient deliveryClient, PSDeliveryInfo server, Memberships memberships) {
     for (Membership membership : memberships.getMembership()) {
       // Create a list of key/value pairs (JSON) to send with a POST method and
-      // register a membership account.
-      JSONObject registerObject = new JSONObject();
+      ObjectNode registerObject = MAPPER.createObjectNode();
       registerObject.put("email", membership.getEmailAddress());
       registerObject.put("password", membership.getPassword());
       registerObject.put("confirmationRequired", membership.isConfirmationRequired());
@@ -1128,4 +1128,7 @@ public class PSDeliveryContentGenerator extends PSGenericContentGenerator<Delive
   private String addCopyNumber(String fieldValue, int index, int count) {
     return count == 1 ? fieldValue : (fieldValue + " Copy " + index);
   }
+
+  /** T2.17.4b hardening (issue #147): shared Jackson ObjectMapper. */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 }

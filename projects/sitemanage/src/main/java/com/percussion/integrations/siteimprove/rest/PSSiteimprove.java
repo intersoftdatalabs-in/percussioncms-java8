@@ -17,6 +17,8 @@
 
 package com.percussion.integrations.siteimprove.rest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.integrations.siteimprove.data.PSSiteImproveCredentials;
 import com.percussion.integrations.siteimprove.data.PSSiteImproveSiteConfigurations;
 import com.percussion.metadata.data.PSMetadata;
@@ -46,7 +48,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import net.sf.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -162,8 +163,8 @@ public class PSSiteimprove {
       Boolean validCredentials = providerService.validateCredentials(credentialsToValidate);
 
       if (validCredentials) {
-        JSONObject jsonMap = new JSONObject();
-        jsonMap.accumulateAll(credentialsToValidate);
+        ObjectNode jsonMap = MAPPER.createObjectNode();
+        credentialsToValidate.forEach(jsonMap::put);
         addSiteImproveTaskToPreExistingEditions(credentials.getSiteName());
         String metadataKey = SITEIMPROVE_CREDENTIALS_BASE_KEY + credentials.getSiteName();
         metadataService.save(new PSMetadata(metadataKey, jsonMap.toString()));
@@ -206,7 +207,7 @@ public class PSSiteimprove {
       }
 
       String siteConfigKey = SITEIMPROVE_CONFIGURATION_BASE_KEY + publishSettings.getSiteName();
-      JSONObject publishSettingsJSON = new JSONObject();
+      ObjectNode publishSettingsJSON = MAPPER.createObjectNode();
       publishSettingsJSON.put("doProduction", publishSettings.getDoProduction());
       publishSettingsJSON.put("doStaging", publishSettings.getDoStaging());
       publishSettingsJSON.put("doAssetsScanExclude", publishSettings.getDoAssetsScanExclude());
@@ -373,4 +374,7 @@ public class PSSiteimprove {
     }
     return false;
   }
+
+  /** T2.17.4b hardening (issue #147): shared Jackson ObjectMapper. */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 }
