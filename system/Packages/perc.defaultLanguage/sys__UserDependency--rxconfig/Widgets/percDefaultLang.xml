@@ -20,7 +20,7 @@
         $assetItem = $assets.get(0);
         $data = $assetItem.Node.getProperty('rx:defaultLangData').getString();
         $json = $rx.pageutils.createJsonObject($data);
-        $jsonArray = $json.getJSONArray("config");
+        $jsonArray = $json.path("config");
         $headContent = "";
 
         $configured = "";
@@ -31,15 +31,15 @@
 
         if( $percPageID != null && $percPageID != "" ){
             for($j : $jsonArray){
-               if ($j.has("protocol")) {
-                    $protocol = $j.getString("protocol");
+               if (!$j.path("protocol").isMissingNode()) {
+                    $protocol = $j.path("protocol").asText();
                 } else {
                     $protocol = "";
                 }
-                $sitename = $j.getString("sitename");
-                $lang = $j.getString("lang");
-                $country = $j.getString("country");
-                $default = $j.getString("defLang");
+                $sitename = $j.path("sitename").asText();
+                $lang = $j.path("lang").asText();
+                $country = $j.path("country").asText();
+                $default = $j.path("defLang").asText();
 
 
                 if($country != null && $country != ""){

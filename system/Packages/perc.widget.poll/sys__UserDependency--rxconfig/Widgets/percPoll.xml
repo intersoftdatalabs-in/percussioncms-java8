@@ -35,12 +35,12 @@
 				$pollTitle = $assetItem.Node.getProperty('rx:pollTitle').getString();
 				$pollQuestion = $assetItem.Node.getProperty('rx:pollQuestion').getString();
 				$qJson = $rx.pageutils.createJsonObject($pollQuestion);
-				$question = $qJson.getString("question");
-				$answerType = $qJson.getString("answerType");
+				$question = $qJson.path("question").asText();
+				$answerType = $qJson.path("answerType").asText();
 				$inputType = "radio";
 				if($answerType.equals("multi"))
 					$inputType = "checkbox";
-				$ansArray = $qJson.getJSONArray("answerChoices").toArray();
+				$ansArray = $qJson.path("answerChoices");
 
 				## Create data JSON object
 				$dataJson = $rx.pageutils.createJsonObject("{}");

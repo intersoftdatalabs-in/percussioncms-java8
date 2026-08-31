@@ -250,7 +250,7 @@
           $json = $rx.pageutils.createJsonObject($data);
           $sliderJsonData = $json.toString();
           ##$isPresent=false;
-	      if($json.has('config')){
+	      if(!$json.path('config').isMissingNode()){
             ##$isPresent=true;
             $sliderJsonData = $json.toString().replace('config','percJSONConfig');
 	      }
@@ -258,7 +258,7 @@
           $updatedData = $rx.pageutils.updateManagedLinksInJSON($perc.linkContext, $sliderJsonData);
           $json = $rx.pageutils.createJsonObject($updatedData);
           $sliderId = $assetItem.Node.getProperty('rx:sys_contentid').getString();
-          $sliderName = $json.sliderName;
+          $sliderName = $json.path("sliderName").asText();
           ##$debug = $json.toString();
           $imageSliderArray = $rx.pageutils.createJsonArray($json, "percJSONConfig");
 
