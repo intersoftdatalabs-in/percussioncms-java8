@@ -101,8 +101,16 @@
     -->
 
     <!-- Define an AJP 1.3 Connector on port 8009 -->
-	<!-- Rx does not use this connector comment it -->
-    <!--Connector port="8009" 
+	<!-- Rx does not use this connector comment it. T2.7 hardening (issue #131): if this
+	     is ever uncommented, it MUST include a 'secret' attribute and secretRequired="true"
+	     to defend against CVE-2020-1938 (Ghostcat), per the Apache Tomcat 9 AJP guide.
+	     Example safe form:
+	       <Connector port="8009"
+	                  enableLookups="false" redirectPort="8443" protocol="AJP/1.3"
+	                  secret="$(/bin/awk 'BEGIN{srand();printf "%s",rand()}' | sha256sum | cut -c1-32)"
+	                  secretRequired="true" />
+	     PSUpgradeRemoveTomcatAJP (modules/perc-ant) further strips AJP at install time. -->
+    <!--Connector port="8009"
                enableLookups="false" redirectPort="8443" protocol="AJP/1.3" />
 	-->
 
