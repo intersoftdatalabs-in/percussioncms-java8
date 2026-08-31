@@ -5,9 +5,17 @@
  -->
 <Server port="${shutdown.port}" shutdown="SHUTDOWN">
     <Listener className="org.apache.catalina.startup.VersionLoggerListener" />
-    <!-- Security listener. Documentation at /docs/config/listeners.html
+    <!-- T2.7 hardening (issue #131): the SecurityListener was previously commented out,
+         leaving the UMASK system property set in catalina.sh (line 300) without a listener
+         to consume it. Enabling it now:
+           * reads the -Dorg.apache.catalina.security.SecurityListener.UMASK property and
+             applies the resulting umask to every webapp before it starts (so a webapp that
+             creates a file as 0644 cannot accidentally be world-readable on a permissive box);
+           * writes a deny-all entry to catalina.policy if SecurityManager is enabled, so
+             the deprecated security manager code path is not silently absent;
+           * is the recommended hardening per the Apache Tomcat 9 security guide.
+         Documentation at /docs/config/listeners.html. -->
     <Listener className="org.apache.catalina.security.SecurityListener" />
-    -->
     <!-- Prevent memory leaks due to use of particular java/javax APIs-->
     <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
     <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
@@ -99,6 +107,7 @@
                     useIPVHosts="${http.useIPVHosts}"
                     useKeepAliveResponseHeader="${http.useKeepAliveResponseHeader}"
                     xpoweredBy="${http.xpoweredBy}"
+                    allowedRequestAttributesPattern="${http.allowedRequestAttributesPattern}"
         />
         <Connector  SSLEnabled="${https.SSLEnabled}"
                     URIEncoding="${https.URIEncoding}"
@@ -153,6 +162,7 @@
                     useIPVHosts="${https.useIPVHosts}"
                     useKeepAliveResponseHeader="${https.useKeepAliveResponseHeader}"
                     xpoweredBy="${https.xpoweredBy}"
+                    allowedRequestAttributesPattern="${https.allowedRequestAttributesPattern}"
                     sslImplementationName="org.apache.tomcat.util.net.jsse.JSSEImplementation"
         >
         </Connector>
