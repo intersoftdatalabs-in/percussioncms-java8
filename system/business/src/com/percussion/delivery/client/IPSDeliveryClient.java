@@ -16,15 +16,14 @@
  */
 package com.percussion.delivery.client;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.percussion.delivery.data.PSDeliveryInfo;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 
 /**
@@ -49,11 +48,11 @@ public interface IPSDeliveryClient
      * 
      * @param actionOptions An object specifying the delivery server, action url,
      * http method to use, etc. Must not be <code>null</code>.
-     * @return A JSONObject of the response from the server. If there is no data
-     * returned, returns an empty JSONObject. Will never be <code>null</code>,
-     * may be empty.
+     * @return An ObjectNode (Jackson) of the response from the server. If there is
+     *         no data returned, returns an empty ObjectNode. Will never be
+     *         <code>null</code>, may be empty.
      */
-    public JSONObject getJsonObject(PSDeliveryActionOptions actionOptions);
+    public ObjectNode getJsonObject(PSDeliveryActionOptions actionOptions);
     
     /**
      * Requests a JSON Object from a delivery server, with the possibility to
@@ -67,24 +66,24 @@ public interface IPSDeliveryClient
      * send data as an HTML form element). Must be pre-escaped, and in the correct
      * format. Maybe be <code>null</code>, in that case it runs in the same way as
      * if you were using getJsonObject(PSDeliveryActionOptions actionOptions).
-     * @return A JSONObject of the response from the server. If there is no data
-     * returned, returns an empty JSONObject. Will never be <code>null</code>,
-     * may be empty.
+     * @return An ObjectNode (Jackson) of the response from the server. If there is
+     *         no data returned, returns an empty ObjectNode. Will never be
+     *         <code>null</code>, may be empty.
      * 
      */
-    public JSONObject getJsonObject(PSDeliveryActionOptions actionOptions, Object requestMessageBody);
+    public ObjectNode getJsonObject(PSDeliveryActionOptions actionOptions, Object requestMessageBody);
     
     /**
      * Requests a JSON Array from a delivery server.
      * 
      * @param actionOptions An object specifying the delivery server, action url,
      * http method to use, etc. Must not be <code>null</code>.
-     * @return A JSONArray of the response from the server. If there is no data
-     * returned, returns an empty JSONArray. Will never be <code>null</code>,
-     * may be empty.
+     * @return An ArrayNode (Jackson) of the response from the server. If there is no
+     *         data returned, returns an empty ArrayNode. Will never be
+     *         <code>null</code>, may be empty.
      * 
      */
-    public JSONArray getJsonArray(PSDeliveryActionOptions actionOptions);
+    public ArrayNode getJsonArray(PSDeliveryActionOptions actionOptions);
     
     /**
      * Requests a JSON Array from a delivery server, with the possibility to
@@ -98,12 +97,12 @@ public interface IPSDeliveryClient
      * send data as an HTML form element). Must be pre-escaped, and in the correct
      * format. Maybe be <code>null</code>, in that case it runs in the same way as
      * if you were using getJsonObject(PSDeliveryActionOptions actionOptions).
-     * @return A JSONArray of the response from the server. If there is no data
-     * returned, returns an empty JSONArray. Will never be <code>null</code>,
-     * may be empty.
+     * @return An ArrayNode (Jackson) of the response from the server. If there is
+     *         no data returned, returns an empty ArrayNode. Will never be
+     *         <code>null</code>, may be empty.
      * 
      */
-    public JSONArray getJsonArray(PSDeliveryActionOptions actionOptions, Object requestMessageBody);
+    public ArrayNode getJsonArray(PSDeliveryActionOptions actionOptions, Object requestMessageBody);
     
     /**
      * Base method to send something to the delivery server, where you don't expect

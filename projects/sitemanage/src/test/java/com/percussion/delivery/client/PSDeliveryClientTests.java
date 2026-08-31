@@ -18,6 +18,7 @@ package com.percussion.delivery.client;
 
 import static java.util.Arrays.asList;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.percussion.delivery.client.IPSDeliveryClient.HttpMethodType;
 import com.percussion.delivery.client.IPSDeliveryClient.PSDeliveryActionOptions;
 import com.percussion.delivery.data.PSDeliveryInfo;
@@ -26,7 +27,6 @@ import com.percussion.delivery.service.impl.PSDeliveryInfoLoaderTest;
 import com.percussion.proxyconfig.data.PSProxyConfig;
 import com.percussion.utils.testing.IntegrationTest;
 import java.util.ArrayList;
-import net.sf.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -85,7 +85,7 @@ public class PSDeliveryClientTests {
 
     c.setProxyConfig(proxyConfig);
     c.setLicenseOverride("-1");
-    JSONArray result =
+    ArrayNode result =
         c.getJsonArray(
             new PSDeliveryActionOptions(info, NETSUITE_METHOD_URL, HttpMethodType.GET, true));
     Assert.notNull(result);
@@ -95,7 +95,7 @@ public class PSDeliveryClientTests {
   public void testNoProxyConfigBeanAvailable() {
     PSDeliveryClient c = new PSDeliveryClient();
     c.setLicenseOverride("-1");
-    JSONArray result =
+    ArrayNode result =
         c.getJsonArray(
             new PSDeliveryActionOptions(info, NETSUITE_METHOD_URL, HttpMethodType.GET, true));
     Assert.notNull(result);
@@ -111,7 +111,7 @@ public class PSDeliveryClientTests {
 
     c.setProxyConfig(proxyConfig);
     c.setLicenseOverride("-1");
-    JSONArray result =
+    ArrayNode result =
         c.getJsonArray(
             new PSDeliveryActionOptions(info2, NETSUITE_METHOD_URL, HttpMethodType.GET, true));
     Assert.notNull(result);
@@ -128,7 +128,7 @@ public class PSDeliveryClientTests {
     c.setProxyConfig(proxyConfig);
     c.setLicenseOverride("-1");
     try {
-      JSONArray result =
+      ArrayNode result =
           c.getJsonArray(
               new PSDeliveryActionOptions(info, NETSUITE_METHOD_URL, HttpMethodType.GET, true));
       // Shouldn't get to this point
@@ -150,7 +150,7 @@ public class PSDeliveryClientTests {
 
     c.setProxyConfig(proxyConfig);
     c.setLicenseOverride("-1");
-    JSONArray result =
+    ArrayNode result =
         c.getJsonArray(
             new PSDeliveryActionOptions(info, NETSUITE_METHOD_URL, HttpMethodType.GET, true));
     Assert.notNull(result);
@@ -169,7 +169,7 @@ public class PSDeliveryClientTests {
     c.setProxyConfig(proxyConfig);
     c.setLicenseOverride("-1");
     try {
-      JSONArray result =
+      ArrayNode result =
           c.getJsonArray(
               new PSDeliveryActionOptions(info, NETSUITE_METHOD_URL, HttpMethodType.GET, true));
       // Shouldn't get to this point
