@@ -16,11 +16,11 @@
  */
 package com.percussion.licensemanagement.data;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import net.sf.json.JSONObject;
 import org.apache.commons.lang3.Validate;
 
 @XmlAccessorType(XmlAccessType.PUBLIC_MEMBER)
@@ -39,13 +39,13 @@ public class PSLicenseNetSuiteMethod {
 
   public PSLicenseNetSuiteMethod() {}
 
-  public PSLicenseNetSuiteMethod(JSONObject methodInfo) {
+  public PSLicenseNetSuiteMethod(JsonNode methodInfo) {
     Validate.notNull(methodInfo);
 
-    id = methodInfo.getString("id");
-    methodName = methodInfo.getString("methodName");
-    methodType = methodInfo.getString("methodType");
-    url = methodInfo.getString("url");
+    id = methodInfo.path("id").asText();
+    methodName = methodInfo.path("methodName").asText();
+    methodType = methodInfo.path("methodType").asText();
+    url = methodInfo.path("url").asText();
   }
 
   public String getId() {
