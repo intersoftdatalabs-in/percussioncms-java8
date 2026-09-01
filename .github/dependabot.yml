@@ -101,8 +101,14 @@ updates:
       - dependency-name: "org.bouncycastle*"
       - dependency-name: "org.bouncycastle:*"
       # Jackrabbit 2.21+ is Java 11 (2.20.x is last Java 8 line we track).
+      # The 2.20.x -> 2.22.x bump in PR #155 demonstrated that the full-ignore
+      # alone isn't reliable for security updates; add an explicit version cap
+      # so dependabot cannot propose any 2.21+ release for jackrabbit-jcr-commons.
       - dependency-name: "org.apache.jackrabbit*"
       - dependency-name: "org.apache.jackrabbit:*"
+      - dependency-name: "org.apache.jackrabbit:jackrabbit-jcr-commons"
+        versions:
+          - ">= 2.21.0"
 
       # --- Frameworks: stay on last Java 8 major ---
       # Spring Framework 5.3.x (block 6+)
