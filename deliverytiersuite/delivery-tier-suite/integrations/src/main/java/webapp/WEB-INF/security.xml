@@ -109,6 +109,23 @@
     </beans:bean>
 
 
+    <!--
+         T2.4 follow-up (issue #164): the six allow* relaxations below correspond to known
+         Spring Security firewall CVEs. They are kept enabled because legacy clients
+         (post-emit handlers, older browsers, some native apps) rely on them. Do not tighten
+         without an audit of those clients.
+
+         CVE / risk mapping:
+         - allowSemicolon=true          -> Spring Security CVE-2020-5407 (path normalization)
+         - allowBackSlash=true          -> Spring Security CVE-2021-22112 (WebFlux bypass;
+                                          legacy WebMvc uses the same config)
+         - allowUrlEncodedSlash=true    -> Spring Security CVE-2020-5408 (double-encoding
+                                          path traversal); also relevant for the legacy
+                                          "post emit" client which encodes path separators
+         - allowUrlEncodedPercent=true  -> CVE-2022-22976 (encoded percent bypass)
+         - allowUrlEncodedPeriod=true   -> related to percent-encoding bypasses
+         - allowUrlEncodedDoubleSlash=true -> CVE-2020-5408 (double-encoding path traversal)
+    -->
     <beans:bean id="allowHttpFirewall"
                 class="org.springframework.security.web.firewall.StrictHttpFirewall">
         <beans:property name="allowSemicolon" value="true"/>

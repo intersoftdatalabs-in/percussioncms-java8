@@ -41,6 +41,12 @@ import javax.servlet.http.HttpServletResponse;
  *       get a stale HSTS header that browsers might honor on a future HTTPS port)
  *   <li>{@code X-XSS-Protection: 0} - the deprecated XSS auditor is disabled (per the modern
  *       recommendation; \`0\` rather than \`1; mode=block\` is correct)
+ *   <li>{@code X-Permitted-Cross-Domain-Policies: none} - closes the legacy Flash / Acrobat /
+ *       Silverlight / Java cross-domain attack surface (CWE-942). Modern browsers ignore this
+ *       header but legacy plugins still honor it, so it stays in the response.
+ *   <li>{@code Permissions-Policy: ()} - feature policy that disables all browser features
+ *       (geolocation, camera, microphone, payment, USB, etc.) by default. Replaces the older
+ *       \`Feature-Policy\` header.
  * </ul>
  *
  * <p>All values are constants on the class. Future tuning is a one-line change.
@@ -65,12 +71,21 @@ public class PSSecurityHeadersFilter implements Filter {
   private static final String REFERRER_POLICY = "Referrer-Policy";
   private static final String STRICT_TRANSPORT_SECURITY = "Strict-Transport-Security";
   private static final String X_XSS_PROTECTION = "X-XSS-Protection";
+  private static final String X_PERMITTED_CROSS_DOMAIN_POLICIES =
+      "X-Permitted-Cross-Domain-Policies";
+  private static final String PERMISSIONS_POLICY = "Permissions-Policy";
 
   private static final String VALUE_SAMEORIGIN = "SAMEORIGIN";
   private static final String VALUE_NOSNIFF = "nosniff";
   private static final String VALUE_REFERRER_POLICY = "strict-origin-when-cross-origin";
   private static final String VALUE_HSTS = "max-age=31536000; includeSubDomains";
   private static final String VALUE_XSS_PROTECTION_DISABLED = "0";
+  // CWE-942: legacy Flash / Acrobat / Silverlight / Java cross-domain policy files.
+  private static final String VALUE_XPCDP_NONE = "none";
+  // Empty allowlist `()` disables all browser features (geolocation, camera, microphone, payment,
+  // USB, etc.). Per-origin allowlist can be added if a specific feature is needed; see
+  // https://www.w3.org/TR/permissions-policy-1/.
+  private static final String VALUE_PERMISSIONS_POLICY = "()";
 
   @Override
   public void init(FilterConfig filterConfig) throws ServletException {
@@ -87,6 +102,8 @@ public class PSSecurityHeadersFilter implements Filter {
       httpResponse.setHeader(X_CONTENT_TYPE_OPTIONS, VALUE_NOSNIFF);
       httpResponse.setHeader(REFERRER_POLICY, VALUE_REFERRER_POLICY);
       httpResponse.setHeader(X_XSS_PROTECTION, VALUE_XSS_PROTECTION_DISABLED);
+      httpResponse.setHeader(X_PERMITTED_CROSS_DOMAIN_POLICIES, VALUE_XPCDP_NONE);
+      httpResponse.setHeader(PERMISSIONS_POLICY, VALUE_PERMISSIONS_POLICY);
 
       // HSTS only on HTTPS — see class javadoc.
       if (request instanceof HttpServletRequest && ((HttpServletRequest) request).isSecure()) {
