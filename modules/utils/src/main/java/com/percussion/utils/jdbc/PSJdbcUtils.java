@@ -347,9 +347,8 @@ public class PSJdbcUtils {
     else if (driver.equals(DB2)) strDBBackend = DB2_DB_BACKEND;
     else if (driver.equals(DERBY_DRIVER)) strDBBackend = DERBY_DB_BACKEND;
     else if (driver.equals(MYSQL_DRIVER)) strDBBackend = MYSQL_DB_BACKEND;
-    else if (driver.equals(JTDS_DRIVER)
-        || driver.equalsIgnoreCase(MICROSOFT_DRIVER)
-        || driver.equalsIgnoreCase(MICROSOFT_DRIVER)) strDBBackend = JTDS_DB_BACKEND;
+    else if (driver.equals(JTDS_DRIVER) || driver.equalsIgnoreCase(MICROSOFT_DRIVER))
+      strDBBackend = JTDS_DB_BACKEND;
     else {
       // Oracle is the only supported driver left
       strDBBackend = ORACLE_DB_BACKEND;
