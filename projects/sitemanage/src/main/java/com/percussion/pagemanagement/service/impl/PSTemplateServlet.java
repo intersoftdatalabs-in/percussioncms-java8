@@ -58,6 +58,10 @@ public class PSTemplateServlet extends HttpServlet {
   private static final int UPLOAD_MEMORY_THRESHOLD = 1 << 20; // 1MB
   private static final long UPLOAD_MAX_FILE_SIZE = 50L << 20; // 50MB
   private static final long UPLOAD_MAX_REQUEST_SIZE = 100L << 20; // 100MB
+  /** T2.6a hardening: cap the number of files per multipart request. */
+  private static final long UPLOAD_MAX_FILE_COUNT = 50L;
+  /** T2.6a hardening: explicit header encoding to prevent filename-encoding edge cases. */
+  private static final String UPLOAD_HEADER_ENCODING = "UTF-8";
 
   public PSTemplateServlet() {
     PSSpringWebApplicationContextUtils.injectDependencies(this);
@@ -129,6 +133,11 @@ public class PSTemplateServlet extends HttpServlet {
         ServletFileUpload upload = new ServletFileUpload(factory);
         upload.setFileSizeMax(UPLOAD_MAX_FILE_SIZE);
         upload.setSizeMax(UPLOAD_MAX_REQUEST_SIZE);
+        // T2.6a hardening (issue #172): cap the file count and pin the header
+        // encoding. Together with the size limits above these bound the resource
+        // exposure of a single multipart request.
+        upload.setFileCountMax(UPLOAD_MAX_FILE_COUNT);
+        upload.setHeaderEncoding(UPLOAD_HEADER_ENCODING);
         List<FileItem> items = upload.parseRequest(request);
         for (FileItem item : items) {
           if (!item.isFormField()) {
