@@ -86,6 +86,30 @@ public class TestSecureStringUtils {
   }
 
   @Test
+  public void testRandomSecret() {
+    String secret = SecureStringUtils.generateRandomSecret();
+
+    assertNotNull(secret);
+    assertEquals(SecureStringUtils.SECRET_LENGTH, secret.length());
+
+    // Every character must come from the declared URL/XML-safe alphabet.
+    for (int i = 0; i < secret.length(); i++) {
+      char c = secret.charAt(i);
+      assertTrue(
+          "secret char outside alphabet: " + c,
+          (c >= 'A' && c <= 'Z')
+              || (c >= 'a' && c <= 'z')
+              || (c >= '0' && c <= '9')
+              || c == '-'
+              || c == '_');
+    }
+
+    // Two consecutive calls must not collide (probability of collision is ~2^-384).
+    String secret2 = SecureStringUtils.generateRandomSecret();
+    assertFalse(secret.equals(secret2));
+  }
+
+  @Test
   public void testWildStrings() {
 
     String testPath =

@@ -1846,5 +1846,9 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
         <property name="startupProcessManager" ref="sys_startupProcessManager"/>
     </bean>
 
+    <bean id="ensureMyFacesSecret" class="com.percussion.share.extension.PSEnsureMyFacesSecret">
+        <property name="startupProcessManager" ref="sys_startupProcessManager"/>
+    </bean>
+
 
 </beans>
