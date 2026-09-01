@@ -29,6 +29,7 @@ import java.util.Map;
 
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.RepositoryException;
+import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.Value;
 import javax.jcr.query.Row;
 
@@ -128,6 +129,65 @@ public class PSRow implements Row
       }
 
       return getRawValue(arg0);
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.query.Row}. The legacy {@code PSRow} does not
+    * compute per-selector relevance scores; return {@code 0.0} for any selector.
+    */
+   public double getScore(String selectorName) throws RepositoryException
+   {
+      return 0.0;
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.query.Row}. The legacy {@code PSRow} does not
+    * compute a default-node relevance score; return {@code 0.0}.
+    */
+   public double getScore() throws RepositoryException
+   {
+      return 0.0;
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.query.Row}. The legacy {@code PSRow} does not
+    * compute a default-node path (it stores guids, not paths); throw to surface the
+    * unsupported operation.
+    */
+   public String getPath() throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSRow.getPath is not implemented; PSRow stores guids, not paths");
+   }
+
+  /**
+   * JCR 2.0 addition on {@link javax.jcr.query.Row}. The legacy {@code PSRow} does not
+   * resolve selector-specific nodes; throw to surface the unsupported operation.
+   */
+  public javax.jcr.Node getNode(String selectorName) throws RepositoryException
+  {
+    throw new UnsupportedRepositoryOperationException(
+          "PSRow.getNode(selectorName) is not implemented");
+  }
+
+  /**
+   * JCR 2.0 addition on {@link javax.jcr.query.Row}. The legacy {@code PSRow} does not
+   * resolve nodes from stored guids; throw to surface the unsupported operation.
+   */
+  public javax.jcr.Node getNode() throws RepositoryException
+  {
+    throw new UnsupportedRepositoryOperationException(
+          "PSRow.getNode() is not implemented");
+  }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.query.Row}. The legacy {@code PSRow} does not
+    * support selector-specific paths; throw to surface the unsupported operation.
+    */
+   public String getPath(@SuppressWarnings("unused") String selectorName) throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSRow.getPath(selectorName) is not implemented; PSRow stores guids, not paths");
    }
 
    /**

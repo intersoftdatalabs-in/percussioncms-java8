@@ -675,7 +675,11 @@
             <dependency>
                 <groupId>javax.jcr</groupId>
                 <artifactId>jcr</artifactId>
-                <version>1.0</version>
+                <!-- JCR 2.0 (JSR-283). Required at runtime by jackrabbit-jcr-commons 2.x
+                     (its manifest declares Import-Package: javax.jcr;version="[2.0,3)").
+                     The 1.0 jar (JSR-170) was a runtime/contract mismatch that happened
+                     to compile only because the 1.0 spec is mostly a subset of 2.0. -->
+                <version>2.0</version>
             </dependency>
             <dependency>
                 <groupId>com.jcraft</groupId>

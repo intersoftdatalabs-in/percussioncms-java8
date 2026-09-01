@@ -169,8 +169,40 @@ public class PSNodeDefinition implements IPSNodeDefinition
    }
 
    /**
+    * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeDefinition}. Returns the name of the
+    * default primary type as a {@code String}, rather than the full {@link NodeType}. The
+    * legacy {@code PSNodeDefinition} doesn't track the name separately, so this delegates
+    * through {@link #getDefaultPrimaryType()}.
+    */
+   @IPSXmlSerialization(suppress = true)
+   public String getDefaultPrimaryTypeName()
+   {
+      NodeType t = getDefaultPrimaryType();
+      return t == null ? null : t.getName();
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeDefinition}. Returns the names of the
+    * required primary types. The legacy implementation stored this as a single
+    * {@link NodeType}, so delegate through {@link #getRequiredPrimaryTypes()} and project to
+    * names.
+    */
+   @IPSXmlSerialization(suppress = true)
+   public String[] getRequiredPrimaryTypeNames()
+   {
+      NodeType[] types = getRequiredPrimaryTypes();
+      if (types == null) return new String[0];
+      String[] names = new String[types.length];
+      for (int i = 0; i < types.length; i++)
+      {
+         names[i] = types[i] == null ? null : types[i].getName();
+      }
+      return names;
+   }
+
+   /**
     * (non-Javadoc)
-    * 
+    *
     * @see javax.jcr.nodetype.NodeDefinition#allowsSameNameSiblings()
     */
    public boolean allowsSameNameSiblings()

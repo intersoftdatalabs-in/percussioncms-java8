@@ -29,6 +29,7 @@ import javax.jcr.ItemNotFoundException;
 import javax.jcr.ItemVisitor;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -292,6 +293,25 @@ public class PSMultiProperty extends PSPropertyWrapper implements IPSJcrCacheIte
 
   public boolean isSame(Item arg0) throws RepositoryException {
     return equals(arg0);
+  }
+
+  /**
+   * This is a multi-valued property, so override the JCR 2.0 {@link
+   * javax.jcr.Property#isMultiple()} default ({@code false} in {@link IPSProperty}) to return
+   * {@code true}.
+   */
+  @Override
+  public boolean isMultiple() {
+    return true;
+  }
+
+  /**
+   * JCR 2.0 added {@link javax.jcr.Item#getProperty()}. For a Property itself, the natural
+   * implementation is to return {@code this}.
+   */
+  @Override
+  public Property getProperty() throws RepositoryException {
+    return this;
   }
 
   public void accept(ItemVisitor arg0) throws RepositoryException {

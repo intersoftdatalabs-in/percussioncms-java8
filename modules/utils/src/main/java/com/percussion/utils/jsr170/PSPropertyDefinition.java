@@ -77,6 +77,35 @@ public class PSPropertyDefinition implements PropertyDefinition {
     return m_isMultiple;
   }
 
+  /**
+   * JCR 2.0 added this method. The JCR 1.0 implementation in this codebase did not provide it. The
+   * legacy {@code PSPropertyDefinition} does not carry query-orderability information, so return
+   * {@code false} as a safe default.
+   */
+  @Override
+  public boolean isQueryOrderable() {
+    return false;
+  }
+
+  /**
+   * JCR 2.0 added this method. The JCR 1.0 implementation in this codebase did not provide it. Like
+   * {@link #isQueryOrderable()}, return {@code false} as a safe default.
+   */
+  @Override
+  public boolean isFullTextSearchable() {
+    return false;
+  }
+
+  /**
+   * JCR 2.0 added this method. The JCR 1.0 implementation in this codebase did not provide it.
+   * Return an empty array; the legacy {@code PSPropertyDefinition} has no notion of available query
+   * operators.
+   */
+  @Override
+  public String[] getAvailableQueryOperators() {
+    return new String[0];
+  }
+
   public NodeType getDeclaringNodeType() {
     return m_nodeType;
   }

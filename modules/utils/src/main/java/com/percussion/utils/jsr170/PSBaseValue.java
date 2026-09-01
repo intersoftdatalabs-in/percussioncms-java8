@@ -16,6 +16,7 @@
  */
 package com.percussion.utils.jsr170;
 
+import java.math.BigDecimal;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -72,5 +73,29 @@ public abstract class PSBaseValue<Type> implements Value, IPSJcrCacheItem {
    */
   public long getSizeInBytes() throws RepositoryException {
     return 8;
+  }
+
+  /**
+   * JCR 2.0 added {@link Value#getDecimal()} (returns {@code BigDecimal}). The JCR 1.0
+   * implementation in this codebase did not provide it, so we add a default here that delegates
+   * through {@link #getString()}. Subclasses that can produce a more precise {@code BigDecimal}
+   * (e.g. {@link PSLongValue}, {@link PSDoubleValue}) may override.
+   */
+  @Override
+  public BigDecimal getDecimal() throws javax.jcr.ValueFormatException, RepositoryException {
+    return new BigDecimal(getString());
+  }
+
+  /**
+   * JCR 2.0 added {@link Value#getBinary()} (returns {@link javax.jcr.Binary}). The JCR 1.0
+   * implementation in this codebase did not provide it. The legacy PSValue wrappers carry string /
+   * numeric / stream state rather than direct binary state, so the default here delegates through
+   * {@link #getString()} to produce a binary view of the value's textual representation. Subclasses
+   * that hold a real binary (e.g. {@link PSInputStreamValue}, {@link PSReferenceValue}) should
+   * override to expose the underlying bytes directly.
+   */
+  @Override
+  public javax.jcr.Binary getBinary() throws RepositoryException {
+    return new PSBinary(getString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
   }
 }

@@ -33,6 +33,7 @@ import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.UnsupportedRepositoryOperationException;
+import javax.jcr.Value;
 import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.query.Query;
@@ -129,6 +130,46 @@ public class PSQuery implements Query
    public String getStatement()
    {
       return m_statement;
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.query.Query}. The legacy {@code PSQuery} does not
+    * track bind variable names; return an empty array.
+    */
+   public String[] getBindVariableNames() throws RepositoryException
+   {
+      return new String[0];
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.query.Query}. The legacy {@code PSQuery} does not
+    * support bind variables; throw to surface the unsupported operation.
+    */
+   public void bindValue(@SuppressWarnings("unused") String varName,
+         @SuppressWarnings("unused") Value value) throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSQuery.bindValue is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.query.Query}. The legacy {@code PSQuery} does not
+    * support result offset; throw to surface the unsupported operation.
+    */
+   public void setOffset(@SuppressWarnings("unused") long offset)
+   {
+      throw new UnsupportedOperationException(
+            "PSQuery.setOffset is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.query.Query}. The legacy {@code PSQuery} does not
+    * support result limit; throw to surface the unsupported operation.
+    */
+   public void setLimit(@SuppressWarnings("unused") long limit)
+   {
+      throw new UnsupportedOperationException(
+            "PSQuery.setLimit is not implemented");
    }
 
    /** (non-Javadoc)

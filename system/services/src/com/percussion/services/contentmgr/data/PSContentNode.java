@@ -912,6 +912,153 @@ public class PSContentNode implements IPSNode, IPSJcrCacheItem, Serializable
       return false;
    }
 
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Node}. The legacy PSContentNode does not track
+    * lifecycle transitions; return an empty array.
+    */
+   public String[] getAllowedLifecycleTransistions() throws RepositoryException
+   {
+      return new String[0];
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Node}. The legacy PSContentNode does not implement
+    * lifecycle transitions; throw to surface the unsupported operation.
+    */
+   public void followLifecycleTransition(@SuppressWarnings("unused") String transition)
+         throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentNode.followLifecycleTransition is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Node}. The legacy PSContentNode does not track
+    * share set membership; throw to surface the unsupported operation.
+    */
+   public void removeShare() throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentNode.removeShare is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Node}. The legacy PSContentNode does not track
+    * shared set membership; throw to surface the unsupported operation.
+    */
+   public void removeSharedSet() throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentNode.removeSharedSet is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Node}. The legacy PSContentNode does not track
+    * shared set membership; throw to surface the unsupported operation.
+    */
+   public NodeIterator getSharedSet() throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentNode.getSharedSet is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Node}. The legacy PSContentNode does not support
+    * runtime primary-type changes; throw to surface the unsupported operation.
+    */
+   public void setPrimaryType(@SuppressWarnings("unused") String typeName) throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentNode.setPrimaryType is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Node}. The legacy PSContentNode does not track weak
+    * references; throw to surface the unsupported operation.
+    */
+   public PropertyIterator getWeakReferences(@SuppressWarnings("unused") String name) throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentNode.getWeakReferences is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Node}. The legacy PSContentNode does not track weak
+    * references; throw to surface the unsupported operation.
+    */
+   public PropertyIterator getWeakReferences() throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentNode.getWeakReferences is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Node}. The legacy PSContentNode delegates the
+    * name-filtered version of {@code getReferences} to the existing no-arg {@code getReferences}
+    * if the name is {@code null} and throws otherwise (not implemented).
+    */
+   public PropertyIterator getReferences(@SuppressWarnings("unused") String name) throws RepositoryException
+   {
+      if (name == null) return getReferences();
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentNode.getReferences(String) is not implemented; "
+                  + "name-filtered references are not supported");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Item}. Replaces the JCR 1.0 {@code getUUID()}; the
+    * legacy implementation stored guids as content ids, so delegate through {@link #getUUID()}.
+    * JCR 2.0 deprecated {@code getUUID()} but it is still available for backward compat.
+    */
+   public String getIdentifier() throws RepositoryException
+   {
+      return getUUID();
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Node}. The legacy PSContentNode does not support
+    * multi-name-glob property lookups; throw to surface the unsupported operation.
+    */
+   public PropertyIterator getProperties(@SuppressWarnings("unused") String[] nameGlobs) throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentNode.getProperties(String[]) is not implemented; "
+                  + "multi-glob property lookups are not supported");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Node}. The legacy PSContentNode does not support
+    * multi-name-glob child-node lookups; throw to surface the unsupported operation.
+    */
+   public NodeIterator getNodes(@SuppressWarnings("unused") String[] nameGlobs) throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentNode.getNodes(String[]) is not implemented; "
+                  + "multi-glob child-node lookups are not supported");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Node}. The legacy PSContentNode does not support
+    * BigDecimal property values; throw to surface the unsupported operation.
+    */
+   public Property setProperty(@SuppressWarnings("unused") String name,
+         @SuppressWarnings("unused") java.math.BigDecimal value) throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentNode.setProperty(String, BigDecimal) is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.Node}. The legacy PSContentNode does not support
+    * Binary property values; throw to surface the unsupported operation.
+    */
+   public Property setProperty(@SuppressWarnings("unused") String name,
+         @SuppressWarnings("unused") javax.jcr.Binary value) throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentNode.setProperty(String, Binary) is not implemented");
+   }
+
    /** (non-Javadoc)
     * @see javax.jcr.Item#getPath()
     */

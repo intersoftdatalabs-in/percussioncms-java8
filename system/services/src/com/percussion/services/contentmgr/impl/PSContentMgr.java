@@ -119,6 +119,124 @@ public class PSContentMgr  implements IPSContentMgr
       throw new UnsupportedOperationException("Not implemented");
    }
 
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeTypeManager}. The legacy
+    * {@code PSContentMgr} does not support unregistering node types; throw to surface the
+    * unsupported operation rather than silently doing nothing.
+    */
+   public void unregisterNodeTypes(@SuppressWarnings("unused") String[] names)
+         throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentMgr.unregisterNodeTypes is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeTypeManager} (single-type overload).
+    * Same behavior as {@link #unregisterNodeTypes(String[])}: not supported.
+    */
+   public void unregisterNodeType(@SuppressWarnings("unused") String name)
+         throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentMgr.unregisterNodeType is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeTypeManager}. The legacy
+    * {@code PSContentMgr} does not support batch node-type registration; throw to surface the
+    * unsupported operation.
+    */
+   public javax.jcr.nodetype.NodeTypeIterator registerNodeTypes(
+         @SuppressWarnings("unused") javax.jcr.nodetype.NodeTypeDefinition[] definitions,
+         @SuppressWarnings("unused") boolean allowUpdate) throws RepositoryException
+   {
+      throw new UnsupportedRepositoryOperationException(
+            "PSContentMgr.registerNodeTypes is not implemented");
+   }
+
+  /**
+   * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeTypeManager} (single-type overload).
+   * The legacy {@code PSContentMgr} does not support runtime node-type registration; throw
+   * to surface the unsupported operation.
+   */
+  public javax.jcr.nodetype.NodeType registerNodeType(
+        @SuppressWarnings("unused") javax.jcr.nodetype.NodeTypeDefinition definition,
+        @SuppressWarnings("unused") boolean allowUpdate) throws RepositoryException
+  {
+    throw new UnsupportedRepositoryOperationException(
+          "PSContentMgr.registerNodeType is not implemented");
+  }
+
+  /**
+   * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeTypeManager}. The legacy
+   * {@code PSContentMgr} does not support property-definition template creation; throw to
+   * surface the unsupported operation.
+   */
+  public javax.jcr.nodetype.PropertyDefinitionTemplate createPropertyDefinitionTemplate()
+        throws RepositoryException
+  {
+    throw new UnsupportedRepositoryOperationException(
+          "PSContentMgr.createPropertyDefinitionTemplate is not implemented");
+  }
+
+  /**
+   * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeTypeManager}. The legacy
+   * {@code PSContentMgr} does not support node-definition template creation; throw to
+   * surface the unsupported operation.
+   */
+  public javax.jcr.nodetype.NodeDefinitionTemplate createNodeDefinitionTemplate()
+        throws RepositoryException
+  {
+    throw new UnsupportedRepositoryOperationException(
+          "PSContentMgr.createNodeDefinitionTemplate is not implemented");
+  }
+
+  /**
+   * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeTypeManager}. The legacy
+   * {@code PSContentMgr} does not support node-type template creation; throw to surface
+   * the unsupported operation.
+   */
+  public javax.jcr.nodetype.NodeTypeTemplate createNodeTypeTemplate(
+        @SuppressWarnings("unused") javax.jcr.nodetype.NodeTypeDefinition ntd) throws RepositoryException
+  {
+    throw new UnsupportedRepositoryOperationException(
+          "PSContentMgr.createNodeTypeTemplate is not implemented");
+  }
+
+  /**
+   * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeTypeManager} (no-arg overload). The
+   * legacy {@code PSContentMgr} does not support node-type template creation; throw to
+   * surface the unsupported operation.
+   */
+  public javax.jcr.nodetype.NodeTypeTemplate createNodeTypeTemplate() throws RepositoryException
+  {
+    throw new UnsupportedRepositoryOperationException(
+          "PSContentMgr.createNodeTypeTemplate is not implemented");
+  }
+
+  /**
+   * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeTypeManager}. The legacy
+   * {@code PSContentMgr} does not support node-type existence checks; throw to surface
+   * the unsupported operation.
+   */
+  public boolean hasNodeType(@SuppressWarnings("unused") String name)
+  {
+    throw new UnsupportedOperationException(
+          "PSContentMgr.hasNodeType is not implemented");
+  }
+
+  /**
+   * JCR 2.0 addition on {@link javax.jcr.query.QueryManager}. The legacy {@code PSContentMgr}
+   * does not support the Query Object Model factory; throw to surface the unsupported
+   * operation.
+   */
+  public javax.jcr.query.qom.QueryObjectModelFactory getQOMFactory()
+  {
+    throw new UnsupportedOperationException(
+          "PSContentMgr.getQOMFactory is not implemented");
+  }
+
    public NodeTypeIterator getAllNodeTypes()
    {
       throw new UnsupportedOperationException("Not implemented");

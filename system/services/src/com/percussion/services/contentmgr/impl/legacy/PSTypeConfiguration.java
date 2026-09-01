@@ -48,9 +48,12 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.Value;
 import javax.jcr.nodetype.NodeDefinition;
 import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.PropertyDefinition;
 
 import net.sf.cglib.beans.BeanGenerator;
@@ -1866,5 +1869,80 @@ public class PSTypeConfiguration implements NodeType, Serializable
    public boolean isNodeType(String arg0)
    {
       return arg0.equals(getName());
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeType}. The legacy
+    * {@code PSTypeConfiguration} does not enforce property-deletion permissions, so return
+    * {@code true} (any property on a node of this type is removable).
+    */
+   public boolean canRemoveProperty(String propertyName)
+   {
+      return true;
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeType}. The legacy
+    * {@code PSTypeConfiguration} does not enforce child-node removal permissions, so return
+    * {@code true} (any child node of this type is removable).
+    */
+   public boolean canRemoveNode(String nodeName)
+   {
+      return true;
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeType}. The legacy
+    * {@code PSTypeConfiguration} does not track declared subtypes; not implemented.
+    */
+   public NodeTypeIterator getDeclaredSubtypes()
+   {
+      throw new UnsupportedOperationException(
+            "PSTypeConfiguration.getDeclaredSubtypes is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeType}. The legacy
+    * {@code PSTypeConfiguration} does not track subtypes; not implemented.
+    */
+   public NodeTypeIterator getSubtypes()
+   {
+      throw new UnsupportedOperationException(
+            "PSTypeConfiguration.getSubtypes is not implemented");
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeTypeDefinition}. The legacy
+    * {@code PSTypeConfiguration} does not track queryability; return {@code false}.
+    */
+   public boolean isQueryable()
+   {
+      return false;
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeTypeDefinition}. The legacy
+    * {@code PSTypeConfiguration} does not track abstractness; return {@code false}.
+    */
+   public boolean isAbstract()
+   {
+      return false;
+   }
+
+   /**
+    * JCR 2.0 addition on {@link javax.jcr.nodetype.NodeTypeDefinition}. The legacy
+    * {@code PSTypeConfiguration} delegates to {@link #getDeclaredSupertypes()} and projects
+    * the names.
+    */
+   public String[] getDeclaredSupertypeNames()
+   {
+      NodeType[] supers = getDeclaredSupertypes();
+      if (supers == null) return new String[0];
+      String[] names = new String[supers.length];
+      for (int i = 0; i < supers.length; i++)
+      {
+         names[i] = supers[i] == null ? null : supers[i].getName();
+      }
+      return names;
    }
 }
