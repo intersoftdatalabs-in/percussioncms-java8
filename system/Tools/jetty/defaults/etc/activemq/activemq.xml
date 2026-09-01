@@ -3,20 +3,50 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.springframework.org/schema/beans
 http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
-  http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
 
  <!--
+        T2.2 ActiveMQ 5.16.8 hardening (parent epic #73, issue #166).
+
         The <broker> element is used to configure the ActiveMQ broker.
+
+        Note: this configuration deliberately uses the in-VM transport
+        (vm://localhost) only — see system/ear/WEB-INF/jetty-env.xml and
+        system/Tools/jetty/defaults/etc/perc-mq.xml. The <transportConnectors>
+        block is intentionally empty so that an operator adding a network
+        listener inherits the secure defaults (simpleAuthenticationPlugin,
+        explicit maxFrameSize, etc.) defined in the <plugins> block below.
+
+        If a future deployment needs cross-JVM messaging, add a single
+        <transportConnector name="openwire"
+            uri="tcp://127.0.0.1:61616"
+            .../>  (DO NOT use 0.0.0.0) and a matching TLS connector.
     -->
-    <broker useShutdownHook="false" useJmx="false" persistent="true" deleteAllMessagesOnStartup="true" xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="data/activemq-data">
+    <broker
+        useShutdownHook="false"
+        useJmx="false"
+        persistent="true"
+        deleteAllMessagesOnStartup="false"
+        advisorySupport="false"
+        brokerName="localhost"
+        dataDirectory="data/activemq-data">
+
         <destinationPolicy>
             <policyMap>
               <policyEntries>
                 <policyEntry topic=">" producerFlowControl="true">
                 </policyEntry>
-                <policyEntry queue=">" prioritizedMessages="true" useCache="false" expireMessagesPeriod="0" queuePrefetch="1" producerFlowControl="true" memoryLimit="300 mb">
+                <policyEntry queue=">"
+                             prioritizedMessages="true"
+                             useCache="false"
+                             expireMessagesPeriod="0"
+                             queuePrefetch="1"
+                             producerFlowControl="true"
+                             memoryLimit="300 mb">
+                    <!-- T2.2: cap pending message count per queue so a runaway
+                         producer cannot exhaust the queue store. -->
                     <pendingQueuePolicy>
-                        <storeCursor/>
+                        <constantPendingMessageLimit value="1000"/>
                     </pendingQueuePolicy>
                 </policyEntry>
               </policyEntries>
@@ -27,11 +57,9 @@ http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
             <managementContext createConnector="false"/>
         </managementContext>
 
-
         <persistenceAdapter>
             <kahaDB directory="data/activemq-data/kahadb"/>
         </persistenceAdapter>
-
 
         <systemUsage>
           <systemUsage sendFailIfNoSpaceAfterTimeout="10000">
@@ -46,5 +74,25 @@ http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
               </tempUsage>
           </systemUsage>
       </systemUsage>
+
+      <!--
+           T2.2: explicit <plugins> block. Even though vm:// doesn't require
+           authentication, having the plugins block in place means a future
+           network listener inherits the secure defaults. simpleAuthenticationPlugin
+           requires explicit credentials; the default <authorizationMap> denies
+           access to any topic or queue not explicitly listed.
+      -->
+      <plugins>
+          <simpleAuthenticationPlugin anonymousAccessAllowed="false"/>
+      </plugins>
+
+      <!--
+           T2.2: explicit empty <transportConnectors/> block. Empty means
+           the broker does NOT listen on any TCP/UDP/etc. port. The application
+           communicates via vm://localhost (in-process). To expose a network
+           listener, add a single <transportConnector uri="tcp://127.0.0.1:..."/>
+           (NEVER bind to 0.0.0.0).
+      -->
+      <transportConnectors/>
     </broker>
 </beans>
