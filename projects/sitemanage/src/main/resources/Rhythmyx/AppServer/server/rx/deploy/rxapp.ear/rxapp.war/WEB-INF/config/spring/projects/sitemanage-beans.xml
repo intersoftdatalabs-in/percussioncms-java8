@@ -132,7 +132,15 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
         </jaxrs:providers>
         <jaxrs:features>
                 <ref bean="openApiFeature" />
-            <cxf:logging/>
+            <!--
+                 T2.3 CXF 3.5.11 hardening (parent epic #73, issue #168): the default
+                 <cxf:logging/> logs full request/response payloads at INFO with no size
+                 limit, which leaks sensitive data (auth headers, JSON request bodies)
+                 and can fill the disk on large payloads. Replace it with an explicit
+                 LoggingFeature that logs only the first line of each message at INFO,
+                 caps logged payload at 4 KB, and uses single-line format for speed.
+            -->
+            <ref bean="cxfLoggingFeature"/>
         </jaxrs:features>
     </jaxrs:server>
 
@@ -1848,6 +1856,18 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
 
     <bean id="ensureMyFacesSecret" class="com.percussion.share.extension.PSEnsureMyFacesSecret">
         <property name="startupProcessManager" ref="sys_startupProcessManager"/>
+    </bean>
+
+    <!--
+         T2.3 CXF 3.5.11 hardening (parent epic #73, issue #168). Used in place of
+         <cxf:logging/> on the sitemanage-jax-rs server. Defaults log full payloads
+         at INFO with no size limit; this config logs only the summary line
+         (method + URL + status) and caps the payload at 4 KB.
+    -->
+    <bean id="cxfLoggingFeature" class="org.apache.cxf.feature.LoggingFeature">
+        <property name="verbose" value="false"/>
+        <property name="limit" value="4096"/>
+        <property name="prettyLogging" value="false"/>
     </bean>
 
 
