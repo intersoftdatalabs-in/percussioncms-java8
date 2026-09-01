@@ -76,8 +76,15 @@ public class PSJarFilter {
     Enumeration entries = inputJarFile.entries();
     FileOutputStream output = new FileOutputStream(outputJar);
     JarOutputStream outputJarStream = new JarOutputStream(output);
+    // T2.6b hardening (issue #174): cap the entry count, per-entry size, and total
+    // uncompressed bytes to limit exposure to commons-compress 1.28.0 zip-bomb CVEs. The
+    // jar here is a build-time install artifact, so the default 10k-entry / 500 MB caps
+    // are more than enough.
+    com.percussion.security.io.PSZipBombGuard guard =
+        new com.percussion.security.io.PSZipBombGuard();
     while (entries.hasMoreElements()) {
       JarEntry entry = (JarEntry) entries.nextElement();
+      guard.check(entry);
       InputStream is = inputJarFile.getInputStream(entry);
       if (filesToFilter.contains(entry.getName())) {
         copyFilterBytes(entry, is, outputJarStream, environment);
