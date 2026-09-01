@@ -1516,6 +1516,21 @@ public class SecureStringUtils {
   private static final char[] PASSWORD_SPECIALS = new char[] {'@', '$', '%', '^', '&', '*'};
 
   /**
+   * Length, in characters, of secrets produced by {@link #generateRandomSecret()}. Picked to give
+   * roughly 384 bits of entropy at 6 bits/char with the {@link #SECRET_ALPHABET} alphabet.
+   */
+  public static final int SECRET_LENGTH = 64;
+
+  /**
+   * URL- and XML-safe alphabet for {@link #generateRandomSecret()}: ASCII letters, digits, and the
+   * two base64-url-safe punctuation characters {@code -} and {@code _}. 64 symbols = 6 bits/char.
+   * Chosen so that the produced secret is safe to embed in web.xml {@code <param-value>} without
+   * XML escaping, and safe to transport in URLs or properties files without quoting.
+   */
+  private static final char[] SECRET_ALPHABET =
+      ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_").toCharArray();
+
+  /**
    * Generates a random password of 6-20 alphanumeric characters with 0-5 of the positions
    * overwritten by a special character ({@code @ $ % ^ & *}). All randomness is sourced from {@link
    * SecureRandom} via {@link #getSecureRandom()}.
@@ -1541,6 +1556,29 @@ public class SecureStringUtils {
           PASSWORD_SPECIALS[random.nextInt(PASSWORD_SPECIALS.length)];
     }
     return new String(password);
+  }
+
+  /**
+   * Generates a cryptographic random secret of {@value #SECRET_LENGTH} characters from {@link
+   * #SECRET_ALPHABET} ({@code [A-Za-z0-9_-]}, 64 symbols = 6 bits/char, ~384 bits of entropy). All
+   * randomness is sourced from {@link SecureRandom} via {@link #getSecureRandom()}.
+   *
+   * <p>Use this for server-side secrets (HMAC keys, CSRF-token seeds, ViewState secrets, encryption
+   * key material) where a high-entropy value is required and where the value will be embedded in
+   * text formats such as XML {@code <param-value>}, {@code .properties}, or URLs. For human-typed
+   * passwords use {@link #generateRandomPassword()} instead.
+   *
+   * <p>Added for T2.15 MyFaces hardening: {@code org.apache.myfaces.SECRET} is seeded by the {@code
+   * PSEnsureMyFacesSecret} startup process using this method on first install and is left alone on
+   * subsequent startups.
+   */
+  public static String generateRandomSecret() {
+    SecureRandom random = getSecureRandom();
+    char[] secret = new char[SECRET_LENGTH];
+    for (int i = 0; i < SECRET_LENGTH; i++) {
+      secret[i] = SECRET_ALPHABET[random.nextInt(SECRET_ALPHABET.length)];
+    }
+    return new String(secret);
   }
 
   /**
