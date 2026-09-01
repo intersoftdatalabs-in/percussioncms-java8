@@ -134,12 +134,17 @@
 		  <echo>Starting Embedded DB</echo>
 		  <java classname="org.apache.derby.drda.NetworkServerControl"
 		  		classpathref="DERBY_TOOL.CLASSPATH"
-		        fork="yes" 
+		        fork="yes"
 		  	    spawn="yes">
 		    <jvmarg value="-Dderby.system.home=${install.dir}/Repository"/>
 		  	<jvmarg value="-Dderby.stream.error.file=${install.dir}/logs/derby.log"/>
 		    <arg value="start"/>
-		  	<arg value="-noSecurityManager"/>
+		    <!--
+		         T2.18 Derby 10.14.2.0 hardening (parent epic #73, issue #170):
+		         -noSecurityManager was removed. Derby 10.14.2.0 supports the Java
+		         security manager; passing this flag explicitly bypasses it. The
+		         downstream "stop" command does not pass it.
+		    -->
 		  </java>
 	</target>
 	
@@ -178,6 +183,15 @@
 			  <entry  key="derby.authentication.provider" value="com.percussion.utils.security.PSDerbyAuthenticator"/>
 			  <entry  key="derby.user.CMDB" value="${PWD}"/>
 			  <entry  key="derby.stream.error.file" value="${install.dir}/logs/derby.log"/>
+			  <!--
+			       T2.18 Derby 10.14.2.0 hardening (parent epic #73, issue #170).
+			       Defense-in-depth properties for the embedded network server.
+			  -->
+			  <entry  key="derby.drda.host" value="127.0.0.1"/>
+			  <entry  key="derby.drda.connectionLimit" value="50"/>
+			  <entry  key="derby.drda.networkTimeoutSeconds" value="60"/>
+			  <entry  key="derby.authentication.builtin.algorithm" value="SHA-256"/>
+			  <entry  key="derby.authentication.builtin.saltLength" value="128"/>
 			</propertyfile>
 		  </then>
 	    </if>
