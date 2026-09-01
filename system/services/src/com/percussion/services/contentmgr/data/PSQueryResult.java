@@ -83,6 +83,15 @@ public class PSQueryResult implements QueryResult
    }
 
    /**
+    * JCR 2.0 addition on {@link javax.jcr.query.QueryResult}. The legacy {@code PSQueryResult}
+    * does not track selectors (single-table queries). Return an empty array.
+    */
+   public String[] getSelectorNames() throws RepositoryException
+   {
+      return new String[0];
+   }
+
+   /**
     * (non-Javadoc)
     * 
     * @see javax.jcr.query.QueryResult#getRows()

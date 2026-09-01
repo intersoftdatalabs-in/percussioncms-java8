@@ -71,6 +71,15 @@ public class PSQueryResultUtils
          return columnNames;
       }
 
+      /**
+       * JCR 2.0 addition on {@link javax.jcr.query.QueryResult}. The legacy
+       * {@code RowQueryResult} wrapper does not track selectors; return an empty array.
+       */
+      public String[] getSelectorNames() throws RepositoryException
+      {
+         return new String[0];
+      }
+
       public RowIterator getRows() throws RepositoryException
       {
          return new RowIteratorAdapter(rows);

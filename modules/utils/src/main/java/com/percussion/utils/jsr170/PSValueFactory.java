@@ -168,4 +168,64 @@ public class PSValueFactory implements ValueFactory {
   public Value createValue(Node arg0) throws RepositoryException {
     return new PSReferenceValue(arg0);
   }
+
+  /**
+   * JCR 2.0 added {@link ValueFactory#createBinary(InputStream)} which returns a {@link Binary}
+   * rather than a {@code Value}. The JCR 1.0 implementation in this codebase did not provide it,
+   * and the underlying legacy value wrappers do not expose a {@code Binary}. The JCR 1.0 way to get
+   * a binary is {@link #createValue(InputStream)}; callers that need a JCR 2.0 {@code Binary}
+   * should be updated to use {@link org.apache.jackrabbit.value.BinaryImpl} or read the input
+   * stream themselves. For now, fail loudly so that the gap is visible rather than silently
+   * returning null.
+   */
+  @Override
+  public javax.jcr.Binary createBinary(InputStream stream) throws RepositoryException {
+    throw new javax.jcr.UnsupportedRepositoryOperationException(
+        "PSValueFactory.createBinary(InputStream) is not implemented; "
+            + "use createValue(InputStream) for the JCR 1.0 binary path, "
+            + "or org.apache.jackrabbit.value.BinaryImpl for JCR 2.0 Binary.");
+  }
+
+  /**
+   * JCR 2.0 added this overload of {@link ValueFactory#createValue(Node, boolean)}; the boolean is
+   * the {@code weakReference} flag. The JCR 1.0 implementation in this codebase did not provide it.
+   * Delegate to the existing single-argument {@link #createValue(Node)}; the weak/strong
+   * distinction is not represented in the legacy PSValue types.
+   */
+  @Override
+  public Value createValue(Node node, boolean weakReference) throws RepositoryException {
+    return createValue(node);
+  }
+
+  /**
+   * JCR 2.0 added this overload. Delegate to the existing {@link #createValue(InputStream)} by
+   * pulling bytes out of the {@code Binary}. The JCR 2.0 {@code createValue(Binary)} signature does
+   * not throw {@code RepositoryException} per the spec, so any underlying {@link
+   * javax.jcr.Binary#getStream()} failure is wrapped as a {@link RuntimeException}.
+   */
+  @Override
+  public Value createValue(javax.jcr.Binary binary) {
+    if (binary == null) {
+      throw new IllegalArgumentException("binary may not be null");
+    }
+    try {
+      return createValue(binary.getStream());
+    } catch (RepositoryException e) {
+      throw new RuntimeException("Failed to read Binary in PSValueFactory.createValue", e);
+    }
+  }
+
+  /**
+   * JCR 2.0 added this overload. The legacy PSValue types do not have a native decimal value type,
+   * so convert to a string representation and store as a string. The original {@code BigDecimal} is
+   * recoverable via {@code getString().toString()} + {@code new BigDecimal(...)}, mirroring the
+   * {@link PSBaseValue#getDecimal()} default.
+   */
+  @Override
+  public Value createValue(java.math.BigDecimal decimal) {
+    if (decimal == null) {
+      throw new IllegalArgumentException("decimal may not be null");
+    }
+    return new PSStringValue(decimal.toPlainString());
+  }
 }

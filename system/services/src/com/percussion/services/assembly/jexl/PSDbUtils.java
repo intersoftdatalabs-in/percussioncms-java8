@@ -161,6 +161,18 @@ public class PSDbUtils extends PSJexlUtilBase
          {
             return PropertyType.LONG;
          }
+
+         /** JCR 2.0 addition: return the sequence as a {@code BigDecimal}. */
+         public java.math.BigDecimal getDecimal() throws ValueFormatException, RepositoryException
+         {
+            return new java.math.BigDecimal(getLong());
+         }
+
+         /** JCR 2.0 addition: a sequence is not a binary, so throw. */
+         public javax.jcr.Binary getBinary() throws RepositoryException
+         {
+            throw new ValueFormatException("Sequence cannot be represented as binary");
+         }
          
       };
    }

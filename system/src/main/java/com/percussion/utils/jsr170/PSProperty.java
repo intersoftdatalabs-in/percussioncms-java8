@@ -42,6 +42,7 @@ import javax.jcr.ItemNotFoundException;
 import javax.jcr.ItemVisitor;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -637,6 +638,15 @@ public class PSProperty extends PSPropertyWrapper implements IPSProperty, IPSJcr
    */
   public boolean isSame(Item arg0) {
     return equals(arg0);
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see javax.jcr.Item#getProperty() (JCR 2.0 addition)
+   */
+  public Property getProperty() throws RepositoryException {
+    return this;
   }
 
   /*

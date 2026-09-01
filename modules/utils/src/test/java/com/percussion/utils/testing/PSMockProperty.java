@@ -194,6 +194,48 @@ public class PSMockProperty implements Property {
     return equals(arg0);
   }
 
+  /** JCR 2.0 addition: this test mock is single-valued. */
+  @Override
+  public boolean isMultiple() {
+    return false;
+  }
+
+  /** JCR 2.0 addition: return {@code this} (Property-of-a-Property). */
+  @Override
+  public Property getProperty() throws RepositoryException {
+    return this;
+  }
+
+  /** JCR 2.0 addition: delegate to the value's binary. */
+  @Override
+  public javax.jcr.Binary getBinary() throws ValueFormatException, RepositoryException {
+    return m_value.getBinary();
+  }
+
+  /** JCR 2.0 addition: delegate to the value's decimal. */
+  @Override
+  public java.math.BigDecimal getDecimal() throws ValueFormatException, RepositoryException {
+    return m_value.getDecimal();
+  }
+
+  /** JCR 2.0 addition: throw, since the test mock has no decimal-write path. */
+  @Override
+  public void setValue(java.math.BigDecimal value)
+      throws ValueFormatException, VersionException, LockException, ConstraintViolationException,
+          RepositoryException {
+    throw new javax.jcr.UnsupportedRepositoryOperationException(
+        "PSMockProperty.setValue(BigDecimal) is not implemented");
+  }
+
+  /** JCR 2.0 addition: throw, since the test mock has no binary-write path. */
+  @Override
+  public void setValue(javax.jcr.Binary value)
+      throws ValueFormatException, VersionException, LockException, ConstraintViolationException,
+          RepositoryException {
+    throw new javax.jcr.UnsupportedRepositoryOperationException(
+        "PSMockProperty.setValue(Binary) is not implemented");
+  }
+
   public void accept(ItemVisitor arg0) throws RepositoryException {
     arg0.visit((Property) this);
   }
