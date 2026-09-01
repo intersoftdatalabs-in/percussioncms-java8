@@ -2411,18 +2411,27 @@ public class PSPageUtils extends PSJexlUtilBase {
    * @return
    */
   @IPSJexlMethod(
-      description = "createJsonObject can be used to convert a JSON string into a JsonNode.",
+      description = "createJsonObject can be used to convert a JSON string into an ObjectNode.",
       params = {@IPSJexlParam(name = "jsonString", description = "A valid JSON string")},
-      returns = "A com.fasterxml.jackson.databind.JsonNode instance ")
-  public JsonNode createJsonObject(String jsonString) {
-    JsonNode jsonObj = null;
+      returns =
+          "A com.fasterxml.jackson.databind.node.ObjectNode instance (mutable; supports .put) ")
+  public ObjectNode createJsonObject(String jsonString) {
+    // T2.17.4c + #151 hardening: migrated from json-lib JSONSerializer.toJSON(String)
+    // (which returned a JSONObject) to Jackson ObjectMapper.readTree(String). The
+    // previous return type was JsonNode (the abstract base) but JEXL templates call
+    // .put(...) on the result, which is an ObjectNode-only method; returning the
+    // concrete ObjectNode lets the existing template code (e.g. $dataJson.put(...))
+    // continue to work. We catch the parse error and return an empty ObjectNode so
+    // that downstream .put calls don't NPE.
+    ObjectNode jsonObj = MAPPER.createObjectNode();
     try {
-      // T2.17.4c hardening (issue #149): migrated from json-lib
-      // JSONSerializer.toJSON(String) to Jackson ObjectMapper.readTree(String).
-      // readTree returns the parsed tree or throws JsonProcessingException
-      // on parse error; we catch and log just like the previous
-      // implementation.
-      jsonObj = MAPPER.readTree(jsonString);
+      JsonNode parsed = MAPPER.readTree(jsonString);
+      if (parsed instanceof ObjectNode) {
+        jsonObj = (ObjectNode) parsed;
+      } else {
+        // The JSON is valid but isn't a JSON object; wrap it under "value".
+        jsonObj.put("value", parsed);
+      }
     } catch (Exception e) {
       log.error("Error processing json string: {}", jsonString);
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));

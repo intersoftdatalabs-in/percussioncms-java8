@@ -235,7 +235,7 @@
           $pagesInCal = $rx.pageutils.getPagesForCalendar($calName).toString();
           $data = $assetItem.Node.getProperty('rx:googleSetupData').getString();
           $json = $rx.pageutils.createJsonObject($data);
-          $googleCalendarArray = $json.getJSONArray("config");
+          $googleCalendarArray = $json.path("config");
           $calendarContentId = $assetItem.Node.getProperty('rx:sys_contentid').getString();
       }
 

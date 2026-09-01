@@ -20,7 +20,7 @@
         $assetItem = $assets.get(0);
         $data = $assetItem.Node.getProperty('rx:localLangData').getString();
         $json = $rx.pageutils.createJsonObject($data);
-        $jsonArray = $json.getJSONArray("config");
+        $jsonArray = $json.path("config");
         $headContent = "";
         ##
         $previewLinks = $rx.string.stringToMap(null);
@@ -29,23 +29,23 @@
         $resultList = $rx.string.stringToMap(null);
         ##
         for ($j : $jsonArray) {
-             if ($j.has("protocol")) {
-                $protocol = $j.getString("protocol");
+             if (!$j.path("protocol").isMissingNode()) {
+                $protocol = $j.path("protocol").asText();
             } else {
                 $protocol = "";
             }
-            $temppath = $j.getString("pagepath");
+            $temppath = $j.path("pagepath").asText();
             $pagepath = $temppath.replace("//Sites", "");
-            $pagename = $j.getString("pagename");
+            $pagename = $j.path("pagename").asText();
             $folderpath = $temppath.replace($pagename,"");
             ##
-            $pageId = $j.getString("pageId");
-            $default = $j.getString("defLang");
+            $pageId = $j.path("pageId").asText();
+            $default = $j.path("defLang").asText();
             if ($default == null) {
                 $default = false;
             }
-            $lang = $j.getString("lang");
-            $country = $j.getString("country");
+            $lang = $j.path("lang").asText();
+            $country = $j.path("country").asText();
             ##
             if ($pageId != null && $pageId != "") {
                 $contentId = $rx.pageutils.parseGuid($pageId).getUUID();
