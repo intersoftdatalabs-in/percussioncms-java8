@@ -14,8 +14,26 @@
     <security:http disable-url-rewriting="true" use-expressions="true">
 
         <security:csrf disabled="true"/>
-        <security:headers >
-            <security:content-security-policy policy-directives="${contentSecurityPolicy}" />
+        <!--
+             Security headers for the CM1 admin UI. Note that the PSSecurityHeadersFilter
+             (registered in WEB-INF/web.xml) sets the browser-wide response headers
+             (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, X-XSS-Protection,
+             X-Permitted-Cross-Domain-Policies, Permissions-Policy, and conditional HSTS).
+             The Spring Security <security:headers> block below handles headers that need
+             the security framework's lifecycle or properties. defaults-disabled="true" so
+             we explicitly enable only what we want and any future Spring Security default
+             additions don't silently apply. -->
+        <security:headers defaults-disabled="true">
+            <security:content-type-options />
+            <security:hsts
+                    include-subdomains="${hstsIncludeSubDomains}"
+                    max-age-seconds="${hstsMaxAgeSeconds}" />
+            <security:frame-options policy="${xframeOptionsPolicy}" />
+            <security:content-security-policy
+                    policy-directives="${contentSecurityPolicy}" />
+            <security:referrer-policy policy="${referrerPolicy}" />
+            <security:xss-protection block="${xssProtection}" />
+            <security:cache-control />
         </security:headers>
         <security:cors configuration-source-ref="corsSource" />
         <security:http-basic/>

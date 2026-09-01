@@ -42,6 +42,11 @@ http://www.springframework.org/schema/beans/spring-beans-4.2.xsd">
             <prop key="ldap.url">ldap://adserver.test.local/</prop>
             <prop key="perc.use.ldap">no</prop>
 			 <prop key="contentSecurityPolicy">default-src 'self' *;</prop>
+			 <prop key="hstsIncludeSubDomains">true</prop>
+			 <prop key="hstsMaxAgeSeconds">31536000</prop>
+			 <prop key="xframeOptionsPolicy">SAMEORIGIN</prop>
+			 <prop key="referrerPolicy">strict-origin-when-cross-origin</prop>
+			 <prop key="xssProtection">true</prop>
          </props>
       </property>
 	  
