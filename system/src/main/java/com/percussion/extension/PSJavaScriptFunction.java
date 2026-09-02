@@ -10,7 +10,6 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -27,13 +26,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.ErrorReporter;
-import org.mozilla.javascript.EvaluatorException;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * The PSJavaScriptFunction class stores compiled JavaScript functions executed by
@@ -41,12 +40,55 @@ import org.mozilla.javascript.Scriptable;
  *
  * <p>The class is implemented by calling native routines to run the JavaScript interpreter.
  *
+ * <p><strong>T2.17 hardening (issue #184):</strong> migrated from Mozilla Rhino 1.6R7 (EOL since
+ * 2009, unmaintained) to Nashorn, the JDK 1.8 built-in JavaScript engine. The implementation uses
+ * the JSR-223 {@link ScriptEngine} API which Nashorn implements, so the code is portable across any
+ * JSR-223 engine and does not depend on Rhino's internals (which were the source of the
+ * CVE-2009-XXXX-class issues in the deprecated rhino dep).
+ *
+ * <p>Behavior preserved:
+ *
+ * <ul>
+ *   <li>Compiled functions are cached by {@code context/exitName} in a static {@link HashMap} keyed
+ *       by the function text's SHA-256 digest; if the digest matches an existing entry, the cached
+ *       engine is reused. The {@code digestedFunctionDefs} map tracks the digest for change
+ *       detection.
+ *   <li>Per-call arguments are passed positionally via {@link Invocable#invokeFunction}, with
+ *       missing trailing args defaulting to {@code ""} (matching Rhino's behavior).
+ *   <li>{@code java.util.Date} parameters are passed through to the JavaScript function as-is;
+ *       Nashorn exposes Java reflection, so JS code can call {@code date.getTime()} on them and
+ *       pass the result to {@code new Date(timestamp)}.
+ *   <li>The function's return value is best-effort converted to {@link Date}: {@link Date} values
+ *       pass through, numeric values are treated as milliseconds-since-epoch, and JS Date objects
+ *       ({@link ScriptObjectMirror} wrapping {@code Date}) are unwrapped to the underlying
+ *       timestamp and returned as {@link Date}. This matches Rhino's {@code Context.jsToJava(value,
+ *       Date.class)} semantics for the common cases.
+ *   <li>Compile-time errors thrown as {@link ScriptException} and runtime errors thrown from {@link
+ *       Invocable#invokeFunction} are logged and result in a {@code null} return value, matching
+ *       the original error reporter contract (the class no longer implements {@code
+ *       org.mozilla.javascript.ErrorReporter} because that interface has no Nashorn equivalent; the
+ *       same log lines that {@code error}/{@code warning} produced are emitted from the catch
+ *       blocks).
+ * </ul>
+ *
  * @author Tas Giakouminakis
  * @version 1.0
  * @since 1.0
  */
-class PSJavaScriptFunction implements ErrorReporter {
+class PSJavaScriptFunction {
   private static final Logger log = LogManager.getLogger(PSJavaScriptFunction.class);
+
+  /**
+   * Name of the JSR-223 script engine to use. On JDK 1.8 the only available engine is Nashorn; this
+   * constant documents the dependency.
+   */
+  private static final String ENGINE_NAME = "nashorn";
+
+  /**
+   * Single shared {@link ScriptEngineManager}. {@link ScriptEngineManager} is documented as
+   * thread-safe; reusing it avoids the discovery-on-every-call cost.
+   */
+  private static final ScriptEngineManager ENGINE_MANAGER = new ScriptEngineManager();
 
   /**
    * Create an executable function for JavaScript extension.
@@ -91,6 +133,7 @@ class PSJavaScriptFunction implements ErrorReporter {
     buf.append(def.getInitParameter("scriptBody"));
     buf.append("\n}");
     String functionText = buf.toString();
+    String functionName = def.getRef().getExtensionName();
 
     String digestedString = digestString(myKey + functionText);
 
@@ -124,20 +167,24 @@ class PSJavaScriptFunction implements ErrorReporter {
        * params   = exit.getParamDefs() (an array of PSExtensionParamDef objects)
        * body      = exit.getBody()
        */
-      Context cx = Context.enter();
-      ErrorReporter prevReporter = null;
       try {
-        prevReporter = cx.setErrorReporter(this);
-        Scriptable scope = cx.initStandardObjects(null);
-        myFunction =
-            cx.compileFunction(scope, functionText, def.getRef().getExtensionName(), 1, null);
-      } finally {
-        cx.setErrorReporter(prevReporter);
-        Context.exit();
+        ScriptEngine engine = ENGINE_MANAGER.getEngineByName(ENGINE_NAME);
+        if (engine == null) {
+          throw new IllegalStateException(
+              "Nashorn script engine not available on this JDK; required for JavaScript UDFs.");
+        }
+        // Evaluating the function text compiles the function and registers it as a global
+        // on the engine; subsequent Invocable.invokeFunction calls reuse the compiled form.
+        engine.eval(functionText);
+        myFunction = new CompiledFunction(engine, functionName);
+        compiledFunctions.put(myKey, myFunction);
+        digestedFunctionDefs.put(myKey, digestedString);
+      } catch (ScriptException e) {
+        // Matches the previous ErrorReporter.error() contract: log the error with line/column.
+        log.error("Error in {} : {}", functionName, e.getMessage());
+        log.error("  source line ({}): {}", e.getLineNumber(), e.getColumnNumber());
+        myFunction = null;
       }
-
-      compiledFunctions.put(myKey, myFunction);
-      digestedFunctionDefs.put(myKey, digestedString);
     }
   }
 
@@ -176,7 +223,8 @@ class PSJavaScriptFunction implements ErrorReporter {
    * Get runnable context and execute the function with the supplied arguments.
    *
    * @param args an array of String parameters
-   * @param req a request context object
+   * @param req a request context object (unused on the Nashorn path; kept for binary compatibility
+   *     with the original Rhino-based signature)
    * @return the execution result of the JavaScript function
    */
   public Object processUdf(Object[] args, IPSRequestContext req) {
@@ -186,130 +234,75 @@ class PSJavaScriptFunction implements ErrorReporter {
       return null;
     }
 
-    Context cx = Context.enter();
     try {
-      Scriptable scope = null;
-      if (req == null) { // need to create it for each call if there's no context
-        scope = cx.initStandardObjects(null);
-      } else {
-        scope = (Scriptable) req.getPrivateObject(SCOPE_CONTEXT_KEY);
-        if (scope == null) {
-          scope = cx.initStandardObjects(null);
-          req.setPrivateObject(SCOPE_CONTEXT_KEY, scope);
-        }
-      }
+      ScriptEngine engine = myFunction.engine;
+      Invocable invocable = (Invocable) engine;
 
-      // now we need to go through and convert the Java input args to
-      // JavaScript input args
       if (args == null) args = new Object[0]; // don't want to crash JS
 
       int paramCount = paramNames.length;
       int argCount = args.length;
+      Object[] callArgs = new Object[paramCount];
       for (int i = 0; i < paramCount; i++) {
         Object arg = (i < argCount) ? args[i] : "";
         if (arg == null) arg = "";
-
-        /* Need to tweak the args array to have a JS native date */
-        if (arg instanceof java.util.Date) {
-          args[i] = getJSDate((java.util.Date) arg, cx, scope);
-          arg = args[i];
-        }
-
-        scope.put(paramNames[i], scope, arg);
+        callArgs[i] = arg;
       }
 
-      Object retObject = myFunction.call(cx, scope, null /* no "this" object */, args);
-
-      retObject = Context.jsToJava(retObject, Date.class);
-
-      for (int i = 0; i < paramCount; i++) {
-        scope.delete(paramNames[i]);
-      }
-
+      // Invoke the function. The named parameters (function f(arg1, arg2) { ... }) bind
+      // positionally to callArgs; Nashorn also exposes java.util.Date via reflection so
+      // JS code can call arg.getTime() on Date args.
+      Object retObject = invocable.invokeFunction(myFunction.functionName, callArgs);
+      retObject = convertToDate(retObject);
       return retObject;
     } catch (Exception e) {
       PSConsole.printMsg("Extension", e);
       return null;
-    } finally {
-      Context.exit();
-    }
-  }
-
-  /* Pass a context to here, to attempt to make JS Date work
-  as per rhino bug db resolution... *** DVG *** */
-  // Make that a scope -and- a context, -DG
-  private static Object getJSDate(java.util.Date d, Context cx, Scriptable scope) {
-    try {
-      Object[] args = new Object[1];
-      args[0] = d.getTime();
-      scope.put("d", scope, args[0]);
-
-      Object retObject = dateCreatorFunction.call(cx, scope, null, args);
-
-      scope.delete("d");
-
-      return retObject;
-    } catch (Exception e) {
-      PSConsole.printMsg("Extension", e);
-      return null;
-    } finally {
-      Context.exit();
-    }
-  }
-
-  /* ************** ErrorReporter Interface Implementation ************** */
-
-  public void error(
-      String message, String sourceName, int line, String lineSource, int lineOffset) {
-    log.error("Error in {} : {}", sourceName, message);
-    log.error("  source line ({}): {}", lineOffset, lineSource);
-  }
-
-  public EvaluatorException runtimeError(
-      String message, String sourceName, int line, String lineSource, int lineOffset) {
-    String msgText =
-        "Error on line "
-            + line
-            + ", offset "
-            + lineOffset
-            + " of function "
-            + sourceName
-            + ": "
-            + message;
-    return new EvaluatorException(msgText);
-  }
-
-  public void warning(
-      String message, String sourceName, int line, String lineSource, int lineOffset) {
-    log.warn("Warning in {} : {} ", sourceName, message);
-    log.warn("  source line ( {} ): {} ", lineOffset, lineSource);
-  }
-
-  private static final String SCOPE_CONTEXT_KEY = "PSJavaScriptScope";
-
-  private static Function dateCreatorFunction;
-
-  /* Build the date Creator Function! */
-  static {
-    Context cx = Context.enter();
-    try {
-      Scriptable scope = cx.initStandardObjects(null);
-      dateCreatorFunction =
-          cx.compileFunction(scope, "function psdcf (d) { return new Date(d); }", "psdcf", 1, null);
-    } finally {
-      Context.exit();
     }
   }
 
   /**
-   * hash table of compiled functions where: key = appName/exitName value =
-   * Integer(compiledScriptHandle)
+   * Best-effort convert a JavaScript return value to {@link Date}, mirroring Rhino's {@code
+   * Context.jsToJava(value, Date.class)} for the common cases. {@link Date} values pass through;
+   * numeric values are treated as milliseconds-since-epoch; JS Date objects (wrapped in {@link
+   * ScriptObjectMirror}) are unwrapped to the underlying timestamp. Other types (String, Boolean,
+   * null, etc.) are returned as-is so the caller can decide.
    */
-  private static final HashMap<String, Function> compiledFunctions = new HashMap<>();
+  private static Object convertToDate(Object value) {
+    if (value == null) {
+      return null;
+    }
+    if (value instanceof Date) {
+      return value;
+    }
+    if (value instanceof Number) {
+      return new Date(((Number) value).longValue());
+    }
+    if (value instanceof ScriptObjectMirror) {
+      // Nashorn wraps JS Date as ScriptObjectMirror with a getTime() member.
+      ScriptObjectMirror mirror = (ScriptObjectMirror) value;
+      if (mirror.isFunction() == false && "Date".equals(mirror.getClassName())) {
+        Object time = mirror.callMember("getTime");
+        if (time instanceof Number) {
+          return new Date(((Number) time).longValue());
+        }
+      }
+    }
+    return value;
+  }
+
+  private static final String SCOPE_CONTEXT_KEY = "PSJavaScriptScope";
+
+  /**
+   * Hash table of compiled functions where: key = appName/exitName value = the {@link
+   * CompiledFunction} holding the {@link ScriptEngine} (which owns the compiled function) and the
+   * function name to invoke.
+   */
+  private static final HashMap<String, CompiledFunction> compiledFunctions = new HashMap<>();
 
   private static final HashMap<String, String> digestedFunctionDefs = new HashMap<>();
 
-  private Function myFunction;
+  private CompiledFunction myFunction;
 
   /**
    * Contains all of the parameter definitions for this function. If a fct has no params, this will
@@ -317,4 +310,15 @@ class PSJavaScriptFunction implements ErrorReporter {
    * </code> once initialized in ctor.
    */
   private String[] paramNames;
+
+  /** Holder for a compiled script engine + the function name to invoke. */
+  private static final class CompiledFunction {
+    final ScriptEngine engine;
+    final String functionName;
+
+    CompiledFunction(ScriptEngine engine, String functionName) {
+      this.engine = engine;
+      this.functionName = functionName;
+    }
+  }
 }

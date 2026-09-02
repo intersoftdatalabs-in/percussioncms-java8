@@ -1520,14 +1520,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.mozilla</groupId>
-                <artifactId>rhino</artifactId>
-                <version>1.7.15.1</version>
-                <scope>system</scope>
-                <systemPath>${maven.multiModuleProjectDirectory}/system/lib/org/mozilla/rhino/1.6R7/rhino-1.6R7.jar</systemPath>
-                <optional>true</optional>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.derby</groupId>
                 <artifactId>derbyclient</artifactId>
                 <version>${derby.version}</version>
