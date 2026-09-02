@@ -38,7 +38,12 @@ public class PSDatabasePubServer extends PSAbstractDataObject
         ORACLE("oracle:thin", "oracle.jdbc.driver.OracleDriver", "Oracle 10g", 1521),
         MYSQL("mysql", "com.mysql.cj.jdbc.Driver", "MYSQL", 3306),
         MYSQL8("mysql8", "com.mysql.cj.jdbc.Driver", "MYSQL", 3306),
-        MSSQL("jtds:sqlserver", "net.sourceforge.jtds.jdbc.Driver", "MS SQLSERVER2000", 1433);
+        // T2.17 hardening (issue #178): switched from the EOL jtds driver to the
+        // Microsoft-maintained mssql-jdbc driver. The URL prefix changes from
+        // "jtds:sqlserver" to "sqlserver" and the driver class is the Microsoft one.
+        // The install-time migration in PSUpdateJettyConfigFromJBoss converts
+        // existing jtds-format URLs to the new format.
+        MSSQL("sqlserver", "com.microsoft.sqlserver.jdbc.SQLServerDriver", "MS SQLSERVER2012+", 1433);
         
         private DriverType(String driverName, String driverClass, String typeMapping, int defaultPort)
         {

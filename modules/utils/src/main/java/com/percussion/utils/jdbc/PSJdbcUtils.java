@@ -32,8 +32,14 @@ public class PSJdbcUtils {
   /**
    * Constant for "jtds:sqlserver". Part of the JDBC URL required to connect to the MS SQL Server
    * database using JTds driver
+   *
+   * @deprecated jtds 1.3.1 is end-of-life. New installs and upgrades use {@link #MICROSOFT_DRIVER}
+   *     ("sqlserver") with the Microsoft mssql-jdbc driver. This constant is kept only so the
+   *     install-time migration in {@code PSUpdateJettyConfigFromJBoss} and any external config
+   *     lookups can still recognize a legacy JTDS configuration. Will be removed in a future
+   *     release.
    */
-  public static final String JTDS_DRIVER = "jtds:sqlserver";
+  @Deprecated public static final String JTDS_DRIVER = "jtds:sqlserver";
 
   /** constant for the Oracle thin driver type. */
   public static final String ORACLE_DRIVER = "oracle:thin";
@@ -99,8 +105,10 @@ public class PSJdbcUtils {
   /**
    * Constant for "jtds". Will need it for various hacks to make the JTDS Sql Server JDBC driver
    * work.
+   *
+   * @deprecated jtds 1.3.1 is end-of-life. Use {@link #MICROSOFT_DRIVER} for new code.
    */
-  public static final String JTDS = "jtds";
+  @Deprecated public static final String JTDS = "jtds";
 
   /** Constant for sprinta db backend property, see {@link PSJdbcDbmsDef#DB_BACKEND_PROPERTY} */
   public static final String SPRINTA_DB_BACKEND = "MSSQL";
@@ -108,8 +116,13 @@ public class PSJdbcUtils {
   /** Constant for db2 db backend property, see {@link PSJdbcDbmsDef#DB_BACKEND_PROPERTY} */
   public static final String DB2_DB_BACKEND = "db2";
 
-  /** Constant for jtds db backend property, see {@link PSJdbcDbmsDef#DB_BACKEND_PROPERTY} */
-  public static final String JTDS_DB_BACKEND = "MSSQL";
+  /**
+   * Constant for jtds db backend property, see {@link PSJdbcDbmsDef#DB_BACKEND_PROPERTY}
+   *
+   * @deprecated jtds 1.3.1 is end-of-life. The MSSQL backend is now produced by {@link
+   *     #MICROSOFT_DRIVER} / mssql-jdbc.
+   */
+  @Deprecated public static final String JTDS_DB_BACKEND = "MSSQL";
 
   /** Constant for oracle db backend property, see {@link PSJdbcDbmsDef#DB_BACKEND_PROPERTY} */
   public static final String ORACLE_DB_BACKEND = "ORACLE";
@@ -140,7 +153,17 @@ public class PSJdbcUtils {
   public static final String DEFAULT_STAGING_DTS_DRIVER_LOCATION =
       "/Staging/Deployment/Server/common/lib";
 
+  /**
+   * Legacy JTDS driver class name. Used by the install-time migration in {@code
+   * PSUpdateJettyConfigFromJBoss} to recognize an existing jtds-configured datasource and rewrite
+   * it to use {@link #MICROSOFT_SQL_DRIVER_CLASSNAME}.
+   *
+   * @deprecated jtds 1.3.1 is end-of-life. New code should reference {@link
+   *     #MICROSOFT_SQL_DRIVER_CLASSNAME} directly.
+   */
+  @Deprecated
   public static final String LEGACY_SQL_DRIVER_CLASSNAME = "net.sourceforge.jtds.jdbc.Driver";
+
   public static final String MICROSOFT_SQL_DRIVER_CLASSNAME =
       "com.microsoft.sqlserver.jdbc.SQLServerDriver";
   /** Additional connection url parameters required to use unicode (UTF-8) with mysql. */
@@ -347,9 +370,8 @@ public class PSJdbcUtils {
     else if (driver.equals(DB2)) strDBBackend = DB2_DB_BACKEND;
     else if (driver.equals(DERBY_DRIVER)) strDBBackend = DERBY_DB_BACKEND;
     else if (driver.equals(MYSQL_DRIVER)) strDBBackend = MYSQL_DB_BACKEND;
-    else if (driver.equals(JTDS_DRIVER)
-        || driver.equalsIgnoreCase(MICROSOFT_DRIVER)
-        || driver.equalsIgnoreCase(MICROSOFT_DRIVER)) strDBBackend = JTDS_DB_BACKEND;
+    else if (driver.equals(JTDS_DRIVER) || driver.equalsIgnoreCase(MICROSOFT_DRIVER))
+      strDBBackend = JTDS_DB_BACKEND;
     else {
       // Oracle is the only supported driver left
       strDBBackend = ORACLE_DB_BACKEND;

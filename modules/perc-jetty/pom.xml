@@ -36,11 +36,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>net.sourceforge.jtds</groupId>
-            <artifactId>jtds</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
             <scope>provided</scope>
@@ -199,14 +194,6 @@
                                     <groupId>org.apache.derby</groupId>
                                     <artifactId>derbyclient</artifactId>
                                     <version>${derby.version}</version>
-                                    <type>jar</type>
-                                    <overWrite>true</overWrite>
-                                    <outputDirectory>${assembly-directory}/base/lib/jdbc</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>net.sourceforge.jtds</groupId>
-                                    <artifactId>jtds</artifactId>
-                                    <version>${jtds.version}</version>
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${assembly-directory}/base/lib/jdbc</outputDirectory>

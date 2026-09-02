@@ -255,11 +255,6 @@
             <version>${derby.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.sourceforge.jtds</groupId>
-            <artifactId>jtds</artifactId>
-            <version>${jtds.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <version>${mariadb.version}</version>
@@ -512,10 +507,6 @@
                             <dependency>
                                 <groupId>org.apache.derby</groupId>
                                 <artifactId>derbyclient</artifactId>
-                            </dependency>
-                            <dependency>
-                                <groupId>net.sourceforge.jtds</groupId>
-                                <artifactId>jtds</artifactId>
                             </dependency>
                             <dependency>
                                 <groupId>org.mariadb.jdbc</groupId>
@@ -992,10 +983,6 @@
                                     <dependency>
                                         <groupId>org.apache.derby</groupId>
                                         <artifactId>derbyclient</artifactId>
-                                    </dependency>
-                                    <dependency>
-                                        <groupId>net.sourceforge.jtds</groupId>
-                                        <artifactId>jtds</artifactId>
                                     </dependency>
                                     <dependency>
                                         <groupId>org.mariadb.jdbc</groupId>
