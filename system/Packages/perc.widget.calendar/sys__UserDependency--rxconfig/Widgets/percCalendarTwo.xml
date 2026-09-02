@@ -346,10 +346,10 @@
       }
 
 #foreach($googleSource in $googleCalendarArray)##
-        .perc-$googleSource.getString("className") {
-        background-color: $googleSource.getString("backgroundColor") !important;
-        color: $googleSource.getString("textColor") !important;
-        border: $googleSource.getString("backgroundColor") !important;
+        .perc-$googleSource.path("className").asText() {
+        background-color: $googleSource.path("backgroundColor").asText() !important;
+        color: $googleSource.path("textColor").asText() !important;
+        border: $googleSource.path("backgroundColor").asText() !important;
       }
 #end##
       .perc-event-list-template {
@@ -411,7 +411,7 @@
       <form>
       <div id="perc-button-container-${calendarContentId}-${widgetId}" class="perc-button-container">
       #foreach($googleSource in $googleCalendarArray)
-      <div id="perc-${googleSource.getString('className')}-button" class="perc-calendar-button perc-$googleSource.getString('className')">$googleSource.getString('calendarName')</div>
+      <div id="perc-${googleSource.path('className').asText()}-button" class="perc-calendar-button perc-$googleSource.path('className').asText()">$googleSource.path('calendarName').asText()</div>
       #end
 
       #if($perc_show_perc_events_button == 'Y' && $perc_event_button_label != '')
@@ -515,9 +515,9 @@
             #if($googleSourceCount > 0)
             #foreach($googleSource in $googleCalendarArray)
                 {
-                    googleCalendarApiKey: '${googleSource.getString("apiKey")}',
-                    googleCalendarId: '${googleSource.getString("calendarId")}',
-                    className: 'perc-${googleSource.getString("className")}'
+                    googleCalendarApiKey: '${googleSource.path("apiKey").asText()}',
+                    googleCalendarId: '${googleSource.path("calendarId").asText()}',
+                    className: 'perc-${googleSource.path("className").asText()}'
                 }#if($velocityCount <= $googleSourceCount),#end
             #end
             #end
