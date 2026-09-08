@@ -166,15 +166,16 @@ public class PSCalendarMonthModel extends PSJexlUtilBase {
    * Gets the events that occur on the specified day of the month.
    *
    * @param day day of the month whose events will be returned
-   * @return a collection of assembled events for the specified day. will be <code>null</code> if no
-   *     events have been set or events occur on the specified day
+   * @return a collection of assembled events for the specified day, never empty. Will be <code>
+   *     null</code> if no events have been set or no events occur on the specified day.
    */
   public Collection<IPSAssemblyResult> getEvents(int day) {
     if (getModel().m_eventsByDay == null) {
       return null;
-    } else {
-      return (Collection<IPSAssemblyResult>) getModel().m_eventsByDay.get(day);
     }
+    Collection<IPSAssemblyResult> events =
+        (Collection<IPSAssemblyResult>) getModel().m_eventsByDay.get(day);
+    return (events == null || events.isEmpty()) ? null : events;
   }
 
   /**
