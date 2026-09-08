@@ -3,6 +3,7 @@
 .antigravitycli/
 .grok/
 .kilocode/
+mise.toml
 
 # temp directories
 tmp/*
