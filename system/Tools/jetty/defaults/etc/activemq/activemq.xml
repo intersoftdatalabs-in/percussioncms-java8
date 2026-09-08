@@ -22,7 +22,19 @@ http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/ac
             uri="tcp://127.0.0.1:61616"
             .../>  (DO NOT use 0.0.0.0) and a matching TLS connector.
     -->
+    <!--
+         The xmlns="http://activemq.apache.org/schema/core" on <broker> is
+         required: the activemq.xsd declares <broker> (and its children
+         destinationPolicy, plugins, systemUsage, transportConnectors) in
+         that target namespace, and elementFormDefault is 'qualified'. If
+         <broker> is not in the ActiveMQ namespace, the XSD validator falls
+         back to the Spring beans XSD (because the root <beans> element is
+         in the Spring beans namespace) and rejects <broker> with
+         cvc-complex-type.2.4.a. Do NOT remove the xmlns attribute during
+         any future reformat. Tracked in issue #208.
+    -->
     <broker
+        xmlns="http://activemq.apache.org/schema/core"
         useShutdownHook="false"
         useJmx="false"
         persistent="true"
@@ -44,10 +56,23 @@ http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/ac
                              producerFlowControl="true"
                              memoryLimit="300 mb">
                     <!-- T2.2: cap pending message count per queue so a runaway
-                         producer cannot exhaust the queue store. -->
-                    <pendingQueuePolicy>
-                        <constantPendingMessageLimit value="1000"/>
-                    </pendingQueuePolicy>
+                         producer cannot exhaust the queue store.
+
+                         ActiveMQ has two superficially similar policy
+                         elements that do very different things:
+                           - <pendingQueuePolicy> selects the queue
+                             cursor (fileQueueCursor / storeCursor /
+                             vmQueueCursor) — i.e., how pending messages
+                             are *stored*. It is NOT a cap on count.
+                           - <pendingMessageLimitStrategy> is the cap on
+                             count per consumer, and its constant-form
+                             child is <constantPendingMessageLimitStrategy>
+                             with a 'limit' attribute (not 'value').
+                         The original T2.2 PR used the first pair, which
+                         the activemq.xsd rejects. Tracked in issue #210. -->
+                    <pendingMessageLimitStrategy>
+                        <constantPendingMessageLimitStrategy limit="1000"/>
+                    </pendingMessageLimitStrategy>
                 </policyEntry>
               </policyEntries>
             </policyMap>
