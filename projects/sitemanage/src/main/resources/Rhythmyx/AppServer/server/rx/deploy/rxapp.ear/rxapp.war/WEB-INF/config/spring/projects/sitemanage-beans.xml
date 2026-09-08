@@ -1865,7 +1865,6 @@ http://cxf.apache.org/schemas/jaxrs.xsd">
          (method + URL + status) and caps the payload at 4 KB.
     -->
     <bean id="cxfLoggingFeature" class="org.apache.cxf.feature.LoggingFeature">
-        <property name="verbose" value="false"/>
         <property name="limit" value="4096"/>
         <property name="prettyLogging" value="false"/>
     </bean>
