@@ -22,7 +22,19 @@ http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/ac
             uri="tcp://127.0.0.1:61616"
             .../>  (DO NOT use 0.0.0.0) and a matching TLS connector.
     -->
+    <!--
+         The xmlns="http://activemq.apache.org/schema/core" on <broker> is
+         required: the activemq.xsd declares <broker> (and its children
+         destinationPolicy, plugins, systemUsage, transportConnectors) in
+         that target namespace, and elementFormDefault is 'qualified'. If
+         <broker> is not in the ActiveMQ namespace, the XSD validator falls
+         back to the Spring beans XSD (because the root <beans> element is
+         in the Spring beans namespace) and rejects <broker> with
+         cvc-complex-type.2.4.a. Do NOT remove the xmlns attribute during
+         any future reformat. Tracked in issue #208.
+    -->
     <broker
+        xmlns="http://activemq.apache.org/schema/core"
         useShutdownHook="false"
         useJmx="false"
         persistent="true"
