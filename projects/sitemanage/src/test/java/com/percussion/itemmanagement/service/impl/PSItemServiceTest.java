@@ -38,6 +38,7 @@ import com.percussion.share.dao.IPSContentItemDao;
 import com.percussion.share.dao.IPSFolderHelper;
 import com.percussion.share.data.PSItemProperties;
 import com.percussion.share.service.IPSIdMapper;
+import com.percussion.utils.io.PathUtils;
 import com.percussion.utils.request.PSRequestInfo;
 import com.percussion.utils.request.PSRequestInfoBase;
 import com.percussion.webservices.content.IPSContentWs;
@@ -49,9 +50,13 @@ import org.jmock.Mockery;
 import org.jmock.integration.junit4.JUnit4Mockery;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class PSItemServiceTest {
+
+  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private Mockery context = new JUnit4Mockery();
 
@@ -75,6 +80,15 @@ public class PSItemServiceTest {
 
   @Before
   public void setUp() throws Exception {
+    // Point PathUtils.getRxDir() at a fresh temp folder so the PSItemService constructor
+    // (which reads the Rx install directory for PSEncryptor) does not see a stale or missing
+    // rxdeploydir left behind by a previous test class running in the same surefire JVM.
+    // clearRxDir() must run before setThreadOnlyRxDir() so the static cache is dropped first;
+    // otherwise the prior RX_DIR value would short-circuit getRxDir() and ignore the new
+    // thread-local value.
+    PathUtils.clearRxDir();
+    PathUtils.setThreadOnlyRxDir(temporaryFolder.getRoot());
+
     idMapper = context.mock(IPSIdMapper.class);
     systemService = context.mock(IPSSystemService.class);
     workflowHelper = context.mock(IPSWorkflowHelper.class);
@@ -124,6 +138,8 @@ public class PSItemServiceTest {
   @After
   public void tearDown() throws Exception {
     PSRequestInfoBase.resetRequestInfo();
+    PathUtils.unsetThreadOnlyRxDir(temporaryFolder.getRoot());
+    PathUtils.clearRxDir();
   }
 
   @Test

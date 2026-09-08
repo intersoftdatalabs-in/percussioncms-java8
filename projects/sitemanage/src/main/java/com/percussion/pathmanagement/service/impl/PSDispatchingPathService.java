@@ -757,7 +757,9 @@ public class PSDispatchingPathService implements IPSPathService, IPSPathRecycleS
        * @return never <code>null</code>.
        */
       public String toFullPath(String relativePath) {
-        notNull(relativePath, "relative path cannot be null");
+        if (relativePath == null) {
+          throw new IllegalArgumentException("relative path cannot be null");
+        }
         relativePath = StringUtils.removeStart(relativePath, "/").trim();
         return pathPrefix + relativePath;
       }
@@ -1142,7 +1144,9 @@ public class PSDispatchingPathService implements IPSPathService, IPSPathRecycleS
 
     /** {@inheritDoc} */
     public String normalizePath(String path) {
-      notNull(path, "Path cannot be null");
+      if (path == null) {
+        throw new IllegalArgumentException("Path cannot be null");
+      }
       String rvalue = path.trim();
       if (!StringUtils.endsWith(rvalue, "/")) {
         rvalue = rvalue + "/";
