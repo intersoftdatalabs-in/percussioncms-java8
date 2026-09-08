@@ -147,7 +147,8 @@ public class PSPackageBuilderTest {
         || lower.endsWith(".htm")
         || lower.endsWith(".css")
         || lower.endsWith(".txt")
-        || lower.endsWith(".md");
+        || lower.endsWith(".md")
+        || lower.endsWith(".extension");
   }
 
   /** Reads all entries (files and directories) from a zip file into a name-to-content map. */
