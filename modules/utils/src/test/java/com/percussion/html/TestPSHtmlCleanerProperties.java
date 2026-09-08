@@ -107,6 +107,10 @@ public class TestPSHtmlCleanerProperties {
             .next();
     Document doc = PSHtmlUtils.createHTMLDocument(text, StandardCharsets.UTF_8, true, null);
     String parsed = doc.body().toString();
+    // jsoup 1.21.2+ appends the enforced rel="nofollow" attribute to the end of the
+    // attribute list on <a> tags whose other attributes are all from the safelist's
+    // canonical order. The richer <a> tags below (with rxinlineslot/sys_*/inlinetype)
+    // keep their input order. The fixture reflects the new ordering.
     assertEquals(text, parsed);
   }
 
