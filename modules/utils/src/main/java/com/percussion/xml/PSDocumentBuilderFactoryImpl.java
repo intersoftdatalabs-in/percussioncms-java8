@@ -68,14 +68,6 @@ public class PSDocumentBuilderFactoryImpl
         false,
         "SAX_GENERAL_EXTERNAL_ENTITIES_FEATURE");
     setFeatureSafe(
-        PSSecureXMLUtils.X1_GENERAL_EXTERNAL_ENTITIES_FEATURE,
-        false,
-        "X1_GENERAL_EXTERNAL_ENTITIES_FEATURE");
-    setFeatureSafe(
-        PSSecureXMLUtils.X2_GENERAL_EXTERNAL_ENTITIES_FEATURE,
-        false,
-        "X2_GENERAL_EXTERNAL_ENTITIES_FEATURE");
-    setFeatureSafe(
         PSSecureXMLUtils.SAX_EXTERNAL_PARAMETER_ENTITIES_FEATURE,
         false,
         "SAX_EXTERNAL_PARAMETER_ENTITIES_FEATURE");
