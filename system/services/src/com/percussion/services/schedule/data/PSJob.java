@@ -16,8 +16,6 @@
  */
 package com.percussion.services.schedule.data;
 
-import static org.apache.commons.lang3.Validate.notNull;
-
 import com.percussion.services.catalog.PSTypeEnum;
 import com.percussion.utils.guid.IPSGuid;
 import java.io.Serializable;
@@ -78,8 +76,9 @@ public class PSJob implements Serializable
     */
    public void apply(PSJob job)
    {
-      notNull(job);
-      
+      if (job == null)
+         throw new IllegalArgumentException("job may not be null.");
+
       setId(job.getId());
       setEmailAddresses(job.getEmailAddresses());
       setExtensionName(job.getExtensionName());
