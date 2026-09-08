@@ -6,6 +6,8 @@
     <Arg>
      <New class="org.apache.activemq.ActiveMQConnectionFactory">
        <Arg>vm://localhost?brokerConfig=xbean:activemq.xml</Arg>
+       <Set name="userName"><Property name="activemq.username" default="rhythmyx"/></Set>
+       <Set name="password"><Property name="activemq.password" default="rhythmyx"/></Set>
     </New>
     </Arg>
   </New>

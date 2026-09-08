@@ -106,9 +106,19 @@ http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/ac
            network listener inherits the secure defaults. simpleAuthenticationPlugin
            requires explicit credentials; the default <authorizationMap> denies
            access to any topic or queue not explicitly listed.
+
+           The "rhythmyx" user is the in-VM connection identity used by the
+           ActiveMQConnectionFactory configured in perc-mq.xml and
+           ear/WEB-INF/jetty-env.xml. Operators adding a network listener
+           should change this password (and add the network-listener's
+           user) before opening any <transportConnector>. The default
+           password here is a placeholder, not a secret.
       -->
       <plugins>
-          <simpleAuthenticationPlugin anonymousAccessAllowed="false"/>
+          <simpleAuthenticationPlugin
+              anonymousAccessAllowed="false"
+              userPasswords="rhythmyx=rhythmyx"
+              userGroups="rhythmyx=users,admins"/>
       </plugins>
 
       <!--
