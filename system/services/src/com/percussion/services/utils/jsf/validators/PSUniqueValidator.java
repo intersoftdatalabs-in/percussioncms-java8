@@ -16,8 +16,6 @@
  */
 package com.percussion.services.utils.jsf.validators;
 
-import static org.apache.commons.lang3.Validate.notNull;
-
 import java.util.Collection;
 
 import javax.faces.application.FacesMessage;
@@ -89,7 +87,8 @@ public class PSUniqueValidator extends PSBaseValidator
     */
    public void setValueProvider(IPSUniqueValidatorValueProvider provider)
    {
-      notNull(provider);
+      if (provider == null)
+         throw new IllegalArgumentException("provider may not be null.");
       m_valueProvider = provider;
    }
 
