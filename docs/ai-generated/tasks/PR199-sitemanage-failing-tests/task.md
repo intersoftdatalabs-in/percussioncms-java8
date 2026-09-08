@@ -14,7 +14,6 @@ fix in `projects/sitemanage/src/test`. No cross-module impact.
     contract and the `shouldFailOnNormalizeNullPath` test expectation.
   - `PathMatch.toFullPath`: same fix — replace `notNull(relativePath, ...)` with an explicit
     `IllegalArgumentException` throw to satisfy `shouldFailToReturnProperFullPathIfGivenRelativePathIsNull`.
-
 - `projects/sitemanage/src/test/java/com/percussion/itemmanagement/service/impl/PSItemServiceTest.java`
   - Add `@Rule TemporaryFolder temporaryFolder`.
   - In `setUp`: `PathUtils.clearRxDir()` then `PathUtils.setThreadOnlyRxDir(temporaryFolder.getRoot())`.
