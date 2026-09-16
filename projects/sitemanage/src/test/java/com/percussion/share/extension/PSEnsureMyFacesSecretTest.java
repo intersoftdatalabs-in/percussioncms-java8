@@ -39,10 +39,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
 /**
- * Unit tests for {@link PSEnsureMyFacesSecret}. The test uses a thread-local Rx dir pointing at a
- * {@link TemporaryFolder} so the deployed web.xml can be staged under {@code
- * AppServer/server/rx/deploy/rxapp.ear/rxapp.war/WEB-INF/web.xml} without touching the real
- * install.
+ * Unit tests for {@link PSEnsureMyFacesSecret}. Self-contained: each method stages a deployed
+ * {@code web.xml} under a {@link TemporaryFolder} Rx root and points {@link PathUtils} at that
+ * folder (system property plus thread-local) so leftover {@code rxdeploydir} values from other
+ * surefire tests cannot fail setup.
  */
 public class PSEnsureMyFacesSecretTest {
 
@@ -50,7 +50,8 @@ public class PSEnsureMyFacesSecretTest {
 
   private File rxRoot;
   private File webXmlFile;
-  private File priorRxDir;
+  private String priorDeployDir;
+  private boolean priorDeployDirDefined;
 
   @Before
   public void setUp() throws Exception {
@@ -60,9 +61,14 @@ public class PSEnsureMyFacesSecretTest {
     webXmlFile = new File(webinf, "web.xml");
     assertTrue(webXmlFile.createNewFile());
 
-    // Remember the previous static RxDir so we can restore it after the test, and set a
-    // thread-local RxDir to point at our temp root so PathUtils.getRxDir() resolves there.
-    priorRxDir = PathUtils.getRxDir(null);
+    // Isolate PathUtils from JVM-wide leftovers. Other surefire tests set rxdeploydir to a
+    // TemporaryFolder that is already deleted; getRxDir() would throw before we could set a
+    // thread-local root. Do not call getRxDir() until this process's own root exists and is
+    // installed as both the system property and the thread-local value.
+    priorDeployDirDefined = System.getProperties().containsKey(PathUtils.DEPLOY_DIR_PROP);
+    priorDeployDir = System.getProperty(PathUtils.DEPLOY_DIR_PROP);
+    PathUtils.clearRxDir();
+    System.setProperty(PathUtils.DEPLOY_DIR_PROP, rxRoot.getAbsolutePath());
     PathUtils.setThreadOnlyRxDir(rxRoot);
   }
 
@@ -70,6 +76,11 @@ public class PSEnsureMyFacesSecretTest {
   public void tearDown() {
     PathUtils.unsetThreadOnlyRxDir(rxRoot);
     PathUtils.clearRxDir();
+    if (priorDeployDirDefined && priorDeployDir != null && new File(priorDeployDir).isDirectory()) {
+      System.setProperty(PathUtils.DEPLOY_DIR_PROP, priorDeployDir);
+    } else {
+      System.getProperties().remove(PathUtils.DEPLOY_DIR_PROP);
+    }
   }
 
   @Test
