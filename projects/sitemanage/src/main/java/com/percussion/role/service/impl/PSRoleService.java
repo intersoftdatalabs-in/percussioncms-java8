@@ -516,6 +516,15 @@ public class PSRoleService implements IPSRoleService {
     if (StringUtils.isBlank(roleName)) {
       throw new IllegalArgumentException("roleName must not be blank");
     }
+    // T2.14 hardening (epic #73, issue #223): CVE-2026-0603 second-order SQL injection.
+    // PSMetadata.key is a String @Id primary key; Hibernate's InlineIdsOrClauseBuilder inlines
+    // that string into UPDATE/DELETE statements at a later time. If roleName carries a SQL
+    // metacharacter (quote, semicolon, comment, NUL) a later delete/update of the row could
+    // rewrite the predicate. Reject the input at the entry point instead.
+    if (containsUnsafeIdentifierChar(roleName)) {
+      throw new IllegalArgumentException(
+          "roleName contains characters that are unsafe as a metadata key identifier");
+    }
     if (StringUtils.isBlank(homepage)
         || !(homepage.equals(HOMEPAGE_TYPE_DASHBOARD)
             || homepage.equals(HOMEPAGE_TYPE_EDITOR)
@@ -695,5 +704,36 @@ public class PSRoleService implements IPSRoleService {
 
   public void setRoleMgr(IPSRoleMgr roleMgr) {
     this.roleMgr = roleMgr;
+  }
+
+  /**
+   * Returns {@code true} if the supplied identifier string contains a character that is unsafe as a
+   * primary key value in a Hibernate-managed String @Id column. CVE-2026-0603 is a second-order SQL
+   * injection: a tainted identifier that is persisted today can be inlined into UPDATE/DELETE SQL
+   * at a later time by Hibernate's {@code InlineIdsOrClauseBuilder}. We reject the obvious SQL
+   * metacharacters and all C0/C1 control bytes up front so a future caller does not turn a stored
+   * identifier into an injection lever.
+   *
+   * <p>Public because {@code PSSiteimprove} lives in a different package and also composes
+   * user-controlled inputs into a String @Id column. The matching test {@code
+   * PSRoleServiceUnsafeIdTest} lives in the same package as this class.
+   */
+  public static boolean containsUnsafeIdentifierChar(String value) {
+    if (value == null) {
+      return true;
+    }
+    for (int i = 0; i < value.length(); i++) {
+      char c = value.charAt(i);
+      // SQL metacharacters Hibernate will inline into an OR-clause identifier predicate.
+      if (c == '\'' || c == '"' || c == ';' || c == '\\' || c == '-' || c == '/' || c == '*'
+          || c == '(' || c == ')' || c == '\0' || c == '\n' || c == '\r' || c == '\t') {
+        return true;
+      }
+      // C0 (0x00-0x1F) and C1 (0x7F-0x9F) control characters.
+      if (c < 0x20 || (c >= 0x7F && c <= 0x9F)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

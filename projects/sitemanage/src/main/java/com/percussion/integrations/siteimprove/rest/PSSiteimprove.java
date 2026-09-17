@@ -24,6 +24,7 @@ import com.percussion.integrations.siteimprove.data.PSSiteImproveSiteConfigurati
 import com.percussion.metadata.data.PSMetadata;
 import com.percussion.metadata.data.PSMetadataList;
 import com.percussion.metadata.service.IPSMetadataService;
+import com.percussion.role.service.impl.PSRoleService;
 import com.percussion.services.integrations.siteimprove.PSSiteImproveProviderService;
 import com.percussion.services.publisher.IPSEdition;
 import com.percussion.services.publisher.IPSEditionTaskDef;
@@ -163,6 +164,16 @@ public class PSSiteimprove {
       Boolean validCredentials = providerService.validateCredentials(credentialsToValidate);
 
       if (validCredentials) {
+        // T2.14 hardening (epic #73, issue #223): CVE-2026-0603 second-order SQL injection.
+        // siteName becomes part of a String @Id primary key (PSMetadata.key) that Hibernate
+        // will later inline into UPDATE/DELETE predicates via InlineIdsOrClauseBuilder. A
+        // siteName with SQL metacharacters or control bytes turns the stored value into an
+        // injection lever. Reject before persistence.
+        if (PSRoleService.containsUnsafeIdentifierChar(credentials.getSiteName())) {
+          return Response.status(Response.Status.BAD_REQUEST)
+              .entity("siteName contains characters that are unsafe as a metadata identifier")
+              .build();
+        }
         ObjectNode jsonMap = MAPPER.createObjectNode();
         credentialsToValidate.forEach(jsonMap::put);
         addSiteImproveTaskToPreExistingEditions(credentials.getSiteName());
@@ -204,6 +215,13 @@ public class PSSiteimprove {
       // IF invalid settings
       if (!validateConfiguration(publishSettings)) {
         throw new Exception("Settings may not be null and a valid site name must be provided.");
+      }
+
+      // T2.14 hardening (epic #73, issue #223): CVE-2026-0603 second-order SQL injection.
+      // Same protection as the credentials path: siteName flows into a String @Id key.
+      if (PSRoleService.containsUnsafeIdentifierChar(publishSettings.getSiteName())) {
+        throw new Exception(
+            "siteName contains characters that are unsafe as a metadata identifier");
       }
 
       String siteConfigKey = SITEIMPROVE_CONFIGURATION_BASE_KEY + publishSettings.getSiteName();

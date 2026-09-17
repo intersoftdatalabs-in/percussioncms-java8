@@ -615,8 +615,12 @@ public class PSRelationshipService
    public List<PSRelationshipData> findByDependentId(int dependentId) {
       Session session = getSession();
 
+      // T2.14 hardening (epic #73, issue #223): parameter binding instead of string concat.
+      // The call sites pass typed ints today, but the concat pattern is an unsafe precedent;
+      // a future caller that hands us a tainted string could otherwise build a SQLi surface.
       Query query = session
-              .createQuery("from PSRelationshipData " + " where dependent_id =  " + dependentId);
+              .createQuery("from PSRelationshipData where dependent_id = :dependentId");
+      query.setParameter("dependentId", dependentId);
       return  query.list();
    }
 
@@ -927,8 +931,12 @@ public class PSRelationshipService
    public List<PSRelationshipData> findByDependentIdConfigId(int dependentId, int configId) {
       Session session = getSession();
 
+      // T2.14 hardening (epic #73, issue #223): parameter binding instead of string concat.
       Query query = session
-              .createQuery("from PSRelationshipData " + " where dependent_id =  " + dependentId +" and config_id = " + configId);
+              .createQuery("from PSRelationshipData where dependent_id = :dependentId"
+                      + " and config_id = :configId");
+      query.setParameter("dependentId", dependentId);
+      query.setParameter("configId", configId);
       return query.list();
 
    }

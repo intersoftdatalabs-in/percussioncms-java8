@@ -373,6 +373,15 @@ http://www.springframework.org/schema/context/spring-context.xsd">
                 <prop key="hibernate.allow_update_outside_transaction">true</prop>
 				<prop key="hibernate.id.new_generator_mappings">false</prop>
                 <prop key="hibernate.cache.ehcache.missing_cache_strategy">create</prop>
+                <!--
+                     T2.14 hardening (parent epic #73, issue #223):
+                     CVE-2019-14900 JPA Criteria API SQL injection via unsanitized literals
+                     in SELECT/GROUP BY. Setting literal_handling_mode=bind causes Hibernate
+                     to bind all Criteria literals as JDBC parameters rather than render them
+                     inline in the generated SQL. The Hibernate default is 'auto' which can
+                     still inline literals for some dialects. Set explicitly to bind.
+                -->
+                <prop key="hibernate.criteria.literal_handling_mode">bind</prop>
             </props>
         </property>
         <property name="datasourceManager" ref="sys_datasourceManager"/>
