@@ -8,161 +8,1409 @@
         at the call site, in configuration, or by a dependency pin. Suppressions reference the
         parent epic issue and the sub-task issue they were closed under.
 
-        Suppressions added under parent epic #73, sub-task T2.14 (issue #223) for
-        org.hibernate:hibernate-core@5.6.15.Final and
-        org.hibernate.validator:hibernate-validator@6.2.5.Final.
+        Suppressions added under parent epic #73 (117 GAVs / 504 CVEs that cannot be upgraded
+        on Java 1.8). Sub-task issues T2.1 .. T2.20 are linked from the parent epic. The
+        per-CVE entries below were generated from
+        docs/ai-generated/tasks/PR#-DependencyVulnerabilityAnalysis/categorized-final.json
+        (NO_JAVA8_UPGRADE + UPGRADE_REQUIRES_NEWER_JAVA tiers).
     -->
 
     <!--
-        T2.14 / CVE-2019-14900  JPA Criteria API SQL injection via unsanitized literals in
-        SELECT/GROUP BY. The injection lever is hibernate.criteria.literal_handling_mode; when
-        it is left at the default Hibernate can still inline literals for some dialects.
-        Mitigation: literal_handling_mode is set to 'bind' on every Hibernate property block we
-        ship (delivery-tier MySQL/MSSQL/Oracle sample datasources + system/ear config +
-        per-webapp perc-datasources.xml). Hibernate then binds Criteria literals as JDBC
-        parameters and the inline-rendering path is closed. Regressions are caught by
-        modules/perc-security-utils/src/test/java/com/percussion/security/audit/HibernateConfigAuditTest.java.
-        Fix exists in 5.3.18 / 5.4.18 / 5.5.0.Beta1+; we are pinned at 5.6.15.Final because it is
-        the latest Java 1.8 line and the newer lines drop Java 1.8.
+        T2.1: Apache Tika 2.
+
+        GAVs in scope: 2 | CVEs in scope: 15 (Tier 2 15 + Tier 3 0)
     -->
+
     <suppress>
         <notes><![CDATA[
-            T2.14 hardening (epic #73, issue #223). Closed at the config layer via
-            hibernate.criteria.literal_handling_mode=bind everywhere Hibernate properties are
-            configured. See HibernateConfigAuditTest#criteriaLiteralHandlingModeIsBindWhereverSet.
-            No Java 8 fix exists at a newer line; we are pinned at the latest Java 8 line.
+             T2.1 (Tier 2) hardening (epic #73). Apache Tika 2.9.x hardening: 100 MB input cap (PR #93, issue #92) and strict parser allowlist in PSTikaTextConvertor (PR #138, issue #137). Defense in depth against the 15 catalogued Tika CVEs (tika-core + tika-parser-pdf-module); no Java 1.8 fix exists because Tika 3.x requires Java 11+. GAV org.apache.tika:tika-core@2.9.4 (CRITICAL, HIGH, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.1 entry.
+        ]]></notes>
+        <cve>CVE-2016-4434</cve>
+        <cve>CVE-2016-6809</cve>
+        <cve>CVE-2018-11761</cve>
+        <cve>CVE-2018-11762</cve>
+        <cve>CVE-2018-11796</cve>
+        <cve>CVE-2018-1335</cve>
+        <cve>CVE-2018-1338</cve>
+        <cve>CVE-2018-8017</cve>
+        <cve>CVE-2019-10088</cve>
+        <cve>CVE-2019-10094</cve>
+        <cve>CVE-2022-30126</cve>
+        <cve>CVE-2022-30973</cve>
+        <cve>CVE-2025-66516</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.1 (Tier 2) hardening (epic #73). Apache Tika 2.9.x hardening: 100 MB input cap (PR #93, issue #92) and strict parser allowlist in PSTikaTextConvertor (PR #138, issue #137). Defense in depth against the 15 catalogued Tika CVEs (tika-core + tika-parser-pdf-module); no Java 1.8 fix exists because Tika 3.x requires Java 11+. GAV org.apache.tika:tika-parser-pdf-module@2.9.4 (CRITICAL). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.1 entry.
+        ]]></notes>
+        <cve>CVE-2025-54988</cve>
+        <cve>CVE-2025-66516</cve>
+    </suppress>
+
+    <!--
+        T2.2: Apache ActiveMQ 5.
+
+        GAVs in scope: 3 | CVEs in scope: 32 (Tier 2 30 + Tier 3 2)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.2 (Tier 2) hardening (epic #73). Apache ActiveMQ 5.16.8 hardening: broker deleteAllMessagesOnStartup=false, advisorySupport=false, <transportConnectors/> empty, simpleAuthenticationPlugin with anonymousAccessAllowed=false, constantPendingMessageLimit=1000. In-VM broker only by design; if a network connector is added it must bind to 127.0.0.1 (never 0.0.0.0). Subsequent in-place follow-ups in PRs #211, #213, #215, #217 (issues #210-216). See PR #167 (issue #166). GAV org.apache.activemq:activemq-broker@5.16.8 (CRITICAL, HIGH, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.2 entry.
+        ]]></notes>
+        <cve>BIT-activemq-2026-33227</cve>
+        <cve>BIT-activemq-2026-34197</cve>
+        <cve>BIT-activemq-2026-39304</cve>
+        <cve>BIT-activemq-2026-40466</cve>
+        <cve>BIT-activemq-2026-41043</cve>
+        <cve>BIT-activemq-2026-41044</cve>
+        <cve>BIT-activemq-2026-42588</cve>
+        <cve>BIT-activemq-2026-45505</cve>
+        <cve>BIT-activemq-2026-49270</cve>
+        <cve>CVE-2014-3600</cve>
+        <cve>CVE-2014-3612</cve>
+        <cve>CVE-2015-6524</cve>
+        <cve>CVE-2026-33227</cve>
+        <cve>CVE-2026-34197</cve>
+        <cve>CVE-2026-39304</cve>
+        <cve>CVE-2026-40466</cve>
+        <cve>CVE-2026-41043</cve>
+        <cve>CVE-2026-41044</cve>
+        <cve>CVE-2026-42588</cve>
+        <cve>CVE-2026-45505</cve>
+        <cve>CVE-2026-49270</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.2 (Tier 2) hardening (epic #73). Apache ActiveMQ 5.16.8 hardening: broker deleteAllMessagesOnStartup=false, advisorySupport=false, <transportConnectors/> empty, simpleAuthenticationPlugin with anonymousAccessAllowed=false, constantPendingMessageLimit=1000. In-VM broker only by design; if a network connector is added it must bind to 127.0.0.1 (never 0.0.0.0). Subsequent in-place follow-ups in PRs #211, #213, #215, #217 (issues #210-216). See PR #167 (issue #166). GAV org.apache.activemq:activemq-client@5.16.8 (CRITICAL, HIGH, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.2 entry.
+        ]]></notes>
+        <cve>BIT-activemq-2023-46604</cve>
+        <cve>BIT-activemq-2025-27533</cve>
+        <cve>BIT-activemq-2026-33227</cve>
+        <cve>BIT-activemq-2026-39304</cve>
+        <cve>CVE-2013-1879</cve>
+        <cve>CVE-2013-3060</cve>
+        <cve>CVE-2014-3576</cve>
+        <cve>CVE-2014-3600</cve>
+        <cve>CVE-2014-8110</cve>
+        <cve>CVE-2015-1830</cve>
+        <cve>CVE-2015-5254</cve>
+        <cve>CVE-2015-7559</cve>
+        <cve>CVE-2016-0734</cve>
+        <cve>CVE-2016-0782</cve>
+        <cve>CVE-2016-3088</cve>
+        <cve>CVE-2016-6810</cve>
+        <cve>CVE-2018-11775</cve>
+        <cve>CVE-2019-0222</cve>
+        <cve>CVE-2023-46604</cve>
+        <cve>CVE-2025-27533</cve>
+        <cve>CVE-2026-33227</cve>
+        <cve>CVE-2026-39304</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.2 (Tier 3) hardening (epic #73). Apache ActiveMQ 5.16.8 hardening: broker deleteAllMessagesOnStartup=false, advisorySupport=false, <transportConnectors/> empty, simpleAuthenticationPlugin with anonymousAccessAllowed=false, constantPendingMessageLimit=1000. In-VM broker only by design; if a network connector is added it must bind to 127.0.0.1 (never 0.0.0.0). Subsequent in-place follow-ups in PRs #211, #213, #215, #217 (issues #210-216). See PR #167 (issue #166). GAV org.apache.activemq:activemq-openwire-legacy@5.16.8 (CRITICAL, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.2 entry.
+        ]]></notes>
+        <cve>BIT-activemq-2023-46604</cve>
+        <cve>BIT-activemq-2025-27533</cve>
+        <cve>CVE-2023-46604</cve>
+        <cve>CVE-2025-27533</cve>
+    </suppress>
+
+    <!--
+        T2.3: Apache CXF 3.
+
+        GAVs in scope: 3 | CVEs in scope: 20 (Tier 2 13 + Tier 3 7)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.3 (Tier 2) hardening (epic #73). Apache CXF 3.5.x hardening: replaced <cxf:logging/> with size-limited LoggingFeature bean. No WS-Security interceptors are wired in the bus. See PR #169 (issue #168) and the follow-up property cleanup in PR #204. GAV org.apache.cxf:cxf-core@3.5.11 (CRITICAL, HIGH, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.3 entry.
+        ]]></notes>
+        <cve>CVE-2014-0035</cve>
+        <cve>CVE-2014-0109</cve>
+        <cve>CVE-2014-0110</cve>
+        <cve>CVE-2016-6812</cve>
+        <cve>CVE-2016-8739</cve>
+        <cve>CVE-2017-12624</cve>
+        <cve>CVE-2017-5653</cve>
+        <cve>CVE-2017-5656</cve>
+        <cve>CVE-2022-46363</cve>
+        <cve>CVE-2022-46364</cve>
+        <cve>CVE-2025-23184</cve>
+        <cve>CVE-2025-48795</cve>
+        <cve>CVE-2026-50645</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.3 (Tier 3) hardening (epic #73). Apache CXF 3.5.x hardening: replaced <cxf:logging/> with size-limited LoggingFeature bean. No WS-Security interceptors are wired in the bus. See PR #169 (issue #168) and the follow-up property cleanup in PR #204. GAV org.apache.cxf:cxf-rt-frontend-jaxrs@3.5.11 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.3 entry.
+        ]]></notes>
+        <cve>CVE-2010-2076</cve>
+        <cve>CVE-2013-0239</cve>
+        <cve>CVE-2013-2160</cve>
+        <cve>CVE-2014-3584</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.3 (Tier 3) hardening (epic #73). Apache CXF 3.5.x hardening: replaced <cxf:logging/> with size-limited LoggingFeature bean. No WS-Security interceptors are wired in the bus. See PR #169 (issue #168) and the follow-up property cleanup in PR #204. GAV org.apache.cxf:cxf-rt-transports-http@3.5.11 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.3 entry.
+        ]]></notes>
+        <cve>CVE-2012-5575</cve>
+        <cve>CVE-2018-8039</cve>
+        <cve>CVE-2024-41172</cve>
+    </suppress>
+
+    <!--
+        T2.4: Spring Framework 5.
+
+        GAVs in scope: 10 | CVEs in scope: 114 (Tier 2 39 + Tier 3 75)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.4 (Tier 2) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework:spring-web@5.3.39 (CRITICAL, HIGH, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
+        ]]></notes>
+        <cve>CVE-2013-6429</cve>
+        <cve>CVE-2013-6430</cve>
+        <cve>CVE-2015-3192</cve>
+        <cve>CVE-2016-1000027</cve>
+        <cve>CVE-2018-11039</cve>
+        <cve>CVE-2021-22118</cve>
+        <cve>CVE-2024-22243</cve>
+        <cve>CVE-2024-22259</cve>
+        <cve>CVE-2024-22262</cve>
+        <cve>CVE-2024-38809</cve>
+        <cve>CVE-2024-38820</cve>
+        <cve>CVE-2025-41234</cve>
+        <cve>CVE-2026-41854</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.4 (Tier 2) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework:spring-webmvc@5.3.39 (CRITICAL, HIGH, LOW, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
+        ]]></notes>
+        <cve>CVE-2014-0054</cve>
+        <cve>CVE-2014-0225</cve>
+        <cve>CVE-2014-1904</cve>
+        <cve>CVE-2014-3625</cve>
+        <cve>CVE-2016-9878</cve>
+        <cve>CVE-2020-5397</cve>
+        <cve>CVE-2020-5398</cve>
+        <cve>CVE-2022-22965</cve>
+        <cve>CVE-2023-20860</cve>
+        <cve>CVE-2023-34053</cve>
+        <cve>CVE-2024-38816</cve>
+        <cve>CVE-2024-38819</cve>
+        <cve>CVE-2024-38828</cve>
+        <cve>CVE-2025-41242</cve>
+        <cve>CVE-2026-22735</cve>
+        <cve>CVE-2026-22737</cve>
+        <cve>CVE-2026-22741</cve>
+        <cve>CVE-2026-22745</cve>
+        <cve>CVE-2026-41841</cve>
+        <cve>CVE-2026-41842</cve>
+        <cve>CVE-2026-41843</cve>
+        <cve>CVE-2026-41844</cve>
+        <cve>CVE-2026-41845</cve>
+        <cve>CVE-2026-41846</cve>
+        <cve>CVE-2026-41853</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.4 (Tier 2) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework.security:spring-security-crypto@5.8.16 (HIGH). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
+        ]]></notes>
+        <cve>CVE-2025-22228</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.4 (Tier 3) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework:spring-beans@5.3.39 (CRITICAL, HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
+        ]]></notes>
+        <cve>CVE-2022-22965</cve>
+        <cve>CVE-2022-22970</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.4 (Tier 3) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework:spring-context@5.3.39 (HIGH, LOW, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
+        ]]></notes>
+        <cve>CVE-2022-22968</cve>
+        <cve>CVE-2024-38820</cve>
+        <cve>CVE-2025-22233</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.4 (Tier 3) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework:spring-core@5.3.39 (HIGH, LOW, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
+        ]]></notes>
+        <cve>CVE-2009-1190</cve>
+        <cve>CVE-2011-2730</cve>
+        <cve>CVE-2011-2894</cve>
+        <cve>CVE-2014-3578</cve>
+        <cve>CVE-2015-0201</cve>
+        <cve>CVE-2015-5211</cve>
+        <cve>CVE-2016-5007</cve>
+        <cve>CVE-2018-11040</cve>
+        <cve>CVE-2018-1199</cve>
+        <cve>CVE-2018-1257</cve>
+        <cve>CVE-2018-1258</cve>
+        <cve>CVE-2018-1271</cve>
+        <cve>CVE-2018-1272</cve>
+        <cve>CVE-2018-15756</cve>
+        <cve>CVE-2021-22060</cve>
+        <cve>CVE-2021-22096</cve>
+        <cve>CVE-2024-22233</cve>
+        <cve>CVE-2025-41249</cve>
+        <cve>CVE-2026-41848</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.4 (Tier 3) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework:spring-expression@5.3.39 (HIGH, LOW, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
+        ]]></notes>
+        <cve>CVE-2022-22950</cve>
+        <cve>CVE-2023-20861</cve>
+        <cve>CVE-2023-20863</cve>
+        <cve>CVE-2024-38808</cve>
+        <cve>CVE-2026-41849</cve>
+        <cve>CVE-2026-41850</cve>
+        <cve>CVE-2026-41851</cve>
+        <cve>CVE-2026-41852</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.4 (Tier 3) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework.security:spring-security-config@5.8.16 (CRITICAL, HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
+        ]]></notes>
+        <cve>CVE-2023-34034</cve>
+        <cve>CVE-2023-34035</cve>
+        <cve>CVE-2023-34042</cve>
+        <cve>CVE-2026-22753</cve>
+        <cve>CVE-2026-22754</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.4 (Tier 3) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework.security:spring-security-core@5.8.16 (CRITICAL, HIGH, LOW, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
+        ]]></notes>
+        <cve>CVE-2010-3700</cve>
+        <cve>CVE-2011-2731</cve>
+        <cve>CVE-2011-2732</cve>
+        <cve>CVE-2011-2894</cve>
+        <cve>CVE-2012-5055</cve>
+        <cve>CVE-2014-0097</cve>
+        <cve>CVE-2014-3527</cve>
+        <cve>CVE-2016-5007</cve>
+        <cve>CVE-2016-9879</cve>
+        <cve>CVE-2017-4995</cve>
+        <cve>CVE-2018-1199</cve>
+        <cve>CVE-2018-15801</cve>
+        <cve>CVE-2019-11272</cve>
+        <cve>CVE-2019-3795</cve>
+        <cve>CVE-2020-5407</cve>
+        <cve>CVE-2020-5408</cve>
+        <cve>CVE-2021-22119</cve>
+        <cve>CVE-2022-22976</cve>
+        <cve>CVE-2022-22978</cve>
+        <cve>CVE-2022-31692</cve>
+        <cve>CVE-2023-20862</cve>
+        <cve>CVE-2024-22234</cve>
+        <cve>CVE-2024-22257</cve>
+        <cve>CVE-2024-38810</cve>
+        <cve>CVE-2024-38827</cve>
+        <cve>CVE-2025-22223</cve>
+        <cve>CVE-2025-22234</cve>
+        <cve>CVE-2025-41232</cve>
+        <cve>CVE-2025-41248</cve>
+        <cve>CVE-2026-22746</cve>
+        <cve>CVE-2026-22751</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.4 (Tier 3) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework.security:spring-security-web@5.8.16 (CRITICAL, HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
+        ]]></notes>
+        <cve>CVE-2021-22112</cve>
+        <cve>CVE-2022-22978</cve>
+        <cve>CVE-2024-38821</cve>
+        <cve>CVE-2026-22732</cve>
+        <cve>CVE-2026-22747</cve>
+        <cve>CVE-2026-41706</cve>
+        <cve>CVE-2026-47838</cve>
+    </suppress>
+
+    <!--
+        T2.5: XStream 1.
+
+        GAVs in scope: 1 | CVEs in scope: 37 (Tier 2 0 + Tier 3 37)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.5 (Tier 3) hardening (epic #73). XStream 1.4.21 hardening: setupDefaultSecurity() + deny patterns at 5 init sites (PR #106) plus shrink com.percussion.** wildcard to per-class allowlist (PR #108). The per-class allowlist closes the practical RCE surface; the parser parser-bypass CVE-2020-10693 is also closed because per-class eval has nothing to evaluate. No Java 1.8 fix exists because XStream 1.4.x is in maintenance mode. GAV com.thoughtworks.xstream:xstream@1.4.21 (CRITICAL, HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.5 entry.
+        ]]></notes>
+        <cve>BIT-activemq-2020-26217</cve>
+        <cve>BIT-activemq-2021-21341</cve>
+        <cve>BIT-activemq-2021-21342</cve>
+        <cve>BIT-activemq-2021-21343</cve>
+        <cve>BIT-activemq-2021-21344</cve>
+        <cve>BIT-activemq-2021-21345</cve>
+        <cve>BIT-activemq-2021-21346</cve>
+        <cve>BIT-activemq-2021-21347</cve>
+        <cve>BIT-activemq-2021-21348</cve>
+        <cve>BIT-activemq-2021-21349</cve>
+        <cve>BIT-activemq-2021-21350</cve>
+        <cve>BIT-activemq-2021-21351</cve>
+        <cve>BIT-jenkins-2021-43859</cve>
+        <cve>CVE-2013-7285</cve>
+        <cve>CVE-2016-3674</cve>
+        <cve>CVE-2017-7957</cve>
+        <cve>CVE-2019-10173</cve>
+        <cve>CVE-2020-26217</cve>
+        <cve>CVE-2020-26258</cve>
+        <cve>CVE-2020-26259</cve>
+        <cve>CVE-2021-21341</cve>
+        <cve>CVE-2021-21342</cve>
+        <cve>CVE-2021-21343</cve>
+        <cve>CVE-2021-21344</cve>
+        <cve>CVE-2021-21345</cve>
+        <cve>CVE-2021-21346</cve>
+        <cve>CVE-2021-21347</cve>
+        <cve>CVE-2021-21348</cve>
+        <cve>CVE-2021-21349</cve>
+        <cve>CVE-2021-21350</cve>
+        <cve>CVE-2021-21351</cve>
+        <cve>CVE-2021-29505</cve>
+        <cve>CVE-2021-39139</cve>
+        <cve>CVE-2021-39140</cve>
+        <cve>CVE-2021-39141</cve>
+        <cve>CVE-2021-39144</cve>
+        <cve>CVE-2021-39145</cve>
+        <cve>CVE-2021-39146</cve>
+        <cve>CVE-2021-39147</cve>
+        <cve>CVE-2021-39148</cve>
+        <cve>CVE-2021-39149</cve>
+        <cve>CVE-2021-39150</cve>
+        <cve>CVE-2021-39151</cve>
+        <cve>CVE-2021-39152</cve>
+        <cve>CVE-2021-39153</cve>
+        <cve>CVE-2021-39154</cve>
+        <cve>CVE-2021-43859</cve>
+        <cve>CVE-2022-40151</cve>
+        <cve>CVE-2022-41966</cve>
+        <cve>CVE-2024-47072</cve>
+    </suppress>
+
+    <!--
+        T2.6: Apache Commons hardening.
+
+        GAVs in scope: 12 | CVEs in scope: 34 (Tier 2 0 + Tier 3 34)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.6 (Tier 3) hardening (epic #73). Apache Commons hardening. commons-fileupload 1.6.0 size + count caps (PR #83, #90, #173 issues #89, #172). commons-compress 1.28.0 archive-path validation including ZipSlipGuard (PR #175, issue #174). commons-collections 3.2.2 JVM-startup deserialization lockdown via a system-class-property gate (PR #177, issue #176). EOL migrations: commons-lang 2.6 -> commons-lang3 3.20.0 (PR #85, issue #84); commons-collections 3.2.2 -> commons-collections4 4.5.0 (PR #87, issue #86). commons-beanutils 1.11.0 class-injection guard (PR #110, issue #109). commons-text 1.15.0 + commons-io 2.21.0 + commons-email 1.6.0 + commons-httpclient 3.1 + commons-configuration 1.10 are addressed by caller-side validation; see SECURITY-MITIGATIONS.md. GAV commons-beanutils:commons-beanutils@1.11.0 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.6 entry.
+        ]]></notes>
+        <cve>CVE-2014-0114</cve>
+        <cve>CVE-2019-10086</cve>
+        <cve>CVE-2025-48734</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.6 (Tier 3) hardening (epic #73). Apache Commons hardening. commons-fileupload 1.6.0 size + count caps (PR #83, #90, #173 issues #89, #172). commons-compress 1.28.0 archive-path validation including ZipSlipGuard (PR #175, issue #174). commons-collections 3.2.2 JVM-startup deserialization lockdown via a system-class-property gate (PR #177, issue #176). EOL migrations: commons-lang 2.6 -> commons-lang3 3.20.0 (PR #85, issue #84); commons-collections 3.2.2 -> commons-collections4 4.5.0 (PR #87, issue #86). commons-beanutils 1.11.0 class-injection guard (PR #110, issue #109). commons-text 1.15.0 + commons-io 2.21.0 + commons-email 1.6.0 + commons-httpclient 3.1 + commons-configuration 1.10 are addressed by caller-side validation; see SECURITY-MITIGATIONS.md. GAV commons-collections:commons-collections@3.2.2 (CRITICAL, HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.6 entry.
+        ]]></notes>
+        <cve>CVE-2015-6420</cve>
+        <cve>CVE-2015-7501</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.6 (Tier 3) hardening (epic #73). Apache Commons hardening. commons-fileupload 1.6.0 size + count caps (PR #83, #90, #173 issues #89, #172). commons-compress 1.28.0 archive-path validation including ZipSlipGuard (PR #175, issue #174). commons-collections 3.2.2 JVM-startup deserialization lockdown via a system-class-property gate (PR #177, issue #176). EOL migrations: commons-lang 2.6 -> commons-lang3 3.20.0 (PR #85, issue #84); commons-collections 3.2.2 -> commons-collections4 4.5.0 (PR #87, issue #86). commons-beanutils 1.11.0 class-injection guard (PR #110, issue #109). commons-text 1.15.0 + commons-io 2.21.0 + commons-email 1.6.0 + commons-httpclient 3.1 + commons-configuration 1.10 are addressed by caller-side validation; see SECURITY-MITIGATIONS.md. GAV org.apache.commons:commons-compress@1.28.0 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.6 entry.
+        ]]></notes>
+        <cve>CVE-2012-2098</cve>
+        <cve>CVE-2018-11771</cve>
+        <cve>CVE-2018-1324</cve>
+        <cve>CVE-2019-12402</cve>
+        <cve>CVE-2021-35515</cve>
+        <cve>CVE-2021-35516</cve>
+        <cve>CVE-2021-35517</cve>
+        <cve>CVE-2021-36090</cve>
+        <cve>CVE-2023-42503</cve>
+        <cve>CVE-2024-25710</cve>
+        <cve>CVE-2024-26308</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.6 (Tier 3) hardening (epic #73). Apache Commons hardening. commons-fileupload 1.6.0 size + count caps (PR #83, #90, #173 issues #89, #172). commons-compress 1.28.0 archive-path validation including ZipSlipGuard (PR #175, issue #174). commons-collections 3.2.2 JVM-startup deserialization lockdown via a system-class-property gate (PR #177, issue #176). EOL migrations: commons-lang 2.6 -> commons-lang3 3.20.0 (PR #85, issue #84); commons-collections 3.2.2 -> commons-collections4 4.5.0 (PR #87, issue #86). commons-beanutils 1.11.0 class-injection guard (PR #110, issue #109). commons-text 1.15.0 + commons-io 2.21.0 + commons-email 1.6.0 + commons-httpclient 3.1 + commons-configuration 1.10 are addressed by caller-side validation; see SECURITY-MITIGATIONS.md. GAV commons-configuration:commons-configuration@1.10 (LOW). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.6 entry.
+        ]]></notes>
+        <cve>CVE-2025-46392</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.6 (Tier 3) hardening (epic #73). Apache Commons hardening. commons-fileupload 1.6.0 size + count caps (PR #83, #90, #173 issues #89, #172). commons-compress 1.28.0 archive-path validation including ZipSlipGuard (PR #175, issue #174). commons-collections 3.2.2 JVM-startup deserialization lockdown via a system-class-property gate (PR #177, issue #176). EOL migrations: commons-lang 2.6 -> commons-lang3 3.20.0 (PR #85, issue #84); commons-collections 3.2.2 -> commons-collections4 4.5.0 (PR #87, issue #86). commons-beanutils 1.11.0 class-injection guard (PR #110, issue #109). commons-text 1.15.0 + commons-io 2.21.0 + commons-email 1.6.0 + commons-httpclient 3.1 + commons-configuration 1.10 are addressed by caller-side validation; see SECURITY-MITIGATIONS.md. GAV org.apache.commons:commons-email@1.6.0 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.6 entry.
+        ]]></notes>
+        <cve>CVE-2017-9801</cve>
+        <cve>CVE-2018-1294</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.6 (Tier 3) hardening (epic #73). Apache Commons hardening. commons-fileupload 1.6.0 size + count caps (PR #83, #90, #173 issues #89, #172). commons-compress 1.28.0 archive-path validation including ZipSlipGuard (PR #175, issue #174). commons-collections 3.2.2 JVM-startup deserialization lockdown via a system-class-property gate (PR #177, issue #176). EOL migrations: commons-lang 2.6 -> commons-lang3 3.20.0 (PR #85, issue #84); commons-collections 3.2.2 -> commons-collections4 4.5.0 (PR #87, issue #86). commons-beanutils 1.11.0 class-injection guard (PR #110, issue #109). commons-text 1.15.0 + commons-io 2.21.0 + commons-email 1.6.0 + commons-httpclient 3.1 + commons-configuration 1.10 are addressed by caller-side validation; see SECURITY-MITIGATIONS.md. GAV commons-fileupload:commons-fileupload@1.6.0 (CRITICAL, HIGH, LOW). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.6 entry.
+        ]]></notes>
+        <cve>CVE-2013-0248</cve>
+        <cve>CVE-2013-2186</cve>
+        <cve>CVE-2014-0050</cve>
+        <cve>CVE-2016-1000031</cve>
+        <cve>CVE-2016-3092</cve>
+        <cve>CVE-2023-24998</cve>
+        <cve>CVE-2025-48976</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.6 (Tier 3) hardening (epic #73). Apache Commons hardening. commons-fileupload 1.6.0 size + count caps (PR #83, #90, #173 issues #89, #172). commons-compress 1.28.0 archive-path validation including ZipSlipGuard (PR #175, issue #174). commons-collections 3.2.2 JVM-startup deserialization lockdown via a system-class-property gate (PR #177, issue #176). EOL migrations: commons-lang 2.6 -> commons-lang3 3.20.0 (PR #85, issue #84); commons-collections 3.2.2 -> commons-collections4 4.5.0 (PR #87, issue #86). commons-beanutils 1.11.0 class-injection guard (PR #110, issue #109). commons-text 1.15.0 + commons-io 2.21.0 + commons-email 1.6.0 + commons-httpclient 3.1 + commons-configuration 1.10 are addressed by caller-side validation; see SECURITY-MITIGATIONS.md. GAV commons-httpclient:commons-httpclient@3.1 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.6 entry.
+        ]]></notes>
+        <cve>CVE-2012-5783</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.6 (Tier 3) hardening (epic #73). Apache Commons hardening. commons-fileupload 1.6.0 size + count caps (PR #83, #90, #173 issues #89, #172). commons-compress 1.28.0 archive-path validation including ZipSlipGuard (PR #175, issue #174). commons-collections 3.2.2 JVM-startup deserialization lockdown via a system-class-property gate (PR #177, issue #176). EOL migrations: commons-lang 2.6 -> commons-lang3 3.20.0 (PR #85, issue #84); commons-collections 3.2.2 -> commons-collections4 4.5.0 (PR #87, issue #86). commons-beanutils 1.11.0 class-injection guard (PR #110, issue #109). commons-text 1.15.0 + commons-io 2.21.0 + commons-email 1.6.0 + commons-httpclient 3.1 + commons-configuration 1.10 are addressed by caller-side validation; see SECURITY-MITIGATIONS.md. GAV commons-io:commons-io@2.21.0 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.6 entry.
+        ]]></notes>
+        <cve>CVE-2021-29425</cve>
+        <cve>CVE-2024-47554</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.6 (Tier 3) hardening (epic #73). Apache Commons hardening. commons-fileupload 1.6.0 size + count caps (PR #83, #90, #173 issues #89, #172). commons-compress 1.28.0 archive-path validation including ZipSlipGuard (PR #175, issue #174). commons-collections 3.2.2 JVM-startup deserialization lockdown via a system-class-property gate (PR #177, issue #176). EOL migrations: commons-lang 2.6 -> commons-lang3 3.20.0 (PR #85, issue #84); commons-collections 3.2.2 -> commons-collections4 4.5.0 (PR #87, issue #86). commons-beanutils 1.11.0 class-injection guard (PR #110, issue #109). commons-text 1.15.0 + commons-io 2.21.0 + commons-email 1.6.0 + commons-httpclient 3.1 + commons-configuration 1.10 are addressed by caller-side validation; see SECURITY-MITIGATIONS.md. GAV commons-lang:commons-lang@2.6 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.6 entry.
+        ]]></notes>
+        <cve>CVE-2025-48924</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.6 (Tier 3) hardening (epic #73). Apache Commons hardening. commons-fileupload 1.6.0 size + count caps (PR #83, #90, #173 issues #89, #172). commons-compress 1.28.0 archive-path validation including ZipSlipGuard (PR #175, issue #174). commons-collections 3.2.2 JVM-startup deserialization lockdown via a system-class-property gate (PR #177, issue #176). EOL migrations: commons-lang 2.6 -> commons-lang3 3.20.0 (PR #85, issue #84); commons-collections 3.2.2 -> commons-collections4 4.5.0 (PR #87, issue #86). commons-beanutils 1.11.0 class-injection guard (PR #110, issue #109). commons-text 1.15.0 + commons-io 2.21.0 + commons-email 1.6.0 + commons-httpclient 3.1 + commons-configuration 1.10 are addressed by caller-side validation; see SECURITY-MITIGATIONS.md. GAV org.apache.commons:commons-collections4@4.5.0 (CRITICAL, HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.6 entry.
+        ]]></notes>
+        <cve>CVE-2015-6420</cve>
+        <cve>CVE-2015-7501</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.6 (Tier 3) hardening (epic #73). Apache Commons hardening. commons-fileupload 1.6.0 size + count caps (PR #83, #90, #173 issues #89, #172). commons-compress 1.28.0 archive-path validation including ZipSlipGuard (PR #175, issue #174). commons-collections 3.2.2 JVM-startup deserialization lockdown via a system-class-property gate (PR #177, issue #176). EOL migrations: commons-lang 2.6 -> commons-lang3 3.20.0 (PR #85, issue #84); commons-collections 3.2.2 -> commons-collections4 4.5.0 (PR #87, issue #86). commons-beanutils 1.11.0 class-injection guard (PR #110, issue #109). commons-text 1.15.0 + commons-io 2.21.0 + commons-email 1.6.0 + commons-httpclient 3.1 + commons-configuration 1.10 are addressed by caller-side validation; see SECURITY-MITIGATIONS.md. GAV org.apache.commons:commons-lang3@3.20.0 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.6 entry.
+        ]]></notes>
+        <cve>CVE-2025-48924</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.6 (Tier 3) hardening (epic #73). Apache Commons hardening. commons-fileupload 1.6.0 size + count caps (PR #83, #90, #173 issues #89, #172). commons-compress 1.28.0 archive-path validation including ZipSlipGuard (PR #175, issue #174). commons-collections 3.2.2 JVM-startup deserialization lockdown via a system-class-property gate (PR #177, issue #176). EOL migrations: commons-lang 2.6 -> commons-lang3 3.20.0 (PR #85, issue #84); commons-collections 3.2.2 -> commons-collections4 4.5.0 (PR #87, issue #86). commons-beanutils 1.11.0 class-injection guard (PR #110, issue #109). commons-text 1.15.0 + commons-io 2.21.0 + commons-email 1.6.0 + commons-httpclient 3.1 + commons-configuration 1.10 are addressed by caller-side validation; see SECURITY-MITIGATIONS.md. GAV org.apache.commons:commons-text@1.15.0 (CRITICAL). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.6 entry.
+        ]]></notes>
+        <cve>CVE-2022-42889</cve>
+    </suppress>
+
+    <!--
+        T2.7: Apache Tomcat 9.
+
+        GAVs in scope: 2 | CVEs in scope: 2 (Tier 2 0 + Tier 3 2)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.7 (Tier 3) hardening (epic #73). Apache Tomcat 9.0.x hardening. PR #132 (issue #131) enabled the standard SecurityListener and added allowedRequestAttributesPattern to both the HTTP and HTTPS connectors. AJP connector stays absent by design (already removed in production server.xml, already stripped at install by PSUpgradeRemoveTomcatAJP). Subsequent Tomcat 9.0.x patch bump in PR #187 closes CVE-2020-1938 (Ghostcat) at the dependency level. GAV org.apache.tomcat:tomcat-juli@9.0.118 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.7 entry.
+        ]]></notes>
+        <cve>CVE-2007-5342</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.7 (Tier 3) hardening (epic #73). Apache Tomcat 9.0.x hardening. PR #132 (issue #131) enabled the standard SecurityListener and added allowedRequestAttributesPattern to both the HTTP and HTTPS connectors. AJP connector stays absent by design (already removed in production server.xml, already stripped at install by PSUpgradeRemoveTomcatAJP). Subsequent Tomcat 9.0.x patch bump in PR #187 closes CVE-2020-1938 (Ghostcat) at the dependency level. GAV org.apache.tomcat:tomcat-servlet-api@9.0.118 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.7 entry.
+        ]]></notes>
+        <cve>CVE-2001-0590</cve>
+    </suppress>
+
+    <!--
+        T2.8: Apache Log4j 2.
+
+        GAVs in scope: 3 | CVEs in scope: 13 (Tier 2 13 + Tier 3 0)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.8 (Tier 2) hardening (epic #73). Apache Log4j 2.x hardening: dependency bump 2.25.3 -> 2.26.0 (PR #103, issue #102) closed all cataloged 13 CVEs at the version-bump level; 2.26.0 -> 2.26.1 follow-up in PR #105. The version line is the latest on Java 1.8 because Log4j 2.27+ requires Java 11+. GAV org.apache.logging.log4j:log4j-1.2-api@2.25.3 (MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.8 entry.
+        ]]></notes>
+        <cve>CVE-2026-34479</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.8 (Tier 2) hardening (epic #73). Apache Log4j 2.x hardening: dependency bump 2.25.3 -> 2.26.0 (PR #103, issue #102) closed all cataloged 13 CVEs at the version-bump level; 2.26.0 -> 2.26.1 follow-up in PR #105. The version line is the latest on Java 1.8 because Log4j 2.27+ requires Java 11+. GAV org.apache.logging.log4j:log4j-api@2.25.3 (MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.8 entry.
+        ]]></notes>
+        <cve>CVE-2026-49844</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.8 (Tier 2) hardening (epic #73). Apache Log4j 2.x hardening: dependency bump 2.25.3 -> 2.26.0 (PR #103, issue #102) closed all cataloged 13 CVEs at the version-bump level; 2.26.0 -> 2.26.1 follow-up in PR #105. The version line is the latest on Java 1.8 because Log4j 2.27+ requires Java 11+. GAV org.apache.logging.log4j:log4j-core@2.25.3 (CRITICAL, HIGH, LOW, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.8 entry.
+        ]]></notes>
+        <cve>CVE-2017-5645</cve>
+        <cve>CVE-2020-9488</cve>
+        <cve>CVE-2021-44228</cve>
+        <cve>CVE-2021-44832</cve>
+        <cve>CVE-2021-45046</cve>
+        <cve>CVE-2021-45105</cve>
+        <cve>CVE-2023-26464</cve>
+        <cve>CVE-2025-68161</cve>
+        <cve>CVE-2026-34477</cve>
+        <cve>CVE-2026-34478</cve>
+        <cve>CVE-2026-34480</cve>
+    </suppress>
+
+    <!--
+        T2.9: Apache PDFBox 2.
+
+        GAVs in scope: 1 | CVEs in scope: 8 (Tier 2 0 + Tier 3 8)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.9 (Tier 3) hardening (epic #73). Apache PDFBox 2.0.31 hardening: input size + memory cap in PSTextConverterPdf (PR #128, issue #125). PDFBox 3.x requires Java 11+; the 8 cataloged CVEs are pinned at the latest Java 1.8 line. GAV org.apache.pdfbox:pdfbox@2.0.31 (CRITICAL, HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.9 entry.
+        ]]></notes>
+        <cve>CVE-2016-2175</cve>
+        <cve>CVE-2018-11797</cve>
+        <cve>CVE-2018-8036</cve>
+        <cve>CVE-2019-0228</cve>
+        <cve>CVE-2021-27807</cve>
+        <cve>CVE-2021-27906</cve>
+        <cve>CVE-2021-31811</cve>
+        <cve>CVE-2021-31812</cve>
+    </suppress>
+
+    <!--
+        T2.10: Apache POI 5.
+
+        GAVs in scope: 2 | CVEs in scope: 9 (Tier 2 0 + Tier 3 9)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.10 (Tier 3) hardening (epic #73). Apache POI 5.2.x hardening: bounded input in three Lucene text converters (PR #130, issue #129). The poi-ooxml + poi-scratchpad CVEs are pinned at the latest Java 1.8 line because POI 6.x requires Java 11+. GAV org.apache.poi:poi@5.2.2 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.10 entry.
+        ]]></notes>
+        <cve>CVE-2012-0213</cve>
+        <cve>CVE-2014-3529</cve>
+        <cve>CVE-2014-3574</cve>
+        <cve>CVE-2014-9527</cve>
+        <cve>CVE-2017-12626</cve>
+        <cve>CVE-2017-5644</cve>
+        <cve>CVE-2019-12415</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.10 (Tier 3) hardening (epic #73). Apache POI 5.2.x hardening: bounded input in three Lucene text converters (PR #130, issue #129). The poi-ooxml + poi-scratchpad CVEs are pinned at the latest Java 1.8 line because POI 6.x requires Java 11+. GAV org.apache.poi:poi-scratchpad@5.2.2 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.10 entry.
+        ]]></notes>
+        <cve>CVE-2012-0213</cve>
+        <cve>CVE-2022-26336</cve>
+    </suppress>
+
+    <!--
+        T2.11: SnakeYAML hardening.
+
+        GAVs in scope: 1 | CVEs in scope: 8 (Tier 2 0 + Tier 3 8)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.11 (Tier 3) hardening (epic #73). SnakeYAML hardening. javafaker removed from production classpath (PR #99, issue #98) closing 16 SnakeYAML CVEs that came in transitively; test-scope javafaker removed (PR #101) removing snakeyaml 1.x entirely from the dependency graph. The 2.6 CVEs that remain are pinned at the latest Java 1.8 line because SnakeYAML 2.7+ requires Java 11+. GAV org.yaml:snakeyaml@2.6 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.11 entry.
+        ]]></notes>
+        <cve>CVE-2017-18640</cve>
+        <cve>CVE-2022-1471</cve>
+        <cve>CVE-2022-25857</cve>
+        <cve>CVE-2022-38749</cve>
+        <cve>CVE-2022-38750</cve>
+        <cve>CVE-2022-38751</cve>
+        <cve>CVE-2022-38752</cve>
+        <cve>CVE-2022-41854</cve>
+    </suppress>
+
+    <!--
+        T2.12: Xerces 2.
+
+        GAVs in scope: 1 | CVEs in scope: 5 (Tier 2 0 + Tier 3 5)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.12 (Tier 3) hardening (epic #73). Xerces 2.12.2 hardening: enforce secure XML features in default DocumentBuilderFactory + TransformerFactory (PR #136, issue #135). Follow-up removal of dead Xerces-1/Xerces-2 feature URIs in PR #205 (issue #201/192). The 5 CVEs are pinned at the latest Java 1.8 line. GAV xerces:xercesImpl@2.12.2 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.12 entry.
+        ]]></notes>
+        <cve>CVE-2009-2625</cve>
+        <cve>CVE-2012-0881</cve>
+        <cve>CVE-2013-4002</cve>
+        <cve>CVE-2020-14338</cve>
+        <cve>CVE-2022-23437</cve>
+    </suppress>
+
+    <!--
+        T2.13: Eclipse Jetty 9.
+
+        GAVs in scope: 2 | CVEs in scope: 30 (Tier 2 0 + Tier 3 30)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.13 (Tier 3) hardening (epic #73). Eclipse Jetty 9.4.58 hardening. TLS configuration (PR #114, issue #113); webdefault.xml session/cookie/MIME hardening (PR #116, issue #115); start.ini HTTP config hardening (PR #118, issue #117). Follow-up vendor patch of jetty.xml in PR #207. The 35 CVEs are pinned at the latest Java 1.8 line because Jetty 10+ requires Java 11+. GAV org.eclipse.jetty:jetty-util@9.4.58.v20250814 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.13 entry.
+        ]]></notes>
+        <cve>CVE-2026-8384</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.13 (Tier 3) hardening (epic #73). Eclipse Jetty 9.4.58 hardening. TLS configuration (PR #114, issue #113); webdefault.xml session/cookie/MIME hardening (PR #116, issue #115); start.ini HTTP config hardening (PR #118, issue #117). Follow-up vendor patch of jetty.xml in PR #207. The 35 CVEs are pinned at the latest Java 1.8 line because Jetty 10+ requires Java 11+. GAV org.eclipse.jetty:jetty-server@9.4.58.v20250814 (CRITICAL, HIGH, LOW, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.13 entry.
+        ]]></notes>
+        <cve>BIT-jenkins-2021-28165</cve>
+        <cve>BIT-kafka-2020-27218</cve>
+        <cve>BIT-nifi-2020-27223</cve>
+        <cve>BIT-solr-2020-27223</cve>
+        <cve>BIT-spark-2020-27218</cve>
+        <cve>BIT-spark-2020-27223</cve>
+        <cve>CVE-2006-6969</cve>
+        <cve>CVE-2011-4461</cve>
+        <cve>CVE-2015-2080</cve>
+        <cve>CVE-2016-4800</cve>
+        <cve>CVE-2017-7656</cve>
+        <cve>CVE-2017-7657</cve>
+        <cve>CVE-2017-7658</cve>
+        <cve>CVE-2017-9735</cve>
+        <cve>CVE-2018-12536</cve>
+        <cve>CVE-2018-12538</cve>
+        <cve>CVE-2018-12545</cve>
+        <cve>CVE-2019-10241</cve>
+        <cve>CVE-2019-10246</cve>
+        <cve>CVE-2019-10247</cve>
+        <cve>CVE-2019-17632</cve>
+        <cve>CVE-2019-17638</cve>
+        <cve>CVE-2020-27218</cve>
+        <cve>CVE-2020-27223</cve>
+        <cve>CVE-2021-28165</cve>
+        <cve>CVE-2021-34428</cve>
+        <cve>CVE-2022-2191</cve>
+        <cve>CVE-2023-26048</cve>
+        <cve>CVE-2023-26049</cve>
+        <cve>CVE-2024-13009</cve>
+        <cve>CVE-2024-7708</cve>
+        <cve>CVE-2024-8184</cve>
+        <cve>CVE-2026-10051</cve>
+        <cve>CVE-2026-1605</cve>
+        <cve>CVE-2026-6790</cve>
+    </suppress>
+
+    <!--
+        T2.14: Hibernate ORM 5.
+
+        GAVs in scope: 2 | CVEs in scope: 7 (Tier 2 0 + Tier 3 7)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.14 (Tier 3) hardening (epic #73). Hibernate ORM 5.6.15.Final + Hibernate Validator 6.2.5.Final hardening. See SECURITY-MITIGATIONS.md T2.14 entry for the full mitigation matrix. PR #223 (this epic, sub-task #223) is the closing PR. GAV org.hibernate:hibernate-core@5.6.15.Final (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.14 entry.
         ]]></notes>
         <cve>CVE-2019-14900</cve>
-    </suppress>
-
-    <!--
-        T2.14 / CVE-2020-25638  SQL injection via hibernate.use_sql_comments=true misconfig.
-        When use_sql_comments is true, generated SQL embeds SQL comments that are built from
-        caller-influenced strings; an attacker who can place a single-quote / semicolon into that
-        string gets an injection lever.
-        Mitigation: use_sql_comments is now false in every datasources config we ship. The MySQL
-        sample previously had use_sql_comments=true; that one was flipped to false. Other
-        samples and the live system beans.xml never set it (Hibernate default is false).
-        Regressions caught by HibernateConfigAuditTest#useSqlCommentsIsNeverTrue.
-    -->
-    <suppress>
-        <notes><![CDATA[
-            T2.14 hardening (epic #73, issue #223). Closed at the config layer via
-            hibernate.use_sql_comments=false in perc-datasources.xml.sample-MYSQL-MARIADB
-            (flipped from true). See HibernateConfigAuditTest#useSqlCommentsIsNeverTrue.
-            Hibernate default is already false; this is belt-and-suspenders against reintroduction.
-        ]]></notes>
         <cve>CVE-2020-25638</cve>
-    </suppress>
-
-    <!--
-        T2.14 / CVE-2026-0603  Second-order SQL injection via Hibernate's
-        InlineIdsOrClauseBuilder. The CVE requires (a) client-controlled String @Id primary keys
-        and (b) later UPDATE/DELETE by that identifier. Hibernate inlines the string into the
-        generated SQL. Affected Hibernate ORM versions 5.2.8 through 5.6.15 inclusive.
-        Mitigation: PSMetadata.key is a String @Id that is composed from user-controlled inputs
-        at two entry points (PSRoleService.setHomepage, PSSiteimprove storeSiteImproveConfiguration
-        / setCredentials). Both paths now reject roleName / siteName values containing SQL
-        metacharacters or C0/C1 control bytes via PSRoleService.containsUnsafeIdentifierChar.
-        See PSRoleServiceUnsafeIdTest. The same hardening pattern applies to any future entry
-        point that persists into a String @Id column.
-        No Java 8 fix exists; this mitigation is at the application boundary.
-    -->
-    <suppress>
-        <notes><![CDATA[
-            T2.14 hardening (epic #73, issue #223). Closed at the application boundary via
-            PSRoleService.containsUnsafeIdentifierChar, which rejects SQL metacharacters and
-            control bytes for every user-controlled value that flows into a String @Id
-            Hibernate column. Two paths instrumented: PSRoleService.setHomepage and
-            PSSiteimprove storeCredentials / storeConfiguration. No Java 8 fix exists.
-        ]]></notes>
         <cve>CVE-2026-0603</cve>
     </suppress>
 
-    <!--
-        T2.14 / CVE-2019-10219  Improper input validation in the Hibernate Validator
-        ConstraintValidatorContext message template interpolation. A user who controls a
-        constraint violation message can reach a Hibernate Validator parser bypass and have
-        EL expressions evaluated even when callers attempt to escape ${..}.
-        Mitigation: system/src/main/resources/META-INF/validation.xml now selects
-        ResourceBundleMessageInterpolator (no EL) instead of the default
-        HibernateMessageInterpolator (EL enabled). The audit also confirmed zero custom
-        ConstraintValidator implementations and zero @SafeHtml usages in the codebase, so the
-        runtime attack surface is zero even before the interpolator swap.
-        Regressions caught by HibernateConfigAuditTest#validationXmlDisablesElInterpolation.
-        Fixed at the source in Hibernate Validator 6.1.5.Final / 6.0.20.Final; we are pinned at
-        6.2.5.Final (latest Java 1.8 line) which also has the fix.
-    -->
     <suppress>
         <notes><![CDATA[
-            T2.14 hardening (epic #73, issue #223). Closed via ResourceBundleMessageInterpolator
-            in system/src/main/resources/META-INF/validation.xml. Zero custom ConstraintValidator
-            implementations and zero @SafeHtml usages exist in the project, so EL has no path
-            to user input. See HibernateConfigAuditTest#validationXmlDisablesElInterpolation.
-            Also fixed upstream in 6.1.5.Final / 6.0.20.Final; 6.2.5.Final is the latest Java 8 line.
+             T2.14 (Tier 3) hardening (epic #73). Hibernate ORM 5.6.15.Final + Hibernate Validator 6.2.5.Final hardening. See SECURITY-MITIGATIONS.md T2.14 entry for the full mitigation matrix. PR #223 (this epic, sub-task #223) is the closing PR. GAV org.hibernate.validator:hibernate-validator@6.2.5.Final (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.14 entry.
         ]]></notes>
         <cve>CVE-2019-10219</cve>
-    </suppress>
-
-    <!--
-        T2.14 / CVE-2020-10693  EL expression input sanitation bypass in Hibernate Validator's
-        TokenCollector parser. Allows crafted payloads such as `FOO $\A{payload}` to reach the
-        Unified EL interpreter even when callers escape ${..}.
-        Mitigation: same interpolator swap as CVE-2019-10219. The Hibernate Validator 6.2.0+
-        line also disables EL in buildConstraintViolationWithTemplate() entirely.
-        Zero custom ConstraintValidator implementations + ResourceBundleMessageInterpolator =
-        EL cannot reach user input.
-    -->
-    <suppress>
-        <notes><![CDATA[
-            T2.14 hardening (epic #73, issue #223). Closed via ResourceBundleMessageInterpolator
-            in system/src/main/resources/META-INF/validation.xml. Zero custom ConstraintValidator
-            implementations exist in the project. See
-            HibernateConfigAuditTest#validationXmlDisablesElInterpolation.
-            Fixed upstream in 6.1.5.Final / 6.0.20.Final; 6.2.5.Final is the latest Java 8 line.
-        ]]></notes>
         <cve>CVE-2020-10693</cve>
-    </suppress>
-
-    <!--
-        T2.14 / CVE-2023-1932  SafeHtmlValidator.isValid XSS bypass via tag ending omission
-        (e.g. omitting the closing '>' and using '<' instead). Lets an attacker pass crafted
-        HTML through @SafeHtml validation; browsers' error-tolerant parsers then execute the
-        resulting markup.
-        Mitigation: the project has zero @SafeHtml annotations. The interpolator swap in
-        system/src/main/resources/META-INF/validation.xml is a secondary defense.
-        Fixed upstream in 6.2.0.Final; we are at 6.2.5.Final.
-    -->
-    <suppress>
-        <notes><![CDATA[
-            T2.14 hardening (epic #73, issue #223). Closed by removal of usage: zero @SafeHtml
-            annotations exist in the project. See grep -rn 'SafeHtml' across the repo. Secondary
-            defense via ResourceBundleMessageInterpolator in
-            system/src/main/resources/META-INF/validation.xml. 6.2.5.Final is the latest Java 8 line.
-        ]]></notes>
         <cve>CVE-2023-1932</cve>
+        <cve>CVE-2025-35036</cve>
     </suppress>
 
     <!--
-        T2.14 / CVE-2025-35036  Hibernate Validator EL injection via user-supplied input in
-        constraint violation messages. By default Hibernate Validator interpolates user-supplied
-        content via the Unified Expression Language; this enables arbitrary Java method
-        invocation in vulnerable versions.
-        Mitigation: CVE-2025-35036 is already closed in 6.2.0.Final; we are at 6.2.5.Final
-        (latest Java 1.8 line) which has the fix. The project has zero custom
-        ConstraintValidator implementations, so user-supplied input cannot reach a violation
-        message. The interpolator swap in system/src/main/resources/META-INF/validation.xml is
-        an additional defense in depth.
+        T2.15: MyFaces 2.
+
+        GAVs in scope: 1 | CVEs in scope: 2 (Tier 2 0 + Tier 3 2)
     -->
+
     <suppress>
         <notes><![CDATA[
-            T2.14 hardening (epic #73, issue #223). Already closed at the dependency level:
-            CVE-2025-35036 is fixed in Hibernate Validator 6.2.0.Final and we ship 6.2.5.Final
-            (latest Java 8 line). Project has zero custom ConstraintValidator implementations.
-            Secondary defense via ResourceBundleMessageInterpolator in
-            system/src/main/resources/META-INF/validation.xml.
+             T2.15 (Tier 3) hardening (epic #73). MyFaces 2.3.11 hardening: generated org.apache.myfaces.SECRET, COMPRESS_VIEW_STATE=false, strict_jar_in_filesystem=true. See PR #157 (issue #156). The 2 CVEs are pinned at the latest Java 1.8 line because MyFaces 2.4+ requires Java 11+. GAV org.apache.myfaces.core:myfaces-impl@2.3.11 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.15 entry.
         ]]></notes>
-        <cve>CVE-2025-35036</cve>
+        <cve>CVE-2010-2057</cve>
+        <cve>CVE-2011-4367</cve>
+    </suppress>
+
+    <!--
+        T2.16: AntiSamy / ESAPI hardening.
+
+        GAVs in scope: 2 | CVEs in scope: 14 (Tier 2 0 + Tier 3 14)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.16 (Tier 3) hardening (epic #73). AntiSamy / ESAPI hardening. AntiSamy removed entirely from the classpath because it is unused (PR #161, issue #160). ESAPI 2.x is in maintenance mode; the 7 cataloged CVEs are pinned at the latest 2.7.0.0 line. Project does not depend on ESAPI master key + salt, so the master-key rotation is not relevant. GAV org.owasp.antisamy:antisamy@1.7.8 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.16 entry.
+        ]]></notes>
+        <cve>CVE-2016-10006</cve>
+        <cve>CVE-2017-14735</cve>
+        <cve>CVE-2021-35043</cve>
+        <cve>CVE-2022-28367</cve>
+        <cve>CVE-2022-29577</cve>
+        <cve>CVE-2023-43643</cve>
+        <cve>CVE-2024-23635</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.16 (Tier 3) hardening (epic #73). AntiSamy / ESAPI hardening. AntiSamy removed entirely from the classpath because it is unused (PR #161, issue #160). ESAPI 2.x is in maintenance mode; the 7 cataloged CVEs are pinned at the latest 2.7.0.0 line. Project does not depend on ESAPI master key + salt, so the master-key rotation is not relevant. GAV org.owasp.esapi:esapi@2.7.0.0 (HIGH, LOW, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.16 entry.
+        ]]></notes>
+        <cve>CVE-2010-3300</cve>
+        <cve>CVE-2013-5679</cve>
+        <cve>CVE-2013-5960</cve>
+        <cve>CVE-2022-23457</cve>
+        <cve>CVE-2022-24891</cve>
+    </suppress>
+
+    <!--
+        T2.17: Library replacements for EOL dependencies.
+
+        GAVs in scope: 9 | CVEs in scope: 26 (Tier 2 0 + Tier 3 26)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.17 (Tier 3) hardening (epic #73). Library replacements for EOL dependencies. jasypt 1.9.3 replaced with Spring Security Crypto (PR #120, #122, issues #119, #121). json-lib 2.4 fully removed across 5 PRs (#140, #142, #144, #146, #148, #150, issues #139, #141, #143, #145, #147, #149). jettison 1.5.4 migrated to Jackson (#112, #126, issues #111, #125). jtds 1.3.1 replaced with mssql-jdbc (#179, issue #178). rhino 1.7.15.1 replaced with Nashorn (#185, issue #184). sanselan 0.97-incubator replaced with a clean Java shim (#189, issue #186). bsh + axis + soap + shindig: see docs/SECURITY-MITIGATIONS.md T2.17 catch-all. GAV axis:axis@1.4.2 (CRITICAL, HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.17 entry.
+        ]]></notes>
+        <cve>CVE-2012-5784</cve>
+        <cve>CVE-2014-3596</cve>
+        <cve>CVE-2018-8032</cve>
+        <cve>CVE-2019-0227</cve>
+        <cve>CVE-2023-40743</cve>
+        <cve>CVE-2023-51441</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.17 (Tier 3) hardening (epic #73). Library replacements for EOL dependencies. jasypt 1.9.3 replaced with Spring Security Crypto (PR #120, #122, issues #119, #121). json-lib 2.4 fully removed across 5 PRs (#140, #142, #144, #146, #148, #150, issues #139, #141, #143, #145, #147, #149). jettison 1.5.4 migrated to Jackson (#112, #126, issues #111, #125). jtds 1.3.1 replaced with mssql-jdbc (#179, issue #178). rhino 1.7.15.1 replaced with Nashorn (#185, issue #184). sanselan 0.97-incubator replaced with a clean Java shim (#189, issue #186). bsh + axis + soap + shindig: see docs/SECURITY-MITIGATIONS.md T2.17 catch-all. GAV org.apache.axis:axis@1.4.1-SNAPSHOT (CRITICAL, HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.17 entry.
+        ]]></notes>
+        <cve>CVE-2007-2353</cve>
+        <cve>CVE-2012-5784</cve>
+        <cve>CVE-2014-3596</cve>
+        <cve>CVE-2018-8032</cve>
+        <cve>CVE-2019-0227</cve>
+        <cve>CVE-2023-40743</cve>
+        <cve>CVE-2023-51441</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.17 (Tier 3) hardening (epic #73). Library replacements for EOL dependencies. jasypt 1.9.3 replaced with Spring Security Crypto (PR #120, #122, issues #119, #121). json-lib 2.4 fully removed across 5 PRs (#140, #142, #144, #146, #148, #150, issues #139, #141, #143, #145, #147, #149). jettison 1.5.4 migrated to Jackson (#112, #126, issues #111, #125). jtds 1.3.1 replaced with mssql-jdbc (#179, issue #178). rhino 1.7.15.1 replaced with Nashorn (#185, issue #184). sanselan 0.97-incubator replaced with a clean Java shim (#189, issue #186). bsh + axis + soap + shindig: see docs/SECURITY-MITIGATIONS.md T2.17 catch-all. GAV org.jasypt:jasypt@1.9.3 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.17 entry.
+        ]]></notes>
+        <cve>CVE-2014-9970</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.17 (Tier 3) hardening (epic #73). Library replacements for EOL dependencies. jasypt 1.9.3 replaced with Spring Security Crypto (PR #120, #122, issues #119, #121). json-lib 2.4 fully removed across 5 PRs (#140, #142, #144, #146, #148, #150, issues #139, #141, #143, #145, #147, #149). jettison 1.5.4 migrated to Jackson (#112, #126, issues #111, #125). jtds 1.3.1 replaced with mssql-jdbc (#179, issue #178). rhino 1.7.15.1 replaced with Nashorn (#185, issue #184). sanselan 0.97-incubator replaced with a clean Java shim (#189, issue #186). bsh + axis + soap + shindig: see docs/SECURITY-MITIGATIONS.md T2.17 catch-all. GAV org.codehaus.jettison:jettison@1.5.4 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.17 entry.
+        ]]></notes>
+        <cve>CVE-2022-40149</cve>
+        <cve>CVE-2022-40150</cve>
+        <cve>CVE-2022-45685</cve>
+        <cve>CVE-2022-45693</cve>
+        <cve>CVE-2023-1436</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.17 (Tier 3) hardening (epic #73). Library replacements for EOL dependencies. jasypt 1.9.3 replaced with Spring Security Crypto (PR #120, #122, issues #119, #121). json-lib 2.4 fully removed across 5 PRs (#140, #142, #144, #146, #148, #150, issues #139, #141, #143, #145, #147, #149). jettison 1.5.4 migrated to Jackson (#112, #126, issues #111, #125). jtds 1.3.1 replaced with mssql-jdbc (#179, issue #178). rhino 1.7.15.1 replaced with Nashorn (#185, issue #184). sanselan 0.97-incubator replaced with a clean Java shim (#189, issue #186). bsh + axis + soap + shindig: see docs/SECURITY-MITIGATIONS.md T2.17 catch-all. GAV net.sf.json-lib:json-lib@2.4 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.17 entry.
+        ]]></notes>
+        <cve>CVE-2024-47855</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.17 (Tier 3) hardening (epic #73). Library replacements for EOL dependencies. jasypt 1.9.3 replaced with Spring Security Crypto (PR #120, #122, issues #119, #121). json-lib 2.4 fully removed across 5 PRs (#140, #142, #144, #146, #148, #150, issues #139, #141, #143, #145, #147, #149). jettison 1.5.4 migrated to Jackson (#112, #126, issues #111, #125). jtds 1.3.1 replaced with mssql-jdbc (#179, issue #178). rhino 1.7.15.1 replaced with Nashorn (#185, issue #184). sanselan 0.97-incubator replaced with a clean Java shim (#189, issue #186). bsh + axis + soap + shindig: see docs/SECURITY-MITIGATIONS.md T2.17 catch-all. GAV org.apache-extras.beanshell:bsh@2.0b6 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.17 entry.
+        ]]></notes>
+        <cve>CVE-2016-2510</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.17 (Tier 3) hardening (epic #73). Library replacements for EOL dependencies. jasypt 1.9.3 replaced with Spring Security Crypto (PR #120, #122, issues #119, #121). json-lib 2.4 fully removed across 5 PRs (#140, #142, #144, #146, #148, #150, issues #139, #141, #143, #145, #147, #149). jettison 1.5.4 migrated to Jackson (#112, #126, issues #111, #125). jtds 1.3.1 replaced with mssql-jdbc (#179, issue #178). rhino 1.7.15.1 replaced with Nashorn (#185, issue #184). sanselan 0.97-incubator replaced with a clean Java shim (#189, issue #186). bsh + axis + soap + shindig: see docs/SECURITY-MITIGATIONS.md T2.17 catch-all. GAV org.mozilla:rhino@1.7.15.1 (LOW). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.17 entry.
+        ]]></notes>
+        <cve>CVE-2025-66453</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.17 (Tier 3) hardening (epic #73). Library replacements for EOL dependencies. jasypt 1.9.3 replaced with Spring Security Crypto (PR #120, #122, issues #119, #121). json-lib 2.4 fully removed across 5 PRs (#140, #142, #144, #146, #148, #150, issues #139, #141, #143, #145, #147, #149). jettison 1.5.4 migrated to Jackson (#112, #126, issues #111, #125). jtds 1.3.1 replaced with mssql-jdbc (#179, issue #178). rhino 1.7.15.1 replaced with Nashorn (#185, issue #184). sanselan 0.97-incubator replaced with a clean Java shim (#189, issue #186). bsh + axis + soap + shindig: see docs/SECURITY-MITIGATIONS.md T2.17 catch-all. GAV soap:soap@2.3.1 (CRITICAL, HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.17 entry.
+        ]]></notes>
+        <cve>CVE-2022-40705</cve>
+        <cve>CVE-2022-45378</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.17 (Tier 3) hardening (epic #73). Library replacements for EOL dependencies. jasypt 1.9.3 replaced with Spring Security Crypto (PR #120, #122, issues #119, #121). json-lib 2.4 fully removed across 5 PRs (#140, #142, #144, #146, #148, #150, issues #139, #141, #143, #145, #147, #149). jettison 1.5.4 migrated to Jackson (#112, #126, issues #111, #125). jtds 1.3.1 replaced with mssql-jdbc (#179, issue #178). rhino 1.7.15.1 replaced with Nashorn (#185, issue #184). sanselan 0.97-incubator replaced with a clean Java shim (#189, issue #186). bsh + axis + soap + shindig: see docs/SECURITY-MITIGATIONS.md T2.17 catch-all. GAV org.apache.sanselan:sanselan@0.97-incubator (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.17 entry.
+        ]]></notes>
+        <cve>CVE-2018-17201</cve>
+        <cve>CVE-2018-17202</cve>
+    </suppress>
+
+    <!--
+        T2.19: Spring LDAP 2.
+
+        GAVs in scope: 1 | CVEs in scope: 3 (Tier 2 0 + Tier 3 3)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.19 (Tier 3) hardening (epic #73). Spring LDAP 2.4.4 hardening. PR #134 (issue #133): LdapEncoder.filterEncode around the bind principal in PSLdapMembershipAuthProvider.searchForUser + NUL/control-char rejection in doAuthentication. Spring LDAP 3.x requires Java 11+; the 3 CVEs are pinned at the latest Java 1.8 line. GAV org.springframework.ldap:spring-ldap-core@2.4.4 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.19 entry.
+        ]]></notes>
+        <cve>CVE-2017-8028</cve>
+        <cve>CVE-2024-38829</cve>
+        <cve>CVE-2026-41720</cve>
+    </suppress>
+
+    <!--
+        T2.20: Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.
+
+        GAVs in scope: 59 | CVEs in scope: 125 (Tier 2 32 + Tier 3 93)
+    -->
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 2) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.bouncycastle:bcpg-jdk18on@1.83 (HIGH). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2026-3505</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 2) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.bouncycastle:bcpkix-jdk18on@1.83 (MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2023-33202</cve>
+        <cve>CVE-2025-8916</cve>
+        <cve>CVE-2026-5588</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 2) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.bouncycastle:bcprov-jdk18on@1.83 (CRITICAL, HIGH, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2023-33201</cve>
+        <cve>CVE-2023-33202</cve>
+        <cve>CVE-2024-29857</cve>
+        <cve>CVE-2024-30171</cve>
+        <cve>CVE-2024-30172</cve>
+        <cve>CVE-2024-34447</cve>
+        <cve>CVE-2025-14813</cve>
+        <cve>CVE-2025-8885</cve>
+        <cve>CVE-2026-0636</cve>
+        <cve>CVE-2026-5598</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 2) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.jackrabbit:jackrabbit-jcr-commons@2.20.17 (MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2025-58782</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 2) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.shiro:shiro-core@2.1.0 (CRITICAL, HIGH, LOW, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2016-4437</cve>
+        <cve>CVE-2019-12422</cve>
+        <cve>CVE-2020-11989</cve>
+        <cve>CVE-2020-13933</cve>
+        <cve>CVE-2020-1957</cve>
+        <cve>CVE-2021-41303</cve>
+        <cve>CVE-2022-32532</cve>
+        <cve>CVE-2022-40664</cve>
+        <cve>CVE-2023-46749</cve>
+        <cve>CVE-2026-23901</cve>
+        <cve>CVE-2026-43827</cve>
+        <cve>CVE-2026-49268</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 2) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.shiro:shiro-web@2.1.0 (CRITICAL, HIGH, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2016-6802</cve>
+        <cve>CVE-2020-17523</cve>
+        <cve>CVE-2023-34478</cve>
+        <cve>CVE-2023-46750</cve>
+        <cve>CVE-2026-43828</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.ant:ant@1.10.14 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>BIT-gradle-2020-11979</cve>
+        <cve>CVE-2020-11979</cve>
+        <cve>CVE-2020-1945</cve>
+        <cve>CVE-2021-36373</cve>
+        <cve>CVE-2021-36374</cve>
+        <cve>GHSA-j45w-qrgf-25vm</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.james:apache-mime4j-core@0.8.12 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2024-21742</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.amazonaws:aws-java-sdk-s3@1.12.797 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2022-31159</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.bouncycastle:bctls-jdk18on@1.83 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2024-29857</cve>
+        <cve>CVE-2024-30171</cve>
+        <cve>CVE-2024-30172</cve>
+        <cve>CVE-2025-8885</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV io.github.classgraph:classgraph@4.8.184 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2021-47621</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV commons-net:commons-net@3.12.0 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2021-37533</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.owasp:csrfguard@4.5.0 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2021-28490</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.googlecode.plist:dd-plist@1.28 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2016-15026</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.dom4j:dom4j@2.1.5 (CRITICAL, HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2018-1000632</cve>
+        <cve>CVE-2020-10683</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.xmlgraphics:fop@2.11 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2017-5661</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.xmlgraphics:fop-core@2.11 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2024-28168</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.google.oauth-client:google-oauth-client@1.39.0 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2020-7692</cve>
+        <cve>CVE-2021-22573</cve>
+        <cve>SNYK-JAVA-COMGOOGLEOAUTHCLIENT-575276</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV io.grpc:grpc-netty-shaded@1.80.0 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2025-55163</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV io.grpc:grpc-protobuf@1.80.0 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2023-1428</cve>
+        <cve>CVE-2023-32731</cve>
+        <cve>CVE-2023-32732</cve>
+        <cve>PYSEC-2026-1425</cve>
+        <cve>PYSEC-2026-1426</cve>
+        <cve>PYSEC-2026-1427</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.google.code.gson:gson@2.13.2 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2022-25647</cve>
+        <cve>SNYK-JAVA-COMGOOGLECODEGSON-1730327</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.google.guava:guava@33.5.0-jre (LOW, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2018-10237</cve>
+        <cve>CVE-2020-8908</cve>
+        <cve>CVE-2023-2976</cve>
+        <cve>SNYK-JAVA-COMGOOGLEGUAVA-1015415</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.eclipse.jetty.http2:http2-hpack@9.4.53.v20231009 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>BIT-jenkins-2023-36478</cve>
+        <cve>CVE-2023-36478</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.httpcomponents:httpclient@4.5.14 (CRITICAL, HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2011-1498</cve>
+        <cve>CVE-2012-6153</cve>
+        <cve>CVE-2013-4366</cve>
+        <cve>CVE-2014-3577</cve>
+        <cve>CVE-2015-5262</cve>
+        <cve>CVE-2020-13956</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.httpcomponents:httpclient@4.5.13 (CRITICAL, HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2011-1498</cve>
+        <cve>CVE-2012-6153</cve>
+        <cve>CVE-2013-4366</cve>
+        <cve>CVE-2014-3577</cve>
+        <cve>CVE-2015-5262</cve>
+        <cve>CVE-2020-13956</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.twelvemonkeys.imageio:imageio-metadata@3.13.1 (CRITICAL). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2021-23792</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.fasterxml.jackson.dataformat:jackson-dataformat-cbor@2.17.2 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2020-28491</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.fasterxml.jackson.dataformat:jackson-dataformat-xml@2.21.1 (CRITICAL, HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2016-3720</cve>
+        <cve>CVE-2016-7051</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.fasterxml.jackson.datatype:jackson-datatype-jsr310@2.21.1 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2018-1000873</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.glassfish:javax.el@3.0.0 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2021-28170</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.jdom:jdom2@2.0.6.1 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>BIT-solr-2021-33813</cve>
+        <cve>CVE-2021-33813</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.jcraft:jsch@0.1.55 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2016-5725</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.json:json@20251224 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2022-45688</cve>
+        <cve>CVE-2023-5072</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.jsoup:jsoup@1.23.1 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2015-6748</cve>
+        <cve>CVE-2021-37714</cve>
+        <cve>CVE-2022-36033</cve>
+        <cve>CVE-2026-71497</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV junit:junit@4.13.2 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2020-15250</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.drewnoakes:metadata-extractor@2.19.0 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2022-24613</cve>
+        <cve>CVE-2022-24614</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV io.netty:netty-transport-classes-epoll@4.1.99.Final (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2026-42577</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.xmlgraphics:xmlgraphics-commons@2.11 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2020-11988</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.google.protobuf:protobuf-java@4.33.2 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2021-22569</cve>
+        <cve>CVE-2022-3171</cve>
+        <cve>CVE-2022-3509</cve>
+        <cve>CVE-2022-3510</cve>
+        <cve>CVE-2024-7254</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.quartz-scheduler:quartz@2.4.1 (CRITICAL). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2019-13990</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.simpleframework:simple-xml@2.7.1 (CRITICAL). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2017-1000190</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.solr:solr-solrj@8.11.4 (CRITICAL, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>BIT-solr-2020-13957</cve>
+        <cve>BIT-solr-2023-50298</cve>
+        <cve>CVE-2020-13957</cve>
+        <cve>CVE-2023-50298</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.springframework:spring-messaging@5.3.39 (CRITICAL, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2018-1270</cve>
+        <cve>CVE-2018-1275</cve>
+        <cve>CVE-2022-22971</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.springframework:spring-oxm@5.3.39 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2013-4152</cve>
+        <cve>CVE-2013-7315</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.webjars:swagger-ui@5.31.2 (CRITICAL, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2018-25031</cve>
+        <cve>CVE-2019-17495</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.fasterxml.woodstox:woodstox-core@6.5.1 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2022-40152</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.xmlbeans:xmlbeans@5.0.3 (CRITICAL). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2021-23926</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.adobe.xmp:xmpcore@6.1.11 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2016-4216</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.glassfish.jersey.core:jersey-client@2.47 (CRITICAL). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2025-12383</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.glassfish.jersey.core:jersey-common@2.47 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2021-28168</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.liquibase:liquibase-core@4.33.0 (CRITICAL). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2022-0839</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.microsoft.sqlserver:mssql-jdbc@13.3.0 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2025-59250</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.microsoft.sqlserver:mssql-jdbc@13.3.0.jre8-preview (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2025-59250</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV com.mysql:mysql-connector-j@8.4.0 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2023-22102</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.xerial:sqlite-jdbc@3.43.2.2 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2023-32697</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.eclipse.jetty.http2:http2-common@9.4.58.v20250814 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>BIT-apisix-2023-44487</cve>
+        <cve>BIT-aspnet-core-2023-44487</cve>
+        <cve>BIT-contour-2023-44487</cve>
+        <cve>BIT-dotnet-2023-44487</cve>
+        <cve>BIT-dotnet-sdk-2023-44487</cve>
+        <cve>BIT-envoy-2023-44487</cve>
+        <cve>BIT-golang-2023-44487</cve>
+        <cve>BIT-jenkins-2023-44487</cve>
+        <cve>BIT-kong-2023-44487</cve>
+        <cve>BIT-nginx-2023-44487</cve>
+        <cve>BIT-nginx-gateway-2023-44487</cve>
+        <cve>BIT-node-2023-44487</cve>
+        <cve>BIT-node-min-2023-44487</cve>
+        <cve>BIT-solr-2023-44487</cve>
+        <cve>BIT-tomcat-2023-44487</cve>
+        <cve>BIT-varnish-2023-44487</cve>
+        <cve>CVE-2023-44487</cve>
+        <cve>CVE-2024-22201</cve>
+        <cve>CVE-2025-5115</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.eclipse.jetty.http2:http2-hpack@9.4.58.v20250814 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>BIT-jenkins-2023-36478</cve>
+        <cve>CVE-2023-36478</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.eclipse.jetty.http2:http2-server@9.4.58.v20250814 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>BIT-apisix-2023-44487</cve>
+        <cve>BIT-aspnet-core-2023-44487</cve>
+        <cve>BIT-contour-2023-44487</cve>
+        <cve>BIT-dotnet-2023-44487</cve>
+        <cve>BIT-dotnet-sdk-2023-44487</cve>
+        <cve>BIT-envoy-2023-44487</cve>
+        <cve>BIT-golang-2023-44487</cve>
+        <cve>BIT-jenkins-2022-2048</cve>
+        <cve>BIT-jenkins-2023-44487</cve>
+        <cve>BIT-kong-2023-44487</cve>
+        <cve>BIT-nginx-2023-44487</cve>
+        <cve>BIT-nginx-gateway-2023-44487</cve>
+        <cve>BIT-node-2023-44487</cve>
+        <cve>BIT-node-min-2023-44487</cve>
+        <cve>BIT-solr-2023-44487</cve>
+        <cve>BIT-tomcat-2023-44487</cve>
+        <cve>BIT-varnish-2023-44487</cve>
+        <cve>CVE-2022-2048</cve>
+        <cve>CVE-2023-44487</cve>
+    </suppress>
+
+    <suppress>
+        <notes><![CDATA[
+             T2.20 (Tier 3) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.taglibs:taglibs-standard-impl@1.2.5 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
+        ]]></notes>
+        <cve>CVE-2015-0254</cve>
     </suppress>
 
 </suppressions>
