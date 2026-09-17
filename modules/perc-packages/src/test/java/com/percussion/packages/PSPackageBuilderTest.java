@@ -148,7 +148,28 @@ public class PSPackageBuilderTest {
         || lower.endsWith(".css")
         || lower.endsWith(".txt")
         || lower.endsWith(".md")
-        || lower.endsWith(".extension");
+        || lower.endsWith(".extension")
+        // Percussion package files use custom extensions but are XML under the hood; their
+        // whitespace/EOL/attribute ordering may legitimately differ between releases (see #221).
+        || lower.endsWith(".acldef")
+        || lower.endsWith(".application")
+        || lower.endsWith(".contenttype")
+        || lower.endsWith(".itemdef")
+        || lower.endsWith(".nodedef")
+        || lower.endsWith(".schemadef")
+        || lower.endsWith(".templatedef")
+        || lower.endsWith(".filterdef")
+        || lower.endsWith(".workflowdef")
+        || lower.endsWith(".relationshipdef")
+        || lower.endsWith(".sharedgroup")
+        || lower.endsWith(".keyword")
+        || lower.endsWith(".schema")
+        || lower.endsWith(".xsl")
+        || lower.endsWith(".stylesheet")
+        || lower.endsWith(".acl")
+        || lower.endsWith(".slotdef")
+        || lower.endsWith(".jsp")
+        || lower.endsWith(".svg");
   }
 
   /** Reads all entries (files and directories) from a zip file into a name-to-content map. */
