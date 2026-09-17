@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  T2.14 hardening (parent epic #73, issue #223):
+  Hibernate Validator's default MessageInterpolator (HibernateMessageInterpolator) evaluates
+  the Unified Expression Language in constraint violation messages. CVE-2019-10219 and
+  CVE-2020-10693 ship a parser bug that lets attackers bypass escaping in the TokenCollector
+  state machine; CVE-2025-35036 is the umbrella for EL injection through user-supplied
+  constraint messages.
+
+  Switching to ResourceBundleMessageInterpolator drops EL evaluation entirely. Constraint
+  messages still resolve {parameter} placeholders against ValidationMessages.properties, but
+  any ${...} EL expression is treated as literal text. The runtime attack surface in this
+  project is also zero today: there are no custom ConstraintValidator implementations and no
+  @SafeHtml annotations in the codebase, so user input never reaches a violation message.
+  This is the defense-in-depth lock-down.
+
+  See:
+    CVE-2019-10219 / CVE-2020-10693  https://github.com/hibernate/hibernate-validator/security/advisories
+    CVE-2025-35036                   https://nvd.nist.gov/vuln/detail/CVE-2025-35036
+    Hibernate Validator reference    https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#chapter-message-interpolation
+-->
+<validation-config
+    xmlns="http://xmlns.jcp.org/xml/ns/validation/configuration"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/validation/configuration
+                        http://xmlns.jcp.org/xml/ns/validation/configuration/configuration-2.0.xsd">
+    <message-interpolator>org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator</message-interpolator>
+</validation-config>

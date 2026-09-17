@@ -1,11 +1,168 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
-    <!-- example to suppress a false  warning
+
+    <!--
+        OWASP dependency-check suppression file.
+
+        Each suppression documents a specific CVE/GAV pair and the precise mitigation applied
+        at the call site, in configuration, or by a dependency pin. Suppressions reference the
+        parent epic issue and the sub-task issue they were closed under.
+
+        Suppressions added under parent epic #73, sub-task T2.14 (issue #223) for
+        org.hibernate:hibernate-core@5.6.15.Final and
+        org.hibernate.validator:hibernate-validator@6.2.5.Final.
+    -->
+
+    <!--
+        T2.14 / CVE-2019-14900  JPA Criteria API SQL injection via unsanitized literals in
+        SELECT/GROUP BY. The injection lever is hibernate.criteria.literal_handling_mode; when
+        it is left at the default Hibernate can still inline literals for some dialects.
+        Mitigation: literal_handling_mode is set to 'bind' on every Hibernate property block we
+        ship (delivery-tier MySQL/MSSQL/Oracle sample datasources + system/ear config +
+        per-webapp perc-datasources.xml). Hibernate then binds Criteria literals as JDBC
+        parameters and the inline-rendering path is closed. Regressions are caught by
+        modules/perc-security-utils/src/test/java/com/percussion/security/audit/HibernateConfigAuditTest.java.
+        Fix exists in 5.3.18 / 5.4.18 / 5.5.0.Beta1+; we are pinned at 5.6.15.Final because it is
+        the latest Java 1.8 line and the newer lines drop Java 1.8.
+    -->
     <suppress>
         <notes><![CDATA[
-         Suppress all dependencies for CVE-2018-1258 (https://pivotal.io/security/cve-2018-1258)
+            T2.14 hardening (epic #73, issue #223). Closed at the config layer via
+            hibernate.criteria.literal_handling_mode=bind everywhere Hibernate properties are
+            configured. See HibernateConfigAuditTest#criteriaLiteralHandlingModeIsBindWhereverSet.
+            No Java 8 fix exists at a newer line; we are pinned at the latest Java 8 line.
         ]]></notes>
-        <cve>CVE-2018-1258</cve>
+        <cve>CVE-2019-14900</cve>
     </suppress>
-     -->
+
+    <!--
+        T2.14 / CVE-2020-25638  SQL injection via hibernate.use_sql_comments=true misconfig.
+        When use_sql_comments is true, generated SQL embeds SQL comments that are built from
+        caller-influenced strings; an attacker who can place a single-quote / semicolon into that
+        string gets an injection lever.
+        Mitigation: use_sql_comments is now false in every datasources config we ship. The MySQL
+        sample previously had use_sql_comments=true; that one was flipped to false. Other
+        samples and the live system beans.xml never set it (Hibernate default is false).
+        Regressions caught by HibernateConfigAuditTest#useSqlCommentsIsNeverTrue.
+    -->
+    <suppress>
+        <notes><![CDATA[
+            T2.14 hardening (epic #73, issue #223). Closed at the config layer via
+            hibernate.use_sql_comments=false in perc-datasources.xml.sample-MYSQL-MARIADB
+            (flipped from true). See HibernateConfigAuditTest#useSqlCommentsIsNeverTrue.
+            Hibernate default is already false; this is belt-and-suspenders against reintroduction.
+        ]]></notes>
+        <cve>CVE-2020-25638</cve>
+    </suppress>
+
+    <!--
+        T2.14 / CVE-2026-0603  Second-order SQL injection via Hibernate's
+        InlineIdsOrClauseBuilder. The CVE requires (a) client-controlled String @Id primary keys
+        and (b) later UPDATE/DELETE by that identifier. Hibernate inlines the string into the
+        generated SQL. Affected Hibernate ORM versions 5.2.8 through 5.6.15 inclusive.
+        Mitigation: PSMetadata.key is a String @Id that is composed from user-controlled inputs
+        at two entry points (PSRoleService.setHomepage, PSSiteimprove storeSiteImproveConfiguration
+        / setCredentials). Both paths now reject roleName / siteName values containing SQL
+        metacharacters or C0/C1 control bytes via PSRoleService.containsUnsafeIdentifierChar.
+        See PSRoleServiceUnsafeIdTest. The same hardening pattern applies to any future entry
+        point that persists into a String @Id column.
+        No Java 8 fix exists; this mitigation is at the application boundary.
+    -->
+    <suppress>
+        <notes><![CDATA[
+            T2.14 hardening (epic #73, issue #223). Closed at the application boundary via
+            PSRoleService.containsUnsafeIdentifierChar, which rejects SQL metacharacters and
+            control bytes for every user-controlled value that flows into a String @Id
+            Hibernate column. Two paths instrumented: PSRoleService.setHomepage and
+            PSSiteimprove storeCredentials / storeConfiguration. No Java 8 fix exists.
+        ]]></notes>
+        <cve>CVE-2026-0603</cve>
+    </suppress>
+
+    <!--
+        T2.14 / CVE-2019-10219  Improper input validation in the Hibernate Validator
+        ConstraintValidatorContext message template interpolation. A user who controls a
+        constraint violation message can reach a Hibernate Validator parser bypass and have
+        EL expressions evaluated even when callers attempt to escape ${..}.
+        Mitigation: system/src/main/resources/META-INF/validation.xml now selects
+        ResourceBundleMessageInterpolator (no EL) instead of the default
+        HibernateMessageInterpolator (EL enabled). The audit also confirmed zero custom
+        ConstraintValidator implementations and zero @SafeHtml usages in the codebase, so the
+        runtime attack surface is zero even before the interpolator swap.
+        Regressions caught by HibernateConfigAuditTest#validationXmlDisablesElInterpolation.
+        Fixed at the source in Hibernate Validator 6.1.5.Final / 6.0.20.Final; we are pinned at
+        6.2.5.Final (latest Java 1.8 line) which also has the fix.
+    -->
+    <suppress>
+        <notes><![CDATA[
+            T2.14 hardening (epic #73, issue #223). Closed via ResourceBundleMessageInterpolator
+            in system/src/main/resources/META-INF/validation.xml. Zero custom ConstraintValidator
+            implementations and zero @SafeHtml usages exist in the project, so EL has no path
+            to user input. See HibernateConfigAuditTest#validationXmlDisablesElInterpolation.
+            Also fixed upstream in 6.1.5.Final / 6.0.20.Final; 6.2.5.Final is the latest Java 8 line.
+        ]]></notes>
+        <cve>CVE-2019-10219</cve>
+    </suppress>
+
+    <!--
+        T2.14 / CVE-2020-10693  EL expression input sanitation bypass in Hibernate Validator's
+        TokenCollector parser. Allows crafted payloads such as `FOO $\A{payload}` to reach the
+        Unified EL interpreter even when callers escape ${..}.
+        Mitigation: same interpolator swap as CVE-2019-10219. The Hibernate Validator 6.2.0+
+        line also disables EL in buildConstraintViolationWithTemplate() entirely.
+        Zero custom ConstraintValidator implementations + ResourceBundleMessageInterpolator =
+        EL cannot reach user input.
+    -->
+    <suppress>
+        <notes><![CDATA[
+            T2.14 hardening (epic #73, issue #223). Closed via ResourceBundleMessageInterpolator
+            in system/src/main/resources/META-INF/validation.xml. Zero custom ConstraintValidator
+            implementations exist in the project. See
+            HibernateConfigAuditTest#validationXmlDisablesElInterpolation.
+            Fixed upstream in 6.1.5.Final / 6.0.20.Final; 6.2.5.Final is the latest Java 8 line.
+        ]]></notes>
+        <cve>CVE-2020-10693</cve>
+    </suppress>
+
+    <!--
+        T2.14 / CVE-2023-1932  SafeHtmlValidator.isValid XSS bypass via tag ending omission
+        (e.g. omitting the closing '>' and using '<' instead). Lets an attacker pass crafted
+        HTML through @SafeHtml validation; browsers' error-tolerant parsers then execute the
+        resulting markup.
+        Mitigation: the project has zero @SafeHtml annotations. The interpolator swap in
+        system/src/main/resources/META-INF/validation.xml is a secondary defense.
+        Fixed upstream in 6.2.0.Final; we are at 6.2.5.Final.
+    -->
+    <suppress>
+        <notes><![CDATA[
+            T2.14 hardening (epic #73, issue #223). Closed by removal of usage: zero @SafeHtml
+            annotations exist in the project. See grep -rn 'SafeHtml' across the repo. Secondary
+            defense via ResourceBundleMessageInterpolator in
+            system/src/main/resources/META-INF/validation.xml. 6.2.5.Final is the latest Java 8 line.
+        ]]></notes>
+        <cve>CVE-2023-1932</cve>
+    </suppress>
+
+    <!--
+        T2.14 / CVE-2025-35036  Hibernate Validator EL injection via user-supplied input in
+        constraint violation messages. By default Hibernate Validator interpolates user-supplied
+        content via the Unified Expression Language; this enables arbitrary Java method
+        invocation in vulnerable versions.
+        Mitigation: CVE-2025-35036 is already closed in 6.2.0.Final; we are at 6.2.5.Final
+        (latest Java 1.8 line) which has the fix. The project has zero custom
+        ConstraintValidator implementations, so user-supplied input cannot reach a violation
+        message. The interpolator swap in system/src/main/resources/META-INF/validation.xml is
+        an additional defense in depth.
+    -->
+    <suppress>
+        <notes><![CDATA[
+            T2.14 hardening (epic #73, issue #223). Already closed at the dependency level:
+            CVE-2025-35036 is fixed in Hibernate Validator 6.2.0.Final and we ship 6.2.5.Final
+            (latest Java 8 line). Project has zero custom ConstraintValidator implementations.
+            Secondary defense via ResourceBundleMessageInterpolator in
+            system/src/main/resources/META-INF/validation.xml.
+        ]]></notes>
+        <cve>CVE-2025-35036</cve>
+    </suppress>
+
 </suppressions>
