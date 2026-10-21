@@ -84,7 +84,11 @@
         if (criteria.lasteditedby !== "@all")
             searchFields.push({"key": "sys_contentlastmodifier", "value" : criteria.lasteditedby});
 
-        searchCriteriaObj.searchFields = {"entry":searchFields};
+        var searchFieldsMap = {};
+        for (var sf = 0; sf < searchFields.length; sf++) {
+            searchFieldsMap[searchFields[sf].key] = searchFields[sf].value;
+        }
+        searchCriteriaObj.searchFields = searchFieldsMap;
 
         PercSearchService
             .getAsyncSearchResult({"SearchCriteria":searchCriteriaObj},

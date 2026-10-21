@@ -205,7 +205,11 @@ define(['knockout', 'pubsub'], function(ko,PubSub) {
                 if (self.assetType())
                     searchFields.push({"key": "sys_contenttypeid", "value" : self.assetType().contenttypeid});
             }
-            searchCriteriaObj.SearchCriteria.searchFields = {"entry":searchFields};
+            var searchFieldsMap = {};
+            for (var sfi = 0; sfi < searchFields.length; sfi++) {
+                searchFieldsMap[searchFields[sfi].key] = searchFields[sfi].value;
+            }
+            searchCriteriaObj.SearchCriteria.searchFields = searchFieldsMap;
             return searchCriteriaObj;
         }       
         function validFields(){
