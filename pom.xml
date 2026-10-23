@@ -134,7 +134,7 @@
         <jetty.version>9.4.58.v20250814</jetty.version>
         <jfx.version>11.0.2</jfx.version>
         <json.version>20251224</json.version>
-        <jsoup.version>1.23.1</jsoup.version>
+        <jsoup.version>1.23.2</jsoup.version>
         <junit.jupiter.version>5.14.3</junit.jupiter.version>
         <junit.version>4.13.2</junit.version>
         <junrar.version>7.6.1</junrar.version>
