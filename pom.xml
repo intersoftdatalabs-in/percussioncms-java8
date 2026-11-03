@@ -131,7 +131,7 @@
         <jdk.version>1.8</jdk.version>
         <jenkins.buildNumber>2024</jenkins.buildNumber>
         <jetty.maven.plugin.version>9.4.58.v20250814</jetty.maven.plugin.version>
-        <jetty.version>9.4.58.v20250814</jetty.version>
+        <jetty.version>9.4.65.1</jetty.version>
         <jfx.version>11.0.2</jfx.version>
         <json.version>20251224</json.version>
         <jsoup.version>1.23.2</jsoup.version>
@@ -2118,6 +2118,14 @@
             </snapshots>
             <id>apache-snapshots</id>
             <url>https://repository.apache.org/snapshots</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>github-intersoft-jetty</id>
+            <name>Intersoft Jetty Extended Support</name>
+            <url>https://maven.pkg.github.com/intersoftdatalabs-in/jetty.project</url>
         </repository>
     </repositories>
     <pluginRepositories>
