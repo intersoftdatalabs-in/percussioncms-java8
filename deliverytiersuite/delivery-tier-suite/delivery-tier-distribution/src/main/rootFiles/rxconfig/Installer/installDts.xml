@@ -6,13 +6,15 @@
     <property name="dts.servertype" value="Production"/>
     <!-- This is set from PSDeliveryTierInstall install anywhere action -->
     <property name="dts.zip.location" location="${install.dir}/rxconfig/Installer/optional/delivery-tier-distribution.jar"/>
-    <property name="perc.version" value="${project.parent.version}"/>
     <property name="perc.java.home" value="${install.dir}/JRE" />
     <property name="perc.dts.backup" value="${install.dir}/PreInstall/Backups" />
     <echo>Setting up TaskDefs</echo>
     <path id="ant.deps" cache="true">
         <fileset dir="${basedir}">
-            <include name="perc-ant-${perc.version}.jar" />
+            <!-- Locate the build jar by pattern. The version is not reliably known during the
+                 install and a Maven expression cannot be resolved by Ant, which used to leave
+                 the perc-ant jar out of the build class path. -->
+            <include name="perc-ant-*.jar" />
         </fileset>
         <fileset dir="${install.src}/Deployment/Server/perc-lib" erroronmissingdir="false">
             <include name="**/*.jar" />
