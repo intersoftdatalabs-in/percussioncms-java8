@@ -226,7 +226,8 @@ EOF
         chkconfig ${SERVICE_NAME} on
     elif [[ $(type -P "update-rc.d") ]]; then
         echo "using 'update-rc.d ${SERVICE_NAME} start 99 2 3 4 5 . stop 01 0 1 6 .' to add to server startup"
-        echo "Late start priority (99) keeps the CMS after mysqld/mariadb on SysV."
+        echo "Note: newer Debian/Ubuntu update-rc.d ignores explicit start/stop priorities; the CMS is"
+        echo "ordered after mysqld/mariadb by the Should-Start line in /etc/init.d/${SERVICE_NAME}."
         update-rc.d ${SERVICE_NAME} start 99 2 3 4 5 . stop 01 0 1 6 .
     elif [ -d "/etc/rc2.d" ]; then
         echo "Fall back to symbolic linking into /etc/rcx.d folders e.g. Solaris 9"

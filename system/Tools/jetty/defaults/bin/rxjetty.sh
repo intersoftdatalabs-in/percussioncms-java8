@@ -601,7 +601,7 @@ case "$ACTION" in
 	dtest=$(start-stop-daemon --test --oknodo -S -p"$JETTY_PID"  -d"$JETTY_BASE" -b -m -a "$JAVA" -- "${RUN_ARGS[@]}" start-log-file="$JETTY_LOGS/start.log" 2>&1 )
 
 
-if [ $UID -eq 0 ] && [[ "$dtest" !=  *"not found"* &&  "$dtest" !=  *"invalid argument"* ]]; then
+if [ $UID -eq 0 ] && [[ "$dtest" !=  *"not found"* &&  "$dtest" !=  *"invalid argument"* &&  "$dtest" !=  *"insecure"* ]]; then
 
       unset CH_USER
       if [ -n "$JETTY_USER" ]
@@ -679,7 +679,10 @@ if [ $UID -eq 0 ] && [[ "$dtest" !=  *"not found"* &&  "$dtest" !=  *"invalid ar
     USE_SSD="false"
     if [ $UID -eq 0 ] && [ -n "$PID" ] && type -P start-stop-daemon >/dev/null 2>&1; then
       dtest=$(start-stop-daemon --test --oknodo -K -p"$JETTY_PID_FILE" -d"$JETTY_BASE" -a "$JAVA" 2>&1)
-      if [[ "$dtest" != *"not found"* && "$dtest" != *"invalid argument"* ]]; then
+      # Debian/Ubuntu start-stop-daemon refuses to match on a world-writable
+      # pidfile ("...is insecure") and then signals nothing, so treat that
+      # output as unusable and use the stop_pid fallback below instead.
+      if [[ "$dtest" != *"not found"* && "$dtest" != *"invalid argument"* && "$dtest" != *"insecure"* ]]; then
         USE_SSD="true"
       fi
     fi
@@ -687,12 +690,23 @@ if [ $UID -eq 0 ] && [[ "$dtest" !=  *"not found"* &&  "$dtest" !=  *"invalid ar
     if [ "$USE_SSD" = "true" ]; then
       # Default signal for start-stop-daemon -K is SIGTERM, which Jetty
       # handles for a graceful shutdown. SIGHUP was the wrong signal here.
-      start-stop-daemon -K -p"$JETTY_PID_FILE" -d"$JETTY_BASE" -a "$JAVA"
+      if ! start-stop-daemon -K -p"$JETTY_PID_FILE" -d"$JETTY_BASE" -a "$JAVA"; then
+        # start-stop-daemon could not signal the process; do it ourselves.
+        stop_pid "$PID"
+      fi
 
-      TIMEOUT=60
+      # Bounded wait: never loop forever. After STOP_TIMEOUT escalate to
+      # SIGKILL, then give up and let the verification below report FAILED.
+      TIMEOUT="${STOP_TIMEOUT:-60}"
+      KILLED="false"
       while running "$JETTY_PID_FILE"; do
-        if (( TIMEOUT-- == 0 )); then
-          start-stop-daemon -K -p"$JETTY_PID_FILE" -d"$JETTY_BASE" -a "$JAVA" -s KILL
+        if (( TIMEOUT-- <= 0 )); then
+          if [ "$KILLED" = "true" ]; then
+            break
+          fi
+          start-stop-daemon -K -p"$JETTY_PID_FILE" -d"$JETTY_BASE" -a "$JAVA" -s KILL || kill -KILL "$PID" 2>/dev/null
+          KILLED="true"
+          TIMEOUT=5
         fi
 
         sleep 1
@@ -710,6 +724,16 @@ if [ $UID -eq 0 ] && [[ "$dtest" !=  *"not found"* &&  "$dtest" !=  *"invalid ar
       stop_pid "$PID"
       STOP_RC=$?
     fi
+
+    # Jetty's start.jar launcher forks the real server JVM. The launcher
+    # (the PID we signalled) can exit before the forked server has finished
+    # shutting down, so wait for any remaining JVM of this install and
+    # signal it too (bounded: at most 3 passes, each TERM then KILL).
+    for _pass in 1 2 3; do
+      REM_PID=$(find_jetty_pid "$JETTY_PID_FILE" "$JETTY_BASE" 2>/dev/null) || break
+      [ -n "$REM_PID" ] || break
+      stop_pid "$REM_PID"
+    done
 
     # Verify the JVM is actually gone. `kill` returning 0 is not proof -
     # the PID may have been reused, or we may have signalled a parent
