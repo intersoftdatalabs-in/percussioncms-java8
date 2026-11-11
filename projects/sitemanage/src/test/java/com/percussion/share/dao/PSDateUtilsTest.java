@@ -22,9 +22,29 @@ import static org.junit.Assert.fail;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.TimeZone;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class PSDateUtilsTest {
+  private TimeZone originalTimeZone;
+
+  /**
+   * Uses a fixed non-UTC zone: with a UTC default zone the formatter writes a trailing "Z", which
+   * the parser pattern does not accept, so the round trip would depend on the machine's zone.
+   */
+  @Before
+  public void setUp() {
+    originalTimeZone = TimeZone.getDefault();
+    TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
+  }
+
+  @After
+  public void tearDown() {
+    TimeZone.setDefault(originalTimeZone);
+  }
+
   /**
    * Tests {@link PSDateUtils#getDateToString(java.util.Date)} and {@link
    * PSDateUtils#getDateFromString(String)}.

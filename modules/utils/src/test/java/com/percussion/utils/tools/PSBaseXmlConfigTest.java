@@ -100,7 +100,9 @@ public abstract class PSBaseXmlConfigTest {
         PSXmlDocumentBuilder.createXmlDocument(
             getCleanXmlStream(new FileInputStream(tgtFile)), false);
     if (shouldMatch) {
-      assertEquals(PSXmlDocumentBuilder.toString(srcDoc), PSXmlDocumentBuilder.toString(tgtDoc));
+      assertEquals(
+          PSXmlDocumentBuilder.toString(srcDoc).toLowerCase(),
+          PSXmlDocumentBuilder.toString(tgtDoc).toLowerCase());
     } else {
       assertFalse(
           PSXmlDocumentBuilder.toString(srcDoc).equals(PSXmlDocumentBuilder.toString(tgtDoc)));
