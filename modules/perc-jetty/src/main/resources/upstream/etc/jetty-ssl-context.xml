@@ -117,4 +117,6 @@
   <Call id="pkixNoFallback" class="java.security.cert.PKIXRevocationChecker$Option" name="valueOf"><Arg>NO_FALLBACK</Arg></Call>
   <Call class="java.security.cert.CertPathBuilder" name="getInstance">
     <Arg>PKIX</Arg>
+  </Call>
+  -->
 </Configure>
