@@ -545,6 +545,7 @@
         <antcall target="backupSharedContent" inheritall="true" inheritrefs="true"/>
         <antcall target="deleteOldLog4jJars"  inheritall="true" inheritrefs="true"/>
         <antcall target="upgrade_server" inheritall="true" inheritrefs="true"/>
+        <antcall target="updateMySQLDriverClass" inheritall="true" inheritrefs="true"/>
         <antcall target="setupDB" inheritall="true" inheritrefs="true"/>
         <antcall target="upgradeRelationshipConfig"  inheritall="true" inheritrefs="true"/>
         <antcall target="updatePackages" inheritall="true" inheritrefs="true"/>
@@ -1545,6 +1546,18 @@
             <entry key="filePath" value="${install.dir}/jetty/base/logs/audit"/>
         </propertyfile>
         <delete file="${install.dir}/rxconfig/Installer/audit-log.properties" failonerror="false" verbose="true" />
+    </target>
+    <!-- Issue #5: existing datasource files name the legacy MySQL driver class. Rewrite it to the
+         Connector/J 8 class so installs stop relying on the deprecated com.mysql.jdbc.Driver shim. -->
+    <target name="updateMySQLDriverClass">
+        <echo>Updating MySQL driver class name to com.mysql.cj.jdbc.Driver in datasource files...</echo>
+        <replace token="com.mysql.jdbc.Driver" value="com.mysql.cj.jdbc.Driver" summary="yes">
+            <fileset dir="${install.dir}" erroronmissingdir="false">
+                <include name="jetty/base/etc/perc-ds.properties"/>
+                <include name="rxconfig/Server/config.xml"/>
+                <include name="rxconfig/Installer/rxrepository.properties"/>
+            </fileset>
+        </replace>
     </target>
     <target name="updateConfigXMLForPasswordFilter">
         <echo>Updating Server Config.xml ...</echo>
