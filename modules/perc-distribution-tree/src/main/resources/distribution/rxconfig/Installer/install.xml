@@ -134,6 +134,10 @@
                 <exclude name="mysql-connector*.jar"/>
             </fileset>
         </copy>
+        <!-- Abort before purging if the shipped driver is missing, so we never leave CMS without a MySQL driver. -->
+        <available file="${install.src}/jetty/base/lib/jdbc/mysql-connector.jar" property="perc.shipped.mysql.driver"/>
+        <fail unless="perc.shipped.mysql.driver"
+              message="Shipped MySQL driver ${install.src}/jetty/base/lib/jdbc/mysql-connector.jar not found; aborting before removing existing connectors."/>
         <echo>Removing obsolete MySQL Connector/J jars from ${customer.jdbc.drivers}...</echo>
         <delete verbose="true" failonerror="false">
             <fileset dir="${customer.jdbc.drivers}" erroronmissingdir="false">
@@ -147,6 +151,9 @@
                 <include name="**/*.jar"/>
             </fileset>
         </copy>
+        <available file="${customer.jdbc.drivers}/mysql-connector.jar" property="perc.installed.mysql.driver"/>
+        <fail unless="perc.installed.mysql.driver"
+              message="MySQL driver mysql-connector.jar was not installed into ${customer.jdbc.drivers}."/>
     </target>
     <target name="clear_assets_pages_upgrade_files">
         <!-- Flagging Pages & Assets for startup processing -->
