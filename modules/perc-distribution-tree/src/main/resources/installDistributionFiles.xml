@@ -544,14 +544,11 @@
         <echo>Creating jetty work directory..</echo>
         <mkdir dir="${assembly-directory}/jetty/base/work"/>
 
-        <if>
-            <equals arg1="${DEVELOPMENT}" arg2="true"/>
-            <then>
-                <echo>Copying MySQL connector for development install..</echo>
-                <mkdir dir="${assembly-directory}/jetty/base/lib/jdbc/" />
-                <copy file="${basedir}../../../system/Tools/mysql/mysql-connector-j-8.4.0.jar" tofile="${assembly-directory}/jetty/base/lib/jdbc/mysql-connector.jar" />
-            </then>
-        </if>
+        <!-- Issue #5: always ship the modern MySQL Connector/J. The CMS installer purges legacy
+             connectors from jetty/base/lib/jdbc and relies on this jar as the replacement. -->
+        <echo>Copying MySQL connector..</echo>
+        <mkdir dir="${assembly-directory}/jetty/base/lib/jdbc/" />
+        <copy file="${basedir}/../../system/Tools/mysql/mysql-connector-j-8.4.0.jar" tofile="${assembly-directory}/jetty/base/lib/jdbc/mysql-connector.jar" failonerror="true" />
 
         <echo>Fixing Line Feeds for sh files...</echo>
         <fixcrlf includes="**/*.sh" eol="unix" eof="remove" srcdir="${assembly-directory}"  preservelastmodified="true" />
