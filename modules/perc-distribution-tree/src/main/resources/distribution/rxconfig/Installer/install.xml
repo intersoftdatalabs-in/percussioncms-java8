@@ -1554,6 +1554,7 @@
         <replace token="com.mysql.jdbc.Driver" value="com.mysql.cj.jdbc.Driver" summary="yes">
             <fileset dir="${install.dir}" erroronmissingdir="false">
                 <include name="jetty/base/etc/perc-ds.properties"/>
+                <include name="jetty/base/etc/perc-ds.xml"/>
                 <include name="rxconfig/Server/config.xml"/>
                 <include name="rxconfig/Installer/rxrepository.properties"/>
             </fileset>
