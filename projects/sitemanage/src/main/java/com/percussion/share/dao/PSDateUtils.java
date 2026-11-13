@@ -76,7 +76,12 @@ public class PSDateUtils {
 
       }
 
-      StringBuilder format = new StringBuilder(date);
+      StringBuilder format = new StringBuilder(date.trim());
+      // ISO 8601 UTC designator 'Z' is not accepted by the numeric 'Z' pattern
+      if (format.length() > 0 && format.charAt(format.length() - 1) == 'Z') {
+        format.setLength(format.length() - 1);
+        format.append("+0000");
+      }
       if (format.length() > 2 && ":".equals(String.valueOf(format.charAt(format.length() - 3)))) {
         format.deleteCharAt(format.length() - 3);
       }

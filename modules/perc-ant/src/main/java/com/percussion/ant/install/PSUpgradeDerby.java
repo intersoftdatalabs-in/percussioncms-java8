@@ -21,7 +21,6 @@ import com.percussion.error.PSExceptionUtils;
 import com.percussion.install.PSLogger;
 import java.io.File;
 import java.io.FileFilter;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -102,9 +101,9 @@ public class PSUpgradeDerby extends PSAction {
   private static final String driver = "org.apache.derby.jdbc.EmbeddedDriver";
 
   private void dropPercMetadataPropertiesTable(Connection conn) {
-    org.apache.derby.impl.jdbc.EmbedStatement stmt = null;
+    java.sql.Statement stmt = null;
     try {
-      stmt = (org.apache.derby.impl.jdbc.EmbedStatement) conn.createStatement();
+      stmt = conn.createStatement();
       String sql2 = "DROP TABLE PERC_PAGE_METADATA_PROPERTIES";
       stmt.executeUpdate(sql2);
 
@@ -124,8 +123,7 @@ public class PSUpgradeDerby extends PSAction {
     }
     try {
       String sql = "SELECT COUNT(*) from PERC_COOKIE_CONSENT";
-      org.apache.derby.impl.jdbc.EmbedStatement prepStmt =
-          (org.apache.derby.impl.jdbc.EmbedStatement) conn.createStatement();
+      java.sql.Statement prepStmt = conn.createStatement();
       ResultSet rs = prepStmt.executeQuery(sql);
       rs.next();
       int count = rs.getInt(1);
@@ -145,8 +143,7 @@ public class PSUpgradeDerby extends PSAction {
 
     try {
       String sql = "SELECT COUNT(*) from BLOG_POST_VISIT";
-      org.apache.derby.impl.jdbc.EmbedStatement prepStmt =
-          (org.apache.derby.impl.jdbc.EmbedStatement) conn.createStatement();
+      java.sql.Statement prepStmt = conn.createStatement();
       ResultSet rs = prepStmt.executeQuery(sql);
       rs.next();
       int count = rs.getInt(1);
@@ -165,32 +162,45 @@ public class PSUpgradeDerby extends PSAction {
     }
   }
 
+  /** Driver loaded from the bundled jar when it is not on the task classpath. */
+  private java.sql.Driver loadedDriver;
+
+  /**
+   * Loads the embedded Derby driver from the bundled jar using a dedicated class loader. The
+   * previous approach reflectively called URLClassLoader.addURL on the context class loader, which
+   * fails when that loader is not a URLClassLoader (e.g. Ant's loader or the installer's loader).
+   */
   public synchronized void loadDerbyJDBCJar()
-      throws MalformedURLException, NoSuchMethodException, InvocationTargetException,
-          IllegalAccessException {
+      throws MalformedURLException, ReflectiveOperationException {
     PSLogger.logInfo("Loading DerbyDriver at RunTime");
-    File derbyJDBCDriver = null;
     File dir = new File(getRootDir() + File.separator + "Deployment/Server/common/lib");
     FileFilter fileFilter = new WildcardFileFilter("derby-*.jar");
     File[] files = dir.listFiles(fileFilter);
-    if (files != null) {
-      if (files.length == 1) {
-        derbyJDBCDriver = files[0];
-      } else {
-        derbyJDBCDriver = files[0];
-        PSLogger.logError("Multiple versions of DerbyDriver Exist in " + dir.toString());
+    if (files == null || files.length == 0) {
+      PSLogger.logError("DerbyDriver is Missing in " + dir);
+      throw new ClassNotFoundException("No derby-*.jar found in " + dir);
+    }
+    if (files.length > 1) {
+      PSLogger.logError("Multiple versions of DerbyDriver Exist in " + dir);
+    }
+    File derbyJDBCDriver = files[0];
+    PSLogger.logInfo("Loading DerbyDriver File " + derbyJDBCDriver);
+    java.net.URLClassLoader loader =
+        new java.net.URLClassLoader(
+            new java.net.URL[] {derbyJDBCDriver.toURI().toURL()},
+            PSUpgradeDerby.class.getClassLoader());
+    loadedDriver = (java.sql.Driver) Class.forName(driver, true, loader).newInstance();
+  }
+
+  private Connection connect(String url, Properties props) throws SQLException {
+    if (loadedDriver != null) {
+      Connection c = loadedDriver.connect(url, props);
+      if (c == null) {
+        throw new SQLException("Derby driver rejected URL " + url);
       }
+      return c;
     }
-    if (derbyJDBCDriver == null) {
-      PSLogger.logError("DerbyDriver is Missing");
-      return;
-    }
-    PSLogger.logInfo("Loading DerbyDriver File " + derbyJDBCDriver.toString());
-    java.net.URL url = derbyJDBCDriver.toURI().toURL();
-    java.lang.reflect.Method method =
-        java.net.URLClassLoader.class.getDeclaredMethod("addURL", new Class[] {java.net.URL.class});
-    method.setAccessible(true); /*promote the method to public access*/
-    method.invoke(Thread.currentThread().getContextClassLoader(), new Object[] {url});
+    return DriverManager.getConnection(url, props);
   }
 
   @Override
@@ -211,7 +221,7 @@ public class PSUpgradeDerby extends PSAction {
         loadDerbyJDBCJar();
         Class.forName(driver).newInstance();
       } catch (Exception ex) {
-        throw new BuildException("Unable to load embedded Derby driver");
+        throw new BuildException("Unable to load embedded Derby driver: " + ex, ex);
       }
     } catch (InstantiationException | IllegalAccessException ex) {
       throw new BuildException("Unable to load embedded Derby driver");
@@ -225,7 +235,7 @@ public class PSUpgradeDerby extends PSAction {
     String connectionUrl = "jdbc:derby:" + databasePath;
     Connection conn;
     try {
-      conn = DriverManager.getConnection(connectionUrl, props);
+      conn = connect(connectionUrl, props);
     } catch (SQLException e) {
       throw new BuildException(e);
     }
@@ -242,7 +252,7 @@ public class PSUpgradeDerby extends PSAction {
       props.remove("upgrade");
       props.putIfAbsent("shutdown", "true");
       PSLogger.logInfo("Shutting down database :" + databasePath);
-      conn = DriverManager.getConnection(connectionUrl, props);
+      conn = connect(connectionUrl, props);
       conn.close();
 
     } catch (SQLNonTransientConnectionException e) {
