@@ -122,20 +122,38 @@
     <target name="install_jdbc_drivers">
         <mkdir dir="${customer.jdbc.drivers}"/>
         <echo>Checking for existing JDBC Drivers...</echo>
+        <!-- Issue #5: never carry a legacy MySQL Connector/J (com.mysql.jdbc, 3.x-7.x) from the old
+             JBoss layout into the managed JDBC dir; the shipped pin is copied below. -->
         <copy verbose="true" todir="${install.dir}/jetty/base/lib/jdbc" preservelastmodified="true" filtering="false" overwrite="false" force="false" failonerror="false">
             <fileset dir="${install.dir}/AppServer/server/rx/deploy/rxapp.ear/rxapp.war/WEB-INF/lib">
                 <include name="mysql*.jar"/>
+                <exclude name="mysql-connector*.jar"/>
             </fileset>
             <fileset dir="${install.dir}/AppServer/server/rx/lib">
                 <include name="mysql*.jar"/>
+                <exclude name="mysql-connector*.jar"/>
             </fileset>
         </copy>
+        <!-- Abort before purging if the shipped driver is missing, so we never leave CMS without a MySQL driver. -->
+        <available file="${install.src}/jetty/base/lib/jdbc/mysql-connector.jar" property="perc.shipped.mysql.driver"/>
+        <fail unless="perc.shipped.mysql.driver"
+              message="Shipped MySQL driver ${install.src}/jetty/base/lib/jdbc/mysql-connector.jar not found; aborting before removing existing connectors."/>
+        <echo>Removing obsolete MySQL Connector/J jars from ${customer.jdbc.drivers}...</echo>
+        <delete verbose="true" failonerror="false">
+            <fileset dir="${customer.jdbc.drivers}" erroronmissingdir="false">
+                <include name="mysql-connector*.jar"/>
+                <include name="mm.mysql*.jar"/>
+            </fileset>
+        </delete>
         <echo>Copying JDBC Jars...</echo>
         <copy todir="${install.dir}/jetty/base/lib/jdbc" overwrite="true" force="true">
             <fileset dir="${install.src}/jetty/base/lib/jdbc">
                 <include name="**/*.jar"/>
             </fileset>
         </copy>
+        <available file="${customer.jdbc.drivers}/mysql-connector.jar" property="perc.installed.mysql.driver"/>
+        <fail unless="perc.installed.mysql.driver"
+              message="MySQL driver mysql-connector.jar was not installed into ${customer.jdbc.drivers}."/>
     </target>
     <target name="clear_assets_pages_upgrade_files">
         <!-- Flagging Pages & Assets for startup processing -->

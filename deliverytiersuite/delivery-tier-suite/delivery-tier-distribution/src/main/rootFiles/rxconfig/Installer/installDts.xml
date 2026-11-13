@@ -537,47 +537,25 @@
                             </if>
                         </then>
                     </if>
-                    <!-- Purge Connector/J 5-7 before backup restore. -->
-                    <echo>Purging legacy mysql-connector-java 5.1.x from managed JDBC classpath..............</echo>
-                    <delete verbose="true" failonerror="false">
-                        <fileset dir="${install.dir}${staging.dir}/Deployment/Server/common/lib">
-                            <include name="mysql-connector-java-5*.jar"/>
-                            <include name="mysql-connector-java-6*.jar"/>
-                            <include name="mysql-connector-java-7*.jar"/>
-                            <!-- Also drop any pre-existing legacy generic-name contract path
-                                 so the rewrite below is the only mysql-connector.jar on disk. -->
-                            <include name="mysql-connector.jar"/>
-                        </fileset>
-                        <fileset dir="${install.dir}${staging.dir}/Deployment/Server/lib">
-                            <include name="mysql-connector-java-5*.jar"/>
-                            <include name="mysql-connector-java-6*.jar"/>
-                            <include name="mysql-connector-java-7*.jar"/>
-                        </fileset>
-                        <fileset dir="${install.dir}${staging.dir}/Deployment/Server/perc-lib">
-                            <include name="mysql-connector-java-5*.jar"/>
-                            <include name="mysql-connector-java-6*.jar"/>
-                            <include name="mysql-connector-java-7*.jar"/>
-                        </fileset>
-                    </delete>
-                    <!-- Restore mysql-connector if present -->
-                    <echo>Restore mysql-connector if present in Server/common/lib.....................</echo>
+                    <!-- Issue #5: purge every MySQL Connector/J (legacy 3.x-7.x mysql-connector-java-*, mm.mysql,
+                         older mysql-connector-j-*, and the generic mysql-connector.jar) from the managed JDBC
+                         dirs. The shipped pin is installed below, so exactly one version remains.
+                         Each removed file is logged (verbose) in the installer output. -->
+                    <echo>Purging obsolete MySQL Connector/J jars from managed JDBC classpath..............</echo>
+                    <for list="common/lib,lib,lib/jdbc,perc-lib,perc-lib/jdbc" param="jdbcdir">
+                        <sequential>
+                            <delete verbose="true" failonerror="false">
+                                <fileset dir="${install.dir}${staging.dir}/Deployment/Server/@{jdbcdir}" erroronmissingdir="false">
+                                    <include name="mysql-connector*.jar"/>
+                                    <include name="mm.mysql*.jar"/>
+                                </fileset>
+                            </delete>
+                        </sequential>
+                    </for>
+                    <echo>Installing shipped mysql-connector-j-*.jar into Server/common/lib..............</echo>
                     <copy todir="${install.dir}${staging.dir}/Deployment/Server/common/lib"
-                          verbose="true" failonerror="false">
-                        <fileset dir="${new.backup.dir}${staging.dir}/Server/common/lib">
-                            <include name="mysql-connector-j-*.jar"/>
-                        </fileset>
-                    </copy>
-                    <echo>Restore mysql-connector if present in Server/perc-lib again on re-upgrading upgraded environment............................................</echo>
-                    <copy todir="${install.dir}${staging.dir}/Deployment/Server/common/lib"
-                          verbose="true" failonerror="false">
-                        <fileset dir="${new.backup.dir}${staging.dir}/Server/perc-lib">
-                            <include name="mysql-connector-j-*.jar"/>
-                        </fileset>
-                    </copy>
-                    <echo>Restore mysql-connector if present in Server/lib re-upgrading upgraded environment............................................</echo>
-                    <copy todir="${install.dir}${staging.dir}/Deployment/Server/common/lib"
-                          verbose="true" failonerror="false">
-                        <fileset dir="${new.backup.dir}${staging.dir}/Server/lib">
+                          overwrite="true" force="true" verbose="true" failonerror="false">
+                        <fileset dir="${install.src}/Deployment/Server/common/lib">
                             <include name="mysql-connector-j-*.jar"/>
                         </fileset>
                     </copy>
