@@ -14,7 +14,7 @@ Rationale:
   `jdbc:mariadb://` by `org.mariadb.jdbc.Driver`; no `com.mysql.jdbc` driver is registered. Hikari connects
   with a `caching_sha2_password` user.
 
-## Operator notes (8.1.x patch release)
+## Operator notes (for the next release, 8.1.8; no release-notes file exists for it yet)
 
 - MySQL 8 users with `caching_sha2_password` work with the shipped driver. If you ran
   `ALTER USER ... IDENTIFIED WITH mysql_native_password` as a workaround you may optionally switch back.
