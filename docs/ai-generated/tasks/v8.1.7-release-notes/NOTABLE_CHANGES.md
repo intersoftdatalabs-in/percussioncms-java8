@@ -28,6 +28,9 @@
 
 ### Administration & Operations
 
+- MySQL 8 (`caching_sha2_password`) now works out of the box: CMS and DTS ship MySQL Connector/J 8.4.0, and
+  install/upgrade removes legacy `mysql-connector-java-*` jars so an old 5.1.x client can no longer linger.
+  The `mysql_native_password` workaround is no longer needed.
 - Significantly quieter DTS startup logs.
 - Better diagnostics for several edge cases (process monitor, orphaned managed links warning, etc.).
 - Windows DTS environments more stable.

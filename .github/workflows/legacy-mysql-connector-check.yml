@@ -1,0 +1,19 @@
+name: Legacy MySQL Connector Check
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Self-test checker
+        run: python3 -I scripts/check-legacy-mysql-connector.py --self-test
+      - name: Fail if a legacy MySQL Connector/J is tracked (issue #5)
+        run: python3 -I scripts/check-legacy-mysql-connector.py
