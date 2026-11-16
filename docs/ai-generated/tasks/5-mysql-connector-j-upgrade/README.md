@@ -7,14 +7,15 @@ for MariaDB servers (DTS only).
 
 Rationale:
 - `jdbc:mysql://` URLs, which existing installs and docs use, keep working with no rewrite.
-- 8.4.0 is the last Connector/J line that runs on Java 8 (9.x requires Java 17+).
+- 8.4.0 is Java 8 compatible (its class files are Java 8 bytecode; verified running on JDK 8 against MySQL 8.0 and 8.4).
+  Connector/J 9.x is also Java 8 bytecode, so 8.4.0 is a conservative pin, not a Java 8 requirement.
 - MariaDB Connector/J 3.x does not take `jdbc:mysql://` URLs by default, so MariaDB-only would force a URL
   migration on every MySQL customer.
 - Verified with both jars on the DTS classpath: `jdbc:mysql://` is handled by `com.mysql.cj.jdbc.Driver`,
   `jdbc:mariadb://` by `org.mariadb.jdbc.Driver`; no `com.mysql.jdbc` driver is registered. Hikari connects
   with a `caching_sha2_password` user.
 
-## Operator notes (for the next release, 8.1.8; no release-notes file exists for it yet)
+## Operator notes (for the next release, 8.1.8; the release-note text is in `../v8.1.8-release-notes/RELEASE_NOTES_v8.1.8_MYSQL_DRIVER.md`)
 
 - MySQL 8 users with `caching_sha2_password` work with the shipped driver. If you ran
   `ALTER USER ... IDENTIFIED WITH mysql_native_password` as a workaround you may optionally switch back.
