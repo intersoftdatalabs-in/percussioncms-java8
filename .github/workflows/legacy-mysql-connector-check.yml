@@ -17,3 +17,7 @@ jobs:
         run: python3 -I scripts/check-legacy-mysql-connector.py --self-test
       - name: Fail if a legacy MySQL Connector/J is tracked (issue #5)
         run: python3 -I scripts/check-legacy-mysql-connector.py
+      - name: Install Ant and ant-contrib for the upgrade simulation
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ant ant-contrib
+      - name: Upgrade simulation - installers must leave no legacy connector (issue #5)
+        run: python3 -I scripts/test-mysql-connector-upgrade.py
