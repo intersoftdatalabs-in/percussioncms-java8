@@ -218,8 +218,10 @@ public class PSUpgradeDerby extends PSAction {
       Class.forName(driver).newInstance();
     } catch (ClassNotFoundException e) {
       try {
+        // Instantiates the driver from the bundled jar into loadedDriver, which connect() uses.
+        // It is not visible to Class.forName(driver) on the task class loader, so do not call that
+        // again.
         loadDerbyJDBCJar();
-        Class.forName(driver).newInstance();
       } catch (Exception ex) {
         throw new BuildException("Unable to load embedded Derby driver: " + ex, ex);
       }
