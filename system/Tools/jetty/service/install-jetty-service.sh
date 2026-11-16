@@ -249,6 +249,11 @@ EOF
     echo "optionally WAIT_FOR_DB_PORT / WAIT_FOR_DB_TIMEOUT) so the CMS"
     echo "start waits for the DB to be reachable on reboot."
     echo "********"
+    echo "Support: '${serviceCmd} stop' escalates from SIGTERM to SIGKILL after"
+    echo "STOP_TIMEOUT seconds (default 60, set in /etc/default/${SERVICE_NAME}). If the CMS"
+    echo "is ever still running after a stop, force it down with:"
+    echo "  sudo pkill -KILL -f \"java.*-Djetty.base=${JETTY_BASE}\""
+    echo "********"
 
 else # Uninstall
 echo checking for jetty service

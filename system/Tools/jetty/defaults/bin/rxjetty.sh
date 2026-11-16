@@ -110,6 +110,26 @@ NAME=$(echo $(basename $0) | sed -e 's/^[SK][0-9]*//' -e 's/\.sh$//')
 # WAIT_FOR_DB_INTERVAL
 #   Optional. Seconds between DB probe attempts. Default: 2.
 #
+# STOP_TIMEOUT
+#   Optional. Seconds "stop" waits for the CMS to exit after SIGTERM before it
+#   escalates to SIGKILL (then waits a further 5 seconds). Default: 60.
+#
+# Support: forcing the CMS down
+#   "stop" already escalates from SIGTERM to SIGKILL by itself, so a force-kill
+#   should never normally be needed. If "stop" ever reports FAILED or the JVM is
+#   still running afterwards, this one-liner kills every Java process of this
+#   install only (it matches on this install's -Djetty.base). Replace <name>
+#   with the service name, for example PercussionCMS:
+#
+#     sudo pkill -KILL -f "java.*-Djetty.base=$(sed -n 's/^[[:space:]]*JETTY_BASE=//p' /etc/default/<name>)"
+#
+#   Check that nothing is left with:
+#
+#     pgrep -af "java.*-Djetty.base=$(sed -n 's/^[[:space:]]*JETTY_BASE=//p' /etc/default/<name>)"
+#
+#   Then remove the stale PID file (the JETTY_PID path in /etc/default/<name>)
+#   if it is still there, and start the service again with "start".
+#
 
 usage()
 {
