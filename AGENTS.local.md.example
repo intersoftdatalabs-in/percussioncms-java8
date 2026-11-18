@@ -1,0 +1,29 @@
+== Personal
+
+* My name is `Whatever you want the AI to call you`
+
+== GitHub (GH)
+
+* `xyz` is an SSH  HostAlias for `github.com`.
+* `xyz` is my GH username for this repository, it should be used for all commits.
+* `gh` command is installed and configured.  Example: `gh auth switch -u xyz`
+* `xyz` is the GH organization for this repository
+* Historical: This repository was formerly a fork of the now archived `percussion/percussioncms` GH repository.
+* My private email is: `xyz@xyz.com`, my public no reply email is `xyz@users.noreply.github.com`
+
+== Forge identity verification
+
+Before **any** `gh` operation on this `intersoftdatalabs-in/percussioncms-java8` repository, agents MUST run `gh auth status` and confirm the active account is `your gh account`; if not, run `gh auth switch -u your gh account` first.
+
+== GPG
+
+* My GPG key for gpg operations like commit signing is: `xyz-key`
+
+== Git Commit Messages, PR Descriptions, Issue Descriptions, All Issue / Review / PR comment Message Footers
+
+* I prefer a footer on all agent generated messages that looks like the following for agent assisted work:
+
+```
+> Co-Authored by <coding tool> <coding tool version> using <model name> with agent <agent name>.
+```
+
