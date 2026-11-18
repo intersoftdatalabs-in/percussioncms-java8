@@ -122,7 +122,7 @@ rem More extra parameters
 set PR_LOGPATH=%CATALINA_BASE%\logs
 set PR_STDOUTPUT=auto
 set PR_STDERROR=auto
-"%EXECUTABLE%" //US//%SERVICE_NAME% ++JvmOptions "-Djava.net.preferIPv4Stack=true;-Djava.net.preferIPv4Addresses=true;-Djava.io.tmpdir=%CATALINA_BASE%\temp;-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager;-Djava.util.logging.config.file=%CATALINA_BASE%\log4j2\conf\log4j2-tomcat.xml;-Dfile.encoding=UTF-8;-Dderby.system.home=%CATALINA_HOME%\derbydata" --JvmMs 128 --JvmMx 1024
+"%EXECUTABLE%" //US//%SERVICE_NAME% ++JvmOptions "-Djava.net.preferIPv4Stack=true;-Djava.net.preferIPv4Addresses=true;-Djava.io.tmpdir=%CATALINA_BASE%\temp;-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager;-Djava.util.logging.config.file=%CATALINA_BASE%\log4j2\conf\log4j2-tomcat.xml;-Dfile.encoding=UTF-8;-Dderby.system.home=%CATALINA_HOME%\derbydata;-XX:+IgnoreUnrecognizedVMOptions;-XX:-UseBASE64Intrinsics" --JvmMs 128 --JvmMx 1024
 echo The service '%SERVICE_NAME%' has been installed.
 
 :end

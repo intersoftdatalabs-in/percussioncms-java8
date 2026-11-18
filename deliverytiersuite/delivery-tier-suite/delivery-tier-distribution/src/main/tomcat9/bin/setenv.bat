@@ -5,5 +5,8 @@ REM Suppress noisy "Ignoring call to j.u.l.Logger.setUseParentHandlers(true)" wa
 REM from the Log4j JUL bridge during early Tomcat startup.
 SET JAVA_OPTS=%JAVA_OPTS% -Dorg.apache.logging.log4j.jul.Log4jLogger.level=OFF
 
+REM CVE-2026-114938 (GH-288): proactive defense-in-depth for unpatched JDK 17/21+ (safe no-op on JDK 8).
+SET CATALINA_OPTS=-XX:+IgnoreUnrecognizedVMOptions -XX:-UseBASE64Intrinsics %CATALINA_OPTS%
+
 
 
