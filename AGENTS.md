@@ -2,6 +2,8 @@
 
 This file provides guidance for AI agents operating in the Percussion CMS codebase.
 
+The settings in `./AGENTS.local.md` should override any settings in this file.  If you are an agent, you should read both files.
+
 ## Branch Information
 
 - **Repo Root**: `./`
