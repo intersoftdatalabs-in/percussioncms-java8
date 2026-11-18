@@ -74,6 +74,7 @@ import com.percussion.security.PSEncryptionException;
 import com.percussion.security.PSEncryptor;
 import com.percussion.security.SecureStringUtils;
 import com.percussion.security.ToDoVulnerability;
+import com.percussion.security.io.PSPathInjectionGuard;
 import com.percussion.server.PSServer;
 import com.percussion.services.assembly.IPSAssemblyErrors;
 import com.percussion.services.assembly.IPSAssemblyItem;
@@ -145,7 +146,6 @@ import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
-import javax.xml.XMLConstants;
 import net.htmlparser.jericho.HTMLElementName;
 import net.htmlparser.jericho.OutputDocument;
 import net.htmlparser.jericho.Source;
@@ -184,7 +184,7 @@ public class PSPageUtils extends PSJexlUtilBase {
 
   private static final String LINKCHECK_CACHENAME = "PSLinkChecker";
 
-  private static final String WEB_RESOURCES = "web_resources";
+  private static final String RX_RESOURCES = "rx_resources";
   private static final String CATEGORY_URL = "../rx_resources/category/category.xml";
 
   /**
@@ -1447,21 +1447,31 @@ public class PSPageUtils extends PSJexlUtilBase {
     Map<String, String> catMap = new HashMap<>();
     String url = CATEGORY_URL;
 
-    int index = url.indexOf("rx_resources");
+    int index = url.indexOf(RX_RESOURCES);
     if (index == -1) {
       log.error("Category tree url location is not supported. URL:" + url);
       return catMap;
     }
-    File catFile = getFileSystemService().getFile(url.substring(index + "rx_resources".length()));
-
-    // Need to change the path for the file as the location for category xml
-    // has changed along with the format.
-    String correctedPath = catFile.getAbsolutePath().replace(WEB_RESOURCES, "rx_resources");
-    catFile = null;
-    catFile = new File(correctedPath);
+    String relativeCategoryPath =
+        StringUtils.stripStart(url.substring(index + RX_RESOURCES.length()), "/");
+    IPSFileSystemService fsService = getFileSystemService();
+    String rootFolderPath = fsService.getRootFolderPath();
+    File webResourcesDir =
+        StringUtils.isNotBlank(rootFolderPath)
+            ? new File(rootFolderPath).getAbsoluteFile()
+            : fsService.getFile("/").getAbsoluteFile();
+    File rxDir = webResourcesDir.getParentFile();
+    File rxResourcesDir = rxDir != null ? new File(rxDir, RX_RESOURCES) : new File(RX_RESOURCES);
+    File catFile =
+        rxResourcesDir.isDirectory()
+            ? PSPathInjectionGuard.requireUnderBase(rxResourcesDir, relativeCategoryPath)
+            : new File(rxResourcesDir, relativeCategoryPath);
     SAXBuilder builder = new SAXBuilder();
-    builder.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-    builder.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+    builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+    builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
+    builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+    builder.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+    builder.setExpandEntities(false);
     Document document;
     try {
       document = builder.build(catFile);
@@ -3049,6 +3059,10 @@ public class PSPageUtils extends PSJexlUtilBase {
           (IPSFileSystemService) getWebApplicationContext().getBean("webResourcesService");
     }
     return fileSystemService;
+  }
+
+  public void setFileSystemService(IPSFileSystemService fileSystemService) {
+    this.fileSystemService = fileSystemService;
   }
 
   public IPSPageCategoryService getPageCategoryService() {
