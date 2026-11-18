@@ -153,6 +153,7 @@ cat <<-EOF > /etc/default/${SERVICE_NAME}
 	CATALINA_BASE="${CATALINA_HOME}"
 	CATALINA_OUT="${CATALINA_HOME}/logs/catalina.log"
 	CATALINA_PID="${TOMCAT_RUN}/PercussionStagingDTS.pid"
+	CATALINA_OPTS="-XX:+IgnoreUnrecognizedVMOptions -XX:-UseBASE64Intrinsics"
 EOF
 
 echo "Configuration for service ${SERVICE_NAME} in /etc/init.d/${SERVICE_NAME} must reinstall or update if paths change"

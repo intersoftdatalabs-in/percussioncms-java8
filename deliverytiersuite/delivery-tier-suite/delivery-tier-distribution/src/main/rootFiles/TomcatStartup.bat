@@ -20,5 +20,7 @@ SET JRE_HOME=%SCRIPT_DIR%\..\JRE
 )
 
 set JAVA_OPTS=%JAVA_OPTS% -Dhttps.protocols=TLSv1.2 -Djava.net.preferIPv4Stack=true -Djava.net.preferIPv4Addresses=true -Dfile.encoding=UTF-8 -Xmx1024m -Dnet.sf.ehcache.skipUpdateCheck=true -XX:+DisableExplicitGC -XX:+UseConcMarkSweepGC -XX:NewSize=256m -XX:SurvivorRatio=16 -Djava.endorsed.dirs=%SERVER_DIR%\endorsed  -Dcatalina.base=%SERVER_DIR% -Dcatalina.home=%SERVER_DIR% -Djava.io.tmpdir=%SERVER_DIR%\temp -Dderby.system.home=%SERVER_DIR%\derbydata -Dorg.apache.commons.collections.enableUnsafeSerialization=false
+REM CVE-2026-114938 (GH-288): ensure Base64 intrinsic is disabled (precedes operator %CATALINA_OPTS% overrides; safe on JDK 8).
+set CATALINA_OPTS=-XX:+IgnoreUnrecognizedVMOptions -XX:-UseBASE64Intrinsics %CATALINA_OPTS%
 set CATALINA_HOME=%SERVER_DIR%
 "%SERVER_DIR%\bin\catalina.bat" run

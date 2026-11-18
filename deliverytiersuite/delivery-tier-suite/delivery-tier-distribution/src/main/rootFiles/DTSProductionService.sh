@@ -155,6 +155,7 @@ cat <<-EOF > /etc/default/${SERVICE_NAME}
 	CATALINA_BASE="${CATALINA_HOME}"
 	CATALINA_OUT="${CATALINA_HOME}/logs/catalina.log"
 	CATALINA_PID="${TOMCAT_RUN}/PercussionProductionDTS.pid"
+	CATALINA_OPTS="-XX:+IgnoreUnrecognizedVMOptions -XX:-UseBASE64Intrinsics"
 	echo "Setting up pid folder /var/run${SERVICE_NAME} setting ownership to user=${RX_USER} group=${RX_GROUP}"
   mkdir -p ${TOMCAT_RUN}
   chown -R "${RX_USER}:${RX_GROUP}" "${TOMCAT_RUN}"

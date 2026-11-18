@@ -310,10 +310,40 @@ and runs on `mvn test -pl modules/perc-security-utils`.
 
 ---
 
+## Proactive Runtime Hardening — CVE-2026-114938 ("Java4Shell")
+
+**CVE-2026-114938** is an out-of-bounds heap write in the HotSpot JVM's AVX-512 VBMI-accelerated `java.util.Base64.Decoder` intrinsic (`_base64_decodeBlock`).
+
+- **Affected runtimes:** OpenJDK, Eclipse Temurin, Oracle Java SE, and Corretto **17.0.6–17.0.21**, **21.0.0–21.0.13**, **25.0.0–25.0.5**, and **27.0.0–27.0.1** on **x86-64** processors with AVX-512 VBMI support (`avx512vbmi` + `bmi2`). ARM64 systems and older x86-64 CPUs without AVX-512 VBMI are unaffected.
+- **JDK 8 (`1.8.0`):** JDK 8 does not include `UseBASE64Intrinsics` (added in JDK 11) or the AVX-512 VBMI `_base64_decodeBlock` intrinsic (added in JDK 17), so compliant JDK 8 runtimes are unaffected.
+- **Permanent fix (when running JDK 17/21+):** Upgrade the host or container JDK/JRE runtime to a patched release (`17.0.21.1+`, `21.0.13.1+` such as Eclipse Temurin `21.0.13.1+2`, `25.0.5.1+`, or `27.0.1.1+`) and restart CMS and DTS.
+
+### Shipped proactive defaults (`-XX:+IgnoreUnrecognizedVMOptions -XX:-UseBASE64Intrinsics`)
+
+To protect DTS/CMS deployments that run on an external JDK 17/21+ runtime or carry forward service/launch configurations into an 8.2 upgrade (GH-288, cross-referencing `intersoftdatalabs-in/percussioncms#6664`), 8.1.x ships **`-XX:+IgnoreUnrecognizedVMOptions -XX:-UseBASE64Intrinsics`** across CMS and DTS launch defaults:
+
+- **Why `-XX:+IgnoreUnrecognizedVMOptions` is paired first:** Passing bare `-XX:-UseBASE64Intrinsics` on JDK 8 aborts JVM startup (`Unrecognized VM option 'UseBASE64Intrinsics'`). Putting `-XX:+IgnoreUnrecognizedVMOptions` before `-XX:-UseBASE64Intrinsics` (and never resetting `-XX:-IgnoreUnrecognizedVMOptions` afterward) is a silent no-op on JDK 8 and forces fallback to the safe non-vectorized Java decoder on JDK 17/21+ across both x86-64 and ARM64.
+- **Avoid incompatible alternatives:** `-D` Java system properties cannot disable HotSpot intrinsics, `-XX:UseAVX=2` fails JVM startup on ARM64, and `-XX:DisableIntrinsic=_base64_decodeBlock` without `-XX:+UnlockDiagnosticVMOptions` fails JVM startup.
+
+| Surface | Default configuration location | Notes for existing / upgraded installs |
+|---------|-------------------------------|----------------------------------------|
+| **CMS (Jetty)** — service & `StartJetty` | `system/Tools/jetty/defaults/start.d/jvm.ini` (`jetty/defaults/start.d/jvm.ini`, under `--exec`) | Add `-XX:+IgnoreUnrecognizedVMOptions` and `-XX:-UseBASE64Intrinsics` on separate lines below `--exec` in `jetty/base/start.d/jvm.ini` (not only `/etc/default/PercussionCMS` `JAVA_OPTIONS`, which applies only to the `start.jar` bootstrap JVM). Once on a patched JDK (`21.0.13.1+`), `-XX:+UseBASE64Intrinsics` may be added under `--exec` in `jetty/base/start.d/jvm.ini`. |
+| **DTS (Tomcat 9)** — Linux service & foreground `TomcatStartup` | `Deployment/Server/bin/setenv.sh`, `setenv.bat`, `TomcatStartup.sh`, `TomcatStartup.bat`, `/etc/default/<ServiceName>` (`CATALINA_OPTS`) | Ensure `CATALINA_OPTS` includes `-XX:+IgnoreUnrecognizedVMOptions -XX:-UseBASE64Intrinsics` before operator overrides and restart DTS. |
+| **DTS (Tomcat 9)** — Windows service (`Procrun`) | `DTSProductionService.bat`, `DTSStagingService.bat` (`++JvmOptions`) | Procrun runs in `--StartMode jvm` and bypasses `setenv.bat`. For existing services, run `tomcat9.exe //US//PercussionProductionDTS ++JvmOptions "-XX:+IgnoreUnrecognizedVMOptions;-XX:-UseBASE64Intrinsics"` (and `PercussionStagingDTS`) and restart. |
+
+### Verification
+
+Because CMS ships `-XX:+DisableAttachMechanism` in `jvm.ini`, `jcmd <pid> VM.flags` is refused on the CMS process. Verify the flags on the running server JVM command line instead after restarting:
+
+- **Linux / macOS:** `ps -ef | grep UseBASE64Intrinsics`
+- **Windows (PowerShell):** `Get-CimInstance Win32_Process -Filter "Name='java.exe' OR Name='tomcat9.exe'" | Select-Object ProcessId, CommandLine`
+
+---
+
 ## References
 
 - Epic: [#73](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/73)
 - Per-GAV table: `docs/ai-generated/tasks/PR#-DependencyVulnerabilityAnalysis/categorized-final.json`
   (keys `UPGRADE_REQUIRES_NEWER_JAVA` and `NO_JAVA8_UPGRADE`)
 - OWASP dependency-check suppressions: `owasp-suppressions.xml` (117 GAVs / 525 unique CVE aliases, with notes describing each mitigation)
-- Closing audits: `HibernateConfigAuditTest`, `PSRoleServiceUnsafeIdTest`, `ZipSlipGuardTest`, `PSPathInjectionGuardTest`, `PSRedirectValidationTest`
+- Closing audits: `HibernateConfigAuditTest`, `PSRoleServiceUnsafeIdTest`, `ZipSlipGuardTest`, `PSPathInjectionGuardTest`, `PSRedirectValidationTest`, `Base64IntrinsicsConfigAuditTest`
