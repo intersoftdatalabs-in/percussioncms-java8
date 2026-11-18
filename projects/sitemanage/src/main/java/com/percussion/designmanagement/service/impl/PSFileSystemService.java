@@ -137,13 +137,26 @@ public class PSFileSystemService implements IPSFileSystemService {
     return rootDirectory;
   }
 
+  /**
+   * Converts a Finder-style virtual path (such as {@code "/"} or {@code
+   * "/themes/percussion/perc_theme.css"}) to a path relative to the service root directory so Unix
+   * leading slashes are not treated as OS-root paths by {@link
+   * PSPathInjectionGuard#requireUnderBase(File, String)}.
+   */
+  private static String toRelativePath(String path) {
+    return path == null ? null : trimLeadingCharacter(path, '/');
+  }
+
   /*
    * (non-Javadoc)
    * @see com.percussion.designmanagement.service.IPSFileSystemService#getChildren(java.lang.String)
    */
   public List<File> getChildren(String path) throws FileNotFoundException {
     File root = getRootDirectory();
-    File pathFile = PSPathInjectionGuard.requireUnderBase(root, path);
+    if (path != null && !root.exists()) {
+      throw new FileNotFoundException("The path doesn't exist: " + path);
+    }
+    File pathFile = PSPathInjectionGuard.requireUnderBase(root, toRelativePath(path));
 
     if (!pathFile.exists()) {
       throw new FileNotFoundException("The path doesn't exist: " + path);
@@ -174,7 +187,7 @@ public class PSFileSystemService implements IPSFileSystemService {
   public File getFile(String path) {
     Validate.notNull(path, "path must not be null");
 
-    return PSPathInjectionGuard.requireUnderBase(getRootDirectory(), path);
+    return PSPathInjectionGuard.requireUnderBase(getRootDirectory(), toRelativePath(path));
   }
 
   /* (non-Javadoc)
