@@ -24,13 +24,10 @@ import javax.jcr.RepositoryException;
 /**
  * Minimal in-package {@link Binary} implementation used by the JCR 1.0-derived value wrappers in
  * this package. JCR 2.0's {@code Value.getBinary()} and {@code Property.getBinary()} need to return
- * a {@code Binary}, but we don't depend on {@code jackrabbit-jcr-commons} here, so we ship a tiny
- * standalone implementation backed by a byte array.
+ * a {@code Binary}, so we ship this standalone implementation backed by a byte array without
+ * depending on external JCR commons libraries.
  *
- * <p>Added for the JCR 1.0 -> 2.0 migration. Callers that need full {@code Binary} semantics (read
- * offset/length, multi-stream sharing, etc.) should use {@code
- * org.apache.jackrabbit.value.BinaryImpl} in modules that already depend on {@code
- * jackrabbit-jcr-commons}.
+ * <p>Added for the JCR 1.0 -> 2.0 migration.
  */
 public class PSBinary implements Binary {
 

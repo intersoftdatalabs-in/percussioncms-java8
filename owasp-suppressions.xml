@@ -792,21 +792,6 @@
     </suppress>
 
     <!--
-        T2.19: Spring LDAP 2.
-
-        GAVs in scope: 1 | CVEs in scope: 3 (Tier 2 0 + Tier 3 3)
-    -->
-
-    <suppress>
-        <notes><![CDATA[
-             T2.19 (Tier 3) hardening (epic #73). Spring LDAP 2.4.4 hardening. PR #134 (issue #133): LdapEncoder.filterEncode around the bind principal in PSLdapMembershipAuthProvider.searchForUser + NUL/control-char rejection in doAuthentication. Spring LDAP 3.x requires Java 11+; the 3 CVEs are pinned at the latest Java 1.8 line. GAV org.springframework.ldap:spring-ldap-core@2.4.4 (HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.19 entry.
-        ]]></notes>
-        <cve>CVE-2017-8028</cve>
-        <cve>CVE-2024-38829</cve>
-        <cve>CVE-2026-41720</cve>
-    </suppress>
-
-    <!--
         T2.20: Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.
 
         GAVs in scope: 59 | CVEs in scope: 125 (Tier 2 32 + Tier 3 93)
@@ -842,13 +827,6 @@
         <cve>CVE-2025-8885</cve>
         <cve>CVE-2026-0636</cve>
         <cve>CVE-2026-5598</cve>
-    </suppress>
-
-    <suppress>
-        <notes><![CDATA[
-             T2.20 (Tier 2) hardening (epic #73). Catch-all bucket for the 50+ smaller GAVs in NO_JAVA8_UPGRADE that do not fit any other T2.x sub-task (commons-net, dom4j, jdom, jaxen, json, jsoup, gson, guava, httpclient, netty, jackson-dataformat-*, log4j transitive deps, etc.). All CVEs are pinned at the latest Java 1.8 line for their respective GAVs. No Java 8 fix exists because every newer line requires Java 11+. Reviewer should treat each GAV case-by-case as the Java 11+ migration epic closes the residual. GAV org.apache.jackrabbit:jackrabbit-jcr-commons@2.20.17 (MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.20 entry.
-        ]]></notes>
-        <cve>CVE-2025-58782</cve>
     </suppress>
 
     <suppress>

@@ -17,7 +17,9 @@
 package com.percussion.services.publisher.impl;
 
 import com.google.common.collect.Iterators;
+import com.percussion.utils.jsr170.PSCollectionRangeIterator;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -28,11 +30,8 @@ import javax.jcr.query.QueryResult;
 import javax.jcr.query.Row;
 import javax.jcr.query.RowIterator;
 
-import org.apache.jackrabbit.commons.iterator.RowIteratorAdapter;
-
 /**
- * JCR 170 Query Results utils similar to 
- * jackrabbit commons.
+ * JCR Query Results utilities.
  * @adamgent
  */
 public class PSQueryResultUtils
@@ -82,7 +81,7 @@ public class PSQueryResultUtils
 
       public RowIterator getRows() throws RepositoryException
       {
-         return new RowIteratorAdapter(rows);
+         return new ListRowIterator(rows);
       }
 
       public NodeIterator getNodes() throws RepositoryException
@@ -90,6 +89,21 @@ public class PSQueryResultUtils
          throw new UnsupportedOperationException("Not supported");
       }
    
+   }
+
+   private static final class ListRowIterator extends PSCollectionRangeIterator<Row>
+       implements RowIterator
+   {
+      ListRowIterator(Collection<Row> rows)
+      {
+         super(rows);
+      }
+
+      @Override
+      public Row nextRow()
+      {
+         return next();
+      }
    }
 
 }

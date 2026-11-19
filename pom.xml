@@ -631,11 +631,6 @@
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-jcr-commons</artifactId>
-                <version>2.20.17</version>
-            </dependency>
             <!-- T2.x.8b hardening (issue #121): jasypt 1.9.3 removed.
                  The dependencyManagement entry is kept for reference but
                  the actual jasypt dep is no longer used. Modules that
@@ -680,10 +675,8 @@
             <dependency>
                 <groupId>javax.jcr</groupId>
                 <artifactId>jcr</artifactId>
-                <!-- JCR 2.0 (JSR-283). Required at runtime by jackrabbit-jcr-commons 2.x
-                     (its manifest declares Import-Package: javax.jcr;version="[2.0,3)").
-                     The 1.0 jar (JSR-170) was a runtime/contract mismatch that happened
-                     to compile only because the 1.0 spec is mostly a subset of 2.0. -->
+                <!-- JCR 2.0 (JSR-283). Retained for PSBinary / PSValueFactory API alignment
+                     (jackrabbit-jcr-commons was replaced in-repo and removed in #297). -->
                 <version>2.0</version>
             </dependency>
             <dependency>
@@ -2781,6 +2774,10 @@
                                         <exclude>org.apache.tika:*</exclude>
                                         <exclude>org.apache.cxf:*</exclude>
                                         <exclude>org.apache.derby:*:(,10.14.2.1)</exclude>
+                                        <exclude>org.springframework.ldap:*</exclude>
+                                        <exclude>org.springframework.security:spring-security-ldap</exclude>
+                                        <exclude>com.percussion.deliverytier:perc-secure-membership</exclude>
+                                        <exclude>org.apache.jackrabbit:jackrabbit-jcr-commons</exclude>
                                     </excludes>
                                 </bannedDependencies>
                             </rules>

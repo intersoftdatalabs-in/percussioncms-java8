@@ -24,15 +24,14 @@ import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
 
-import org.apache.jackrabbit.value.ValueFactoryImpl;
-
 import com.percussion.soln.p13n.delivery.IDeliveryProperty;
+import com.percussion.utils.jsr170.PSValueFactory;
 
 public class DeliveryProperty implements IDeliveryProperty {
 
     private Value data;
     private String name;
-    private static ValueFactory valueFactory = ValueFactoryImpl.getInstance();
+    private static ValueFactory valueFactory = new PSValueFactory();
     
     public DeliveryProperty(String name, String data) {
         super();

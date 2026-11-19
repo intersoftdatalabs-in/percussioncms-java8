@@ -37,7 +37,6 @@ import javax.jcr.query.QueryResult;
 import javax.jcr.query.Row;
 import javax.jcr.query.RowIterator;
 
-import org.apache.jackrabbit.value.ValueFactoryImpl;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JMock;
@@ -53,6 +52,7 @@ import com.percussion.soln.segment.Segment;
 import com.percussion.soln.segment.Segments;
 import com.percussion.soln.segment.rx.RxSegmentService;
 import com.percussion.utils.guid.IPSGuid;
+import com.percussion.utils.jsr170.PSValueFactory;
 import com.percussion.webservices.content.IPSContentWs;
 
 /**
@@ -69,7 +69,7 @@ public class RxSegmentServiceTest {
     IPSContentWs  contentWs;
     IPSGuidManager guidManager;
     
-    ValueFactory valueFactory = ValueFactoryImpl.getInstance();
+    ValueFactory valueFactory = new PSValueFactory();
     List<String> columns = asList("rx:sys_title", "rx:sys_contentid", 
             "rx:sys_folderid", "jcr:path");
     

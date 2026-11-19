@@ -24,6 +24,15 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Legacy Ant installer task that upgraded per-site secure configurations from {@code
+ * sys_resources/webapps/secure/WEB-INF}.
+ *
+ * @deprecated {@code perc-secure-membership} and {@code sys_resources/webapps/secure} were retired
+ *     in 8.1.9 (#297); retained as a safe no-op for Ant installer backwards compatibility ({@code
+ *     install.xml} / {@code antlib.xml}).
+ */
+@Deprecated
 public class PSUpgradeSiteConfig extends PSAction {
 
   Logger log = LogManager.getLogger(PSUpgradeSiteConfig.class);
@@ -44,6 +53,14 @@ public class PSUpgradeSiteConfig extends PSAction {
   // see base class
   @Override
   public void execute() {
+    File sourceFolder = getSourceConfigurationFolder();
+    if (!sourceFolder.exists() || !sourceFolder.isDirectory()) {
+      log.info(
+          "Secure site configuration template folder not found (retired in 8.1.9); skipping"
+              + " SiteConfig upgrade: "
+              + sourceFolder);
+      return;
+    }
     String m_strRootDir = getRootDir();
     log.info("Adding Secure Site Config at : " + m_strRootDir.toString());
     File siteConfigDir =
@@ -58,7 +75,7 @@ public class PSUpgradeSiteConfig extends PSAction {
             log.info("Adding Secure Site Config at for Site: " + siteName);
             // Delete the folder and recreate
             FileUtils.deleteDirectory(siteName);
-            FileUtils.copyDirectory(getSourceConfigurationFolder(), siteName, false);
+            FileUtils.copyDirectory(sourceFolder, siteName, false);
           } catch (IOException e) {
             log.error(
                 "SiteConfigUpgrade Failed for Site"

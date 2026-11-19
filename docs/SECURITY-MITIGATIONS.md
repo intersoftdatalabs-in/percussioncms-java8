@@ -239,14 +239,13 @@ and runs on `mvn test -pl modules/perc-security-utils`.
 - Merged PR: [#171](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/171) (issue [#170](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/170)); Wave 1 build tracked under [#296](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/296).
 - Closed Dependabot `#77` (`CVE-2022-46337`, fixed in `10.14.2.1`); all 7 historical Derby 10.x CVEs are closed on the Java 8 line alongside T2.18 defense-in-depth configuration.
 
-## T2.19 — Spring LDAP 2.4.4 hardening
+## T2.19 — Spring LDAP 2.4.4 hardening (Retired in 8.1.9)
 
 | GAV | CVE | Mitigation | Tests |
 |---|---|---|---|
-| `org.springframework.ldap:spring-ldap-core@2.4.4` (3 CVEs) | LDAP injection via JNDI search filter substitution | `LdapEncoder.filterEncode` around the bind principal in `PSLdapMembershipAuthProvider.searchForUser`; NUL/control-char rejection in `doAuthentication`. | n/a (manual code review) |
+| `org.springframework.ldap:spring-ldap-core@2.4.4`, `org.springframework.security:spring-security-ldap` (3 CVEs incl. `CVE-2026-41720`) | LDAP injection & unauthenticated simple bind (`#151`) | **Removed in Wave 1 ([#297](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/297)):** retired and removed `@Deprecated` `perc-secure-membership` and `sys_resources/webapps/secure`, eliminating `spring-ldap-core` (`CVE-2026-41720`, Dependabot `#151`) and `spring-security-ldap` from the distribution. (Historical Wave 0 guard / PR #134 filter encoding removed alongside the deprecated module.) | `PSUpgradeSiteConfigTest`, `PSSiteConfigUtilsStandaloneTest`, `enforce-banned-eol-dependencies` |
 
-- Merged PR: [#134](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/134) (issue [#133](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/133)).
-- Spring LDAP 3.x requires Java 11+; the 3 catalogued CVEs are pinned at the latest Java 1.8 line.
+- Historical PRs: [#134](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/134) (`#133`) and Wave 0 ([#292](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/292)); module retired & dependencies eliminated in [#297](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/297).
 
 ## T2.20 — Other minor deps (catch-all)
 
@@ -259,7 +258,7 @@ and runs on `mvn test -pl modules/perc-security-utils`.
 | `org.bouncycastle:bctls-jdk18on@1.83` | 4 | Same bump. |
 | `org.apache.shiro:shiro-core@2.1.0` | 12 | Pinned at `1.13.0` (PR #80) for Java 1.8 compatibility; defensive session-cookie config. |
 | `org.apache.shiro:shiro-web@2.1.0` | 5 | Same pin. |
-| `org.apache.jackrabbit:jackrabbit-jcr-commons@2.20.17` | 1 | Pinned at `<2.21` (PR #159) via dependabot policy. |
+| `org.apache.jackrabbit:jackrabbit-jcr-commons@2.20.17` | 1 (`CVE-2025-58782`) | **Replaced in-repo & removed in Wave 1 ([#297](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/297))**, closing `CVE-2025-58782` (Dependabot `#43`). |
 | `commons-net:commons-net@3.12.0` | 1 | Pinned at the latest Java 1.8 line; call-site input validation. |
 | `org.owasp:csrfguard@4.5.0` | 1 | Pinned at the latest Java 1.8 line. |
 | `com.googlecode.plist:dd-plist@1.28` | 1 | Pinned at the latest Java 1.8 line. |
@@ -359,21 +358,23 @@ Following the EOL dependency inventory and feasibility study ([#290](https://git
 
 ---
 
-## Wave 1 — EOL Java 8 Backports (8.1.9)
+## Wave 1 — EOL Java 8 Removals & Backports (8.1.9)
 
-Following the Wave 1 EOL coordinate & guardrail strategy ([#293](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/293)), Wave 1 introduces Intersoft-maintained Java 8 LTS builds monitored weekly via `fork-manifest.json` and `.github/workflows/upstream-cve-watch.yml`:
+Following the Wave 1 EOL coordinate & guardrail strategy ([#293](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/293)), Wave 1 retires/replaces removable EOL libraries in-repo and introduces Intersoft-maintained Java 8 LTS builds monitored weekly via `fork-manifest.json` and `.github/workflows/upstream-cve-watch.yml`:
 
-| Family / GAV | Closed CVEs | Upstream Backport & Verification |
+| Area / Family / GAV | Closed CVEs / Alerts | Action & Verification |
 |---|---|---|
 | `com.intsof.lts.tika:*@2.9.4.1` ([`intersoftdatalabs-in/tika@v2.9.4.1`](https://github.com/intersoftdatalabs-in/tika/releases/tag/v2.9.4.1), [#294](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/294)) | `CVE-2025-54988` (Critical), `CVE-2025-66516` (Critical) | Cherry-picked `branch_2x` StAX / Woodstox external-entity & DTD protections onto `2.9.4`; verified via `XMLReaderUtilsTest`, `WoodstoxXMLReaderUtilsTest`, `PDFParserTest`, and full-reactor `enforce-banned-eol-dependencies` banning `org.apache.tika:*` |
 | `com.intsof.lts.cxf:*@3.5.11.1` ([`intersoftdatalabs-in/cxf@v3.5.11.1`](https://github.com/intersoftdatalabs-in/cxf/releases/tag/v3.5.11.1), [#295](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/295)) | `CVE-2026-49875` (Critical), `CVE-2026-50645` (High), `CVE-2026-64958` (Moderate), `CVE-2026-78384`, `CVE-2026-54225`, `CVE-2026-57819`, `CVE-2026-107937`, `CVE-2026-108039` | Cherry-picked 14 `3.6.x-fixes` commits onto `cxf-3.5.11`; verified via 75 unit tests across `core` (50/50) and `rt/frontend/jaxrs` (25/25), Checkstyle/PMD `validate`, and full-reactor `enforce-banned-eol-dependencies` banning `org.apache.cxf:*` |
 | `org.apache.derby:*@10.14.2.1` ([`intersoftdatalabs-in/derby@v10.14.2.1`](https://github.com/intersoftdatalabs-in/derby/releases/tag/v10.14.2.1), [#296](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/296)) | `CVE-2022-46337` (`DERBY-7147`, Critical) | Built from Apache SVN `branches/10.14` (`r1929838`, `10.14.2.1`); verified via `LDAPFilterEscapingSmokeTest`, `sysinfo`, JDK 8 bytecode (`major version: 52`), and `enforce-banned-eol-dependencies` banning `org.apache.derby:*:(,10.14.2.1)` |
+| `@Deprecated` `perc-secure-membership` + `sys_resources/webapps/secure` (`org.springframework.ldap:spring-ldap-core@2.4.4`, `spring-security-ldap`) ([#297](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/297)) | `CVE-2026-41720` (High, Dependabot `#151`) | Removed `deliverytiersuite/delivery-tier-suite/secure-membership`, removed `sys_resources/webapps/secure`, guarded `PSUpgradeSiteConfig` and `PSSiteConfigUtils.createSecureSiteConfiguration`, and banned `org.springframework.ldap:*`, `spring-security-ldap`, and `perc-secure-membership` via `enforce-banned-eol-dependencies`. Verified via `PSUpgradeSiteConfigTest`, `PSSiteConfigUtilsStandaloneTest`, and 60-module `dependency:tree`. |
+| `org.apache.jackrabbit:jackrabbit-jcr-commons@2.20.17` ([#297](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/297)) | `CVE-2025-58782` (Medium, Dependabot `#43`) | Replaced `RowIteratorAdapter` in `PSQueryResultUtils` (`ListRowIterator extends PSCollectionRangeIterator<Row>`) and `ValueFactoryImpl` in `ValueUtil` (`PSValueFactory`), cleaned dormant `p13n-api`/`segmentation-*` references, removed `jackrabbit-jcr-commons` from POMs, pruned `owasp-suppressions.xml`, and banned `org.apache.jackrabbit:jackrabbit-jcr-commons`. Verified via `PSQueryResultUtilsTest`, `ValueUtilTest`, and 60-module `dependency:tree`. |
 
 ---
 
 ## References
 
-- Epic: [#73](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/73), Wave 0 [#292](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/292), and Wave 1 [#299](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/299) / [#293](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/293) / [#294](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/294) / [#295](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/295) / [#296](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/296)
+- Epic: [#73](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/73), Wave 0 [#292](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/292), and Wave 1 [#299](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/299) / [#293](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/293) / [#294](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/294) / [#295](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/295) / [#296](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/296) / [#297](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/297)
 - Per-GAV table: `docs/ai-generated/tasks/PR#-DependencyVulnerabilityAnalysis/categorized-final.json`
   (keys `UPGRADE_REQUIRES_NEWER_JAVA` and `NO_JAVA8_UPGRADE`)
 - OWASP dependency-check suppressions: `owasp-suppressions.xml` (pruned 7 removed GAV blocks in Wave 0 #292)

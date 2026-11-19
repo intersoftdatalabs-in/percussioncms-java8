@@ -20,7 +20,6 @@ jdbc*.jar
 concurrent*.jar
 aspect*.jar
 
-jackrabbit-jcr-commons*.jar
 ezmorph*.jar
 groovy-all*.jar
 jcr*.jar
