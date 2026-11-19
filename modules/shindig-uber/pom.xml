@@ -142,6 +142,10 @@
                     <groupId>de.odysseus.juel</groupId>
                     <artifactId>juel-impl</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.sanselan</groupId>
+                    <artifactId>sanselan</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -166,12 +170,6 @@
             <groupId>org.apache.shindig</groupId>
             <artifactId>shindig-features</artifactId>
             <version>${shindig.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.shiro</groupId>
-            <artifactId>shiro-web</artifactId>
-            <version>${shiro.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
