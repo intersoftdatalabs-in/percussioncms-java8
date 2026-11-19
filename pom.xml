@@ -102,7 +102,6 @@
         <eclipse-manifest-location>META-INF</eclipse-manifest-location>
         <ehcache.version>2.10.9.2</ehcache.version>
         <esapi.encoder.version>1.4.0</esapi.encoder.version>
-        <esapi.version>2.7.0.0</esapi.version>
         <fop.version>2.11</fop.version>
         <google.java.format.version>1.7</google.java.format.version>
         <gson.version>2.13.2</gson.version>
@@ -1093,21 +1092,6 @@
                 <groupId>org.owasp.encoder</groupId>
                 <artifactId>encoder-jsp</artifactId>
                 <version>${esapi.encoder.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.owasp.esapi</groupId>
-                <artifactId>esapi</artifactId>
-                <version>${esapi.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.owasp.antisamy</groupId>
-                        <artifactId>antisamy</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.owasp</groupId>
@@ -2806,6 +2790,8 @@
                                         <exclude>org.apache.jackrabbit:jackrabbit-jcr-commons</exclude>
                                         <exclude>soap:soap</exclude>
                                         <exclude>commons-httpclient:commons-httpclient</exclude>
+                                        <exclude>org.owasp.esapi:esapi</exclude>
+                                        <exclude>commons-configuration:commons-configuration</exclude>
                                     </excludes>
                                 </bannedDependencies>
                             </rules>

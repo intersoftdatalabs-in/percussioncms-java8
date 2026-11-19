@@ -39,9 +39,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.owasp.encoder.Encode;
-import org.owasp.esapi.ESAPI;
-import org.owasp.esapi.errors.EncodingException;
-import org.owasp.esapi.reference.DefaultEncoder;
 
 /**
  * A centralized utility class with static methods for performing a variety of secure string
@@ -145,7 +142,44 @@ public class SecureStringUtils {
    * @return A string encoded for LDAP, wild cards are not encoded.
    */
   public static String sanitizeStringForLDAP(String query, boolean encodeWildcards) {
-    return DefaultEncoder.getInstance().encodeForLDAP(query, encodeWildcards);
+    if (query == null) {
+      return null;
+    }
+    StringBuilder sb = new StringBuilder(query.length());
+    for (int i = 0; i < query.length(); i++) {
+      char c = query.charAt(i);
+      switch (c) {
+        case '\\':
+          sb.append("\\5c");
+          break;
+        case '/':
+          sb.append("\\2f");
+          break;
+        case '*':
+          sb.append(encodeWildcards ? "\\2a" : "*");
+          break;
+        case '(':
+          sb.append("\\28");
+          break;
+        case ')':
+          sb.append("\\29");
+          break;
+        case '\0':
+          sb.append("\\00");
+          break;
+        default:
+          if (c >= 128) {
+            byte[] utf8Bytes = String.valueOf(c).getBytes(StandardCharsets.UTF_8);
+            for (byte b : utf8Bytes) {
+              sb.append(String.format("\\%02x", b));
+            }
+          } else {
+            sb.append(c);
+          }
+          break;
+      }
+    }
+    return sb.toString();
   }
 
   /**
@@ -155,7 +189,10 @@ public class SecureStringUtils {
    * @return Returns the supplied string encoded for a JSON
    */
   public static String sanitizeForJson(String s) {
-    return DefaultEncoder.getInstance().encodeForJavaScript(s);
+    if (s == null) {
+      return null;
+    }
+    return Encode.forJavaScript(s);
   }
 
   public static final int MAX_FILENAME_LEN = 255;
@@ -1247,11 +1284,14 @@ public class SecureStringUtils {
   }
 
   public static String urlEncode(String s) {
+    if (s == null) {
+      return null;
+    }
     String ret = "";
 
     try {
-      ret = DefaultEncoder.getInstance().encodeForURL(s);
-    } catch (EncodingException e) {
+      ret = URLEncoder.encode(s, StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
       log.error(e.getMessage());
     }
 
@@ -1314,21 +1354,12 @@ public class SecureStringUtils {
    * Utility to sanitize a string for use in a SQL statement.
    *
    * @param str User provided string
-   * @param dbType The type of database that should be used for encoding if an ESAPI Codec is
-   *     available for the DB.
-   * @return The sanitized string, will use {@link #sanitizeStringForFileSystem(String)} if no ESAPI
-   *     codec is available.
+   * @param dbType The type of database (retained for binary compatibility; delegates to {@link
+   *     #sanitizeStringForSQLStatement(String)})
+   * @return The sanitized string.
    */
   public static String sanitizeStringForSQLStatement(String str, DatabaseType dbType) {
     return sanitizeStringForSQLStatement(str);
-
-    /**
-     * This is not Consistent across multiple DB Types and thus commented. Codec codec;
-     * switch(dbType){ case DERBY: case DB2: codec = new DB2Codec(); break; case MYSQL: codec = new
-     * MySQLCodec(MySQLCodec.Mode.STANDARD); break; case ORACLE: codec = new OracleCodec(); break;
-     * default: codec = null; } if(codec == null) { return sanitizeStringForSQLStatement(str);
-     * }else{ return DefaultEncoder.getInstance().encodeForSQL(codec,str); }*
-     */
   }
 
   /**
@@ -1442,6 +1473,18 @@ public class SecureStringUtils {
     return trimmed;
   }
 
+  private static String decodeUrlPathCanonical(String input) throws UnsupportedEncodingException {
+    String decodedOnce = URLDecoder.decode(input, StandardCharsets.UTF_8.name());
+    // Detect double/nested percent encoding (e.g. %252e%252e%252f); preserve literal '+'
+    // already decoded once from %2b so it is not re-interpreted as a space on the second check.
+    String reEncodedPlus = decodedOnce.replace("+", "%2B");
+    String decodedTwice = URLDecoder.decode(reEncodedPlus, StandardCharsets.UTF_8.name());
+    if (!decodedTwice.equals(decodedOnce)) {
+      throw new IllegalArgumentException("Multiple URL encoding detected in path");
+    }
+    return decodedOnce;
+  }
+
   /**
    * Takes a path provided as input and makes sure that it is:
    *
@@ -1457,8 +1500,8 @@ public class SecureStringUtils {
     if (path == null) return ret;
 
     try {
-      // Url decode path
-      ret = ESAPI.encoder().decodeFromURL(path);
+      // Url decode path and fail closed on multiple or malformed percent-encoding
+      ret = decodeUrlPathCanonical(path);
 
       // Normalize backslashes to slashes
       ret = ret.replace("\\", "/");
@@ -1489,10 +1532,11 @@ public class SecureStringUtils {
         ret = null;
       }
 
-    } catch (EncodingException e) {
+    } catch (IllegalArgumentException | UnsupportedEncodingException e) {
       log.warn(
           "Error decoding wild path {}. Error: {}", path, PSExceptionUtils.getMessageForLog(e));
       log.debug(PSExceptionUtils.getDebugMessageForLog(e));
+      ret = null;
     }
 
     return ret;
@@ -1629,7 +1673,7 @@ public class SecureStringUtils {
   public static boolean isHTML(String src) {
     boolean ret = false;
     if (src != null && !StringUtils.isEmpty(src)) {
-      if (!src.equals(ESAPI.encoder().encodeForHTML(src))) {
+      if (!src.equals(Encode.forHtml(src))) {
         ret = true;
       }
     }
@@ -1645,7 +1689,7 @@ public class SecureStringUtils {
   public static boolean isXML(String src) {
     boolean ret = false;
     if (src != null && !StringUtils.isEmpty(src)) {
-      if (!src.equals(ESAPI.encoder().encodeForXML(src))) {
+      if (!src.equals(Encode.forXml(src))) {
         ret = true;
       }
     }
