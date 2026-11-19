@@ -118,7 +118,7 @@
 
     <suppress>
         <notes><![CDATA[
-             T2.3 (Tier 2) hardening (epic #73). Apache CXF 3.5.x hardening: replaced <cxf:logging/> with size-limited LoggingFeature bean. No WS-Security interceptors are wired in the bus. See PR #169 (issue #168) and the follow-up property cleanup in PR #204. GAV org.apache.cxf:cxf-core@3.5.11 (CRITICAL, HIGH, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.3 entry.
+             T2.3 (Tier 2) hardening (epic #73). Apache CXF 3.5.x hardening: replaced <cxf:logging/> with size-limited LoggingFeature bean; no WS-Security interceptors wired (PR #169 / PR #204). Wave 1 (#295) migrated to com.intsof.lts.cxf:cxf-core@3.5.11.1 closing CVE-2026-49875, CVE-2026-50645, CVE-2026-54225, CVE-2026-64958, CVE-2026-78384, CVE-2026-107937, CVE-2026-108039. Remaining historical CVEs are mitigated by T2.3 hardening and have no upstream 3.5.x release.
         ]]></notes>
         <cve>CVE-2014-0035</cve>
         <cve>CVE-2014-0109</cve>
@@ -132,7 +132,6 @@
         <cve>CVE-2022-46364</cve>
         <cve>CVE-2025-23184</cve>
         <cve>CVE-2025-48795</cve>
-        <cve>CVE-2026-50645</cve>
     </suppress>
 
     <suppress>

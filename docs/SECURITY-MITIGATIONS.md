@@ -44,12 +44,12 @@ mitigation applied. Per-CVE OWASP `dependency-check` suppressions live in
 
 | GAV | CVE | Mitigation | Tests |
 |---|---|---|---|
-| `org.apache.cxf:cxf-core@3.5.11` (13 CVEs) | logging-side RCE / OOM, WSS4J classpath confusion | `<cxf:logging/>` replaced with size-limited LoggingFeature bean (LIMIT=1000, verbose=false). No WSS4J interceptors are wired in the bus. | n/a (manual config review) |
-| `org.apache.cxf:cxf-rt-frontend-jaxrs@3.5.11` (4 CVEs) | JAX-RS reflection / type confusion | Same bus-level hardening. | n/a (manual config review) |
-| `org.apache.cxf:cxf-rt-transports-http@3.5.11` (3 CVEs) | HTTP transport framing | Same bus-level hardening. | n/a (manual config review) |
+| `com.intsof.lts.cxf:cxf-core@3.5.11.1` (previously `org.apache.cxf:cxf-core@3.5.11`) | XXE (`CVE-2026-49875`), attachment/DEFLATE/XML bounds (`CVE-2026-50645`, `CVE-2026-54225`, `CVE-2026-64958`, `CVE-2026-78384`, `CVE-2026-107937`, `CVE-2026-108039`), logging-side OOM | **Fixed upstream 2026 XXE & DoS advisories in Wave 1 ([#295](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/295))** via Intersoft fork [`intersoftdatalabs-in/cxf@v3.5.11.1`](https://github.com/intersoftdatalabs-in/cxf/releases/tag/v3.5.11.1); retains bus-level `<cxf:logging/>` limit=1000 and no WSS4J interceptors. | `EndpointReferenceUtilsTest`, `URIResolverTest`, `TLSParameterJaxBUtilsTest`, `AttachmentDeserializerTest`, `CompressionUtilsTest` (in CXF fork) |
+| `com.intsof.lts.cxf:cxf-rt-frontend-jaxrs@3.5.11.1` (previously `org.apache.cxf:cxf-rt-frontend-jaxrs@3.5.11`) | `CVE-2026-57819`, `CVE-2026-64958`, JAX-RS reflection / type confusion | Closed by `com.intsof.lts.cxf:3.5.11.1` `FormUtils` 500-param default and `MessageContextImpl` attachment limit alongside bus-level hardening. | `FormUtilsTest`, `FormEncodingProviderTest`, `MultipartProviderTest` (in CXF fork) |
+| `com.intsof.lts.cxf:cxf-rt-transports-http@3.5.11.1` (previously `org.apache.cxf:cxf-rt-transports-http@3.5.11`) | HTTP transport framing | Built cleanly on JDK 8 (`com.intsof.lts.cxf:3.5.11.1`); retains bus-level hardening. | Checkstyle/PMD + consumer `rest` suite |
 
-- Merged PR: [#169](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/169) (issue [#168](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/168)); follow-up property cleanup in [#204](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/204).
-- CXF 3.6.x requires Java 11+; the 20 catalogued CVEs are pinned at the latest Java 1.8 line.
+- Merged PR: [#169](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/169) (issue [#168](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/168)); follow-up property cleanup in [#204](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/204); Wave 1 backport tracked under [#295](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/295).
+- CXF 3.6.x requires Java 11+; remaining historical pre-3.5.11 advisories are mitigated at the bus configuration level.
 
 ## T2.4 — Spring Framework 5.3.x + Spring Security 5.8.x hardening
 
@@ -366,12 +366,13 @@ Following the Wave 1 EOL coordinate & guardrail strategy ([#293](https://github.
 | Family / GAV | Closed CVEs | Upstream Backport & Verification |
 |---|---|---|
 | `com.intsof.lts.tika:*@2.9.4.1` ([`intersoftdatalabs-in/tika@v2.9.4.1`](https://github.com/intersoftdatalabs-in/tika/releases/tag/v2.9.4.1), [#294](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/294)) | `CVE-2025-54988` (Critical), `CVE-2025-66516` (Critical) | Cherry-picked `branch_2x` StAX / Woodstox external-entity & DTD protections onto `2.9.4`; verified via `XMLReaderUtilsTest`, `WoodstoxXMLReaderUtilsTest`, `PDFParserTest`, and full-reactor `enforce-banned-eol-dependencies` banning `org.apache.tika:*` |
+| `com.intsof.lts.cxf:*@3.5.11.1` ([`intersoftdatalabs-in/cxf@v3.5.11.1`](https://github.com/intersoftdatalabs-in/cxf/releases/tag/v3.5.11.1), [#295](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/295)) | `CVE-2026-49875` (Critical), `CVE-2026-50645` (High), `CVE-2026-64958` (Moderate), `CVE-2026-78384`, `CVE-2026-54225`, `CVE-2026-57819`, `CVE-2026-107937`, `CVE-2026-108039` | Cherry-picked 14 `3.6.x-fixes` commits onto `cxf-3.5.11`; verified via 75 unit tests across `core` (50/50) and `rt/frontend/jaxrs` (25/25), Checkstyle/PMD `validate`, and full-reactor `enforce-banned-eol-dependencies` banning `org.apache.cxf:*` |
 
 ---
 
 ## References
 
-- Epic: [#73](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/73), Wave 0 [#292](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/292), and Wave 1 [#299](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/299) / [#293](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/293) / [#294](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/294)
+- Epic: [#73](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/73), Wave 0 [#292](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/292), and Wave 1 [#299](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/299) / [#293](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/293) / [#294](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/294) / [#295](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/295)
 - Per-GAV table: `docs/ai-generated/tasks/PR#-DependencyVulnerabilityAnalysis/categorized-final.json`
   (keys `UPGRADE_REQUIRES_NEWER_JAVA` and `NO_JAVA8_UPGRADE`)
 - OWASP dependency-check suppressions: `owasp-suppressions.xml` (pruned 7 removed GAV blocks in Wave 0 #292)

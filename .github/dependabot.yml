@@ -80,9 +80,10 @@ updates:
           - "com.intsof.lts*"
 
     ignore:
+      # --- Intersoft Java 8 LTS internal forks (monitored by upstream-cve-watch.yml) ---
+      - dependency-name: "com.intsof.lts.*"
       # --- Entire ecosystems that require Java 11+ / Jakarta ---
       - dependency-name: "jakarta*"
-      - dependency-name: "com.intsof.lts.*"
       - dependency-name: "com.percussion:*"
         versions:
           - ">= 0"

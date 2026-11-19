@@ -200,7 +200,7 @@
             <artifactId>css-selectors</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxrs</artifactId>
             <exclusions>
                 <exclusion>
@@ -214,7 +214,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
         </dependency>
         <dependency>
@@ -222,7 +222,7 @@
             <artifactId>javax.json-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-rs-extension-providers</artifactId>
         </dependency>
         <dependency>
@@ -347,7 +347,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-core</artifactId>
             <scope>compile</scope>
         </dependency>
@@ -597,7 +597,7 @@
             <artifactId>encoder</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-rs-service-description-openapi-v3</artifactId>
         </dependency>
         <dependency>

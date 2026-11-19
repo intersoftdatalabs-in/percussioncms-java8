@@ -279,7 +279,7 @@
             <artifactId>swagger-annotations</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-rs-service-description-openapi-v3</artifactId>
             <version>${cxf.version}</version>
         </dependency>
@@ -648,7 +648,7 @@
         </dependency>
         <!-- Used by tika -->
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-rs-client</artifactId>
             <version>${cxf.version}</version>
             <scope>runtime</scope>

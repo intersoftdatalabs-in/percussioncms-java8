@@ -96,7 +96,7 @@
         <commons.math.version>3.6.1</commons.math.version>
         <commons.rng.version>1.3</commons.rng.version>
         <commons.validator.version>1.10.1</commons.validator.version>
-        <cxf.version>3.5.11</cxf.version>
+        <cxf.version>3.5.11.1</cxf.version>
         <derby.version>10.14.2.0</derby.version>
         <duplicate.finder.maven.plugin.version>1.4.0</duplicate.finder.maven.plugin.version>
         <eclipse-manifest-location>META-INF</eclipse-manifest-location>
@@ -404,38 +404,38 @@
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-frontend-jaxrs</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-features-logging</artifactId>
                 <version>${cxf.version}</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-rs-service-description-openapi-v3</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-transports-local</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-transports-http</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-transports-http-jetty</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-rs-client</artifactId>
                 <version>${cxf.version}</version>
                 <scope>test</scope>
@@ -2011,13 +2011,13 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-core</artifactId>
                 <version>${cxf.version}</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-rs-extension-providers</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
@@ -2157,6 +2157,14 @@
             <id>github-intersoft-tika</id>
             <name>Intersoft Tika Java 8 LTS</name>
             <url>https://maven.pkg.github.com/intersoftdatalabs-in/tika</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>github-intersoft-cxf</id>
+            <name>Intersoft CXF Java 8 LTS Fork</name>
+            <url>https://maven.pkg.github.com/intersoftdatalabs-in/cxf</url>
         </repository>
     </repositories>
     <pluginRepositories>
@@ -2763,6 +2771,7 @@
                                         <exclude>org.eclipse.jetty.http2:*</exclude>
                                         <exclude>org.eclipse.jetty:jetty-alpn-openjdk8-client</exclude>
                                         <exclude>org.apache.tika:*</exclude>
+                                        <exclude>org.apache.cxf:*</exclude>
                                     </excludes>
                                 </bannedDependencies>
                             </rules>
