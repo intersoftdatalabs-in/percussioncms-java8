@@ -69,18 +69,6 @@
         </dependency>
         <dependency>
             <groupId>com.percussion.deliverytier</groupId>
-            <artifactId>perc-secure-membership</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.percussion.deliverytier</groupId>
             <artifactId>perc-tomcat-common</artifactId>
             <version>${project.version}</version>
         </dependency>

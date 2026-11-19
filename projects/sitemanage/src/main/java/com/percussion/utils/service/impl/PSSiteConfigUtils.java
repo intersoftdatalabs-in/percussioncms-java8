@@ -313,9 +313,17 @@ public class PSSiteConfigUtils {
    */
   public static void createSecureSiteConfiguration(String sitename) throws IOException {
     PSPathInjectionGuard.requireSafeFileName(sitename);
+    File sourceFolder = getSourceConfigurationFolder();
+    if (!sourceFolder.exists() || !sourceFolder.isDirectory()) {
+      log.warn(
+          "Deprecated secure site template folder {} does not exist (perc-secure-membership"
+              + " retired in 8.1.9); skipping template copy for site {}",
+          sourceFolder,
+          sitename);
+      return;
+    }
     File siteConfigFolder = forceMkDirSiteConfig(sitename);
-    FileUtils.copyDirectory(
-        getSourceConfigurationFolder(), siteConfigFolder, false); // codeql[java/path-injection]
+    FileUtils.copyDirectory(sourceFolder, siteConfigFolder, false); // codeql[java/path-injection]
   }
 
   /**
