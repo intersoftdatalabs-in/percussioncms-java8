@@ -3,7 +3,7 @@
 
     <servers>
         <!--
-        Required to resolve Intersoft Java 8 extended-support Jetty artifacts (9.4.65.1+)
+        Required to resolve Intersoft Java 8 extended-support Jetty artifacts (com.intsof.lts.jetty 9.4.65.2+)
         from GitHub Packages (https://maven.pkg.github.com/intersoftdatalabs-in/jetty.project).
         Use your GitHub username and a Personal Access Token (classic) with read:packages scope.
         -->

@@ -119,7 +119,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.eclipse.jetty</groupId>
+                                    <groupId>com.intsof.lts.jetty</groupId>
                                     <artifactId>jetty-distribution</artifactId>
                                     <version>${jetty.version}</version>
                                     <type>zip</type>

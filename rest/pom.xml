@@ -77,6 +77,21 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.intsof.lts.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.intsof.lts.jetty</groupId>
+            <artifactId>jetty-security</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.intsof.lts.jetty</groupId>
+            <artifactId>jetty-continuation</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
