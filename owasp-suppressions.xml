@@ -132,9 +132,9 @@
     </suppress>
 
     <!--
-        T2.4: Spring Framework 5.
+        T2.4: Spring Framework 5 + Spring Security 5.8.
 
-        GAVs in scope: 10 | CVEs in scope: 114 (Tier 2 39 + Tier 3 75)
+        GAVs in scope: 9 | CVEs in scope: 109 (Tier 2 38 + Tier 3 71)
     -->
 
     <suppress>
@@ -185,13 +185,6 @@
         <cve>CVE-2026-41845</cve>
         <cve>CVE-2026-41846</cve>
         <cve>CVE-2026-41853</cve>
-    </suppress>
-
-    <suppress>
-        <notes><![CDATA[
-             T2.4 (Tier 2) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework.security:spring-security-crypto@5.8.16 (HIGH). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
-        ]]></notes>
-        <cve>CVE-2025-22228</cve>
     </suppress>
 
     <suppress>
@@ -252,7 +245,7 @@
 
     <suppress>
         <notes><![CDATA[
-             T2.4 (Tier 3) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework.security:spring-security-config@5.8.16 (CRITICAL, HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
+             T2.4 (Tier 3) hardening (epic #73) + Wave 2 Stage 2 LTS backport (#308). Updated to com.intsof.lts.springframework.security:spring-security-config@5.8.16.1 (closing all 5 5.8.x CVEs in our Java 8 LTS fork: CVE-2025-22228, CVE-2026-22732, CVE-2026-22746, CVE-2026-41706, CVE-2026-47838; spring-security-config itself now supports X.509 principal-extractor-ref). Retains PSSecurityHeadersFilter + Spring Security hardening; historical CVEs have no upstream 5.8.x release. GAV com.intsof.lts.springframework.security:spring-security-config@5.8.16.1 (HISTORICAL CRITICAL, HIGH, MODERATE); see docs/SECURITY-MITIGATIONS.md T2.4 entry.
         ]]></notes>
         <cve>CVE-2023-34034</cve>
         <cve>CVE-2023-34035</cve>
@@ -263,7 +256,7 @@
 
     <suppress>
         <notes><![CDATA[
-             T2.4 (Tier 3) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework.security:spring-security-core@5.8.16 (CRITICAL, HIGH, LOW, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
+             T2.4 (Tier 3) hardening (epic #73) + Wave 2 Stage 2 LTS backport (#308). Updated to com.intsof.lts.springframework.security:spring-security-core@5.8.16.1 (closing CVE-2026-22746 additional-checks timing oracle). Retains PSSecurityHeadersFilter + Spring Security hardening; historical CVEs have no Java 8 fix at a newer line. GAV com.intsof.lts.springframework.security:spring-security-core@5.8.16.1 (HISTORICAL CRITICAL, HIGH, LOW, MODERATE); see docs/SECURITY-MITIGATIONS.md T2.4 entry.
         ]]></notes>
         <cve>CVE-2010-3700</cve>
         <cve>CVE-2011-2731</cve>
@@ -294,21 +287,17 @@
         <cve>CVE-2025-22234</cve>
         <cve>CVE-2025-41232</cve>
         <cve>CVE-2025-41248</cve>
-        <cve>CVE-2026-22746</cve>
         <cve>CVE-2026-22751</cve>
     </suppress>
 
     <suppress>
         <notes><![CDATA[
-             T2.4 (Tier 3) hardening (epic #73). Spring Framework 5.3.x + Spring Security 5.8.x hardening. New PSSecurityHeadersFilter registered for X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS on every delivery-tier webapp (PR #95, #97, issues #94, #96). Follow-up headers + admin-config hardening + firewall docs in PR #165 (issue #164). No Java 1.8 fix exists because Spring 6.x requires Java 17+. GAV org.springframework.security:spring-security-web@5.8.16 (CRITICAL, HIGH, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.4 entry.
+             T2.4 (Tier 3) hardening (epic #73) + Wave 2 Stage 2 LTS backport (#308). Updated to com.intsof.lts.springframework.security:spring-security-web@5.8.16.1 (closing CVE-2026-22732 OnCommittedResponseWrapper Content-Length bypass, CVE-2026-41706 CookieRequestCache open redirect, and CVE-2026-47838 SubjectX500PrincipalExtractor X.509 bypass). Retains PSSecurityHeadersFilter + Spring Security hardening; historical CVEs have no Java 8 fix at a newer line. GAV com.intsof.lts.springframework.security:spring-security-web@5.8.16.1 (HISTORICAL CRITICAL, HIGH, MODERATE); see docs/SECURITY-MITIGATIONS.md T2.4 entry.
         ]]></notes>
         <cve>CVE-2021-22112</cve>
         <cve>CVE-2022-22978</cve>
         <cve>CVE-2024-38821</cve>
-        <cve>CVE-2026-22732</cve>
         <cve>CVE-2026-22747</cve>
-        <cve>CVE-2026-41706</cve>
-        <cve>CVE-2026-47838</cve>
     </suppress>
 
     <!--
