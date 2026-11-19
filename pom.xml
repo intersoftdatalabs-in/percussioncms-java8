@@ -2175,6 +2175,14 @@
             <name>Intersoft ActiveMQ Java 8 LTS Fork</name>
             <url>https://maven.pkg.github.com/intersoftdatalabs-in/activemq</url>
         </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>github-intersoft-spring-security</id>
+            <name>Intersoft Spring Security 5.8 Java 8 LTS Fork</name>
+            <url>https://maven.pkg.github.com/intersoftdatalabs-in/spring-security</url>
+        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -2758,10 +2766,10 @@
                 <executions>
                     <execution>
                         <id>enforce-banned-eol-dependencies</id>
-                        <phase>validate</phase>
                         <goals>
                             <goal>enforce</goal>
                         </goals>
+                        <phase>validate</phase>
                         <configuration>
                             <fail>true</fail>
                             <rules>
@@ -2784,7 +2792,7 @@
                                         <exclude>org.apache.derby:*:(,10.14.2.1)</exclude>
                                         <exclude>org.apache.activemq:*</exclude>
                                         <exclude>org.springframework.ldap:*</exclude>
-                                        <exclude>org.springframework.security:spring-security-ldap</exclude>
+                                        <exclude>org.springframework.security:*</exclude>
                                         <exclude>com.percussion.deliverytier:perc-secure-membership</exclude>
                                         <exclude>org.apache.jackrabbit:jackrabbit-jcr-commons</exclude>
                                     </excludes>

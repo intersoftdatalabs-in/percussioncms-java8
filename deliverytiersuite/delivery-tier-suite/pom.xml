@@ -44,7 +44,7 @@
         <mysql.connector.version>8.4.0</mysql.connector.version>
         <servlet.api.version>4.0.1</servlet.api.version>
         <servlet.spec>3.1.0</servlet.spec>
-        <spring.security.version>5.8.16</spring.security.version>
+        <spring.security.version>5.8.16.1</spring.security.version>
         <sqlserver.version>13.3.0.jre8-preview</sqlserver.version>
         <timestamp>${maven.build.timestamp}</timestamp>
         <tomcat.version>9.0.121</tomcat.version>
