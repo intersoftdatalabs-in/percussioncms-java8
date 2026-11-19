@@ -88,6 +88,11 @@ jobs:
                 <username>${env.MAVEN_USERNAME}</username>
                 <password>${env.MAVEN_PASSWORD}</password>
               </server>
+              <server>
+                <id>github-intersoft-spring-framework</id>
+                <username>${env.MAVEN_USERNAME}</username>
+                <password>${env.MAVEN_PASSWORD}</password>
+              </server>
             </servers>
           </settings>
           EOF

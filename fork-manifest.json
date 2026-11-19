@@ -162,6 +162,62 @@
         "CVE-2026-41706",
         "CVE-2026-47838"
       ]
+    },
+    {
+      "id": "spring-framework-5.3",
+      "coordinate_strategy": "relocated_lts",
+      "fork_repo": "https://github.com/intersoftdatalabs-in/spring-framework",
+      "branch": "intersoft/5.3.x",
+      "release_tag": "v5.3.39.1",
+      "intersoft_group_id": "com.intsof.lts.springframework",
+      "intersoft_version": "5.3.39.1",
+      "upstream_base_version": "5.3.39",
+      "upstream_gavs": [
+        "org.springframework:spring-aop",
+        "org.springframework:spring-aspects",
+        "org.springframework:spring-beans",
+        "org.springframework:spring-context",
+        "org.springframework:spring-context-support",
+        "org.springframework:spring-core",
+        "org.springframework:spring-expression",
+        "org.springframework:spring-jdbc",
+        "org.springframework:spring-jms",
+        "org.springframework:spring-messaging",
+        "org.springframework:spring-orm",
+        "org.springframework:spring-oxm",
+        "org.springframework:spring-test",
+        "org.springframework:spring-tx",
+        "org.springframework:spring-web",
+        "org.springframework:spring-webmvc"
+      ],
+      "patched_cves": [
+        "CVE-2016-1000027",
+        "CVE-2024-38816",
+        "CVE-2024-38819",
+        "CVE-2024-38820",
+        "CVE-2024-38828",
+        "CVE-2025-22233",
+        "CVE-2025-41242",
+        "CVE-2025-41249",
+        "CVE-2026-22735",
+        "CVE-2026-22737",
+        "CVE-2026-22741",
+        "CVE-2026-22745",
+        "CVE-2026-41841",
+        "CVE-2026-41842",
+        "CVE-2026-41843",
+        "CVE-2026-41844",
+        "CVE-2026-41845",
+        "CVE-2026-41846",
+        "CVE-2026-41848",
+        "CVE-2026-41849",
+        "CVE-2026-41850",
+        "CVE-2026-41851",
+        "CVE-2026-41852",
+        "CVE-2026-41853",
+        "CVE-2026-41855",
+        "CVE-2026-47884"
+      ]
     }
   ]
 }

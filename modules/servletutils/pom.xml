@@ -10,7 +10,7 @@
     <artifactId>servlet-utils</artifactId>
     <dependencies>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <scope>compile</scope>
         </dependency>
