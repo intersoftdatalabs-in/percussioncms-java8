@@ -36,6 +36,10 @@
                     <artifactId>commons-httpclient</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>commons-lang</groupId>
+                    <artifactId>commons-lang</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
                 </exclusion>
@@ -70,6 +74,11 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>com.intsof.lts.commons</groupId>
+            <artifactId>commons-lang</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.shindig</groupId>
             <artifactId>shindig-social-api</artifactId>
             <version>${shindig.version}</version>
@@ -86,6 +95,10 @@
                 <exclusion>
                     <groupId>commons-httpclient</groupId>
                     <artifactId>commons-httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-lang</groupId>
+                    <artifactId>commons-lang</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.google.guava</groupId>
@@ -130,6 +143,10 @@
                 <exclusion>
                     <groupId>commons-httpclient</groupId>
                     <artifactId>commons-httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-lang</groupId>
+                    <artifactId>commons-lang</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.google.guava</groupId>
@@ -238,7 +255,7 @@
                                     <exclude>commons-fileupload:commons-fileupload</exclude>
                                     <exclude>commons-io:commons-io</exclude>
                                     <exclude>joda-time:joda-time</exclude>
-                                    <exclude>commons-lang:commons-lang</exclude>
+                                    <exclude>com.intsof.lts.commons:commons-lang</exclude>
                                     <exclude>commons-betwixt:commons-betwixt</exclude>
                                     <exclude>commons-logging:commons-logging</exclude>
                                     <exclude>commons-digester:commons-digester</exclude>

@@ -218,6 +218,22 @@
         "CVE-2026-41855",
         "CVE-2026-47884"
       ]
+    },
+    {
+      "id": "commons-lang-2.6",
+      "coordinate_strategy": "relocated_lts",
+      "fork_repo": "https://github.com/intersoftdatalabs-in/commons-lang",
+      "branch": "intersoft/2.6.x",
+      "release_tag": "v2.6.1",
+      "intersoft_group_id": "com.intsof.lts.commons",
+      "intersoft_version": "2.6.1",
+      "upstream_base_version": "2.6",
+      "upstream_gavs": [
+        "commons-lang:commons-lang"
+      ],
+      "patched_cves": [
+        "CVE-2025-48924"
+      ]
     }
   ]
 }
