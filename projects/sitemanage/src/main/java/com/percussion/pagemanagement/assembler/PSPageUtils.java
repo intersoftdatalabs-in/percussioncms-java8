@@ -3061,7 +3061,14 @@ public class PSPageUtils extends PSJexlUtilBase {
     return fileSystemService;
   }
 
-  public void setFileSystemService(IPSFileSystemService fileSystemService) {
+  /**
+   * Overrides the file system service. Intentionally NOT named <code>setFileSystemService</code>:
+   * {@link PSSpringWebApplicationContextUtils#injectDependencies(Object)} autowires bean setters by
+   * type, and two {@link IPSFileSystemService} beans exist (webResourcesService,
+   * privateKeysFileSystemService), which fails with NoUniqueBeanDefinitionException. The default is
+   * resolved by name in {@link #getFileSystemService()}.
+   */
+  void overrideFileSystemService(IPSFileSystemService fileSystemService) {
     this.fileSystemService = fileSystemService;
   }
 
