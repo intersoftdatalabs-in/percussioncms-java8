@@ -294,6 +294,11 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>com.intsof.lts.commons</groupId>
+            <artifactId>commons-lang</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
         </dependency>
