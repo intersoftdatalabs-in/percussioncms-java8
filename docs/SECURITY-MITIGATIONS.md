@@ -340,10 +340,29 @@ Because CMS ships `-XX:+DisableAttachMechanism` in `jvm.ini`, `jcmd <pid> VM.fla
 
 ---
 
+## Wave 0 — Java 8 Dependency Cleanup & Micro-Guards (8.1.8)
+
+Following the EOL dependency inventory and feasibility study ([#290](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/290), PR [#291](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/291)), Wave 0 ([#292](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/292)) closes non-fork Java 8 dependency findings and hardens two EOL authentication boundaries at the application layer:
+
+| Area / GAV | Change / CVE | Details / Mitigation | Verification |
+|---|---|---|---|
+| `com.google.guava:guava` | `33.7.1-jre` → `33.7.2-jre` (`CVE-2026-102554`) | Root `pom.xml` `<guava.version>` bump on Java 8 bytecode line | `mvn dependency:tree` |
+| `org.apache.zookeeper:zookeeper` | `3.7.2` → `3.8.8` (`CVE-2024-23944`) | Root `pom.xml` `<zookeeper.version>` bump with `ch.qos.logback:logback-{core,classic}` exclusions to keep Log4j2 SLF4J binding | `mvn dependency:tree` |
+| `org.eclipse.jetty:jetty-bom` + `solr-solrj` | Align reactor to `9.4.65.1`; exclude `http2-*` (`9.4.53`) | Root `pom.xml` imports `org.eclipse.jetty:jetty-bom:${jetty.version}` (`9.4.65.1`) and excludes unused `org.eclipse.jetty.http2:*` / `jetty-alpn-openjdk8-client` from `solr-solrj`; CI workflow & `settings-template.xml` document `github-intersoft-jetty` auth | `mvn dependency:tree` |
+| `org.bouncycastle:bc*-jdk18on` | Exclude duplicate `jdk18on` transitives | Exclude `bc{prov,pkix,mail,util}-jdk18on` under `tika-parsers-standard-package` (root pins `bc*-jdk15to18:1.85`) | `mvn dependency:tree` |
+| `org.glassfish:jakarta.el` | Replace `javax.el:3.0.0` → `jakarta.el:3.0.4` (`CVE-2021-28170`) | Retains `javax.el.*` package namespace at Java 7 bytecode; Dependabot capped at `< 4.0.0` | `mvn dependency:tree`, `WebUI`/`system` compile |
+| `org.hibernate.validator:hibernate-validator` | Align to `6.2.6.Final` | Align `<hibernate.validator.version>` and `pom.xml` managed dependency | `mvn dependency:tree` |
+| `org.owasp.antisamy:antisamy`, `org.apache.shiro:*`, `org.apache.sanselan:sanselan` | Transitive/dead dependency removal | Exclude `antisamy` on root `esapi:2.7.0.0`; remove unused `shiro` declarations from root `pom.xml` & `shindig-uber`; exclude `sanselan` under `shindig-gadgets` | `mvn dependency:tree`, `shindig-uber` compile |
+| Legacy unattached POMs | Align dormant coordinates | `modules/p13n-api` & `modules/segmentation-api` (`jackrabbit-jcr-commons` → `2.20.17`); `modules/redirect-tool` (`httpclient` → `4.5.14`) | POM audit |
+| `org.springframework.security:spring-security-crypto@5.8.16` | `CVE-2025-22228` (BCrypt >72-byte truncation) | `PSMembershipPasswordEncryptorFactory` wraps `BCryptPasswordEncoder` in `LengthValidatingBCryptEncoder` enforcing a strict 72-byte UTF-8 ceiling on `encode`/`matches` while preserving legacy SHA-256 fallback | `PSMembershipPasswordEncryptorFactoryTest` |
+| `org.springframework.ldap:spring-ldap-core@2.4.4` | `CVE-2026-41720` (unauthenticated simple bind) | `PSLdapMembershipAuthProvider.doAuthentication()` rejects `null`, non-String, or empty passwords before calling `bindAsUser()` / `InitialLdapContext` | `PSLdapMembershipAuthProviderTest` |
+
+---
+
 ## References
 
-- Epic: [#73](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/73)
+- Epic: [#73](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/73) and Wave 0 [#292](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/292) ([#290](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/290) / PR [#291](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/291))
 - Per-GAV table: `docs/ai-generated/tasks/PR#-DependencyVulnerabilityAnalysis/categorized-final.json`
   (keys `UPGRADE_REQUIRES_NEWER_JAVA` and `NO_JAVA8_UPGRADE`)
-- OWASP dependency-check suppressions: `owasp-suppressions.xml` (117 GAVs / 525 unique CVE aliases, with notes describing each mitigation)
-- Closing audits: `HibernateConfigAuditTest`, `PSRoleServiceUnsafeIdTest`, `ZipSlipGuardTest`, `PSPathInjectionGuardTest`, `PSRedirectValidationTest`, `Base64IntrinsicsConfigAuditTest`
+- OWASP dependency-check suppressions: `owasp-suppressions.xml` (pruned 7 removed GAV blocks in Wave 0 #292)
+- Closing audits: `HibernateConfigAuditTest`, `PSRoleServiceUnsafeIdTest`, `ZipSlipGuardTest`, `PSPathInjectionGuardTest`, `PSRedirectValidationTest`, `Base64IntrinsicsConfigAuditTest`, `PSMembershipPasswordEncryptorFactoryTest`, `PSLdapMembershipAuthProviderTest`

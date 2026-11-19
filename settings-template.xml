@@ -1,6 +1,19 @@
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
 
+    <servers>
+        <!--
+        Required to resolve Intersoft Java 8 extended-support Jetty artifacts (9.4.65.1+)
+        from GitHub Packages (https://maven.pkg.github.com/intersoftdatalabs-in/jetty.project).
+        Use your GitHub username and a Personal Access Token (classic) with read:packages scope.
+        -->
+        <server>
+            <id>github-intersoft-jetty</id>
+            <username>YOUR_GITHUB_USERNAME</username>
+            <password>YOUR_GITHUB_PAT_WITH_READ_PACKAGES</password>
+        </server>
+    </servers>
+
     <activeProfiles>
         <activeProfile>percussioncms-dev</activeProfile>
     </activeProfiles>

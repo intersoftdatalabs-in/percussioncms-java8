@@ -58,13 +58,15 @@ import org.springframework.util.StringUtils;
  *
  * <p>Input validation contract (T2.19 hardening, issue #133): user-supplied usernames are rejected
  * if they contain NUL bytes or C0/C1 control characters at the entry point ({@link
- * #doAuthentication}), and the principal that is substituted into the configured {@code
- * userSearchFilter} is escaped via {@link LdapEncoder#filterEncode(String)} before it reaches
- * {@link SpringSecurityLdapTemplate#searchForSingleEntryInternal}. JNDI's {@code search(String,
- * Object[], SearchControls)} substitution does not escape LDAP filter metacharacters itself;
- * without this, a principal containing {@code (}, {@code )}, {@code *}, {@code \} or NUL would be
- * interpreted as filter syntax, allowing an authenticated low-privileged user to broaden the user
- * search to other directory entries. See Spring Security CVE-2023-46527.
+ * #doAuthentication}), non-String/null/empty passwords are rejected before calling {@link
+ * #bindAsUser} so an empty credential cannot trigger an unauthenticated LDAP simple bind (see
+ * Spring LDAP CVE-2026-41720 / RFC 4513 §5.1.2), and the principal that is substituted into the
+ * configured {@code userSearchFilter} is escaped via {@link LdapEncoder#filterEncode(String)}
+ * before it reaches {@link SpringSecurityLdapTemplate#searchForSingleEntryInternal}. JNDI's {@code
+ * search(String, Object[], SearchControls)} substitution does not escape LDAP filter metacharacters
+ * itself; without this, a principal containing {@code (}, {@code )}, {@code *}, {@code \} or NUL
+ * would be interpreted as filter syntax, allowing an authenticated low-privileged user to broaden
+ * the user search to other directory entries. See Spring Security CVE-2023-46527.
  *
  * @author Shweta Patel
  * @deprecated This class is part of the deprecated secure-membership module.
@@ -153,7 +155,14 @@ public class PSLdapMembershipAuthProvider extends AbstractLdapAuthenticationProv
     if (username == null || containsControlOrNul(username)) {
       throw badCredentials();
     }
-    String password = (String) auth.getCredentials();
+    // Wave 0 hardening (CVE-2026-41720 / RFC 4513 §5.1.2): reject null, non-String, or empty
+    // passwords before calling InitialLdapContext so an empty password cannot trigger an
+    // unauthenticated LDAP simple bind.
+    Object credentials = auth.getCredentials();
+    if (!(credentials instanceof String) || !StringUtils.hasLength((String) credentials)) {
+      throw badCredentials();
+    }
+    String password = (String) credentials;
     DirContextOperations ctxOps = null;
 
     DirContext ctx = bindAsUser(username, password);

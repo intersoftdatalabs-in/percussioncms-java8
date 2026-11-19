@@ -15,6 +15,7 @@
  */
 package com.percussion.membership.services.impl;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -31,6 +32,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * legacy hashes in the database). The dual-format approach lets the migration happen transparently
  * — existing SHA-256 hashes are still verifiable, and new passwords get a stronger BCrypt hash.
  *
+ * <p>Wave 0 hardening (CVE-2025-22228): enforces BCrypt's 72-byte UTF-8 input ceiling via {@link
+ * LengthValidatingBCryptEncoder} (matching Spring Security 5.8.18 behavior) so passwords exceeding
+ * 72 UTF-8 bytes are rejected rather than silently truncated during {@code encode} or {@code
+ * matches}, while leaving legacy SHA-256 verification unchanged.
+ *
  * <p>T2.x.8b will remove jasypt entirely after a release cycle.
  */
 public class PSMembershipPasswordEncryptorFactory {
@@ -40,6 +46,9 @@ public class PSMembershipPasswordEncryptorFactory {
    * security and login latency (~100ms on commodity hardware).
    */
   private static final int BCRYPT_STRENGTH = 10;
+
+  /** Maximum password length accepted by OpenBSD BCrypt (UTF-8 bytes, CVE-2025-22228). */
+  private static final int BCRYPT_MAX_BYTES = 72;
 
   /**
    * The prefix that {@code DelegatingPasswordEncoder} prepends to new BCrypt hashes. New passwords
@@ -55,7 +64,8 @@ public class PSMembershipPasswordEncryptorFactory {
   private static final PasswordEncoder ENCODER;
 
   static {
-    BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder(BCRYPT_STRENGTH);
+    PasswordEncoder bcrypt =
+        new LengthValidatingBCryptEncoder(new BCryptPasswordEncoder(BCRYPT_STRENGTH));
     MessageDigestPasswordEncoder sha256 = new MessageDigestPasswordEncoder("SHA-256");
     // base64 encoding matches the jasypt default (setPlainDigest(false) +
     // setStringOutputType("base64") was the implicit default).
@@ -72,5 +82,45 @@ public class PSMembershipPasswordEncryptorFactory {
 
   public static PSPasswordEncryptor getPasswordEncryptor() {
     return new PSPasswordEncryptorAdapter(ENCODER);
+  }
+
+  /**
+   * Wraps {@link BCryptPasswordEncoder} to reject passwords exceeding {@value #BCRYPT_MAX_BYTES}
+   * UTF-8 bytes rather than allowing BCrypt's 72-byte truncation (CVE-2025-22228).
+   */
+  private static final class LengthValidatingBCryptEncoder implements PasswordEncoder {
+
+    private final BCryptPasswordEncoder delegate;
+
+    private LengthValidatingBCryptEncoder(BCryptPasswordEncoder delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public String encode(CharSequence rawPassword) {
+      if (exceedsMaxBytes(rawPassword)) {
+        throw new IllegalArgumentException(
+            "Password cannot be more than " + BCRYPT_MAX_BYTES + " bytes");
+      }
+      return delegate.encode(rawPassword);
+    }
+
+    @Override
+    public boolean matches(CharSequence rawPassword, String encodedPassword) {
+      if (exceedsMaxBytes(rawPassword)) {
+        return false;
+      }
+      return delegate.matches(rawPassword, encodedPassword);
+    }
+
+    @Override
+    public boolean upgradeEncoding(String encodedPassword) {
+      return delegate.upgradeEncoding(encodedPassword);
+    }
+
+    private static boolean exceedsMaxBytes(CharSequence rawPassword) {
+      return rawPassword != null
+          && rawPassword.toString().getBytes(StandardCharsets.UTF_8).length > BCRYPT_MAX_BYTES;
+    }
   }
 }
