@@ -1,0 +1,256 @@
+# EOL Branch Backport Feasibility Study (`percussioncms-java8`)
+
+**Issue:** [#290](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/290)  
+**Benchmark Precedent:** [`intersoftdatalabs-in/jetty.project`](https://github.com/intersoftdatalabs-in/jetty.project) (`v9.4.65.1`, consumed via PR [#263](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/263))  
+**Target Line:** Percussion CMS `8.1.x` (JDK 1.8.0, `javax.*` namespace)
+
+---
+
+## Part I — Cross-Cutting Architecture & Zero-Alert Scanner Analysis
+
+### 1. Precedent Review: `intersoftdatalabs-in/jetty.project` (`v9.4.65.1`)
+
+Intersoft has already proven the core mechanics of cloning an upstream Java 8 EOL branch, backporting security patches, and consuming artifacts via GitHub Packages:
+
+- **What worked cleanly:**
+  1. Forked `jetty/jetty.project` onto `intersoftdatalabs-in/jetty.project` and branched from the last Java 8 release line (`9.4.58.v20250814`).
+  2. Applied 8 surgical CVE backports (`CVE-2025-11143`, `CVE-2026-10050`, `CVE-2026-18659`, `CVE-2026-18662`, `CVE-2026-18660`, `CVE-2026-6790`, `CVE-2026-2332`, `CVE-2026-19203`; plus `HttpURI.Violation.USER_INFO` matching `CVE-2024-6763`).
+  3. Automated CI/CD via `.github/workflows/release.yml`: builds with Temurin JDK 8 (`<maven.compiler.source>8</maven.compiler.source>`), executes targeted security unit tests (`HttpURITest`, `ConstraintTest`, `RequestTest`, `ConnectHandlerTest`, `HttpParserTest`), deploys 36 public Maven packages (including `jetty-bom:9.4.65.1`) to GitHub Packages (`https://maven.pkg.github.com/intersoftdatalabs-in/jetty.project`), and publishes SHA-256-verified distribution archives to GitHub Releases.
+- **Three concrete gaps observed in `percussioncms-java8` today (causing 8 Jetty Dependabot alerts to stay open):**
+  1. **Missing BOM import in root `<dependencyManagement>`:** [pom.xml](../../../../pom.xml#L445-L454) pins only selected Jetty artifacts (`jetty-servlet`, `jetty-start`, etc.), so `rest/pom.xml` (`test` scope via `cxf-rt-transports-http-jetty:3.5.11`) still resolves `jetty-{server,http,security,io,util,continuation}:9.4.57.v20241219` (5 open alerts: `#115`, `#126`, `#128`, `#149`, `#150`). Importing `org.eclipse.jetty:jetty-bom:${jetty.version}` fixes this immediately.
+  2. **Unpublished `http2-*` transitive jars:** `solr-solrj:8.11.4` pulls `org.eclipse.jetty.http2:http2-*:9.4.53.v20231009` (`#112`, `#113`, `#121`). [PSSolrDeliveryHandler.java](../../../../system/business/src/com/percussion/delivery/metadata/solr/impl/PSSolrDeliveryHandler.java) uses `HttpSolrClient` and `CloudSolrClient`, not `Http2SolrClient`, so excluding `org.eclipse.jetty.http2:*` and `jetty-alpn-openjdk8-client` under `solr-solrj` ([pom.xml](../../../../pom.xml#L724)) closes all 3 alerts without extending `release.yml`.
+  3. **Dependency submission workflow authentication:** [.github/workflows/dependency-submission.yml](../../../../.github/workflows/dependency-submission.yml) does not generate `~/.m2/settings.xml` credentials for `github-intersoft-jetty`. Even with public GitHub Packages repositories, Maven often requires a GitHub token to pull package metadata reliably.
+
+---
+
+### 2. Maven Coordinates, Versioning & Zero-Alert Scanner Strategy
+
+Because your goal includes **both actual runtime remediation/audit proof and driving GitHub Dependabot / third-party SCA tools toward zero open alerts**, choosing the right Maven coordinate and versioning strategy is the single most consequential architectural decision.
+
+Unlike Jetty `9.4.x` (where many advisories carried bounded `9.4.x` upper ranges such as `<= 9.4.58` / `<= 9.4.59`), **almost every other EOL family has GHSA ranges that cross major/minor branches**:
+- `activemq-broker` / `activemq-client`: `< 5.19.8`
+- `cxf-core`: `< 3.6.12`
+- `tika-core` / `tika-parser-pdf-module`: `<= 3.2.1`
+- `shiro-core` / `shiro-web`: `< 2.2.1` / `< 3.0.0`
+- `jackrabbit-jcr-commons`: `< 2.22.2`
+- `spring-webmvc` / `spring-web` / `spring-core` / `spring-expression`: `<= 5.3.49` / `< 6.0.0` (plus `NONE` patched version)
+- `spring-security-*`: `<= 5.8.25` / `NONE`
+- `jetty-http` (`CVE-2024-6763`): `>= 7.0.0, <= 12.0.11` (still fires even on `9.4.65.1`!)
+
+#### Strategy Comparison Matrix
+
+| Dimension | Strategy A: Original `groupId` + Extended Version (Current Jetty `9.4.65.1` Model) | Strategy B: Relocated `groupId` (`com.intsof.lts.<upstream>`) + Unchanged Java Packages | Strategy C: Synthetic High Version under Original `groupId` (e.g., `5.19.8-intsof`) | Strategy D: Original `groupId` + Automated Dependabot Dismissals + VEX |
+|---|---|---|---|---|
+| **Dependabot / PURL SCA Alert Clearing** | **Partial.** Clears bounded ranges (`<= 9.4.59`, `derby == 10.14.2.0`), **fails permanently** on cross-major ranges (`< 5.19.8`, `< 3.6.12`, `<= 3.2.1`, `< 6.0.0`, `<= 12.0.11`). | **Clears to 0** for every migrated family (assuming transitive original GAVs are excluded/banned). | **Fails & harmful.** Breaks SemVer ordering, still fails `NONE` advisories, misleads customers into thinking upstream 5.19/3.6 is installed. | **Clears open queue operationally** via API-driven dismissals (`fix_started` / `tolerable_risk` + VEX URI), though alerts initially open and reappear per CVE. |
+| **OWASP Dependency-Check / CPE & JAR-Header Scanners** | Requires `owasp-suppressions.xml` entries for cross-major CVEs. | Still requires `owasp-suppressions.xml` or CycloneDX VEX (because JAR `META-INF` / CPE heuristics match product/class names). | Still triggers CPE/NVD findings for `NONE` ranges; creates false audit trail. | Same (`owasp-suppressions.xml` + CycloneDX VEX). |
+| **Percussion Code & Spring XML Impact** | **Zero code/XML changes.** Drop-in Maven version bump. | **Zero Java/XML changes** (Java package names stay `org.apache.tika.*`, etc.), **high POM exclusion discipline needed** so transitive upstream GAVs do not sit beside relocated GAVs on the classpath. | Zero code changes, high POM confusion. | **Zero code/XML changes.** |
+| **Upstream CVE Visibility Risk** | **High visibility:** Dependabot keeps alerting on every new upstream CVE automatically. | **Blind-spot risk!** Dependabot stops monitoring `com.intsof.lts.*` for upstream CVEs unless paired with an automated upstream CVE-watch workflow. | Blind-spot & false-negative risk. | High visibility (alerts arrive, then triaged/backported/dismissed). |
+| **Apache / EPL Trademark & Provenance Clarity** | Gray area for Apache projects (Apache policy asks modified distributions to avoid confusing users into thinking artifacts are official ASF releases). | **Cleanest provenance:** explicitly marks Intersoft-maintained Java 8 LTS builds (`com.intsof.lts.*`) and avoids colliding with Maven Central `groupId` resolution. | Violates Maven Central & ASF provenance expectations. | Same as Strategy A. |
+| **Verdict** | Use **only** when upstream bounds clear cleanly (e.g., Derby `10.14.2.1`) or if retaining Jetty precedent with VEX. | **Best technical fit for zero-Dependabot goal**, *only if* paired with `maven-enforcer-plugin` `<bannedDependencies>` + weekly OSV/GHSA upstream CVE-watch CI. | **Reject.** | **Lowest-risk operational path** if avoiding transitive exclusion/classpath hazards while maintaining audit-grade VEX. |
+
+#### Required Safeguards if Adopting Strategy B (`com.intsof.lts.*` Relocated Coordinates)
+
+1. **Prevent split-classpath / duplicate classes:** A relocated `com.intsof.lts.tika:tika-core:2.9.4.1` does not automatically override transitive `org.apache.tika:tika-core:2.9.4` via Maven mediation. You **must** add `<exclusions>` wherever upstream coordinates leak transitively and add `maven-enforcer-plugin` `<bannedDependencies>` in root [pom.xml](../../../../pom.xml) banning the replaced original `groupId:artifactId` coordinates build-wide.
+2. **Prevent CVE blind spots (`fork-manifest.json` + weekly CI):** Maintain a machine-readable manifest mapping each `com.intsof.lts.*` coordinate back to its upstream `groupId:artifactId` and pinned base version, and run a weekly GitHub Action querying `api.osv.dev/v1/querybatch` against the upstream GAVs so newly disclosed CVEs automatically open an issue in `percussioncms-java8`.
+3. **Publish CycloneDX VEX / update `owasp-suppressions.xml`:** CPE-based scanners (OWASP Dependency-Check, Trivy filesystem scans inspecting `MANIFEST.MF` / `pom.properties`) will still match package metadata unless VEX / suppressions record which CVEs are fixed in the `.1` / `.2` Intersoft patch.
+
+---
+
+### 3. Publishing & Authentication Topology
+
+- **Current pattern (`jetty.project`):** Per-fork GitHub Packages repository (`https://maven.pkg.github.com/intersoftdatalabs-in/jetty.project`). Scaling this to 5–8 forks requires adding 5–8 `<repository>` blocks in [pom.xml](../../../../pom.xml) and 5–8 matching `<server>` entries in every developer/CI `~/.m2/settings.xml`.
+- **Recommended improvement (Consolidated Org Packages Repo):** Publish all Intersoft Java 8 LTS forks to a **single consolidated GitHub Packages target** (e.g., `https://maven.pkg.github.com/intersoftdatalabs-in/java8-lts-packages` via a shared publishing PAT / GitHub App token, or a lightweight self-hosted Maven repo / Maven Central under `com.intsof` if Strategy B coordinates are used). That shrinks `pom.xml` and developer/CI `settings.xml` configuration to **one repository entry** regardless of how many forks exist.
+- **CI integration:** Update [.github/workflows/dependency-submission.yml](../../../../.github/workflows/dependency-submission.yml) and any CI build workflows to generate `~/.m2/settings.xml` using `GITHUB_TOKEN` (if all packages live in the same org and visibility is `public` or accessible within `intersoftdatalabs-in`).
+
+---
+
+### 4. Build-vs-Buy Perspective
+
+Forking and backporting works exceptionally well for **low-churn, Maven-built libraries** (`Tika`, `CXF`, `Derby`, `Jetty`), where 1–3 CVEs per year can be cherry-picked cleanly in hours. It breaks down economically on **high-churn Gradle frameworks** (**Spring Framework 5.3.x**: 27 open alerts; **Spring Security 5.8.x**: 5 open alerts; **ActiveMQ 5.16.x**: 16 alerts in 2026 alone):
+
+- **Commercial Java 8 LTS (HeroDevs NES / Broadcom Spring Enterprise):** Drops in patched `5.3.x` / `5.8.x` / `5.16.x` / `5.6.x` jars compiled for JDK 8 with commercial CVE backports (including CVEs whose patches Broadcom never published on `5.3.x`). Best ROI if the Java 17/21 migration of `percussioncms` takes >12 months and customers demand zero-CVE Spring compliance.
+- **Accelerating Java 17/21 migration on `intersoftdatalabs-in/percussioncms`:** Permanently eliminates Tier 2/3 Java 8 debt instead of compounding custom fork maintenance across every 2026/2027 Spring & ActiveMQ advisory cycle.
+
+---
+
+## Part II — Per-Candidate Feasibility Profiles (Bucket 2)
+
+### 1. Eclipse Jetty `9.4.x` (`intersoftdatalabs-in/jetty.project`) — Extend Existing Fork
+
+| Criterion | Verified Assessment |
+|---|---|
+| **Upstream Repo & License** | `jetty/jetty.project` (forked at `intersoftdatalabs-in/jetty.project`); **EPL-2.0 / Apache-2.0** |
+| **Last Java 8 Tag / Branch** | Upstream `9.4.58.v20250814`; Intersoft fork currently at **`v9.4.65.1`** (`7b4efe5f123e`) |
+| **Build Toolchain & JDK** | Maven; `<maven.compiler.source>8</maven.compiler.source>` / target `8`; proven GitHub Actions Temurin JDK 8 pipeline (`release.yml`) |
+| **Patch Availability & Complexity** | **Low.** All 5 core Jetty Dependabot alerts (`CVE-2026-2332`, `CVE-2026-10050`, `CVE-2026-6790`, `CVE-2025-11143`, `CVE-2024-6763`) are **already fixed** in `v9.4.65.1` (including PR `#12012` `UriCompliance.Violation.USER_INFO` in `HttpURI.java`). `http2-*` (`9.4.53`) is unused by Percussion. |
+| **Percussion Reachability** | Core Jetty serves the main CMS container (`modules/perc-jetty`); `9.4.57` leaks only in `rest:test` (`cxf-rt-transports-http-jetty`); `http2-*` is unused optional `solr-solrj` transitive. |
+| **Targeted Test Feasibility** | **High.** Existing `release.yml` runs `HttpURITest,ConstraintTest,RequestTest,ConnectHandlerTest,HttpParserTest`. |
+| **Dependabot Clearing** | Importing `jetty-bom:9.4.65.1` + `solr-solrj` HTTP/2 exclusions + `dependency-submission.yml` auth clears **7 of 8 Jetty alerts** immediately. `CVE-2024-6763` (`<= 12.0.11`) stays open unless relocated (`com.intsof.lts.jetty`) or VEX-dismissed. |
+| **Effort & Churn** | **Effort: Small (0.5 day)** for `pom.xml`/CI wiring; **Ongoing Churn: Low–Medium** (~3–6 CVEs/yr; Jetty 12 fixes require adaptation from `UriCompliance` / EE8 classes). |
+| **Verdict** | **Extend Existing Fork + Wave 0 Wiring Fix** (do not create a second repo). |
+
+---
+
+### 2. Apache Tika `2.9.4` — **Wave 1 Fork (Recommended)**
+
+| Criterion | Verified Assessment |
+|---|---|
+| **Upstream Repo & License** | `apache/tika`; **Apache-2.0** |
+| **Last Java 8 Tag / Branch** | Tag **`2.9.4`** (`093a5de3465c`); branch `branch_2x` (Tika `3.x` is verified JDK 11+ `major 55`) |
+| **Build Toolchain & JDK** | Maven (`tika-parent/pom.xml` sets `<maven.compiler.source>8</maven.compiler.source>`); ships native `.github/workflows/branch_2x-jdk8-build.yml` (`mvn clean test install`) |
+| **Patch Availability & Complexity** | **Low–Medium.** Only **2 CVEs** (`CVE-2025-54988` Critical, `CVE-2025-66516` Critical — XXE via crafted XFA inside PDFs, rooted in `tika-core` XML/StAX/SAX parser hardening and `PDFParser` / `TIKA-4459` / `TIKA-4938`). Note `TIKA-4459` commit `2b52257304f4` touched only 2 files (72 lines). |
+| **Percussion Reachability** | **Directly reachable.** [PSTikaTextConvertor.java](../../../../system/src/main/java/com/percussion/search/lucene/textconverter/PSTikaTextConvertor.java#L190) uses an explicit 7-parser allowlist that **includes `PDFParser`**, parsing uploaded/indexed PDFs during Lucene search indexing. |
+| **Targeted Test Feasibility** | **High.** Can run `mvn test -pl tika-core,tika-parsers/tika-parsers-standard/tika-parsers-standard-modules/tika-parser-pdf-module -am` on Temurin JDK 8 + add XFA XXE regression tests. |
+| **Dependabot Clearing** | GHSA ranges are `<= 3.2.1` (fixed in `3.2.2`). Under original `org.apache.tika`, Dependabot will **keep alerting** unless Strategy B relocated coordinates (`com.intsof.lts.tika`) or Strategy D VEX/dismissals are used. Also exclude `bc*-jdk18on` from `tika-parser-crypto-module`! |
+| **Effort & Churn** | **Effort: Small–Medium (2–3 days)**; **Ongoing Churn: Low** (1–2 CVEs/yr). |
+| **Verdict** | **Recommended Wave 1 Fork** — highest real security ROI per unit effort (3 Critical alerts, genuinely reachable parser, clean Maven JDK 8 build). |
+
+---
+
+### 3. Apache CXF `3.5.11` — **Wave 1 Fork (Recommended)**
+
+| Criterion | Verified Assessment |
+|---|---|
+| **Upstream Repo & License** | `apache/cxf`; **Apache-2.0** |
+| **Last Java 8 Tag / Branch** | Tag **`cxf-3.5.11`** (`45451d393712`); CXF `3.6.x` is verified JDK 11+ (`major 55`) |
+| **Build Toolchain & JDK** | Maven (`pom.xml` sets `<cxf.jdk.version>1.8</cxf.jdk.version>`); clean multi-module Maven reactor (`core`, `rt/frontend/jaxrs`, `rt/transports/http`, etc.) |
+| **Patch Availability & Complexity** | **Low–Medium.** Fixes are public on Apache `3.6.x`/`4.x` (`javax` → `jakarta` minimal in `cxf-core` except servlet/JAXB imports): `CVE-2026-49875` (Critical XXE in `EndpointReferenceUtils` & `W3CMultiSchemaFactory` — JAXP `SAXParserFactory` hardening), `CVE-2026-50645` + incomplete-patch follow-up `CVE-2026-64958` (Attachment header limit in `AttachmentDeserializer`, commits `93075df975`, `1f74aa7943`, `e164fb47a8`). |
+| **Percussion Reachability** | **Directly reachable.** CXF backs REST and SOAP endpoints across `system`, `sitemanage`, `rest`, and `WebUI` (18 config/POM files; `servicesContext-ws.xml`). |
+| **Targeted Test Feasibility** | **High.** Build & test `core` + relevant `rt/*` modules (`mvn test -pl core,rt/frontend/jaxrs,rt/transports/http -am`) on Temurin JDK 8. |
+| **Dependabot Clearing** | GHSA ranges are `< 3.6.12`; requires Strategy B (`com.intsof.lts.cxf`) or Strategy D VEX/dismissals to clear Dependabot. |
+| **Effort & Churn** | **Effort: Medium (2–4 days)** (need to check CXF `parent/pom.xml` build plugins and verify `CVE-2026-64958` follow-up); **Ongoing Churn: Low–Medium** (~2–3 CVEs/yr). |
+| **Verdict** | **Recommended Wave 1 Fork** — active HTTP/XML attack surface, Critical XXE fix, manageable Maven JDK 8 build. |
+
+---
+
+### 4. Apache Derby `10.14.2.0` — **Wave 1 Fork / Build & Publish (Conditional on Scanner Goal)**
+
+| Criterion | Verified Assessment |
+|---|---|
+| **Upstream Repo & License** | Apache SVN `https://svn.apache.org/repos/asf/db/derby/code/branches/10.14/` (GitHub mirror `apache/derby` only carries `trunk`); **Apache-2.0** |
+| **Last Java 8 Tag / Branch** | Tag `10.14.2.0`; branch `10.14` (Derby `10.15+` requires JDK 9+) |
+| **Build Toolchain & JDK** | **Apache Ant (`build.xml`)** on JDK 8 (not Maven — requires generating Maven POMs/jars via `mvn deploy:deploy-file` or `maven-ant-tasks` / publishing `derby`, `derbyclient`, `derbynet`, `derbytools`) |
+| **Patch Availability & Complexity** | **Trivial (Zero backporting needed!)** Upstream **already committed the `CVE-2022-46337` fix (`DERBY-7147`) to `branches/10.14`** (`LDAPAuthenticationSchemeImpl.java` L462–463: `uid = doFilterEscaping(uid);`), simply never publishing `10.14.2.1` to Maven Central. |
+| **Percussion Reachability** | **Not reachable in default config.** Percussion configures embedded Derby or `127.0.0.1` DRDA with SHA-256 built-in auth (`derby.authentication.provider` is never set to `LDAP`; `installRepository.xml` references missing `PSDerbyAuthenticator`). |
+| **Targeted Test Feasibility** | **Medium.** Ant `junit-core` / `derbyTesting` suites or targeted LDAP escape unit test. |
+| **Dependabot Clearing** | **Auto-clears even under Strategy A!** Dependabot vulnerability range is literally `== 10.14.2.0` with `first_patched_version = 10.14.2.1`. Publishing `org.apache.derby:derby*:10.14.2.1` from `branches/10.14` clears Critical alert `#77` automatically. |
+| **Effort & Churn** | **Effort: Small (1–2 days)** (mirror SVN `10.14` branch to GitHub, run Ant JDK 8 build, deploy 4 artifacts to GitHub Packages); **Ongoing Churn: Very Low** (0 new CVEs since 2022). |
+| **Verdict** | **Recommended Wave 1 if closing Critical Dependabot `#77` matters** (otherwise **Keep Mitigated** since LDAP auth is not used). |
+
+---
+
+### 5. Apache Jackrabbit (`jackrabbit-jcr-commons` `2.20.17`) — **Prefer In-Repo Replacement over Fork**
+
+| Criterion | Verified Assessment |
+|---|---|
+| **Upstream Repo & License** | `apache/jackrabbit`; **Apache-2.0** |
+| **Last Java 8 Tag / Branch** | Branch **`2.20`** (`0ddc38870db5`), tag `2.20.17`; `2.21+` / `2.22.2` verified JDK 11+ (`major 55`) |
+| **Build Toolchain & JDK** | Maven (`jackrabbit-parent/pom.xml` pins `javaTargetVersion=8`) |
+| **Patch Availability & Complexity** | **Low.** `CVE-2025-58782` was fixed in upstream PR `#229` (`JCR-5135: Make JNDI support opt-in`, 7 files, +140/-69 lines). |
+| **Percussion Reachability** | **Minimal / Non-JNDI.** Only `RowIteratorAdapter` ([PSQueryResultUtils.java](../../../../system/services/src/com/percussion/services/publisher/impl/PSQueryResultUtils.java)) and `ValueFactoryImpl` (in `perc-toolkit` / unattached `p13n-api` & `segmentation-api`) are imported across the entire repo — zero `JndiRepositoryFactory` usage. |
+| **Targeted Test Feasibility** | **High** (`mvn test -pl jackrabbit-jcr-commons`). |
+| **Dependabot Clearing** | GHSA range is `< 2.22.2` (requires Strategy B or D). |
+| **Effort & Churn** | **Effort: Small (1 day)** for a fork, **or 0.5 day to replace** `RowIteratorAdapter` / `ValueFactoryImpl` in-house and remove `jackrabbit-jcr-commons` completely (plus clean `1.6.0` in `p13n-api` & `segmentation-api`). |
+| **Verdict** | **Replace In-Repo Instead of Forking** (fallback: trivial Wave 1 Maven fork if replacement is unwanted). |
+
+---
+
+### 6. Apache Shiro `1.13.0` — **Remove Unused Dependency in Wave 0 (Fallback: Easy Wave 1 Fork)**
+
+| Criterion | Verified Assessment |
+|---|---|
+| **Upstream Repo & License** | `apache/shiro`; **Apache-2.0** |
+| **Last Java 8 Tag / Branch** | Tag **`shiro-root-1.13.0`** (`a9fd1f77fe11`); `2.x` verified JDK 11 (`major 55`), `3.x` JDK 17/21 (`major 61/69`) |
+| **Build Toolchain & JDK** | Maven (`<jdk.version>1.8</jdk.version>`, `.github/workflows/maven.yml` runs on Temurin JDK 8) |
+| **Patch Availability & Complexity** | **Low–Medium.** Fixes exist publicly (`CVE-2026-56130` commit `e441ea3700`, 230 lines; `CVE-2026-49268` `DefaultLdapRealm`; `CVE-2026-43827`/`43828`; `CVE-2026-23901`). |
+| **Percussion Reachability** | **Appears 0% reachable / dead dependency!** `modules/shindig-uber/pom.xml:172` declares `shiro-web:1.13.0` compile while its own shade plugin **excludes `shiro-web` and `shiro-core`**, `system/ear/WEB-INF/web.xml` comments out `JSecurityFilter` & `ShiroGuiceModule`, and there are **zero** `org.apache.shiro` Java imports across the codebase. |
+| **Targeted Test Feasibility** | High (if forked); better yet, run WebUI/Shindig smoke test after removing `shiro-web` from `shindig-uber/pom.xml`. |
+| **Dependabot Clearing** | Removing unused `shiro-web` clears all **6 Shiro alerts** (`#144–#146, #159, #192–#193`) immediately with zero fork! |
+| **Effort & Churn** | **Effort: Small (0.5 day to verify removal; 2–3 days if forked)**; **Ongoing Churn: Low–Medium** (~4 CVEs in 2026). |
+| **Verdict** | **Wave 0 Removal Candidate** (do not fork unless Shindig smoke test uncovers hidden reflection usage). |
+
+---
+
+### 7. Spring LDAP `2.4.4` — **Retire Deprecated Module or Guard App-Side**
+
+| Criterion | Verified Assessment |
+|---|---|
+| **Upstream Repo & License** | `spring-projects/spring-ldap`; **Apache-2.0** |
+| **Last Java 8 Tag / Branch** | Tag **`2.4.4`** (`ec1d0ac90185`); `3.x` requires Java 11+/17+ & Jakarta; `2.4.5+` commercial only |
+| **Build Toolchain & JDK** | Gradle (`io.spring.security.release` plugin) |
+| **Patch Availability & Complexity** | **Low.** `CVE-2026-41720` fix commits (`30b90c9fb6`, `5cc73a6b7f`, ~190 lines across `*DirContextAuthenticationStrategy`) are public on Spring LDAP `3.x`/`4.x`. |
+| **Percussion Reachability** | **Only in `@Deprecated` `perc-secure-membership`** (propagating into `delivery-tier-distribution`). Furthermore, [PSLdapMembershipAuthProvider.java](../../../../deliverytiersuite/delivery-tier-suite/secure-membership/src/main/java/com/percussion/secure/services/PSLdapMembershipAuthProvider.java#L249) calls `new InitialLdapContext(env, null)` directly rather than `SimpleDirContextAuthenticationStrategy` — **meaning Spring LDAP's patch alone wouldn't protect `bindAsUser`, whereas a 3-line `!StringUtils.hasText(password)` guard in `doAuthentication` does!** |
+| **Dependabot Clearing** | GHSA range is `<= 2.4.4` (`patch=NONE`); requires retiring `perc-secure-membership` or Strategy B/D. |
+| **Effort & Churn** | **Effort: Small (0.5–2 days)**; **Ongoing Churn: Low**. |
+| **Verdict** | **Retire `@Deprecated` `perc-secure-membership` if unused (or add empty-password guard + optional small fork)**. |
+
+---
+
+### 8. Apache ActiveMQ `5.16.8` — **Wave 2 Conditional Fork (High Churn / Low Reachability)**
+
+| Criterion | Verified Assessment |
+|---|---|
+| **Upstream Repo & License** | `apache/activemq`; **Apache-2.0** |
+| **Last Java 8 Tag / Branch** | Tag **`activemq-5.16.8`** (`f326d134402d`); `5.17+` / `5.19.8` verified **JDK 11+ (`major 55`)** |
+| **Build Toolchain & JDK** | Maven (`<source-version>1.8</source-version>`, `<target-version>1.8</target-version>`). Large multi-module reactor (`activemq-client`, `activemq-broker`, `activemq-kahadb-store`, `activemq-spring`, `activemq-jms-pool`, `activemq-jaas`). |
+| **Patch Availability & Complexity** | **Medium–High.** All 13 distinct 2026 CVEs (`CVE-2026-33227`..`CVE-2026-54475`) have public fixes on `5.19.x`/`6.x`, but several diffs are large/structural (e.g., `CVE-2026-53917` commit `78bb8dcdc3`: **1,352 lines**; `CVE-2026-50734` `42e2be75ed`: **378 lines**; `CVE-2026-49434` `0927bcb99e`: **243 lines** across `5.19` refactored classes). |
+| **Percussion Reachability** | **Low in default configuration.** [perc-mq.xml](../../../../system/Tools/jetty/defaults/etc/perc-mq.xml) and [activemq.xml](../../../../system/Tools/jetty/defaults/etc/activemq/activemq.xml) run an **in-VM broker only** (`vm://localhost`), with `<transportConnectors/>` empty, `advisorySupport=false`, and no Jolokia web console exposed (`CVE-2026-34197` requires Jolokia/MBeans; wire framing CVEs require remote OpenWire/AMQP/MQTT connectors). |
+| **Targeted Test Feasibility** | **Medium.** Can run `activemq-client` and targeted `activemq-broker` unit tests on JDK 8; full ActiveMQ suite is very slow. |
+| **Dependabot Clearing** | GHSA ranges are `< 5.19.8`; requires Strategy B (`com.intsof.lts.activemq`) or Strategy D VEX/dismissals. |
+| **Effort & Churn** | **Effort: Large (1.5–2 weeks initial)** for 13 CVEs + testing; **Ongoing Churn: High** (13 new CVEs in 2026 alone!). |
+| **Verdict** | **Wave 2 Conditional — Prefer Config Lockdown + VEX over In-House Fork** unless compliance mandates patching all 16 alerts (if so, evaluate HeroDevs NES or budget ongoing maintenance). |
+
+---
+
+### 9. Spring Framework `5.3.39` — **Wave 2 Conditional / Build-vs-Buy (Highest Churn)**
+
+| Criterion | Verified Assessment |
+|---|---|
+| **Upstream Repo & License** | `spring-projects/spring-framework`; **Apache-2.0** |
+| **Last Java 8 Tag / Branch** | Tag **`v5.3.39`** (`f1b128b88d73`); `6.x`/`7.x` require **JDK 17+ & Jakarta EE**; `5.3.40+` is Broadcom commercial paywall |
+| **Build Toolchain & JDK** | **Gradle 7.5.1** (`build.gradle`). Crucially, upstream `.github/workflows/ci.yml` **excludes Linux JDK 8** and builds on **JDK 17** (`toolchain: true`) targeting Java 8 bytecode (requires custom JDK 17 build setup in CI + stripping/bypassing internal `release` / Develocity plugins). |
+| **Patch Availability & Complexity** | **High.** Out of **26 distinct CVEs across 27 alerts**, roughly half have public 6.x/7.x commit refs (e.g., `CVE-2026-47884` 8 LOC, `CVE-2026-41855` 119 LOC, `CVE-2024-38819` 86 LOC), while **13 CVEs link only to `spring.io/security/cve-...`** because `5.3.40–5.3.49` patches are proprietary Broadcom releases and `6.x`/`7.x` uses `jakarta.servlet.*` and Java 17 APIs (`PathPattern` / `WebFlux` refactors). |
+| **Percussion Reachability** | **Most High/Critical alerts are NOT reachable:** codebase grep found **0 references** to `XsltView` (`CVE-2026-47884` C), `ScriptTemplateView` (`CVE-2026-22737`), `HttpInvoker` (`CVE-2016-1000027` C), `UriComponentsBuilder` (`CVE-2026-41854`), or `MappingJackson2MessageConverter` (`CVE-2026-41855` H — `required-server-beans.xml` uses `JmsTemplate` without Jackson converters). Primary active surfaces are standard `@RequestMapping` MVC / static resources / SpEL (`spring-webmvc`, `spring-core`, `spring-expression`). |
+| **Targeted Test Feasibility** | **Medium** (Gradle subproject tests require JDK 17 runner + test adaptation). |
+| **Dependabot Clearing** | GHSA ranges (`<= 5.3.49`, `< 6.0.0`, `NONE`) require Strategy B or Strategy D. |
+| **Effort & Churn** | **Effort: Large (2–3+ weeks initial)**; **Ongoing Churn: Very High** (27 alerts across 2024–2026, ~15+ CVEs/yr). |
+| **Verdict** | **Do Not Maintain Full Fork In-House unless Strategically Committed** — evaluate **Commercial LTS (HeroDevs NES / Broadcom)** vs **accelerating Java 17 (`percussioncms`)**, or cherry-pick only genuinely reachable CVEs (e.g., `CVE-2025-41249` annotation detection, `CVE-2024-38819` path traversal) if a fork is created. |
+
+---
+
+### 10. Spring Security `5.8.16` — **Wave 2 Conditional / Paired with Spring Framework**
+
+| Criterion | Verified Assessment |
+|---|---|
+| **Upstream Repo & License** | `spring-projects/spring-security`; **Apache-2.0** |
+| **Last Java 8 Tag / Branch** | Tag **`5.8.16`** (`506e5b7f11fe`); `6.x`/`7.x` require **JDK 17+ & Jakarta EE**; `5.8.17+` commercial only |
+| **Build Toolchain & JDK** | **Gradle 7.5.1** (`build.gradle` configures `JavaLanguageVersion.of(8)` toolchain for compilation, while CI uses JDK 11/17 + Develocity/Artifactory env vars that must be stripped for standalone builds). |
+| **Patch Availability & Complexity** | **Medium–High.** `CVE-2025-22228` (`BCryptPasswordEncoder` >72 byte check, commit `46f0dc6dfc`) is public and small; `CVE-2026-22732` (Critical header omission), `CVE-2026-41706`, `CVE-2026-47838`, `CVE-2026-22746` lack public `5.8.x` patches (`jakarta.servlet` adaptation needed from `6.x`/`7.x`). |
+| **Percussion Reachability** | **Low–Medium.** Codebase grep found **0 usages** of `CookieRequestCache` (`CVE-2026-41706`), Spring Security `X509` (`CVE-2026-47838`), or `DaoAuthenticationProvider` (`CVE-2026-22746`); `PSSecurityHeadersFilter` runs independently in `web.xml` alongside `<security:headers defaults-disabled="true"/>` (`CVE-2026-22732` defense); `PSMembershipPasswordEncryptorFactory` uses `BCryptPasswordEncoder` (`CVE-2025-22228` — easy 5-line app-side length check!). |
+| **Effort & Churn** | **Effort: Medium–Large (1–2 weeks)**; **Ongoing Churn: Medium–High**. |
+| **Verdict** | **Wave 2 Conditional / Pair with Spring 5.3 Decision** (add app-side BCrypt 72-byte length validation in Wave 0 immediately). |
+
+---
+
+### 11. Hibernate ORM `5.6.15.Final` — **Keep Mitigated (Do Not Fork Unless Customer Scanner Demands)**
+
+| Criterion | Verified Assessment |
+|---|---|
+| **Upstream Repo & License** | `hibernate/hibernate-orm`; **LGPL-2.1** (note: LGPL-2.1 requires distributing modified source + preservation of LGPL notices if redistributed) |
+| **Last Java 8 Tag / Branch** | Tag **`5.6.15`** (`eabe81a1394f` on `5.6` branch); `6.x+` requires JDK 11+ & Jakarta JPA |
+| **Build Toolchain & JDK** | **Gradle 6.7.1** (`build.gradle` explicitly enforces JDK 8 across compiler, test, and launcher for release builds) |
+| **Patch Availability & Complexity** | **High.** `CVE-2026-0603` (`InlineIdsOrClauseBuilder`, High) affects `5.2.8..5.6.15`; Red Hat shipped private JBoss EAP/RHSAs (`RHSA-2026:4915` etc.) rather than public upstream `5.6` tags. |
+| **Percussion Reachability** | **Mitigated.** Percussion does not configure `InlineIdsOrClauseBulkIdStrategy`, and T2.14 (`PR #224`) enforces `PSRoleService.containsUnsafeIdentifierChar` + `HibernateConfigAuditTest`. |
+| **Dependabot Clearing** | **0 open Dependabot alerts** (GHSA `GHSA-2p5w-cvg5-gc5c` lists `< 5.3.38`). |
+| **Effort & Churn** | **Effort: Medium (3–5 days)**; **Ongoing Churn: Low**. |
+| **Verdict** | **Keep Mitigated (Do Not Fork)** unless an NVD-based customer scanner mandates patching `CVE-2026-0603`. |
+
+---
+
+## Part III — Bucket 3 Legacy Disposition Notes (Do Not Fork)
+
+Forking **dead, pre-2012, or Attic-retired** libraries yields zero long-term value because there are no active upstream branches to cherry-pick fixes from:
+- **`soap:soap:2.3.1`** (`#29`, `#31` — 1C, 1H): Retired to Apache Attic (2003). Complete migration of the remaining 14 Java files (`PSWebServiceAgent`, etc.) to CXF/JAX-WS, or verify `RPCRouterServlet` is absent and document VEX/dismissal (matching existing `system/pom.xml` dismissal `#100`).
+- **`commons-httpclient:3.1`** (`#32` — 1M): EOL since 2011. Migrate the remaining 32 Java files (`TLSSocketFactory`, `PSSingleSignonFilter`, `PSSiteImproveProviderService`, `PSDocumentUtils`) to Apache HttpClient 5.x (already in `pom.xml`).
+- **`org.apache.sanselan:sanselan:0.97-incubator`** (2H OSV): Retired Incubator artifact pulled via `shindig-gadgets`. Exclude in `modules/shindig-uber/pom.xml` (PR `#189` already added a clean `WebUI` shim).
+- **`commons-configuration:1.10`** (`#120` — 1L) & **`commons-lang:2.6`** (`#41` — 1M): Transitive internals of `esapi:2.7.0.0` (and `solr-solrj:8.11.4`). Retain call-site mitigations (`T2.6`) or evaluate replacing ESAPI 2.x entirely in a future cleanup epic.
