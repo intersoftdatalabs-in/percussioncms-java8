@@ -612,12 +612,12 @@
             <artifactId>semargl-rdf4j</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.tika</groupId>
+            <groupId>com.intsof.lts.tika</groupId>
             <artifactId>tika-langdetect-optimaize</artifactId>
             <version>${tika.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.tika</groupId>
+            <groupId>com.intsof.lts.tika</groupId>
             <artifactId>tika-parsers-standard-package</artifactId>
         </dependency>
         <dependency>

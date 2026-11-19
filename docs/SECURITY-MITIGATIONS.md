@@ -23,11 +23,11 @@ mitigation applied. Per-CVE OWASP `dependency-check` suppressions live in
 
 | GAV | CVE | Mitigation | Tests |
 |---|---|---|---|
-| `org.apache.tika:tika-core@2.9.4` (13 CVEs) | Tika deserialization, OOM, OLE extraction | `PSTikaTextConvertor` input stream capped at 100 MB; strict parser allowlist (reject unexpected types); reject embedded scripts/OLE objects; sandbox for untrusted uploads. | n/a (manual code review) |
-| `org.apache.tika:tika-parser-pdf-module@2.9.4` (2 CVEs) | PDF parsing RCE class | Same PSTikaTextConvertor strict allowlist; PDFBox 2.0.31 hardening in T2.9. | n/a (manual code review) |
+| `com.intsof.lts.tika:tika-core@2.9.4.1` (previously `org.apache.tika:tika-core@2.9.4`) | XXE (`CVE-2025-54988`, `CVE-2025-66516`), deserialization, OOM, OLE extraction | **Fixed upstream XXE in Wave 1 ([#294](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/294))** via Intersoft fork [`intersoftdatalabs-in/tika@v2.9.4.1`](https://github.com/intersoftdatalabs-in/tika/releases/tag/v2.9.4.1); `PSTikaTextConvertor` keeps 100 MB cap, strict parser allowlist, and sandbox for untrusted uploads. | `XMLReaderUtilsTest`, `WoodstoxXMLReaderUtilsTest`, `PDFParserTest` (in Tika fork) |
+| `com.intsof.lts.tika:tika-parser-pdf-module@2.9.4.1` (previously `org.apache.tika:tika-parser-pdf-module@2.9.4`) | `CVE-2025-54988`, `CVE-2025-66516` | Closed by `com.intsof.lts.tika:2.9.4.1` StAX / Woodstox external-entity hardening alongside PDFBox 2.0.31 hardening in T2.9. | `PDFParserTest`, `XMLReaderUtilsTest` (in Tika fork) |
 
-- Merged PRs: [#93](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/93) (issue [#92](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/92)), [#138](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/138) (issue [#137](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/137)).
-- Tika 3.x requires Java 11+; the 15 catalogued CVEs are pinned at the latest Java 1.8 line.
+- Merged PRs: [#93](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/93) (issue [#92](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/92)), [#138](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/138) (issue [#137](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/137)); Wave 1 backport tracked under [#294](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/294).
+- Tika 3.x requires Java 11+; remaining pre-2.9.4 historical advisories are mitigated by `PSTikaTextConvertor` allowlist/limits.
 
 ## T2.2 — Apache ActiveMQ 5.16.x hardening
 
@@ -359,9 +359,19 @@ Following the EOL dependency inventory and feasibility study ([#290](https://git
 
 ---
 
+## Wave 1 — EOL Java 8 Backports (8.1.9)
+
+Following the Wave 1 EOL coordinate & guardrail strategy ([#293](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/293)), Wave 1 introduces Intersoft-maintained Java 8 LTS builds on relocated `com.intsof.lts.*` coordinates monitored weekly via `fork-manifest.json` and `.github/workflows/upstream-cve-watch.yml`:
+
+| Family / GAV | Closed CVEs | Upstream Backport & Verification |
+|---|---|---|
+| `com.intsof.lts.tika:*@2.9.4.1` ([`intersoftdatalabs-in/tika@v2.9.4.1`](https://github.com/intersoftdatalabs-in/tika/releases/tag/v2.9.4.1), [#294](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/294)) | `CVE-2025-54988` (Critical), `CVE-2025-66516` (Critical) | Cherry-picked `branch_2x` StAX / Woodstox external-entity & DTD protections onto `2.9.4`; verified via `XMLReaderUtilsTest`, `WoodstoxXMLReaderUtilsTest`, `PDFParserTest`, and full-reactor `enforce-banned-eol-dependencies` banning `org.apache.tika:*` |
+
+---
+
 ## References
 
-- Epic: [#73](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/73) and Wave 0 [#292](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/292) ([#290](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/290) / PR [#291](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/291))
+- Epic: [#73](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/73), Wave 0 [#292](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/292), and Wave 1 [#299](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/299) / [#293](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/293) / [#294](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/294)
 - Per-GAV table: `docs/ai-generated/tasks/PR#-DependencyVulnerabilityAnalysis/categorized-final.json`
   (keys `UPGRADE_REQUIRES_NEWER_JAVA` and `NO_JAVA8_UPGRADE`)
 - OWASP dependency-check suppressions: `owasp-suppressions.xml` (pruned 7 removed GAV blocks in Wave 0 #292)

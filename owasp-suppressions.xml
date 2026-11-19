@@ -18,12 +18,12 @@
     <!--
         T2.1: Apache Tika 2.
 
-        GAVs in scope: 2 | CVEs in scope: 15 (Tier 2 15 + Tier 3 0)
+        GAVs in scope: 1 | CVEs in scope: 12 (Tier 2 12 + Tier 3 0)
     -->
 
     <suppress>
         <notes><![CDATA[
-             T2.1 (Tier 2) hardening (epic #73). Apache Tika 2.9.x hardening: 100 MB input cap (PR #93, issue #92) and strict parser allowlist in PSTikaTextConvertor (PR #138, issue #137). Defense in depth against the 15 catalogued Tika CVEs (tika-core + tika-parser-pdf-module); no Java 1.8 fix exists because Tika 3.x requires Java 11+. GAV org.apache.tika:tika-core@2.9.4 (CRITICAL, HIGH, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.1 entry.
+             T2.1 (Tier 2) hardening (epic #73). Apache Tika 2.9.x hardening: 100 MB input cap (PR #93, issue #92) and strict parser allowlist in PSTikaTextConvertor (PR #138, issue #137). Relocated to Intersoft Java 8 LTS com.intsof.lts.tika@2.9.4.1 in Wave 1 (issue #294) fixing CVE-2025-54988 and CVE-2025-66516; residual historical CVEs remain mitigated at PSTikaTextConvertor (no Java 1.8 Tika 3.x path).
         ]]></notes>
         <cve>CVE-2016-4434</cve>
         <cve>CVE-2016-6809</cve>
@@ -37,15 +37,6 @@
         <cve>CVE-2019-10094</cve>
         <cve>CVE-2022-30126</cve>
         <cve>CVE-2022-30973</cve>
-        <cve>CVE-2025-66516</cve>
-    </suppress>
-
-    <suppress>
-        <notes><![CDATA[
-             T2.1 (Tier 2) hardening (epic #73). Apache Tika 2.9.x hardening: 100 MB input cap (PR #93, issue #92) and strict parser allowlist in PSTikaTextConvertor (PR #138, issue #137). Defense in depth against the 15 catalogued Tika CVEs (tika-core + tika-parser-pdf-module); no Java 1.8 fix exists because Tika 3.x requires Java 11+. GAV org.apache.tika:tika-parser-pdf-module@2.9.4 (CRITICAL). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.1 entry.
-        ]]></notes>
-        <cve>CVE-2025-54988</cve>
-        <cve>CVE-2025-66516</cve>
     </suppress>
 
     <!--

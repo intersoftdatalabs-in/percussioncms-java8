@@ -346,16 +346,16 @@
             <artifactId>commons-httpclient</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.tika</groupId>
+            <groupId>com.intsof.lts.tika</groupId>
             <artifactId>tika-parsers-standard-package</artifactId>
             <optional>true</optional>
             <exclusions>
                 <exclusion>
-                    <groupId>org.apache.tika</groupId>
+                    <groupId>com.intsof.lts.tika</groupId>
                     <artifactId>tika-parser-audio-module</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.apache.tika</groupId>
+                    <groupId>com.intsof.lts.tika</groupId>
                     <artifactId>tika-parser-cad-module</artifactId>
                 </exclusion>
                 <exclusion>
@@ -369,7 +369,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.apache.tika</groupId>
+            <groupId>com.intsof.lts.tika</groupId>
             <artifactId>tika-core</artifactId>
         </dependency>
         <!-- Axis dependencies for webservices -->
