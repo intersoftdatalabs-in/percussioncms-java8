@@ -2712,6 +2712,41 @@
                 <version>${maven.jar.plugin.version}</version>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven.enforcer.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>enforce-banned-eol-dependencies</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <fail>true</fail>
+                            <rules>
+                                <bannedDependencies>
+                                    <searchTransitive>true</searchTransitive>
+                                    <message>Banned or relocated EOL Java 8 coordinate detected. Use the approved Java 8 LTS coordinate or exclusion in root pom.xml.</message>
+                                    <excludes>
+                                        <exclude>org.apache.shiro:*</exclude>
+                                        <exclude>org.owasp.antisamy:antisamy</exclude>
+                                        <exclude>org.apache.sanselan:sanselan</exclude>
+                                        <exclude>org.glassfish:javax.el</exclude>
+                                        <exclude>org.bouncycastle:bcprov-jdk18on</exclude>
+                                        <exclude>org.bouncycastle:bcpkix-jdk18on</exclude>
+                                        <exclude>org.bouncycastle:bcmail-jdk18on</exclude>
+                                        <exclude>org.bouncycastle:bcutil-jdk18on</exclude>
+                                        <exclude>org.eclipse.jetty.http2:*</exclude>
+                                        <exclude>org.eclipse.jetty:jetty-alpn-openjdk8-client</exclude>
+                                    </excludes>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.maven.plugin.version}</version>
