@@ -42,44 +42,24 @@
     <!--
         T2.2: Apache ActiveMQ 5.
 
-        GAVs in scope: 3 | CVEs in scope: 32 (Tier 2 30 + Tier 3 2)
+        GAVs in scope: 3 | 2026 CVEs fixed in com.intsof.lts.activemq@5.16.8.1 (#307); historical pre-2026 advisories retained below
     -->
 
     <suppress>
         <notes><![CDATA[
-             T2.2 (Tier 2) hardening (epic #73). Apache ActiveMQ 5.16.8 hardening: broker deleteAllMessagesOnStartup=false, advisorySupport=false, <transportConnectors/> empty, simpleAuthenticationPlugin with anonymousAccessAllowed=false, constantPendingMessageLimit=1000. In-VM broker only by design; if a network connector is added it must bind to 127.0.0.1 (never 0.0.0.0). Subsequent in-place follow-ups in PRs #211, #213, #215, #217 (issues #210-216). See PR #167 (issue #166). GAV org.apache.activemq:activemq-broker@5.16.8 (CRITICAL, HIGH, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.2 entry.
+             T2.2 (Tier 2) hardening (epic #73) + Wave 2 Stage 1 LTS backport (#307). Updated to com.intsof.lts.activemq:activemq-broker@5.16.8.1 (closing all 13 2026 CVEs including CVE-2026-33227, CVE-2026-34197, CVE-2026-39304, CVE-2026-40466, CVE-2026-41043, CVE-2026-41044, CVE-2026-42588, CVE-2026-45505, CVE-2026-49270, CVE-2026-49434, CVE-2026-50734, CVE-2026-53917, CVE-2026-54475). Retains defense-in-depth hardening: broker deleteAllMessagesOnStartup=false, advisorySupport=false, <transportConnectors/> empty, simpleAuthenticationPlugin with anonymousAccessAllowed=false, constantPendingMessageLimit=1000, VM_TRANSPORT_FACTORY_SCHEMES_ENABLED=broker,properties,xbean in jvm.ini. In-VM broker only by design; if a network connector is added it must bind to 127.0.0.1 (never 0.0.0.0). GAV com.intsof.lts.activemq:activemq-broker@5.16.8.1 (HISTORICAL CRITICAL, HIGH, MODERATE); see docs/SECURITY-MITIGATIONS.md T2.2 and Wave 2 entries.
         ]]></notes>
-        <cve>BIT-activemq-2026-33227</cve>
-        <cve>BIT-activemq-2026-34197</cve>
-        <cve>BIT-activemq-2026-39304</cve>
-        <cve>BIT-activemq-2026-40466</cve>
-        <cve>BIT-activemq-2026-41043</cve>
-        <cve>BIT-activemq-2026-41044</cve>
-        <cve>BIT-activemq-2026-42588</cve>
-        <cve>BIT-activemq-2026-45505</cve>
-        <cve>BIT-activemq-2026-49270</cve>
         <cve>CVE-2014-3600</cve>
         <cve>CVE-2014-3612</cve>
         <cve>CVE-2015-6524</cve>
-        <cve>CVE-2026-33227</cve>
-        <cve>CVE-2026-34197</cve>
-        <cve>CVE-2026-39304</cve>
-        <cve>CVE-2026-40466</cve>
-        <cve>CVE-2026-41043</cve>
-        <cve>CVE-2026-41044</cve>
-        <cve>CVE-2026-42588</cve>
-        <cve>CVE-2026-45505</cve>
-        <cve>CVE-2026-49270</cve>
     </suppress>
 
     <suppress>
         <notes><![CDATA[
-             T2.2 (Tier 2) hardening (epic #73). Apache ActiveMQ 5.16.8 hardening: broker deleteAllMessagesOnStartup=false, advisorySupport=false, <transportConnectors/> empty, simpleAuthenticationPlugin with anonymousAccessAllowed=false, constantPendingMessageLimit=1000. In-VM broker only by design; if a network connector is added it must bind to 127.0.0.1 (never 0.0.0.0). Subsequent in-place follow-ups in PRs #211, #213, #215, #217 (issues #210-216). See PR #167 (issue #166). GAV org.apache.activemq:activemq-client@5.16.8 (CRITICAL, HIGH, MODERATE). Tier 2 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.2 entry.
+             T2.2 (Tier 2) hardening (epic #73) + Wave 2 Stage 1 LTS backport (#307). Updated to com.intsof.lts.activemq:activemq-client@5.16.8.1 (closing 2026 CVEs CVE-2026-33227, CVE-2026-39304, CVE-2026-50734, CVE-2026-53917). Retains defense-in-depth hardening: in-VM broker only (<transportConnectors/> empty), simpleAuthenticationPlugin with anonymousAccessAllowed=false, explicit SERIALIZABLE_PACKAGES allowlist. GAV com.intsof.lts.activemq:activemq-client@5.16.8.1 (HISTORICAL CRITICAL, HIGH, MODERATE); see docs/SECURITY-MITIGATIONS.md T2.2 and Wave 2 entries.
         ]]></notes>
         <cve>BIT-activemq-2023-46604</cve>
         <cve>BIT-activemq-2025-27533</cve>
-        <cve>BIT-activemq-2026-33227</cve>
-        <cve>BIT-activemq-2026-39304</cve>
         <cve>CVE-2013-1879</cve>
         <cve>CVE-2013-3060</cve>
         <cve>CVE-2014-3576</cve>
@@ -96,13 +76,11 @@
         <cve>CVE-2019-0222</cve>
         <cve>CVE-2023-46604</cve>
         <cve>CVE-2025-27533</cve>
-        <cve>CVE-2026-33227</cve>
-        <cve>CVE-2026-39304</cve>
     </suppress>
 
     <suppress>
         <notes><![CDATA[
-             T2.2 (Tier 3) hardening (epic #73). Apache ActiveMQ 5.16.8 hardening: broker deleteAllMessagesOnStartup=false, advisorySupport=false, <transportConnectors/> empty, simpleAuthenticationPlugin with anonymousAccessAllowed=false, constantPendingMessageLimit=1000. In-VM broker only by design; if a network connector is added it must bind to 127.0.0.1 (never 0.0.0.0). Subsequent in-place follow-ups in PRs #211, #213, #215, #217 (issues #210-216). See PR #167 (issue #166). GAV org.apache.activemq:activemq-openwire-legacy@5.16.8 (CRITICAL, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.2 entry.
+             T2.2 (Tier 3) hardening (epic #73) + Wave 2 Stage 1 LTS backport (#307). Updated to com.intsof.lts.activemq:activemq-openwire-legacy@5.16.8.1 (in-VM broker only, <transportConnectors/> empty, legacy openwire not exposed). GAV com.intsof.lts.activemq:activemq-openwire-legacy@5.16.8.1 (HISTORICAL CRITICAL, MODERATE); see docs/SECURITY-MITIGATIONS.md T2.2 entry.
         ]]></notes>
         <cve>BIT-activemq-2023-46604</cve>
         <cve>BIT-activemq-2025-27533</cve>

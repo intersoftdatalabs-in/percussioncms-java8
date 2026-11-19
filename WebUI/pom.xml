@@ -344,27 +344,27 @@
             <version>4.30</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>com.intsof.lts.activemq</groupId>
             <artifactId>activemq-broker</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>com.intsof.lts.activemq</groupId>
             <artifactId>activemq-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>com.intsof.lts.activemq</groupId>
             <artifactId>activemq-kahadb-store</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>com.intsof.lts.activemq</groupId>
             <artifactId>activemq-spring</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>com.intsof.lts.activemq</groupId>
             <artifactId>activemq-jms-pool</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.activemq</groupId>
+            <groupId>com.intsof.lts.activemq</groupId>
             <artifactId>activemq-jaas</artifactId>
         </dependency>
         <dependency>

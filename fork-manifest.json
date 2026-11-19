@@ -104,6 +104,41 @@
       "patched_cves": [
         "CVE-2022-46337"
       ]
+    },
+    {
+      "id": "activemq-5.16",
+      "coordinate_strategy": "relocated_lts",
+      "fork_repo": "https://github.com/intersoftdatalabs-in/activemq",
+      "branch": "intersoft/5.16.x",
+      "release_tag": "v5.16.8.1",
+      "intersoft_group_id": "com.intsof.lts.activemq",
+      "intersoft_version": "5.16.8.1",
+      "upstream_base_version": "5.16.8",
+      "upstream_gavs": [
+        "org.apache.activemq:activemq-broker",
+        "org.apache.activemq:activemq-client",
+        "org.apache.activemq:activemq-jaas",
+        "org.apache.activemq:activemq-jms-pool",
+        "org.apache.activemq:activemq-kahadb-store",
+        "org.apache.activemq:activemq-openwire-legacy",
+        "org.apache.activemq:activemq-pool",
+        "org.apache.activemq:activemq-spring"
+      ],
+      "patched_cves": [
+        "CVE-2026-33227",
+        "CVE-2026-34197",
+        "CVE-2026-39304",
+        "CVE-2026-40466",
+        "CVE-2026-41043",
+        "CVE-2026-41044",
+        "CVE-2026-42588",
+        "CVE-2026-45505",
+        "CVE-2026-49270",
+        "CVE-2026-49434",
+        "CVE-2026-50734",
+        "CVE-2026-53917",
+        "CVE-2026-54475"
+      ]
     }
   ]
 }
