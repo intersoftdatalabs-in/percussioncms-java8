@@ -240,7 +240,7 @@ and runs on `mvn test -pl modules/perc-security-utils`.
 - Merged PR: [#171](https://github.com/intersoftdatalabs-in/percussioncms-java8/pull/171) (issue [#170](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/170)); Wave 1 build tracked under [#296](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/296).
 - Closed Dependabot `#77` (`CVE-2022-46337`, fixed in `10.14.2.1`); all 7 historical Derby 10.x CVEs are closed on the Java 8 line alongside T2.18 defense-in-depth configuration.
 
-## T2.19 — Spring LDAP 2.4.4 hardening (Retired in 8.1.9)
+## T2.19 — Spring LDAP 2.4.4 hardening (Retired in 8.1.8)
 
 |                                                                  GAV                                                                   |                          CVE                          |                                                                                                                                                                                                         Mitigation                                                                                                                                                                                                         |                                              Tests                                              |
 |----------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
@@ -359,7 +359,7 @@ Following the EOL dependency inventory and feasibility study ([#290](https://git
 
 ---
 
-## Wave 1 — EOL Java 8 Removals & Backports (8.1.9)
+## Wave 1 — EOL Java 8 Removals & Backports (8.1.8)
 
 Following the Wave 1 EOL coordinate & guardrail strategy ([#293](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/293)), Wave 1 retires/replaces removable EOL libraries in-repo and introduces Intersoft-maintained Java 8 LTS builds monitored weekly via `fork-manifest.json` and `.github/workflows/upstream-cve-watch.yml`:
 
@@ -373,7 +373,7 @@ Following the Wave 1 EOL coordinate & guardrail strategy ([#293](https://github.
 
 ---
 
-## Wave 2 — In-House Java 8 LTS Backports & Bucket 3 Cleanup (8.1.9)
+## Wave 2 — In-House Java 8 LTS Backports & Bucket 3 Cleanup (8.1.8)
 
 Per [`ADR-298`](../docs/ai-generated/tasks/298-wave2-spring-activemq-strategy/ADR.md) ([#298](https://github.com/intersoftdatalabs-in/percussioncms-java8/issues/298)), Wave 2 maintains Intersoft-relocated `com.intsof.lts.*` Java 8 LTS forks plus Bucket 3 legacy cleanups:
 
@@ -385,7 +385,7 @@ Per [`ADR-298`](../docs/ai-generated/tasks/298-wave2-spring-activemq-strategy/AD
 
 ---
 
-## Wave 3 — Final EOL Java 8 Removals & Relocations (8.1.9)
+## Wave 3 — Final EOL Java 8 Removals & Relocations (8.1.8)
 
 Wave 3 eliminates the final open Maven Dependabot alerts on Java 8 (`#120`, `#41`, `#115`) by retiring OWASP ESAPI in-repo, backporting `commons-lang:2.6.1`, and relocating `intersoftdatalabs-in/jetty.project` to `com.intsof.lts.jetty`:
 
