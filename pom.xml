@@ -97,7 +97,7 @@
         <commons.rng.version>1.3</commons.rng.version>
         <commons.validator.version>1.10.1</commons.validator.version>
         <cxf.version>3.5.11.1</cxf.version>
-        <derby.version>10.14.2.0</derby.version>
+        <derby.version>10.14.2.1</derby.version>
         <duplicate.finder.maven.plugin.version>1.4.0</duplicate.finder.maven.plugin.version>
         <eclipse-manifest-location>META-INF</eclipse-manifest-location>
         <ehcache.version>2.10.9.2</ehcache.version>
@@ -2166,6 +2166,14 @@
             <name>Intersoft CXF Java 8 LTS Fork</name>
             <url>https://maven.pkg.github.com/intersoftdatalabs-in/cxf</url>
         </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>github-intersoft-derby</id>
+            <name>Intersoft Derby Java 8 LTS Build</name>
+            <url>https://maven.pkg.github.com/intersoftdatalabs-in/derby</url>
+        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -2772,6 +2780,7 @@
                                         <exclude>org.eclipse.jetty:jetty-alpn-openjdk8-client</exclude>
                                         <exclude>org.apache.tika:*</exclude>
                                         <exclude>org.apache.cxf:*</exclude>
+                                        <exclude>org.apache.derby:*:(,10.14.2.1)</exclude>
                                     </excludes>
                                 </bannedDependencies>
                             </rules>

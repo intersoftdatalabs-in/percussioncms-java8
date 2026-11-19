@@ -22,6 +22,11 @@
             <username>YOUR_GITHUB_USERNAME</username>
             <password>YOUR_GITHUB_PAT_WITH_READ_PACKAGES</password>
         </server>
+        <server>
+            <id>github-intersoft-derby</id>
+            <username>YOUR_GITHUB_USERNAME</username>
+            <password>YOUR_GITHUB_PAT_WITH_READ_PACKAGES</password>
+        </server>
     </servers>
 
     <activeProfiles>

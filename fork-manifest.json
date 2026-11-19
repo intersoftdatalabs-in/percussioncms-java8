@@ -85,6 +85,25 @@
         "CVE-2026-107937",
         "CVE-2026-108039"
       ]
+    },
+    {
+      "id": "derby-10.14",
+      "coordinate_strategy": "upstream_extended",
+      "fork_repo": "https://github.com/intersoftdatalabs-in/derby",
+      "branch": "intersoft/10.14",
+      "release_tag": "v10.14.2.1",
+      "intersoft_group_id": "org.apache.derby",
+      "intersoft_version": "10.14.2.1",
+      "upstream_base_version": "10.14.2.0",
+      "upstream_gavs": [
+        "org.apache.derby:derby",
+        "org.apache.derby:derbyclient",
+        "org.apache.derby:derbynet",
+        "org.apache.derby:derbytools"
+      ],
+      "patched_cves": [
+        "CVE-2022-46337"
+      ]
     }
   ]
 }
