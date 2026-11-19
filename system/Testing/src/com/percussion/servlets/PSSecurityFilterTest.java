@@ -22,9 +22,6 @@ import com.percussion.servlets.PSSecurityFilter.AuthType;
 import com.percussion.servlets.PSSecurityFilter.SecurityEntry;
 import com.percussion.utils.io.PathUtils;
 import com.percussion.utils.testing.UnitTest;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -144,22 +141,6 @@ public class PSSecurityFilterTest
 
 
 
-
-   private void checkRequestHeaderRedirectLogin(HttpClient client, String strHeader, String strHdrVal, String strRequestURL) throws Exception {
-
-      HttpMethod method = new GetMethod(strRequestURL);
-      method.addRequestHeader("RX_USEBASICAUTH", "true");
-      method.setDoAuthentication(true);
-      assertEquals(200, client.executeMethod(method));
-
-      method = new GetMethod(strRequestURL);
-      method.setRequestHeader(strHeader, strHdrVal);
-      client.executeMethod(method);
-      assertEquals(method.getPath(), RHYTHMYX_CONTEXT_PATH + "/login"); // Redirected to login
-
-      if (method != null)
-         method.releaseConnection();
-   }
 
    @Test
    public void test40NonSecureRequestsException() throws Exception {

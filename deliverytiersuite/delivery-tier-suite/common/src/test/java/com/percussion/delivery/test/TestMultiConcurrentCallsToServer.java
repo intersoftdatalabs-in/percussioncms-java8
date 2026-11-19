@@ -10,7 +10,6 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -18,6 +17,7 @@
 package com.percussion.delivery.test;
 
 import com.percussion.error.PSExceptionUtils;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,8 +27,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.ws.rs.core.MediaType;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
@@ -52,7 +55,7 @@ public class TestMultiConcurrentCallsToServer {
     List<Future<String>> list = new ArrayList<Future<String>>();
 
     for (int i = 0; i < 200; i++) {
-      HttpClient httpClient = new HttpClient();
+      CloseableHttpClient httpClient = HttpClients.createDefault();
       Callable<String> callable = new ThreadLocalRunner(i + 1, httpClient);
       Future<String> future = executor.submit(callable);
       list.add(future);
@@ -71,22 +74,23 @@ public class TestMultiConcurrentCallsToServer {
     executor.shutdown();
   }
 
-  public String makeRestRequest(int num, HttpClient httpClient) {
+  public String makeRestRequest(int num, CloseableHttpClient httpClient) {
     try {
-      GetMethod get = new GetMethod(deliveryServerUrl);
-      get.setRequestHeader("Content-Type", MediaType.APPLICATION_JSON);
-      get.setRequestHeader("Accept", MediaType.APPLICATION_JSON);
+      HttpGet get = new HttpGet(deliveryServerUrl);
+      get.setHeader("Content-Type", MediaType.APPLICATION_JSON);
+      get.setHeader("Accept", MediaType.APPLICATION_JSON);
 
-      try {
-        httpClient.executeMethod(get);
-        String resp = get.getResponseBodyAsString();
-
-        Assert.assertEquals(200, get.getStatusCode());
-        String returnVal = "Request Was :" + num + " : " + get.getStatusCode();
-        return returnVal;
-      } finally {
-        get.releaseConnection();
-      }
+      return httpClient.execute(
+          get,
+          response -> {
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+              EntityUtils.toString(entity, StandardCharsets.UTF_8);
+            }
+            int statusCode = response.getCode();
+            Assert.assertEquals(200, statusCode);
+            return "Request Was :" + num + " : " + statusCode;
+          });
 
     } catch (Exception e) {
       log.error(PSExceptionUtils.getMessageForLog(e));
@@ -98,14 +102,18 @@ public class TestMultiConcurrentCallsToServer {
 
   class ThreadLocalRunner implements Callable<String> {
     private int num;
-    private HttpClient httpClient;
+    private CloseableHttpClient httpClient;
 
     @Override
     public String call() throws Exception {
-      return makeRestRequest(num, httpClient);
+      try {
+        return makeRestRequest(num, httpClient);
+      } finally {
+        httpClient.close();
+      }
     }
 
-    public ThreadLocalRunner(int num, HttpClient httpClient) {
+    public ThreadLocalRunner(int num, CloseableHttpClient httpClient) {
       this.num = num;
       this.httpClient = httpClient;
     }

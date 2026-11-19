@@ -169,12 +169,15 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.cxf.common.util.Base64Exception;
 import org.apache.cxf.common.util.Base64Utility;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
@@ -1707,56 +1710,69 @@ public class ItemRestServiceImpl implements IItemRestService {
                     e);
               }
             } else {
-
-              HttpClient client = new HttpClient();
+              RequestConfig.Builder reqConfig =
+                  RequestConfig.custom().setConnectionRequestTimeout(Timeout.ofMilliseconds(2000));
 
               // Set up the proxy server if there is one.
               HTTPProxyClientConfig proxy = new HTTPProxyClientConfig();
-
-              if (!proxy.getProxyServer().equals("")) {
+              if (proxy.getProxyServer() != null
+                  && !proxy.getProxyServer().isEmpty()
+                  && proxy.getProxyPort() != null
+                  && !proxy.getProxyPort().isEmpty()) {
                 log.debug(
                     "Setting Proxy server to {}:{}", proxy.getProxyServer(), proxy.getProxyPort());
-                client
-                    .getHostConfiguration()
-                    .setProxy(proxy.getProxyServer(), Integer.parseInt(proxy.getProxyPort()));
+                reqConfig.setProxy(
+                    new HttpHost(proxy.getProxyServer(), Integer.parseInt(proxy.getProxyPort())));
               }
-              client.getParams().setConnectionManagerTimeout(2000);
 
-              GetMethod get = null;
               PSPurgableTempFile tmp = null;
-              try {
+              try (CloseableHttpClient client =
+                  HttpClients.custom().setDefaultRequestConfig(reqConfig.build()).build()) {
+                HttpGet get = new HttpGet(ref.toURL().toString());
+                final int[] codeHolder = new int[1];
+                final byte[][] digestHolder = new byte[1][];
+                final PSPurgableTempFile[] tmpHolder = new PSPurgableTempFile[1];
 
-                get = new GetMethod(ref.toURL().toString());
+                client.execute(
+                    get,
+                    response -> {
+                      int code = response.getCode();
+                      codeHolder[0] = code;
+                      if (code == HttpStatus.SC_OK && response.getEntity() != null) {
+                        PSPurgableTempFile tempFile = new PSPurgableTempFile("pso", null, null);
+                        tmpHolder[0] = tempFile;
+                        try {
+                          MessageDigest md = MessageDigest.getInstance("SHA-256");
+                          byte[] buffer = new byte[1024];
+                          int count;
+                          try (FileOutputStream out = new FileOutputStream(tempFile);
+                              DigestInputStream in =
+                                  new DigestInputStream(response.getEntity().getContent(), md)) {
+                            while ((count = in.read(buffer)) != -1) {
+                              out.write(buffer, 0, count);
+                            }
+                            out.flush();
+                          }
+                          digestHolder[0] = md.digest();
+                        } catch (NoSuchAlgorithmException e) {
+                          log.debug(e, e);
+                        }
+                      }
+                      return null;
+                    });
 
-                int code = client.executeMethod(get);
-
+                int code = codeHolder[0];
+                tmp = tmpHolder[0];
                 if (code != HttpStatus.SC_OK) {
                   log.error("Unable to fetch remote resource, status code: {}", code);
                   throw new ItemRestException(
                       "Error processing " + binValue.getHref() + " HTTP request failed.");
                 }
 
-                tmp = new PSPurgableTempFile("pso", null, null);
-                MessageDigest md = MessageDigest.getInstance("SHA-256");
-                byte[] buffer = new byte[1024];
-                int count = -1;
-                try (FileOutputStream out = new FileOutputStream((File) tmp)) {
-
-                  try (DigestInputStream in =
-                      new DigestInputStream(get.getResponseBodyAsStream(), md)) {
-
-                    while ((count = in.read(buffer)) != -1) {
-                      out.write(buffer, 0, count);
-                    }
-                    out.flush();
-                  }
-                }
-
                 // Now compare the digest to the version in the system already.
-                byte[] new_md5 = md.digest();
+                byte[] new_md5 = digestHolder[0];
                 log.debug("New Item MD5 Checksum is {}", new_md5);
                 byte[] old_md5;
-                // newValue = new PSPurgableFileValue(tmp);
 
                 if (oldValue != null) {
                   PSPurgableTempFile old_t = null;
@@ -1766,7 +1782,9 @@ public class ItemRestServiceImpl implements IItemRestService {
                   }
 
                   // Only need to compare checksums if the file size is the same;
-                  md.reset();
+                  MessageDigest md = MessageDigest.getInstance("SHA-256");
+                  byte[] buffer = new byte[1024];
+                  int count;
                   try (DigestInputStream in =
                       new DigestInputStream(new FileInputStream(old_t), md)) {
                     count = 0;
@@ -1787,16 +1805,11 @@ public class ItemRestServiceImpl implements IItemRestService {
               } catch (MalformedURLException e) {
                 log.debug(e, e);
                 throw new ItemRestException("Error processing " + binValue.getHref(), e);
-              } catch (HttpException e) {
-                log.debug(e, e);
-                throw new ItemRestException("Error processing " + binValue.getHref(), e);
               } catch (IOException e) {
                 log.debug(e, e);
                 throw new ItemRestException("Error processing " + binValue.getHref(), e);
               } catch (NoSuchAlgorithmException e) {
                 log.debug(e, e);
-              } finally {
-                if (get != null) get.releaseConnection();
               }
             }
 

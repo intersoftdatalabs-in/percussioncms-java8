@@ -23,16 +23,21 @@ import com.percussion.extension.IPSJexlMethod;
 import com.percussion.extension.IPSJexlParam;
 import com.percussion.extension.PSJexlUtilBase;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection;
@@ -71,17 +76,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
       },
       returns = "Returns an integer status code")
   public int getHTTPStatusCode(String urlString) throws IllegalArgumentException, IOException {
-    HttpClient client = new HttpClient();
-    GetMethod get = new GetMethod(urlString);
-    String responseBody;
-    int statusCode = 400;
-    try {
-      statusCode = client.executeMethod(get);
-    } finally {
-      // Process the data from the input stream.
-      get.releaseConnection();
-    }
-    return statusCode;
+    return executeGetStatus(urlString, null, null, null);
   }
 
   /**
@@ -106,28 +101,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
       returns = "Returns a integer status code")
   public int getHTTPStatusCode(String urlString, String username, String password)
       throws IllegalArgumentException, IOException {
-    HttpClient client = new HttpClient();
-    GetMethod get = new GetMethod(urlString);
-
-    Credentials defaultcreds = new UsernamePasswordCredentials(username, password);
-    URI uriObject = new URI(urlString);
-
-    int statusCode = 400;
-    try {
-      client
-          .getState()
-          .setCredentials(
-              new AuthScope(uriObject.getHost(), uriObject.getPort(), AuthScope.ANY_REALM),
-              defaultcreds);
-
-      statusCode = client.executeMethod(get);
-
-    } finally {
-      // Process the data from the input stream.
-      get.releaseConnection();
-    }
-
-    return statusCode;
+    return executeGetStatus(urlString, null, username, password);
   }
 
   /**
@@ -150,24 +124,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
       returns = "Returns a integer status code")
   public int getHTTPStatusCode(String urlString, Map<String, String> headers)
       throws IllegalArgumentException, IOException {
-    HttpClient client = new HttpClient();
-    GetMethod get = new GetMethod(urlString);
-
-    for (Map.Entry<String, String> entry : headers.entrySet()) {
-      get.setRequestHeader(entry.getKey(), entry.getValue());
-    }
-
-    int statusCode = 400;
-    try {
-
-      statusCode = client.executeMethod(get);
-
-    } finally {
-      // Process the data from the input stream.
-      get.releaseConnection();
-    }
-
-    return statusCode;
+    return executeGetStatus(urlString, headers, null, null);
   }
 
   /**
@@ -195,32 +152,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
   public int getHTTPStatusCode(
       String urlString, Map<String, String> headers, String username, String password)
       throws IllegalArgumentException, IOException {
-    HttpClient client = new HttpClient();
-    GetMethod get = new GetMethod(urlString);
-
-    for (Map.Entry<String, String> entry : headers.entrySet()) {
-      get.setRequestHeader(entry.getKey(), entry.getValue());
-    }
-
-    Credentials defaultcreds = new UsernamePasswordCredentials(username, password);
-    URI uriObject = new URI(urlString);
-
-    int statusCode = 400;
-    try {
-      client
-          .getState()
-          .setCredentials(
-              new AuthScope(uriObject.getHost(), uriObject.getPort(), AuthScope.ANY_REALM),
-              defaultcreds);
-
-      statusCode = client.executeMethod(get);
-
-    } finally {
-      // Process the data from the input stream.
-      get.releaseConnection();
-    }
-
-    return statusCode;
+    return executeGetStatus(urlString, headers, username, password);
   }
 
   /**
@@ -241,26 +173,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
       returns = "Returns a com.fasterxml.jackson.databind.JsonNode")
   public JsonNode getRemoteJSONContent(String urlString)
       throws IllegalArgumentException, IOException {
-    HttpClient client = new HttpClient();
-    GetMethod get = new GetMethod(urlString);
-    String responseBody;
-    try {
-      int statusCode = client.executeMethod(get);
-      if (statusCode != HttpStatus.SC_OK && statusCode != HttpStatus.SC_NOT_MODIFIED) {
-        log.warn(
-            "JEXL: getRemoteJSONContent request was not 200/304: URL: {} Status Code: {} Status Message: {}",
-            statusCode,
-            get.getStatusLine(),
-            urlString);
-      }
-      // execute method and handle any error responses.
-      responseBody = get.getResponseBodyAsString();
-    } finally {
-      // Process the data from the input stream.
-      get.releaseConnection();
-    }
-
-    return MAPPER.readTree(responseBody);
+    return executeGetJson(urlString, null, null, null, true);
   }
 
   /**
@@ -285,35 +198,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
       returns = "Returns a com.fasterxml.jackson.databind.JsonNode")
   public JsonNode getRemoteJSONContent(String urlString, String username, String password)
       throws IllegalArgumentException, IOException {
-    HttpClient client = new HttpClient();
-    GetMethod get = new GetMethod(urlString);
-
-    Credentials defaultcreds = new UsernamePasswordCredentials(username, password);
-    URI uriObject = new URI(urlString);
-
-    String responseBody;
-    try {
-      client
-          .getState()
-          .setCredentials(
-              new AuthScope(uriObject.getHost(), uriObject.getPort(), AuthScope.ANY_REALM),
-              defaultcreds);
-
-      int statusCode = client.executeMethod(get);
-      if (statusCode != HttpStatus.SC_OK && statusCode != HttpStatus.SC_NOT_MODIFIED) {
-        log.warn(
-            "JEXL: getRemoteJSONContent response was not 200/304. URL: {} Status Code: {} Status Message: {}",
-            urlString,
-            statusCode,
-            get.getStatusLine());
-      }
-      responseBody = get.getResponseBodyAsString();
-    } finally {
-      // Process the data from the input stream.
-      get.releaseConnection();
-    }
-
-    return MAPPER.readTree(responseBody);
+    return executeGetJson(urlString, null, username, password, true);
   }
 
   /**
@@ -336,28 +221,7 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
       returns = "Returns a com.fasterxml.jackson.databind.JsonNode")
   public JsonNode getRemoteJSONContent(String urlString, Map<String, String> headers)
       throws IllegalArgumentException, IOException {
-    HttpClient client = new HttpClient();
-    GetMethod get = new GetMethod(urlString);
-
-    for (Map.Entry<String, String> entry : headers.entrySet()) {
-      get.setRequestHeader(entry.getKey(), entry.getValue());
-    }
-
-    String responseBody;
-    try {
-
-      int statusCode = client.executeMethod(get);
-      if (statusCode != HttpStatus.SC_OK) {
-        log.debug("Get failed" + get.getStatusLine() + ": " + urlString);
-      }
-      responseBody = get.getResponseBodyAsString();
-    } finally {
-      // Process the data from the input stream.
-      get.releaseConnection();
-    }
-
-    JsonNode jsonObject = MAPPER.readTree(responseBody);
-    return jsonObject;
+    return executeGetJson(urlString, headers, null, null, false);
   }
 
   /**
@@ -385,39 +249,95 @@ public class PSORemoteContentTools extends PSJexlUtilBase implements IPSJexlExpr
   public JsonNode getRemoteJSONContent(
       String urlString, Map<String, String> headers, String username, String password)
       throws IllegalArgumentException, IOException {
-    HttpClient client = new HttpClient();
-    GetMethod get = new GetMethod(urlString);
+    return executeGetJson(urlString, headers, username, password, true);
+  }
 
-    for (Map.Entry<String, String> entry : headers.entrySet()) {
-      get.setRequestHeader(entry.getKey(), entry.getValue());
-    }
+  private int executeGetStatus(
+      String urlString, Map<String, String> headers, String username, String password)
+      throws IOException {
+    return executeGet(urlString, headers, username, password, false).statusCode;
+  }
 
-    Credentials defaultcreds = new UsernamePasswordCredentials(username, password);
-    URI uriObject = new URI(urlString);
-
-    String responseBody;
-    try {
-      client
-          .getState()
-          .setCredentials(
-              new AuthScope(uriObject.getHost(), uriObject.getPort(), AuthScope.ANY_REALM),
-              defaultcreds);
-
-      int statusCode = client.executeMethod(get);
-      if (statusCode != HttpStatus.SC_OK && statusCode != HttpStatus.SC_NOT_MODIFIED) {
+  private JsonNode executeGetJson(
+      String urlString,
+      Map<String, String> headers,
+      String username,
+      String password,
+      boolean allowNotModified)
+      throws IOException {
+    GetResult result = executeGet(urlString, headers, username, password, true);
+    if (allowNotModified) {
+      if (result.statusCode != HttpStatus.SC_OK
+          && result.statusCode != HttpStatus.SC_NOT_MODIFIED) {
         log.warn(
-            "JEXL: getRemoteJSONContent was not 200/304. URL: {} Status Code:{}, Status Message: {}",
+            "JEXL: getRemoteJSONContent was not 200/304. URL: {} Status Code: {} Status Message: {}",
             urlString,
-            statusCode,
-            get.getStatusLine());
+            result.statusCode,
+            result.statusLine);
       }
-      responseBody = get.getResponseBodyAsString();
-    } finally {
-      // Process the data from the input stream.
-      get.releaseConnection();
+    } else if (result.statusCode != HttpStatus.SC_OK) {
+      log.debug("Get failed" + result.statusLine + ": " + urlString);
+    }
+    return MAPPER.readTree(result.body);
+  }
+
+  private GetResult executeGet(
+      String urlString,
+      Map<String, String> headers,
+      String username,
+      String password,
+      boolean readBody)
+      throws IOException {
+    HttpGet get = new HttpGet(urlString);
+    if (headers != null) {
+      for (Map.Entry<String, String> entry : headers.entrySet()) {
+        get.setHeader(entry.getKey(), entry.getValue());
+      }
     }
 
-    return MAPPER.readTree(responseBody);
+    HttpClientContext context = HttpClientContext.create();
+    if (username != null) {
+      URI uriObject;
+      try {
+        uriObject = new URI(urlString);
+      } catch (URISyntaxException e) {
+        throw new IllegalArgumentException("Invalid URL: " + urlString, e);
+      }
+      BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+      char[] passChars = password != null ? password.toCharArray() : new char[0];
+      credsProvider.setCredentials(
+          new AuthScope(uriObject.getHost(), uriObject.getPort()),
+          new UsernamePasswordCredentials(username, passChars));
+      context.setCredentialsProvider(credsProvider);
+    }
+
+    try (CloseableHttpClient client = HttpClients.createDefault()) {
+      return client.execute(
+          get,
+          context,
+          response -> {
+            int code = response.getCode();
+            String statusLine = code + " " + response.getReasonPhrase();
+            String body = "";
+            if (readBody) {
+              HttpEntity entity = response.getEntity();
+              body = entity == null ? "" : EntityUtils.toString(entity);
+            }
+            return new GetResult(code, statusLine, body);
+          });
+    }
+  }
+
+  private static final class GetResult {
+    final int statusCode;
+    final String statusLine;
+    final String body;
+
+    GetResult(int statusCode, String statusLine, String body) {
+      this.statusCode = statusCode;
+      this.statusLine = statusLine;
+      this.body = body;
+    }
   }
 
   /**

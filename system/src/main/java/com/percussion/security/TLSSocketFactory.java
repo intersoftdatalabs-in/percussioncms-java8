@@ -41,18 +41,20 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import org.apache.commons.httpclient.params.HttpConnectionParams;
-import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
+import org.apache.hc.client5.http.ssl.TlsSocketStrategy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jsse.provider.BouncyCastleJsseProvider;
 
-public class TLSSocketFactory extends SSLSocketFactory implements ProtocolSocketFactory {
+public class TLSSocketFactory extends SSLSocketFactory {
 
   /** Logger for the reaper, never <code>null</code>. */
   private static final Logger ms_log = LogManager.getLogger(TLSSocketFactory.class);
+
+  private final SSLContext context;
 
   private SSLSocketFactory internalSSLSocketFactory;
 
@@ -105,12 +107,11 @@ public class TLSSocketFactory extends SSLSocketFactory implements ProtocolSocket
       ms_log.debug(p.getName());
     }
 
-    SSLContext context = null;
-    context = SSLContext.getInstance("TLS");
+    this.context = SSLContext.getInstance("TLS");
 
     ms_log.debug(
         "Initialized TLSSocketFactory enabled protocols to : {}", Arrays.toString(protocols));
-    ms_log.debug("Using Security Provider: {}", context.getProvider());
+    ms_log.debug("Using Security Provider: {}", this.context.getProvider());
 
     TrustManagerFactory trustManagerFactory;
     trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
@@ -120,21 +121,37 @@ public class TLSSocketFactory extends SSLSocketFactory implements ProtocolSocket
 
     try {
       random = SecureRandom.getInstance("DEFAULT", "BC");
-    } catch (NoSuchProviderException e) {
-      random = SecureRandom.getInstance("DEFAULT");
+    } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+      random = new SecureRandom();
     }
-    context.init(null, tm, random);
+    this.context.init(null, tm, random);
 
-    internalSSLSocketFactory = context.getSocketFactory();
+    internalSSLSocketFactory = this.context.getSocketFactory();
 
     String ciphers = PSServer.getServerProps().getProperty("enabledCiphers");
     if (StringUtils.isEmpty(ciphers)) {
-      enabledCiphers = defaultCiphers;
+      enabledCiphers = defaultCiphers.clone();
+    } else {
+      enabledCiphers = ciphers.split(",");
+      for (int i = 0; i < enabledCiphers.length; i++) {
+        enabledCiphers[i] = enabledCiphers[i].trim();
+      }
     }
-    enabledCiphers = ciphers.split(",");
-    for (String s : enabledCiphers) {
-      s = s.trim();
+  }
+
+  /**
+   * Builds an Apache HttpClient 5 {@link TlsSocketStrategy} using this factory's configured {@link
+   * SSLContext}, TLS versions, and scrubbed cipher suites.
+   */
+  public TlsSocketStrategy createTlsSocketStrategy() {
+    String[] scrubbed =
+        scrubCiphers(this.context.getSupportedSSLParameters().getCipherSuites(), enabledCiphers);
+    ClientTlsStrategyBuilder builder =
+        ClientTlsStrategyBuilder.create().setSslContext(this.context).setTlsVersions(protocols);
+    if (scrubbed.length > 0) {
+      builder.setCiphers(scrubbed);
     }
+    return builder.buildClassic();
   }
 
   public static synchronized SocketFactory getDefault() {
@@ -222,8 +239,11 @@ public class TLSSocketFactory extends SSLSocketFactory implements ProtocolSocket
     if ((socket instanceof SSLSocket)) {
       SSLSocket sslSocket = (SSLSocket) socket;
       sslSocket.setEnabledProtocols(protocols);
-      sslSocket.setEnabledCipherSuites(enabledCiphers);
-      ms_log.debug("Setting Enabled Ciphers to: {}", StringUtils.join(enabledCiphers, ","));
+      String[] scrubbed = scrubCiphers(sslSocket.getSupportedCipherSuites(), enabledCiphers);
+      if (scrubbed.length > 0) {
+        sslSocket.setEnabledCipherSuites(scrubbed);
+      }
+      ms_log.debug("Setting Enabled Ciphers to: {}", StringUtils.join(scrubbed, ","));
       logTLSConfig(sslSocket);
     }
     return socket;
@@ -237,13 +257,5 @@ public class TLSSocketFactory extends SSLSocketFactory implements ProtocolSocket
       if (!copySupported.contains(s)) ret.remove(s);
     }
     return ret.toArray(new String[] {});
-  }
-
-  @Override
-  public Socket createSocket(
-      String host, int port, InetAddress localAddress, int localPort, HttpConnectionParams params)
-      throws IOException {
-    return enableTLSOnSocket(
-        internalSSLSocketFactory.createSocket(host, port, localAddress, localPort));
   }
 }
