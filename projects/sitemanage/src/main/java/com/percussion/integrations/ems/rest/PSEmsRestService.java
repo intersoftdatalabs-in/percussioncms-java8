@@ -237,6 +237,8 @@ public class PSEmsRestService {
       HttpPost post = new HttpPost(targetUri);
       post.setHeader("Content-Type", MediaType.APPLICATION_JSON);
       post.setHeader("Accept", MediaType.APPLICATION_JSON);
+      // codeql[java/xss] justification: outbound HttpClient 5 JSON POST request entity;
+      // re-review by 2027-07-31
       post.setEntity(new StringEntity(payload, ContentType.APPLICATION_JSON));
 
       String body = executeEmsRequest(targetUri, post, resourceLabel);

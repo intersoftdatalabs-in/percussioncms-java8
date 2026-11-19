@@ -16,6 +16,7 @@
 package com.percussion.services.assembly.jexl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -91,6 +92,19 @@ public class PSDocumentUtilsHttpClient5Test {
     assertEquals(expectedHeader, capturedAuthHeader);
 
     assertEquals("", utils.getDocument(baseUrl + "/missing"));
+  }
+
+  @Test
+  public void testGetExternalDocumentRejectsSsrfTargetsAndPreservesEncoding() throws Exception {
+    PSDocumentUtils utils = new PSDocumentUtils();
+
+    assertThrows(
+        SecurityException.class,
+        () -> utils.getDocument("http://169.254.169.254/latest/meta-data/"));
+    assertThrows(SecurityException.class, () -> utils.getDocument("file:///etc/passwd"));
+    assertEquals(
+        "<html><body>external-doc</body></html>",
+        utils.getDocument(baseUrl + "/doc?q=hello%20world"));
   }
 
   private static void sendResponse(HttpExchange exchange, int status, String body)

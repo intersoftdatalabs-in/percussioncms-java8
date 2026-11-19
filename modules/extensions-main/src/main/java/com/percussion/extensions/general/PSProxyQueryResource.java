@@ -27,13 +27,16 @@ import com.percussion.extension.PSDefaultExtension;
 import com.percussion.extension.PSExtensionProcessingException;
 import com.percussion.extension.PSParameterMismatchException;
 import com.percussion.extensions.utils.PSExtensionParamsHelper;
+import com.percussion.security.validation.URLValidation;
 import com.percussion.server.IPSRequestContext;
 import com.percussion.server.PSServer;
 import com.percussion.utils.request.PSRequestInfo;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -155,8 +158,22 @@ public class PSProxyQueryResource extends PSDefaultExtension implements IPSResul
         }
       } else {
         try {
-          uri = new URI(url);
-        } catch (URISyntaxException e) {
+          URL validatedUrl = URLValidation.validateURLString(url);
+          String safeProtocol =
+              "https".equalsIgnoreCase(validatedUrl.getProtocol()) ? "https" : "http";
+          uri =
+              new URI(
+                  safeProtocol
+                      + "://"
+                      + validatedUrl.getAuthority()
+                      + validatedUrl.getFile()
+                      + (validatedUrl.getRef() != null ? "#" + validatedUrl.getRef() : ""));
+        } catch (SecurityException e) {
+          log.warn(
+              "Blocked external proxy request URL by SSRF validation: {}",
+              PSExceptionUtils.getMessageForLog(e));
+          throw e;
+        } catch (MalformedURLException | URISyntaxException e) {
           log.error(
               "Error parsing supplied url: {} Error: {}",
               url,
@@ -184,6 +201,8 @@ public class PSProxyQueryResource extends PSDefaultExtension implements IPSResul
       }
       context.setRequestConfig(requestConfigBuilder.build());
 
+      // codeql[java/ssrf] justification: URL rebuilt from URLValidation.validateURLString +
+      // http/https scheme literal; re-review by 2027-07-31
       HttpGet method = new HttpGet(uri);
       final String targetUrl = url;
 

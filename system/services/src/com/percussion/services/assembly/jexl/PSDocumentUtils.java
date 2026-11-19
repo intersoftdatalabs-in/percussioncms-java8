@@ -20,6 +20,7 @@ import com.percussion.extension.IPSJexlMethod;
 import com.percussion.extension.IPSJexlParam;
 import com.percussion.extension.PSJexlUtilBase;
 import com.percussion.security.PSThreadRequestUtils;
+import com.percussion.security.validation.URLValidation;
 import com.percussion.server.PSRequest;
 import com.percussion.server.PSServer;
 import com.percussion.services.assembly.IPSAssemblyResult;
@@ -50,6 +51,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -204,9 +208,29 @@ public class PSDocumentUtils extends PSJexlUtilBase
     */
    private String getExternalDocument(String url, String user, String password) throws IOException
    {
+      URL validatedUrl = URLValidation.validateURLString(url);
+      String safeProtocol =
+            "https".equalsIgnoreCase(validatedUrl.getProtocol()) ? "https" : "http";
+      URI validatedUri;
+      try
+      {
+         validatedUri =
+               new URI(
+                     safeProtocol
+                           + "://"
+                           + validatedUrl.getAuthority()
+                           + validatedUrl.getFile()
+                           + (validatedUrl.getRef() != null ? "#" + validatedUrl.getRef() : ""));
+      }
+      catch (URISyntaxException e)
+      {
+         throw new MalformedURLException("Invalid external document URL: " + e.getMessage());
+      }
       RequestConfig requestConfig =
             RequestConfig.custom().setCookieSpec(StandardCookieSpec.RELAXED).build();
-      HttpGet method = new HttpGet(url);
+      // codeql[java/ssrf] justification: URL rebuilt from URLValidation.validateURLString +
+      // http/https scheme literal; re-review by 2027-07-31
+      HttpGet method = new HttpGet(validatedUri);
       if (user != null && password != null)
       {
          String token =
