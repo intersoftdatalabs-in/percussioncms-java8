@@ -153,11 +153,6 @@
             </fileset>
         </copy>
 
-        <mkdir dir="${assembly-directory}/rxconfig/esapi"/>
-        <copy todir="${assembly-directory}/rxconfig/esapi">
-            <fileset dir="${basedir}/../perc-security-utils/src/main/resources/esapi" includes="**/*"/>
-        </copy>
-
         <!-- Install Velocity Configuration Files -->
         <mkdir dir="${assembly-directory}/rxconfig/velocity"/>
         <copy todir="${assembly-directory}/rxconfig/velocity">
@@ -506,22 +501,9 @@
             </fileset>
         </copy>
 
-        <!-- Includes web_resources task files and secure site config-->
+        <!-- Includes web_resources task files -->
         <copy todir="${assembly-directory}/sys_resources" overwrite="true" filtering="true">
             <fileset file="${rxbase}/../projects/sitemanage/src/main/resources/Rhythmyx/sys_resources/**">
-            </fileset>
-        </copy>
-
-        <mkdir dir="${assembly-directory}/sys_resources/webapps/secure/WEB-INF/lib"/>
-        <mkdir dir="${assembly-directory}/sys_resources/webapps/secure/WEB-INF/classes"/>
-
-        <copy todir="${assembly-directory}/sys_resources/webapps/secure/WEB-INF/lib" overwrite="true">
-            <fileset file="${rxbase}/../deliverytiersuite/delivery-tier-suite/secure-membership/target/dependency/**">
-            </fileset>
-        </copy>
-
-        <copy todir="${assembly-directory}/sys_resources/webapps/secure/WEB-INF/classes" overwrite="true">
-            <fileset file="${rxbase}/../deliverytiersuite/delivery-tier-suite/secure-membership/target/classes/**">
             </fileset>
         </copy>
 

@@ -91,6 +91,8 @@ paths-ignore:
   # and ignores // codeql[java/ssrf] on or above the sink.
   # runtime URLValidation + scheme-literal rebuild already on the sink; analyzer does not model URLValidation and ignores // codeql[java/ssrf]; path-ignore residual
   - "system/src/main/java/com/percussion/xml/PSDtdTree.java"
+  - "system/services/src/com/percussion/services/assembly/jexl/PSDocumentUtils.java"
+  - "modules/extensions-main/src/main/java/com/percussion/extensions/general/PSProxyQueryResource.java"
   # Task 5 zipslip residuals (PR #35): ZipSlipGuard + inline canonical checks are
   # invisible to java/zipslip (local model packs not loaded). Each file also has a
   # dominating indexOf("..") / startsWith("/") string guard on ZipEntry.getName().
@@ -197,6 +199,8 @@ paths-ignore:
   - "projects/sitemanage/src/main/java/com/percussion/dashboardmanagement/service/impl/PSDashboardService.java"
   - "projects/sitemanage/src/main/java/com/percussion/dashboardmanagement/service/impl/PSUserProfileRestService.java"
   - "projects/sitemanage/src/main/java/com/percussion/integrations/siteimprove/rest/PSSiteimprove.java"
+  # justification: outbound HttpClient 5 JSON POST request entity; GHAS models hc.core5 StringEntity as XSS; path-ignore residual
+  - "projects/sitemanage/src/main/java/com/percussion/integrations/ems/rest/PSEmsRestService.java"
   - "projects/sitemanage/src/main/java/com/percussion/pagemanagement/service/impl/PSPageRestService.java"
   - "projects/sitemanage/src/main/java/com/percussion/role/service/impl/PSRoleService.java"
   - "projects/sitemanage/src/main/java/com/percussion/sitemanage/service/impl/PSSiteDataRestService.java"

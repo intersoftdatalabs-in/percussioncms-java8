@@ -200,7 +200,7 @@
             <artifactId>css-selectors</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxrs</artifactId>
             <exclusions>
                 <exclusion>
@@ -214,7 +214,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
         </dependency>
         <dependency>
@@ -222,7 +222,7 @@
             <artifactId>javax.json-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-rs-extension-providers</artifactId>
         </dependency>
         <dependency>
@@ -257,7 +257,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
         </dependency>
         <dependency>
@@ -293,7 +293,7 @@
             <artifactId>jackson-datatype-jdk8</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-tx</artifactId>
         </dependency>
         <dependency>
@@ -342,12 +342,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-core</artifactId>
             <scope>compile</scope>
         </dependency>
@@ -378,7 +378,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <scope>compile</scope>
         </dependency>
@@ -388,12 +388,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <scope>compile</scope>
         </dependency>
@@ -403,7 +403,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-beans</artifactId>
             <scope>compile</scope>
         </dependency>
@@ -450,7 +450,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <scope>compile</scope>
         </dependency>
@@ -549,8 +549,8 @@
             <artifactId>ehcache</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -583,21 +583,11 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.owasp.esapi</groupId>
-            <artifactId>esapi</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.owasp.encoder</groupId>
             <artifactId>encoder</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-rs-service-description-openapi-v3</artifactId>
         </dependency>
         <dependency>

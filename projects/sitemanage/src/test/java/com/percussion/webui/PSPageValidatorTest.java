@@ -25,7 +25,6 @@ import java.io.StringReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.commons.httpclient.HttpException;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -105,13 +104,12 @@ public class PSPageValidatorTest extends PSRestTestCase<PSPageValidatorRestClien
    *
    * @param viewName Assumed not <code>null</code> or empty. The value for the view parameter
    *     supplied in the page request URL.
-   * @throws HttpException
    * @throws IOException
    * @throws ParserConfigurationException
    * @throws SAXException
    */
   private void validatePage(String viewName)
-      throws HttpException, IOException, ParserConfigurationException, SAXException {
+      throws IOException, ParserConfigurationException, SAXException {
     String src = restClient.getPage(viewName);
 
     src = fixupDoctype(src);

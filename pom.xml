@@ -70,7 +70,7 @@
         <url>https://github.com/intersoftdatalabs-in/percussioncms</url>
     </scm>
     <properties>
-        <activemq.version>5.16.8</activemq.version>
+        <activemq.version>5.16.8.1</activemq.version>
         <ant.contrib.version>1.0b3</ant.contrib.version>
         <ant.version>1.10.14</ant.version>
         <avalon.version>4.1.5</avalon.version>
@@ -92,17 +92,17 @@
         <commons.compress.version>1.28.0</commons.compress.version>
         <commons.fileupload.version>1.6.0</commons.fileupload.version>
         <commons.io.version>2.21.0</commons.io.version>
+        <commons.lang2.version>2.6.1</commons.lang2.version>
         <commons.lang3.version>3.20.0</commons.lang3.version>
         <commons.math.version>3.6.1</commons.math.version>
         <commons.rng.version>1.3</commons.rng.version>
         <commons.validator.version>1.10.1</commons.validator.version>
-        <cxf.version>3.5.11</cxf.version>
-        <derby.version>10.14.2.0</derby.version>
+        <cxf.version>3.5.11.1</cxf.version>
+        <derby.version>10.14.2.1</derby.version>
         <duplicate.finder.maven.plugin.version>1.4.0</duplicate.finder.maven.plugin.version>
         <eclipse-manifest-location>META-INF</eclipse-manifest-location>
         <ehcache.version>2.10.9.2</ehcache.version>
         <esapi.encoder.version>1.4.0</esapi.encoder.version>
-        <esapi.version>2.7.0.0</esapi.version>
         <fop.version>2.11</fop.version>
         <google.java.format.version>1.7</google.java.format.version>
         <gson.version>2.13.2</gson.version>
@@ -131,7 +131,7 @@
         <jdk.version>1.8</jdk.version>
         <jenkins.buildNumber>2024</jenkins.buildNumber>
         <jetty.maven.plugin.version>9.4.58.v20250814</jetty.maven.plugin.version>
-        <jetty.version>9.4.65.1</jetty.version>
+        <jetty.version>9.4.65.2</jetty.version>
         <jfx.version>11.0.2</jfx.version>
         <json.version>20260719</json.version>
         <jsoup.version>1.23.2</jsoup.version>
@@ -202,12 +202,12 @@
         <snappy.version>1.1.10.9</snappy.version>
         <solr.version>8.11.4</solr.version>
         <spotless.plugin.version>2.30.0</spotless.plugin.version>
-        <spring.version>5.3.39</spring.version>
+        <spring.version>5.3.39.1</spring.version>
         <sqlite.version>3.43.2.2</sqlite.version>
         <stax.version>1.0.1</stax.version>
         <swagger.ui.version>5.31.2</swagger.ui.version>
         <swagger.version>2.2.43</swagger.version>
-        <tika.version>2.9.4</tika.version>
+        <tika.version>2.9.4.1</tika.version>
         <tinymce.version>5.10.3</tinymce.version>
         <trinidad.version>2.2.1</trinidad.version>
         <twelvemonkeys.version>3.13.1</twelvemonkeys.version>
@@ -313,63 +313,68 @@
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.springframework/spring-core -->
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-core</artifactId>
                 <version>${spring.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>com.intsof.lts.springframework</groupId>
                         <artifactId>spring-jcl</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-aop</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-aspects</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-context</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-context-support</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-expression</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-jdbc</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-jms</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
+                <artifactId>spring-messaging</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-orm</artifactId>
                 <version>${spring.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>com.intsof.lts.springframework</groupId>
                         <artifactId>spring-jcl</artifactId>
                     </exclusion>
                     <exclusion>
@@ -379,80 +384,90 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-oxm</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-test</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-tx</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-web</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-webmvc</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-frontend-jaxrs</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-features-logging</artifactId>
                 <version>${cxf.version}</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-rs-service-description-openapi-v3</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-transports-local</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-transports-http</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-transports-http-jetty</artifactId>
                 <version>${cxf.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty.http2</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-rs-client</artifactId>
                 <version>${cxf.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
+                <groupId>com.intsof.lts.jetty</groupId>
                 <artifactId>jetty-servlet</artifactId>
                 <version>${jetty.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
+                <groupId>com.intsof.lts.jetty</groupId>
                 <artifactId>jetty-start</artifactId>
                 <version>${jetty.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
+                <groupId>com.intsof.lts.jetty</groupId>
                 <artifactId>jetty-bom</artifactId>
                 <version>${jetty.version}</version>
                 <type>pom</type>
@@ -603,11 +618,6 @@
                 <artifactId>commons-cli</artifactId>
                 <version>${commons-cli.version}</version>
             </dependency>
-            <dependency>
-                <groupId>commons-httpclient</groupId>
-                <artifactId>commons-httpclient</artifactId>
-                <version>3.1</version>
-            </dependency>
             <!-- https://mvnrepository.com/artifact/org.aspectj/aspectjrt 
                 1.5.2 no longer on maven -->
             <dependency>
@@ -630,11 +640,6 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.jackrabbit</groupId>
-                <artifactId>jackrabbit-jcr-commons</artifactId>
-                <version>2.20.17</version>
             </dependency>
             <!-- T2.x.8b hardening (issue #121): jasypt 1.9.3 removed.
                  The dependencyManagement entry is kept for reference but
@@ -680,10 +685,8 @@
             <dependency>
                 <groupId>javax.jcr</groupId>
                 <artifactId>jcr</artifactId>
-                <!-- JCR 2.0 (JSR-283). Required at runtime by jackrabbit-jcr-commons 2.x
-                     (its manifest declares Import-Package: javax.jcr;version="[2.0,3)").
-                     The 1.0 jar (JSR-170) was a runtime/contract mismatch that happened
-                     to compile only because the 1.0 spec is mostly a subset of 2.0. -->
+                <!-- JCR 2.0 (JSR-283). Retained for PSBinary / PSValueFactory API alignment
+                     (jackrabbit-jcr-commons was replaced in-repo and removed in #297). -->
                 <version>2.0</version>
             </dependency>
             <dependency>
@@ -779,6 +782,10 @@
                         <artifactId>http2-http-client-transport</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>commons-lang</groupId>
+                        <artifactId>commons-lang</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.slf4j</groupId>
                         <artifactId>jcl-over-slf4j</artifactId>
                     </exclusion>
@@ -871,14 +878,14 @@
                 <version>2.1.1</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.tika</groupId>
+                <groupId>com.intsof.lts.tika</groupId>
                 <artifactId>tika-core</artifactId>
                 <version>${tika.version}</version>
                 <!-- was 1.3 update to bring in line
                     with other deps -->
             </dependency>
             <dependency>
-                <groupId>org.apache.tika</groupId>
+                <groupId>com.intsof.lts.tika</groupId>
                 <artifactId>tika-parsers-standard-package</artifactId>
                 <version>${tika.version}</version>
                 <!-- was 1.3 update to bring in line
@@ -948,6 +955,10 @@
                         <groupId>org.bouncycastle</groupId>
                         <artifactId>bcutil-jdk18on</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.tika</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -956,7 +967,7 @@
                 <version>${gson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.tika</groupId>
+                <groupId>com.intsof.lts.tika</groupId>
                 <artifactId>tika-langdetect</artifactId>
                 <version>${tika.version}</version>
                 <exclusions>
@@ -967,6 +978,17 @@
                     <exclusion>
                         <groupId>com.google.code.gson</groupId>
                         <artifactId>gson</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.intsof.lts.tika</groupId>
+                <artifactId>tika-langdetect-optimaize</artifactId>
+                <version>${tika.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.tika</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -986,6 +1008,17 @@
                 <groupId>org.apache.myfaces.tomahawk</groupId>
                 <artifactId>tomahawk20</artifactId>
                 <version>1.1.14</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-lang</groupId>
+                        <artifactId>commons-lang</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.intsof.lts.commons</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>${commons.lang2.version}</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/com.thoughtworks.xstream/xstream -->
             <dependency>
@@ -1006,32 +1039,38 @@
                 <version>${commons.compress.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>com.intsof.lts.activemq</groupId>
                 <artifactId>activemq-broker</artifactId>
                 <version>${activemq.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>com.intsof.lts.activemq</groupId>
                 <artifactId>activemq-client</artifactId>
                 <version>${activemq.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>com.intsof.lts.activemq</groupId>
                 <artifactId>activemq-kahadb-store</artifactId>
                 <version>${activemq.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>com.intsof.lts.activemq</groupId>
                 <artifactId>activemq-spring</artifactId>
                 <version>${activemq.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>com.intsof.lts.activemq</groupId>
                 <artifactId>activemq-jms-pool</artifactId>
                 <version>${activemq.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>com.intsof.lts.activemq</groupId>
                 <artifactId>activemq-jaas</artifactId>
                 <version>${activemq.version}</version>
             </dependency>
@@ -1079,21 +1118,6 @@
                 <groupId>org.owasp.encoder</groupId>
                 <artifactId>encoder-jsp</artifactId>
                 <version>${esapi.encoder.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.owasp.esapi</groupId>
-                <artifactId>esapi</artifactId>
-                <version>${esapi.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.owasp.antisamy</groupId>
-                        <artifactId>antisamy</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.owasp</groupId>
@@ -1349,12 +1373,6 @@
                 <groupId>javax.xml</groupId>
                 <artifactId>jaxrpc-api</artifactId>
                 <version>1.1</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/soap/soap -->
-            <dependency>
-                <groupId>soap</groupId>
-                <artifactId>soap</artifactId>
-                <version>2.3.1</version>
             </dependency>
             <dependency>
                 <groupId>com.googlecode.json-simple</groupId>
@@ -1996,13 +2014,13 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-core</artifactId>
                 <version>${cxf.version}</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>
-                <groupId>org.apache.cxf</groupId>
+                <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-rs-extension-providers</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
@@ -2134,6 +2152,62 @@
             <id>github-intersoft-jetty</id>
             <name>Intersoft Jetty Extended Support</name>
             <url>https://maven.pkg.github.com/intersoftdatalabs-in/jetty.project</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>github-intersoft-tika</id>
+            <name>Intersoft Tika Java 8 LTS</name>
+            <url>https://maven.pkg.github.com/intersoftdatalabs-in/tika</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>github-intersoft-cxf</id>
+            <name>Intersoft CXF Java 8 LTS Fork</name>
+            <url>https://maven.pkg.github.com/intersoftdatalabs-in/cxf</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>github-intersoft-derby</id>
+            <name>Intersoft Derby Java 8 LTS Build</name>
+            <url>https://maven.pkg.github.com/intersoftdatalabs-in/derby</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>github-intersoft-activemq</id>
+            <name>Intersoft ActiveMQ Java 8 LTS Fork</name>
+            <url>https://maven.pkg.github.com/intersoftdatalabs-in/activemq</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>github-intersoft-spring-security</id>
+            <name>Intersoft Spring Security 5.8 Java 8 LTS Fork</name>
+            <url>https://maven.pkg.github.com/intersoftdatalabs-in/spring-security</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>github-intersoft-spring-framework</id>
+            <name>Intersoft Spring Framework 5.3 Java 8 LTS Fork</name>
+            <url>https://maven.pkg.github.com/intersoftdatalabs-in/spring-framework</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>github-intersoft-commons-lang</id>
+            <name>Intersoft Commons Lang 2.6 Java 8 LTS Fork</name>
+            <url>https://maven.pkg.github.com/intersoftdatalabs-in/commons-lang</url>
         </repository>
     </repositories>
     <pluginRepositories>
@@ -2710,6 +2784,55 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven.jar.plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven.enforcer.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>enforce-banned-eol-dependencies</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <phase>validate</phase>
+                        <configuration>
+                            <fail>true</fail>
+                            <rules>
+                                <bannedDependencies>
+                                    <searchTransitive>true</searchTransitive>
+                                    <message>Banned or relocated EOL Java 8 coordinate detected. Use the approved Java 8 LTS coordinate or exclusion in root pom.xml.</message>
+                                    <excludes>
+                                        <exclude>org.apache.shiro:*</exclude>
+                                        <exclude>org.owasp.antisamy:antisamy</exclude>
+                                        <exclude>org.apache.sanselan:sanselan</exclude>
+                                        <exclude>org.glassfish:javax.el</exclude>
+                                        <exclude>org.bouncycastle:bcprov-jdk18on</exclude>
+                                        <exclude>org.bouncycastle:bcpkix-jdk18on</exclude>
+                                        <exclude>org.bouncycastle:bcmail-jdk18on</exclude>
+                                        <exclude>org.bouncycastle:bcutil-jdk18on</exclude>
+                                        <exclude>org.eclipse.jetty.http2:*</exclude>
+                                        <exclude>org.eclipse.jetty:*</exclude>
+                                        <exclude>org.apache.tika:*</exclude>
+                                        <exclude>org.apache.cxf:*</exclude>
+                                        <exclude>org.apache.derby:*:(,10.14.2.1)</exclude>
+                                        <exclude>org.apache.activemq:*</exclude>
+                                        <exclude>org.springframework:*</exclude>
+                                        <exclude>org.springframework.ldap:*</exclude>
+                                        <exclude>org.springframework.security:*</exclude>
+                                        <exclude>com.percussion.deliverytier:perc-secure-membership</exclude>
+                                        <exclude>org.apache.jackrabbit:jackrabbit-jcr-commons</exclude>
+                                        <exclude>soap:soap</exclude>
+                                        <exclude>commons-httpclient:commons-httpclient</exclude>
+                                        <exclude>org.owasp.esapi:esapi</exclude>
+                                        <exclude>commons-configuration:commons-configuration</exclude>
+                                        <exclude>commons-lang:commons-lang</exclude>
+                                    </excludes>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>

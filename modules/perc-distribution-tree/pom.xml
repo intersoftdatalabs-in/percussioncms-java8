@@ -32,7 +32,7 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <version>${spring.version}</version>
         </dependency>
@@ -57,12 +57,12 @@
             <version>2.1.1</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${spring.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>${spring.version}</version>
         </dependency>
@@ -99,7 +99,7 @@
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
+            <groupId>com.intsof.lts.jetty</groupId>
             <artifactId>jetty-start</artifactId>
         </dependency>
         <dependency>
@@ -179,11 +179,6 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>

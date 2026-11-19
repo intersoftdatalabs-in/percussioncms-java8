@@ -17,6 +17,7 @@
 
 package com.percussion.soln.jcr.data;
 
+import com.percussion.utils.jsr170.PSValueFactory;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
@@ -25,10 +26,9 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
-import org.apache.jackrabbit.value.ValueFactoryImpl;
 
 public class ValueUtil {
-  public static ValueFactory valueFactory = ValueFactoryImpl.getInstance();
+  public static ValueFactory valueFactory = new PSValueFactory();
 
   public static Value dataToJCRValue(ValueData data) {
     if (data == null) throw new IllegalArgumentException("Data cannot be null");

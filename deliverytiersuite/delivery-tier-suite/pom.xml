@@ -22,7 +22,6 @@
         <module>membership</module>
         <module>metadata</module>
         <module>polls</module>
-        <module>secure-membership</module>
         <module>delivery-tier-distribution</module>
     </modules>
     <properties>
@@ -45,7 +44,7 @@
         <mysql.connector.version>8.4.0</mysql.connector.version>
         <servlet.api.version>4.0.1</servlet.api.version>
         <servlet.spec>3.1.0</servlet.spec>
-        <spring.security.version>5.8.16</spring.security.version>
+        <spring.security.version>5.8.16.1</spring.security.version>
         <sqlserver.version>13.3.0.jre8-preview</sqlserver.version>
         <timestamp>${maven.build.timestamp}</timestamp>
         <tomcat.version>9.0.121</tomcat.version>
@@ -136,9 +135,15 @@
                             <groupId>org.liquibase.ext</groupId>
                             <artifactId>liquibase-hibernate5</artifactId>
                             <version>4.27.0</version>
+                            <exclusions>
+                                <exclusion>
+                                    <groupId>org.springframework</groupId>
+                                    <artifactId>*</artifactId>
+                                </exclusion>
+                            </exclusions>
                         </dependency>
                         <dependency>
-                            <groupId>org.springframework</groupId>
+                            <groupId>com.intsof.lts.springframework</groupId>
                             <artifactId>spring-beans</artifactId>
                             <version>${spring.version}</version>
                         </dependency>
@@ -146,6 +151,12 @@
                             <groupId>org.springframework.data</groupId>
                             <artifactId>spring-data-jpa</artifactId>
                             <version>2.7.18</version>
+                            <exclusions>
+                                <exclusion>
+                                    <groupId>org.springframework</groupId>
+                                    <artifactId>*</artifactId>
+                                </exclusion>
+                            </exclusions>
                         </dependency>
                     </dependencies>
                 </plugin>

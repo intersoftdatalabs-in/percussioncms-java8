@@ -54,6 +54,7 @@ updates:
           - "org.liquibase*"
           - "com.zaxxer:HikariCP*"
           - "com.sun.xml.ws*"
+          - "com.intsof.lts*"
           - "org.junit.jupiter*"
           - "org.mockito*"
       java8-security-patches:
@@ -76,8 +77,11 @@ updates:
           - "org.apache.shiro*"
           - "org.apache.jackrabbit*"
           - "com.sun.xml.ws*"
+          - "com.intsof.lts*"
 
     ignore:
+      # --- Intersoft Java 8 LTS internal forks (monitored by upstream-cve-watch.yml) ---
+      - dependency-name: "com.intsof.lts.*"
       # --- Entire ecosystems that require Java 11+ / Jakarta ---
       - dependency-name: "jakarta*"
       - dependency-name: "com.percussion:*"

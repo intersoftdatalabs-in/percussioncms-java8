@@ -69,18 +69,6 @@
         </dependency>
         <dependency>
             <groupId>com.percussion.deliverytier</groupId>
-            <artifactId>perc-secure-membership</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.percussion.deliverytier</groupId>
             <artifactId>perc-tomcat-common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -90,22 +78,22 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>${spring.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-beans</artifactId>
             <version>${spring.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <version>${spring.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${spring.version}</version>
         </dependency>
@@ -200,6 +188,10 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.springframework</groupId>
+                    <artifactId>spring-test</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.intsof.lts.springframework</groupId>
                     <artifactId>spring-test</artifactId>
                 </exclusion>
                 <exclusion>
@@ -623,19 +615,19 @@
                                 <artifactId>servlet-utils</artifactId>
                             </dependency>
                             <dependency>
-                                <groupId>org.springframework</groupId>
+                                <groupId>com.intsof.lts.springframework</groupId>
                                 <artifactId>spring-core</artifactId>
                             </dependency>
                             <dependency>
-                                <groupId>org.springframework</groupId>
+                                <groupId>com.intsof.lts.springframework</groupId>
                                 <artifactId>spring-beans</artifactId>
                             </dependency>
                             <dependency>
-                                <groupId>org.springframework</groupId>
+                                <groupId>com.intsof.lts.springframework</groupId>
                                 <artifactId>spring-web</artifactId>
                             </dependency>
                             <dependency>
-                                <groupId>org.springframework</groupId>
+                                <groupId>com.intsof.lts.springframework</groupId>
                                 <artifactId>spring-context</artifactId>
                             </dependency>
                         </dependencies>
@@ -1042,19 +1034,19 @@
                                         <artifactId>servlet-utils</artifactId>
                                     </dependency>
                                     <dependency>
-                                        <groupId>org.springframework</groupId>
+                                        <groupId>com.intsof.lts.springframework</groupId>
                                         <artifactId>spring-core</artifactId>
                                     </dependency>
                                     <dependency>
-                                        <groupId>org.springframework</groupId>
+                                        <groupId>com.intsof.lts.springframework</groupId>
                                         <artifactId>spring-beans</artifactId>
                                     </dependency>
                                     <dependency>
-                                        <groupId>org.springframework</groupId>
+                                        <groupId>com.intsof.lts.springframework</groupId>
                                         <artifactId>spring-web</artifactId>
                                     </dependency>
                                     <dependency>
-                                        <groupId>org.springframework</groupId>
+                                        <groupId>com.intsof.lts.springframework</groupId>
                                         <artifactId>spring-context</artifactId>
                                     </dependency>
                                 </dependencies>

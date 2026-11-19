@@ -20,6 +20,7 @@ import com.percussion.extension.IPSJexlMethod;
 import com.percussion.extension.IPSJexlParam;
 import com.percussion.extension.PSJexlUtilBase;
 import com.percussion.security.PSThreadRequestUtils;
+import com.percussion.security.validation.URLValidation;
 import com.percussion.server.PSRequest;
 import com.percussion.server.PSServer;
 import com.percussion.services.assembly.IPSAssemblyResult;
@@ -30,13 +31,15 @@ import com.percussion.utils.request.PSRequestInfo;
 import com.percussion.utils.servlet.PSServletUtils;
 import com.percussion.utils.string.PSStringUtils;
 import com.percussion.utils.timing.PSStopwatchStack;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.BasicScheme;
-import org.apache.commons.httpclient.cookie.CookiePolicy;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.StandardCookieSpec;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -48,10 +51,13 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLDecoder;
-import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * Utilities to make document requests from a velocity macro
@@ -66,14 +72,13 @@ public class PSDocumentUtils extends PSJexlUtilBase
     * 
     * @param url The url, must not be <code>null</code> or empty
     * @return the result document data
-    * @throws HttpException
     * @throws IOException
     * @throws ServletException 
     */
    @IPSJexlMethod(description = "Calls the specified URL and returns the "
          + "result document data or an empty string on error.", params =
    {@IPSJexlParam(name = "url", description = "The url, must not be null or empty.")})
-   public String getDocument(String url) throws HttpException, IOException, ServletException
+   public String getDocument(String url) throws IOException, ServletException
    {
       return getDocument(url, null, null);
    }
@@ -86,7 +91,6 @@ public class PSDocumentUtils extends PSJexlUtilBase
     * @param user The username, may be <code>null</code> or empty
     * @param password The password, may be <code>null</code> or empty
     * @return the result document
-    * @throws HttpException
     * @throws IOException
     * @throws ServletException 
     */
@@ -97,7 +101,7 @@ public class PSDocumentUtils extends PSJexlUtilBase
          @IPSJexlParam(name = "user", description = "The user name, may be null or empty."),
          @IPSJexlParam(name = "password", description = "The password, may be null or empty.")})
    public String getDocument(String url, String user, String password)
-         throws HttpException, IOException, ServletException
+         throws IOException, ServletException
    {
       PSStopwatchStack sws = PSStopwatchStack.getStack();
       sws.start(getClass().getCanonicalName() + "#getDocument");
@@ -200,34 +204,64 @@ public class PSDocumentUtils extends PSJexlUtilBase
     * @param user the user name, may be <code>null</code>
     * @param password the password, may be <code>null</code>
     * @return the resulting document from the request
-    * @throws UnknownHostException
-    * @throws MalformedURLException
     * @throws IOException
-    * @throws HttpException
     */
-   private String getExternalDocument(String url, String user, String password) throws UnknownHostException, MalformedURLException, IOException, HttpException
+   private String getExternalDocument(String url, String user, String password) throws IOException
    {
-      HttpClient client = new HttpClient();
-      client.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
-
-      HttpMethod method = new GetMethod(url);
+      URL validatedUrl = URLValidation.validateURLString(url);
+      String safeProtocol =
+            "https".equalsIgnoreCase(validatedUrl.getProtocol()) ? "https" : "http";
+      URI validatedUri;
+      try
+      {
+         validatedUri =
+               new URI(
+                     safeProtocol
+                           + "://"
+                           + validatedUrl.getAuthority()
+                           + validatedUrl.getFile()
+                           + (validatedUrl.getRef() != null ? "#" + validatedUrl.getRef() : ""));
+      }
+      catch (URISyntaxException e)
+      {
+         throw new MalformedURLException("Invalid external document URL: " + e.getMessage());
+      }
+      RequestConfig requestConfig =
+            RequestConfig.custom().setCookieSpec(StandardCookieSpec.RELAXED).build();
+      // codeql[java/ssrf] justification: URL rebuilt from URLValidation.validateURLString +
+      // http/https scheme literal; re-review by 2027-07-31
+      HttpGet method = new HttpGet(validatedUri);
       if (user != null && password != null)
       {
-         UsernamePasswordCredentials cred = new UsernamePasswordCredentials(
-               user, password);
-         String header = BasicScheme.authenticate(cred);
-         method.addRequestHeader("Authorization", header);
+         String token =
+               Base64.getEncoder()
+                     .encodeToString((user + ":" + password).getBytes(StandardCharsets.UTF_8));
+         method.addHeader("Authorization", "Basic " + token);
       }
-      int stat = client.executeMethod(method);
-      if (stat == 200)
+      try (CloseableHttpClient client =
+            HttpClients.custom().setDefaultRequestConfig(requestConfig).build())
       {
-         String rval = method.getResponseBodyAsString();
-         method.releaseConnection();
-         return rval;
-      }
-      else
-      {
-         return "";
+         return client.execute(
+               method,
+               response -> {
+                  if (response.getCode() == HttpStatus.SC_OK)
+                  {
+                     HttpEntity entity = response.getEntity();
+                     if (entity == null)
+                     {
+                        return "";
+                     }
+                     try
+                     {
+                        return EntityUtils.toString(entity);
+                     }
+                     catch (ParseException e)
+                     {
+                        throw new IOException("Failed to parse response entity", e);
+                     }
+                  }
+                  return "";
+               });
       }
    }
 

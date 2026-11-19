@@ -89,28 +89,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.owasp.esapi</groupId>
-            <artifactId>esapi</artifactId>
-            <version>2.7.0.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-                <!-- AntiSamy is not used in this codebase (the ESAPI validator is
-                     never invoked; only the encoder is). Excluding it removes
-                     the 7 cataloged AntiSamy CVEs from the runtime classpath. -->
-                <exclusion>
-                    <groupId>org.owasp.antisamy</groupId>
-                    <artifactId>antisamy</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.owasp.encoder</groupId>
             <artifactId>encoder</artifactId>
             <version>1.4.0</version>

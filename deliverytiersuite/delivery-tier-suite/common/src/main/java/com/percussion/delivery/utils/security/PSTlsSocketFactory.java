@@ -10,17 +10,13 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
 package com.percussion.delivery.utils.security;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -35,29 +31,27 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-import org.apache.commons.httpclient.params.HttpConnectionParams;
-import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
+import org.apache.hc.client5.http.ssl.TlsSocketStrategy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class PSTlsSocketFactory implements SecureProtocolSocketFactory {
+/** Configures TLS context, protocols, and cipher suites for Delivery Tier HTTP clients. */
+public class PSTlsSocketFactory {
 
   public static final Logger log = LogManager.getLogger(PSTlsSocketFactory.class);
   private static final String defaultProtocols = "TLSv1.1,TLSv1.2";
   private final String[] protocols;
-  private SSLSocketFactory internalSSLSocketFactory;
-  private String[] enabledCiphers;
-  private String[] defaultCiphers = {
+  private final SSLContext context;
+  private final String[] enabledCiphers;
+  private static final String[] DEFAULT_CIPHERS = {
     "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
     "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
     "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
     "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-    "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
     "TLS_RSA_WITH_AES_128_GCM_SHA256",
     "TLS_RSA_WITH_AES_256_GCM_SHA384"
   };
@@ -65,7 +59,9 @@ public class PSTlsSocketFactory implements SecureProtocolSocketFactory {
   public PSTlsSocketFactory(String ciphers)
       throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
     String protString = System.getProperty("jdk.tls.client.protocols");
-    if (protString == null) protString = System.getProperty("https.protocols");
+    if (protString == null) {
+      protString = System.getProperty("https.protocols");
+    }
     if (protString != null) {
       String[] protArr = protString.split(",");
       protocols = new String[protArr.length];
@@ -92,90 +88,62 @@ public class PSTlsSocketFactory implements SecureProtocolSocketFactory {
     for (Provider p : prov) {
       log.debug(p.getName());
     }
-    SSLContext context;
     context = SSLContext.getInstance("TLS");
 
     log.debug("Initialized TLSSocketFactory enabled protocols to : {}", Arrays.toString(protocols));
     log.debug("Using Security Provider: {}", context.getProvider());
 
-    TrustManagerFactory trustManagerFactory;
-    trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
+    TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
     trustManagerFactory.init((KeyStore) null);
     TrustManager[] tm = trustManagerFactory.getTrustManagers();
     SecureRandom random;
 
     try {
       random = SecureRandom.getInstance("DEFAULT", "BC");
-    } catch (NoSuchProviderException e) {
-      random = SecureRandom.getInstance("DEFAULT");
+    } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+      random = new SecureRandom();
     }
     context.init(null, tm, random);
 
-    internalSSLSocketFactory = context.getSocketFactory();
-
-    if (ciphers == null || StringUtils.isEmpty(ciphers)) {
-      enabledCiphers = defaultCiphers;
+    if (StringUtils.isEmpty(ciphers)) {
+      enabledCiphers = DEFAULT_CIPHERS.clone();
     } else {
-      enabledCiphers = ciphers.split(",");
+      String[] raw = ciphers.split(",");
+      enabledCiphers = new String[raw.length];
+      for (int i = 0; i < raw.length; i++) {
+        enabledCiphers[i] = raw[i].trim();
+      }
     }
-    for (String s : enabledCiphers) {
-      s = s.trim();
-    }
   }
 
-  @Override
-  public Socket createSocket(Socket s, String host, int port, boolean autoClose)
-      throws IOException {
-    return enableTLSOnSocket(internalSSLSocketFactory.createSocket(s, host, port, autoClose));
-  }
-
-  @Override
-  public Socket createSocket(String host, int port) throws IOException {
-    return enableTLSOnSocket(internalSSLSocketFactory.createSocket(host, port));
-  }
-
-  @Override
-  public Socket createSocket(String host, int port, InetAddress localHost, int localPort)
-      throws IOException {
-    return enableTLSOnSocket(
-        internalSSLSocketFactory.createSocket(host, port, localHost, localPort));
-  }
-
-  private void logTLSConfig(SSLSocket socket) {
-
+  /**
+   * Builds an Apache HttpClient 5 {@link TlsSocketStrategy} configured with this factory's {@link
+   * SSLContext}, enabled TLS versions, and supported cipher suites.
+   */
+  public TlsSocketStrategy createTlsSocketStrategy() {
+    String[] scrubbedCiphers =
+        scrubCiphers(context.getSupportedSSLParameters().getCipherSuites(), enabledCiphers);
     if (log.isDebugEnabled()) {
-      try {
-        SSLContext context = SSLContext.getDefault();
-        log.debug("Default TLS Provider is: {}", context.getProvider().getName());
-      } catch (NoSuchAlgorithmException e) {
-        log.debug("WARNING!  No TLS Providers are available!");
-      }
-      log.debug("--- Enabled Protocols ---");
-      for (String s : socket.getEnabledProtocols()) {
-        log.debug("Protocol:{} :ENABLED", s);
-      }
-      log.debug("--- Enabled Cipher Suites ---");
-      for (String s : socket.getEnabledCipherSuites()) {
-        log.debug("Cipher: {} :ENABLED", s);
-      }
-
-      log.debug("--- Supported Cipher Suites ---");
-      for (String s : socket.getSupportedCipherSuites()) {
-        log.debug("Cipher: {} :Supported", s);
-      }
+      log.debug("Setting Enabled Ciphers to: {}", StringUtils.join(scrubbedCiphers, ","));
     }
+    ClientTlsStrategyBuilder builder =
+        ClientTlsStrategyBuilder.create().setSslContext(context).setTlsVersions(protocols);
+    if (scrubbedCiphers.length > 0) {
+      builder.setCiphers(scrubbedCiphers);
+    }
+    return builder.buildClassic();
   }
 
-  private Socket enableTLSOnSocket(Socket socket) {
-    if (socket instanceof SSLSocket) {
-      SSLSocket sslSocket = (SSLSocket) socket;
-      sslSocket.setEnabledProtocols(protocols);
-      sslSocket.setEnabledCipherSuites(
-          scrubCiphers(sslSocket.getSupportedCipherSuites(), enabledCiphers));
-      log.debug("Setting Enabled Ciphers to: {}", StringUtils.join(enabledCiphers, ","));
-      logTLSConfig(sslSocket);
-    }
-    return socket;
+  public SSLContext getSslContext() {
+    return context;
+  }
+
+  public String[] getProtocols() {
+    return protocols.clone();
+  }
+
+  public String[] getEnabledCiphers() {
+    return scrubCiphers(context.getSupportedSSLParameters().getCipherSuites(), enabledCiphers);
   }
 
   private static String[] scrubCiphers(String[] supportedCipherSuites, String[] enabledCiphers) {
@@ -183,16 +151,10 @@ public class PSTlsSocketFactory implements SecureProtocolSocketFactory {
     Collections.addAll(ret, enabledCiphers);
     List<String> copySupported = Arrays.asList(supportedCipherSuites);
     for (String s : enabledCiphers) {
-      if (!copySupported.contains(s)) ret.remove(s);
+      if (!copySupported.contains(s)) {
+        ret.remove(s);
+      }
     }
-    return ret.toArray(new String[] {});
-  }
-
-  @Override
-  public Socket createSocket(
-      String host, int port, InetAddress localAddress, int localPort, HttpConnectionParams params)
-      throws IOException {
-    return enableTLSOnSocket(
-        internalSSLSocketFactory.createSocket(host, port, localAddress, localPort));
+    return ret.toArray(new String[0]);
   }
 }

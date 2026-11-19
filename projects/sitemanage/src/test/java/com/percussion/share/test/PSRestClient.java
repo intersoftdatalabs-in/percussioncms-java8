@@ -25,39 +25,54 @@ import static org.apache.commons.lang3.Validate.isTrue;
 import static org.apache.commons.lang3.Validate.notEmpty;
 import static org.apache.commons.lang3.Validate.notNull;
 
-import com.percussion.delivery.client.EasySSLProtocolSocketFactory;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.commons.httpclient.protocol.Protocol;
-import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
+import javax.net.ssl.SSLContext;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.StandardCookieSpec;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.TrustAllStrategy;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.net.URIBuilder;
+import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * A Wrapper around Commons HTTP client for REST services.
+ * A Wrapper around Apache HttpClient 5 for REST services.
  *
- * <p>Most of the methods are protected as this classes should be extended to provide more specific
+ * <p>Most of the methods are protected as this class should be extended to provide more specific
  * behavior.
  *
  * @author adamgent
@@ -67,20 +82,36 @@ import org.apache.logging.log4j.Logger;
  */
 public class PSRestClient {
   private String url;
-  private Map<String, String> requestHeaders = new HashMap<String, String>();
+  private Map<String, String> requestHeaders = new HashMap<>();
   private String postContentType = "text/xml";
 
-  /** To determine if a protocol for SSL was already registered */
-  private boolean sslSocketFactoryRegistered = false;
+  private final BasicCookieStore cookieStore = new BasicCookieStore();
+  private final CloseableHttpClient client = createHttpClient();
 
-  private HttpClient client = new HttpClient();
-
-  {
-    client.getParams().setContentCharset("UTF-8");
+  private CloseableHttpClient createHttpClient() {
+    try {
+      SSLContext sslContext =
+          SSLContexts.custom().loadTrustMaterial(TrustAllStrategy.INSTANCE).build();
+      DefaultClientTlsStrategy tlsStrategy =
+          new DefaultClientTlsStrategy(sslContext, NoopHostnameVerifier.INSTANCE);
+      PoolingHttpClientConnectionManager cm =
+          PoolingHttpClientConnectionManagerBuilder.create()
+              .setTlsSocketStrategy(tlsStrategy)
+              .build();
+      RequestConfig defaultConfig =
+          RequestConfig.custom().setCookieSpec(StandardCookieSpec.RELAXED).build();
+      return HttpClients.custom()
+          .setConnectionManager(cm)
+          .setDefaultCookieStore(cookieStore)
+          .setDefaultRequestConfig(defaultConfig)
+          .build();
+    } catch (GeneralSecurityException e) {
+      throw new IllegalStateException("Failed to initialize PSRestClient TLS context", e);
+    }
   }
 
   public List<String> parseAcceptHeader(String acceptHeader) {
-    return new ArrayList<String>(asList(acceptHeader.split(",")));
+    return new ArrayList<>(asList(acceptHeader.split(",")));
   }
 
   public String outputAcceptHeader(List<String> accepts) {
@@ -112,7 +143,7 @@ public class PSRestClient {
     this.url = url;
   }
 
-  protected HttpClient getClient() {
+  protected CloseableHttpClient getClient() {
     return client;
   }
 
@@ -124,47 +155,54 @@ public class PSRestClient {
    * @return never <code>null</code>.
    */
   protected String GET(String path, Collection<Entry<String, String>> params) {
-    GetMethod method = getMethod();
-    setPathMethod(path, method);
-    NameValuePair[] nvps = nameValuePairs(params);
-    method.setQueryString(nvps);
-    return executeMethod(method);
+    try {
+      URI uri = new URIBuilder(getUri(path)).addParameters(nameValuePairs(params)).build();
+      HttpGet method = new HttpGet(uri);
+      setRequestHeaders(method);
+      return executeMethod(method);
+    } catch (URISyntaxException e) {
+      throw new RestClientException("Bad url " + getUrl() + path, e);
+    }
   }
 
   protected String GET(String path) {
-    GetMethod method = getMethod();
-    setPathMethod(path, method);
+    HttpGet method = new HttpGet(getUri(path));
+    setRequestHeaders(method);
     return executeMethod(method);
   }
 
   protected InputStream GET_BINARY(String path) {
-    GetMethod method = getMethod();
-    setPathMethod(path, method);
+    HttpGet method = new HttpGet(getUri(path));
+    setRequestHeaders(method);
     return executeBinaryMethod(method);
   }
 
-  private InputStream executeBinaryMethod(HttpMethod method) throws RestClientException {
-
-    registerSslProtocol();
-
+  private InputStream executeBinaryMethod(HttpUriRequestBase method) throws RestClientException {
     try {
-      int stat = client.executeMethod(method);
-      InputStream body = method.getResponseBodyAsStream();
-      log.trace("HTTP return code: " + stat);
-      String uri = method.getURI().getURI();
-      String name = method.getName();
-      if (log.isDebugEnabled()) log.debug(format("{0} {1}  HTTP Stat:{2}", name, uri, "" + stat));
-      if (log.isTraceEnabled()) log.trace("Response: " + body);
-      if (
-      /*Not Success*/ !(200 <= stat && stat < 305)) {
-        String error = "URI: " + uri + " HTTP Error: " + stat + " Response: \n" + body;
-        log.error(error);
-        throw new RestClientException(stat, uri, body);
+      String uri = method.getUri().toString();
+      String name = method.getMethod();
+      BinaryResult result =
+          client.execute(
+              method,
+              response -> {
+                int stat = response.getCode();
+                HttpEntity entity = response.getEntity();
+                byte[] bytes = entity == null ? new byte[0] : EntityUtils.toByteArray(entity);
+                return new BinaryResult(stat, bytes);
+              });
+      log.trace("HTTP return code: " + result.status);
+      if (log.isDebugEnabled()) {
+        log.debug(format("{0} {1}  HTTP Stat:{2}", name, uri, "" + result.status));
       }
-      return body;
-    } catch (HttpException e) {
-      throw new RestClientException(e);
-    } catch (IOException e) {
+      if (!(200 <= result.status && result.status < 305)) {
+        String errorBody = new String(result.bytes, StandardCharsets.UTF_8);
+        String error =
+            "URI: " + uri + " HTTP Error: " + result.status + " Response: \n" + errorBody;
+        log.error(error);
+        throw new RestClientException(result.status, uri, errorBody);
+      }
+      return new ByteArrayInputStream(result.bytes);
+    } catch (URISyntaxException | IOException e) {
       throw new RestClientException(e);
     }
   }
@@ -174,21 +212,16 @@ public class PSRestClient {
   }
 
   protected String POST(String path, String body, String contentType) {
-    PostMethod method = postMethod();
-    String ct = contentType + "; charset=UTF-8";
-    setPathMethod(path, method);
-    try {
-      if (log.isTraceEnabled() && body != null) {
-        log.trace("POST Body: " + body);
-      }
-      if (body != null) {
-        StringRequestEntity sre = new StringRequestEntity(body, ct, "UTF-8");
-        method.setRequestEntity(sre);
-      }
-      return executeMethod(method);
-    } catch (UnsupportedEncodingException e) {
-      throw new RestClientException(e);
+    HttpPost method = new HttpPost(getUri(path));
+    setRequestHeaders(method);
+    if (log.isTraceEnabled() && body != null) {
+      log.trace("POST Body: " + body);
     }
+    if (body != null) {
+      ContentType ct = ContentType.create(contentType, StandardCharsets.UTF_8);
+      method.setEntity(new StringEntity(body, ct));
+    }
+    return executeMethod(method);
   }
 
   protected String PUT(String path, String body) {
@@ -196,68 +229,50 @@ public class PSRestClient {
   }
 
   protected String PUT(String path, String body, String contentType) {
-    PutMethod method = putMethod();
-    String ct = contentType + "; charset=UTF-8";
-    setPathMethod(path, method);
-    try {
-      if (log.isTraceEnabled()) {
-        log.trace("PUT Body: " + body);
-      }
-      StringRequestEntity sre = new StringRequestEntity(body, ct, "UTF-8");
-      method.setRequestEntity(sre);
-      return executeMethod(method);
-    } catch (UnsupportedEncodingException e) {
-      throw new RestClientException(e);
+    HttpPut method = new HttpPut(getUri(path));
+    setRequestHeaders(method);
+    if (log.isTraceEnabled()) {
+      log.trace("PUT Body: " + body);
     }
+    ContentType ct = ContentType.create(contentType, StandardCharsets.UTF_8);
+    method.setEntity(new StringEntity(body, ct));
+    return executeMethod(method);
   }
 
   protected String POST(String path, Collection<Entry<String, String>> params) {
-    PostMethod method = postMethod();
-    setPathMethod(path, method);
-    NameValuePair[] nvps = nameValuePairs(params);
-    method.setRequestBody(nvps);
+    HttpPost method = new HttpPost(getUri(path));
+    setRequestHeaders(method);
+    method.setEntity(new UrlEncodedFormEntity(nameValuePairs(params), StandardCharsets.UTF_8));
     return executeMethod(method);
   }
 
   protected String DELETE(String path) {
-    DeleteMethod method = deleteMethod();
-    setPathMethod(path, method);
+    HttpDelete method = new HttpDelete(getUri(path));
+    setRequestHeaders(method);
     return executeMethod(method);
   }
 
-  protected void setPathMethod(String path, HttpMethod method) {
-    notNull(path);
-    notNull(method);
-    URI uri = getUri(path);
-    try {
-      method.setURI(uri);
-    } catch (URIException e) {
-      throw new RestClientException("Bad url " + getUrl() + path, e);
-    }
-  }
-
   protected URI getUri(String relativePath) {
+    notNull(relativePath);
     try {
-      return new URI(new URI(getUrl(), false), new URI(relativePath, false));
-    } catch (URIException e) {
-      throw new RestClientException("Bad url " + getUrl() + relativePath, e);
-    } catch (NullPointerException e) {
+      URI base = new URI(getUrl().replace(" ", "%20"));
+      return base.resolve(relativePath.replace(" ", "%20"));
+    } catch (URISyntaxException | NullPointerException e) {
       throw new RestClientException("Bad url " + getUrl() + relativePath, e);
     }
   }
 
-  private NameValuePair[] nameValuePairs(Collection<Entry<String, String>> params) {
-    ArrayList<NameValuePair> list = new ArrayList<NameValuePair>();
+  private List<NameValuePair> nameValuePairs(Collection<Entry<String, String>> params) {
+    List<NameValuePair> list = new ArrayList<>();
     for (Entry<String, String> e : params) {
-      NameValuePair nvp = new NameValuePair(e.getKey(), e.getValue());
-      list.add(nvp);
+      list.add(new BasicNameValuePair(e.getKey(), e.getValue()));
     }
-    return list.toArray(new NameValuePair[] {});
+    return list;
   }
 
-  private void setRequestHeaders(HttpMethod method) {
+  private void setRequestHeaders(HttpUriRequestBase method) {
     for (Entry<String, String> e : getRequestHeaders().entrySet()) {
-      method.setRequestHeader(e.getKey(), e.getValue());
+      method.setHeader(e.getKey(), e.getValue());
     }
   }
 
@@ -287,63 +302,57 @@ public class PSRestClient {
     getRequestHeaders().put("Content-Type", contentType);
   }
 
-  private GetMethod getMethod() {
-    GetMethod method = new GetMethod(getUrl());
-    setRequestHeaders(method);
-    return method;
-  }
-
-  private PostMethod postMethod() {
-    PostMethod method = new PostMethod(getUrl());
-    // method.setRequestHeader("Content-Type", "text/xml; charset=UTF-8");
-    setRequestHeaders(method);
-    return method;
-  }
-
-  private PutMethod putMethod() {
-    PutMethod method = new PutMethod(getUrl());
-    // method.setRequestHeader("Content-Type", "text/xml; charset=UTF-8");
-    setRequestHeaders(method);
-    return method;
-  }
-
-  private DeleteMethod deleteMethod() {
-    DeleteMethod method = new DeleteMethod(getUrl());
-    setRequestHeaders(method);
-    return method;
-  }
-
-  private String executeMethod(HttpMethod method) throws RestClientException {
-
-    registerSslProtocol();
-
+  private String executeMethod(HttpUriRequestBase method) throws RestClientException {
     try {
-      int stat = client.executeMethod(method);
-      log.trace("HTTP return code: " + stat);
-      String body = method.getResponseBodyAsString();
-      String uri = method.getURI().getURI();
-      String name = method.getName();
-      if (log.isDebugEnabled()) log.debug(format("{0} {1}  HTTP Stat:{2}", name, uri, "" + stat));
-      if (log.isTraceEnabled()) log.trace("Response: " + body);
-      if (
-      /*Not Success*/ !(200 <= stat && stat < 305)) {
-        String error = "URI: " + uri + " HTTP Error: " + stat + " Response: \n" + body;
-        log.error(error);
-        throw new RestClientException(stat, uri, body);
+      String uri = method.getUri().toString();
+      String name = method.getMethod();
+      StringResult result =
+          client.execute(
+              method,
+              response -> {
+                int stat = response.getCode();
+                HttpEntity entity = response.getEntity();
+                String body =
+                    entity == null ? "" : EntityUtils.toString(entity, StandardCharsets.UTF_8);
+                return new StringResult(stat, body);
+              });
+      log.trace("HTTP return code: " + result.status);
+      if (log.isDebugEnabled()) {
+        log.debug(format("{0} {1}  HTTP Stat:{2}", name, uri, "" + result.status));
       }
-      return body;
-    } catch (IOException e) {
+      if (log.isTraceEnabled()) {
+        log.trace("Response: " + result.body);
+      }
+      if (!(200 <= result.status && result.status < 305)) {
+        String error =
+            "URI: " + uri + " HTTP Error: " + result.status + " Response: \n" + result.body;
+        log.error(error);
+        throw new RestClientException(result.status, uri, result.body);
+      }
+      return result.body;
+    } catch (URISyntaxException | IOException e) {
       throw new RestClientException(e);
     }
   }
 
-  private void registerSslProtocol() {
-    if (sslSocketFactoryRegistered) return;
+  private static final class StringResult {
+    final int status;
+    final String body;
 
-    ProtocolSocketFactory socketFactory = new EasySSLProtocolSocketFactory();
-    Protocol.registerProtocol("https", new Protocol("https", socketFactory, 443));
+    StringResult(int status, String body) {
+      this.status = status;
+      this.body = body;
+    }
+  }
 
-    sslSocketFactoryRegistered = true;
+  private static final class BinaryResult {
+    final int status;
+    final byte[] bytes;
+
+    BinaryResult(int status, byte[] bytes) {
+      this.status = status;
+      this.bytes = bytes;
+    }
   }
 
   /**
@@ -407,7 +416,7 @@ public class PSRestClient {
     protected String getRestErrorMessage() {
       return format(
           "HTTP Error code: {0}\nURI: {1}\nResponse: {2}",
-          new Integer(getStatus()), getUri(), getResponseBody());
+          Integer.valueOf(getStatus()), getUri(), getResponseBody());
     }
 
     protected void init(int status, String uri, String responseBody) {

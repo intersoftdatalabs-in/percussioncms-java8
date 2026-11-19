@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.servlet.ServletException;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -106,11 +105,6 @@ public class PSOProxyQueryResource extends PSDefaultExtension
         log.debug(PSExceptionUtils.getDebugMessageForLog(e));
         throw new RuntimeException(message, e);
       }
-    } catch (HttpException e) {
-      String message = "Http Error with " + repr;
-      log.error("{}, Error: {}", message, PSExceptionUtils.getMessageForLog(e));
-      log.debug(PSExceptionUtils.getDebugMessageForLog(e));
-      throw new RuntimeException(message, e);
     } catch (IOException e) {
       String message = "IO Error with " + repr;
       log.error("{}, Error: {}", message, PSExceptionUtils.getMessageForLog(e));

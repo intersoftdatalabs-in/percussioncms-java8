@@ -16,8 +16,8 @@
  */
 package com.percussion.pso.restservice.model;
 
-import org.apache.commons.httpclient.Header;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.core5.http.Header;
 
 public abstract class BaseHttpResponse {
 
@@ -25,7 +25,7 @@ public abstract class BaseHttpResponse {
   private Header[] headers;
 
   /**
-   * * Sets the HTTP Headers collection for this response.
+   * Sets the HTTP Headers collection for this response.
    *
    * @param headers
    */
@@ -34,7 +34,7 @@ public abstract class BaseHttpResponse {
   }
 
   /**
-   * * Gets the HTTP Headers collection for this response.
+   * Gets the HTTP Headers collection for this response.
    *
    * @return
    */
@@ -43,12 +43,15 @@ public abstract class BaseHttpResponse {
   }
 
   /**
-   * * Will return the ETag header if it is set or the empty string.
+   * Will return the ETag header if it is set or the empty string.
    *
    * @return
    */
   public String getETag() {
     String ret = "";
+    if (headers == null) {
+      return ret;
+    }
 
     for (int i = 0; i < headers.length; i++) {
       if (headers[i].getName().equals("ETag")) {
@@ -61,12 +64,15 @@ public abstract class BaseHttpResponse {
   }
 
   /**
-   * * Will return the last modified header if it is set or the empty string.
+   * Will return the last modified header if it is set or the empty string.
    *
    * @return
    */
   public String getLastModified() {
     String ret = "";
+    if (headers == null) {
+      return ret;
+    }
 
     for (int i = 0; i < headers.length; i++) {
       if (headers[i].getName().equals("Last-Modified")) {

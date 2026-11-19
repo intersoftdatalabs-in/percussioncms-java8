@@ -34,12 +34,14 @@ import com.percussion.pso.utils.HTTPProxyClientConfig;
 import com.percussion.server.PSRequest;
 import com.percussion.utils.request.PSRequestInfo;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -50,9 +52,18 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXSource;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.ccil.cowan.tagsoup.Parser;
@@ -123,24 +134,8 @@ public class PSOImportJexl extends PSJexlUtilBase implements IPSJexlExpression {
       params = {@IPSJexlParam(name = "url", description = "the url to connect to")})
   public Document getHttpAsDom(String url) {
     Document doc = null;
-    HttpClient client = new HttpClient();
-
-    // Set up the proxy server if there is one.
-    HTTPProxyClientConfig proxy = new HTTPProxyClientConfig();
-
-    if (!proxy.getProxyServer().equals("")) {
-      client
-          .getHostConfiguration()
-          .setProxy(proxy.getProxyServer(), Integer.parseInt(proxy.getProxyPort()));
-    }
-    client.getParams().setConnectionManagerTimeout(2000);
-
-    GetMethod get = new GetMethod(url);
-    get.setFollowRedirects(true);
-
     try {
-      int iGetResultCode = client.executeMethod(get);
-      InputStream responseBody = get.getResponseBodyAsStream();
+      FetchResponse res = fetchUrl(url, null, null, null);
 
       XMLReader reader = new Parser();
       reader.setFeature(Parser.namespacesFeature, true);
@@ -148,14 +143,12 @@ public class PSOImportJexl extends PSJexlUtilBase implements IPSJexlExpression {
 
       Transformer transformer = TransformerFactory.newInstance().newTransformer();
       DocumentResult dr = new DocumentResult();
-      transformer.transform(new SAXSource(reader, new InputSource(responseBody)), dr);
+      transformer.transform(
+          new SAXSource(reader, new InputSource(new ByteArrayInputStream(res.body))), dr);
       doc = dr.getDocument();
-
     } catch (Exception ex) {
       log.error(ex.getMessage());
       log.debug(ex.getMessage(), ex);
-    } finally {
-      get.releaseConnection();
     }
     return doc;
   }
@@ -221,55 +214,25 @@ public class PSOImportJexl extends PSJexlUtilBase implements IPSJexlExpression {
       }
     }
 
-    HttpClient client = new HttpClient();
-
-    // Set up the proxy server if there is one.
-    HTTPProxyClientConfig proxy = new HTTPProxyClientConfig();
-
-    if (!proxy.getProxyServer().equals("")) {
-      log.debug("Setting Proxy server to " + proxy.getProxyServer() + ":" + proxy.getProxyPort());
-      client
-          .getHostConfiguration()
-          .setProxy(proxy.getProxyServer(), Integer.parseInt(proxy.getProxyPort()));
-    }
-    client.getParams().setConnectionManagerTimeout(2000);
-
-    GetMethod get = new GetMethod(url);
-
-    // Add the modification check headers if we have valid params.
-    if (etag != null && !etag.trim().equals("")) {
-      get.addRequestHeader(HTTP_IFNONEMATCH, etag);
-    }
-
-    if (lastModified != null && !lastModified.trim().equals("")) {
-      get.addRequestHeader(HTTP_IFMODIFIED, lastModified);
-    }
-
-    get.setFollowRedirects(true);
-
     try {
-      int code = client.executeMethod(get);
-
-      if (code != HttpStatus.SC_NOT_MODIFIED) {
-        InputStream responseBody = get.getResponseBodyAsStream();
-
+      FetchResponse res = fetchUrl(url, etag, lastModified, null);
+      if (res.statusCode != HttpStatus.SC_NOT_MODIFIED) {
         XMLReader reader = new Parser();
         reader.setFeature(Parser.namespacesFeature, true);
         reader.setFeature(Parser.namespacePrefixesFeature, true);
 
         Transformer transformer = TransformerFactory.newInstance().newTransformer();
         DocumentResult dr = new DocumentResult();
-        transformer.transform(new SAXSource(reader, new InputSource(responseBody)), dr);
+        transformer.transform(
+            new SAXSource(reader, new InputSource(new ByteArrayInputStream(res.body))), dr);
         doc = dr.getDocument();
 
-        ret = new HttpDOMResponse(doc, get.getResponseHeaders());
+        ret = new HttpDOMResponse(doc, res.headers);
         ret.setExistingItem(item);
       }
     } catch (Exception ex) {
       log.error(ex.getMessage());
       log.debug(ex.getMessage(), ex);
-    } finally {
-      get.releaseConnection();
     }
 
     return ret;
@@ -480,65 +443,95 @@ public class PSOImportJexl extends PSJexlUtilBase implements IPSJexlExpression {
       }
     }
 
-    HttpClient client = new HttpClient();
-
-    // Set up the proxy server if there is one.
-    HTTPProxyClientConfig proxy = new HTTPProxyClientConfig();
-
-    if (!proxy.getProxyServer().equals("")) {
-      log.debug("Setting Proxy server to " + proxy.getProxyServer() + ":" + proxy.getProxyPort());
-      client
-          .getHostConfiguration()
-          .setProxy(proxy.getProxyServer(), Integer.parseInt(proxy.getProxyPort()));
-    }
-    client.getParams().setConnectionManagerTimeout(2000);
-
-    GetMethod get = new GetMethod(url);
-
-    // Add the modification check headers if we have valid params.
-    if (etag != null && !etag.trim().equals("")) {
-      get.addRequestHeader(HTTP_IFNONEMATCH, etag);
-    }
-
-    if (lastModified != null && !lastModified.trim().equals("")) {
-      get.addRequestHeader(HTTP_IFMODIFIED, lastModified);
-    }
-
-    // Specify that we want UTF-8 content.
-    get.addRequestHeader("Content-Type", "text/xhtml; charset=UTF-8");
-
-    get.setFollowRedirects(true);
-
     try {
-      int code = client.executeMethod(get);
-
-      if (code != HttpStatus.SC_NOT_MODIFIED) {
-
-        InputStream responseBody = get.getResponseBodyAsStream();
-
-        log.debug("Response Character Set: " + get.getResponseCharSet());
-
-        if (!get.getRequestCharSet().equals("UTF-8")) {
+      FetchResponse res = fetchUrl(url, etag, lastModified, "text/xhtml; charset=UTF-8");
+      if (res.statusCode != HttpStatus.SC_NOT_MODIFIED) {
+        log.debug("Response Character Set: " + res.charset);
+        if (!"UTF-8".equalsIgnoreCase(res.charset)) {
           log.warn("Warning, source character set is not UTF-8");
         }
 
         doc =
             HtmlLinkHelper.convertLinksToAbsolute(
-                url, Jsoup.parse(responseBody, "UTF-8", HtmlLinkHelper.getBaseLink(url)));
+                url,
+                Jsoup.parse(
+                    new ByteArrayInputStream(res.body), "UTF-8", HtmlLinkHelper.getBaseLink(url)));
 
-        ret = new HttpHtmlResponse(doc, get.getResponseHeaders());
-
+        ret = new HttpHtmlResponse(doc, res.headers);
         ret.setExistingItem(item);
       }
     } catch (Exception ex) {
       log.error(ex.getMessage());
       log.debug(ex.getMessage(), ex);
-    } finally {
-
-      get.releaseConnection();
     }
 
     return ret;
+  }
+
+  private FetchResponse fetchUrl(
+      String url, String etag, String lastModified, String contentTypeHeader) throws IOException {
+    HTTPProxyClientConfig proxy = new HTTPProxyClientConfig();
+    RequestConfig.Builder reqConfig =
+        RequestConfig.custom()
+            .setConnectionRequestTimeout(Timeout.ofMilliseconds(2000))
+            .setRedirectsEnabled(true);
+    if (StringUtils.isNotBlank(proxy.getProxyServer())
+        && StringUtils.isNotBlank(proxy.getProxyPort())) {
+      log.debug("Setting Proxy server to " + proxy.getProxyServer() + ":" + proxy.getProxyPort());
+      reqConfig.setProxy(
+          new HttpHost(proxy.getProxyServer(), Integer.parseInt(proxy.getProxyPort())));
+    }
+
+    HttpGet get = new HttpGet(url);
+    if (StringUtils.isNotBlank(etag)) {
+      get.addHeader(HTTP_IFNONEMATCH, etag);
+    }
+    if (StringUtils.isNotBlank(lastModified)) {
+      get.addHeader(HTTP_IFMODIFIED, lastModified);
+    }
+    if (StringUtils.isNotBlank(contentTypeHeader)) {
+      get.addHeader("Content-Type", contentTypeHeader);
+    }
+
+    try (CloseableHttpClient client =
+        HttpClients.custom().setDefaultRequestConfig(reqConfig.build()).build()) {
+      return client.execute(
+          get,
+          response -> {
+            int code = response.getCode();
+            Header[] headers = response.getHeaders();
+            HttpEntity entity = response.getEntity();
+            byte[] body = new byte[0];
+            String charset = StandardCharsets.UTF_8.name();
+            if (entity != null) {
+              if (entity.getContentType() != null) {
+                ContentType parsed = ContentType.parseLenient(entity.getContentType());
+                Charset cs = parsed != null ? parsed.getCharset() : null;
+                if (cs != null) {
+                  charset = cs.name();
+                }
+              }
+              if (code != HttpStatus.SC_NOT_MODIFIED) {
+                body = EntityUtils.toByteArray(entity);
+              }
+            }
+            return new FetchResponse(code, headers, body, charset);
+          });
+    }
+  }
+
+  private static final class FetchResponse {
+    final int statusCode;
+    final Header[] headers;
+    final byte[] body;
+    final String charset;
+
+    FetchResponse(int statusCode, Header[] headers, byte[] body, String charset) {
+      this.statusCode = statusCode;
+      this.headers = headers;
+      this.body = body;
+      this.charset = charset;
+    }
   }
 
   /**

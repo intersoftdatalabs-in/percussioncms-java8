@@ -48,7 +48,6 @@ import com.percussion.services.sitemgr.IPSSite;
 import com.percussion.util.PSPurgableTempFile;
 import com.percussion.utils.guid.IPSGuid;
 import com.percussion.utils.types.PSPair;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -607,8 +606,7 @@ public class PSMetadataDeliveryHandler extends PSBaseDeliveryHandler
             this.deliveryServer = deliveryServer;
             if (deliveryServer !=null)
             {
-                MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
-                deliveryClient = new PSDeliveryClient(connectionManager, retryCount, connectionTimeout, operationTimeout);
+                deliveryClient = new PSDeliveryClient(retryCount, connectionTimeout, operationTimeout);
             }
             this.actionUrl = actionUrl;
             this.solr = solr;

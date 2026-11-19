@@ -44,7 +44,7 @@
             <artifactId>swagger-annotations</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxrs</artifactId>
             <exclusions>
                 <exclusion>
@@ -58,22 +58,37 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-rs-client</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-transports-local</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.cxf</groupId>
+            <groupId>com.intsof.lts.cxf</groupId>
             <artifactId>cxf-rt-transports-http-jetty</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.intsof.lts.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.intsof.lts.jetty</groupId>
+            <artifactId>jetty-security</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.intsof.lts.jetty</groupId>
+            <artifactId>jetty-continuation</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -94,15 +109,15 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>
         <dependency>
@@ -119,7 +134,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.tika</groupId>
+            <groupId>com.intsof.lts.tika</groupId>
             <artifactId>tika-core</artifactId>
         </dependency>
         <dependency>
