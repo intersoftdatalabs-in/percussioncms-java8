@@ -18,9 +18,12 @@ package com.percussion.pagemanagement.assembler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import com.percussion.designmanagement.service.impl.PSFileSystemService;
 import com.percussion.utils.jsr170.PSValueFactory;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Proxy;
@@ -34,6 +37,8 @@ import javax.jcr.Value;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.support.GenericApplicationContext;
 
 public class PSPageUtilsTest {
 
@@ -42,6 +47,42 @@ public class PSPageUtilsTest {
   private static final String LOCAL_ID = "303dff1c-a87d-4a3f-860b-9e0382eea1e0";
 
   @Rule public TemporaryFolder tempFolder = new TemporaryFolder();
+
+  /**
+   * Regression test for issue #284: injectDependencies autowires bean setters by type, and two
+   * IPSFileSystemService beans exist, so PSPageUtils must not expose a fileSystemService bean
+   * property.
+   */
+  @Test
+  public void testFileSystemServiceIsNotAutowirableBeanProperty() throws Exception {
+    for (PropertyDescriptor pd :
+        Introspector.getBeanInfo(PSPageUtils.class).getPropertyDescriptors()) {
+      if ("fileSystemService".equals(pd.getName())) {
+        assertNull("fileSystemService must not have a setter", pd.getWriteMethod());
+      }
+    }
+  }
+
+  @Test
+  public void testAutodetectAutowireWithMultipleFileSystemServices() throws Exception {
+    File dirA = tempFolder.newFolder("a");
+    File dirB = tempFolder.newFolder("b");
+    try (GenericApplicationContext ctx = new GenericApplicationContext()) {
+      ctx.getBeanFactory()
+          .registerSingleton(
+              "webResourcesService", new PSFileSystemService(dirA.getAbsolutePath()));
+      ctx.getBeanFactory()
+          .registerSingleton(
+              "privateKeysFileSystemService", new PSFileSystemService(dirB.getAbsolutePath()));
+      ctx.refresh();
+
+      // Same call PSSpringWebApplicationContextUtils.injectDependencies makes; must not throw
+      // NoUniqueBeanDefinitionException.
+      ctx.getAutowireCapableBeanFactory()
+          .autowireBeanProperties(
+              new PSPageUtils(), AutowireCapableBeanFactory.AUTOWIRE_AUTODETECT, false);
+    }
+  }
 
   @Test
   public void testProcessFrameworkContent() {
@@ -227,7 +268,7 @@ public class PSPageUtilsTest {
         categoryXml.getBytes(StandardCharsets.UTF_8));
 
     PSPageUtils utils = new PSPageUtils();
-    utils.setFileSystemService(new PSFileSystemService(webResourcesDir.getAbsolutePath()));
+    utils.overrideFileSystemService(new PSFileSystemService(webResourcesDir.getAbsolutePath()));
     return utils;
   }
 
