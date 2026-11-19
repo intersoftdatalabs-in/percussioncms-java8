@@ -1,0 +1,4936 @@
+{
+  "metadata": {
+    "issue_number": 290,
+    "repository": "intersoftdatalabs-in/percussioncms-java8",
+    "base_branch": "main",
+    "base_commit_sha": "00952044934b5b6762b50bd609d5235b0b9353d0",
+    "generated_at_utc": "2026-11-19T02:14:39Z",
+    "scope": "Maven Java 8 dependencies (npm/frontend excluded)",
+    "counts": {
+      "sbom_total_packages": 1419,
+      "sbom_unique_non_percussion_maven_gavs": 768,
+      "dependabot_open_alerts": 84,
+      "dependabot_open_unique_packages": 32,
+      "dependabot_open_by_severity": {
+        "critical": 11,
+        "high": 32,
+        "medium": 30,
+        "low": 11
+      },
+      "dependabot_dismissed_alerts": 9,
+      "osv_matched_maven_gavs": 34,
+      "osv_unique_vulns": 79,
+      "owasp_suppression_blocks": 117,
+      "owasp_suppression_status_breakdown": {
+        "PRESENT_SAME_VERSION": 44,
+        "VERSION_CHANGED_IN_SBOM": 9,
+        "REMOVED_FROM_SBOM": 5,
+        "T2_20_CATCH_ALL_BLOCK": 59
+      }
+    }
+  },
+  "families": [
+    {
+      "family_id": "guava",
+      "name": "Google Guava",
+      "triage_bucket": "bucket_1_wave0_quick_fixes",
+      "declared_pom_property": "guava.version=33.7.1-jre",
+      "sbom_resolved_versions": [
+        "33.7.1-jre"
+      ],
+      "provenance": "Direct in root dependencyManagement and multiple modules",
+      "open_dependabot_alerts": [
+        191
+      ],
+      "severity_counts": {
+        "critical": 0,
+        "high": 1,
+        "medium": 0,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2026-102554"
+      ],
+      "java8_blocker": "None \u2014 33.7.2-jre and 33.8.0-jre are verified Java 8 bytecode (major 52)",
+      "current_mitigation": "None needed once bumped",
+      "recommended_action": "Wave 0: Bump <guava.version> to 33.7.2-jre or 33.8.0-jre in pom.xml"
+    },
+    {
+      "family_id": "zookeeper",
+      "name": "Apache ZooKeeper",
+      "triage_bucket": "bucket_1_wave0_quick_fixes",
+      "declared_pom_property": "zookeeper.version=3.7.2",
+      "sbom_resolved_versions": [
+        "3.7.2"
+      ],
+      "provenance": "Managed in root pom.xml:224; pulled by org.apache.solr:solr-solrj:8.11.4",
+      "open_dependabot_alerts": [
+        114
+      ],
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2024-23944"
+      ],
+      "java8_blocker": "None \u2014 3.8.4..3.8.8 and 3.9.2..3.9.7 are verified Java 8 bytecode (major 52); verify solr-solrj 8.11.4 runtime compatibility",
+      "current_mitigation": "Tracked under T2.20",
+      "recommended_action": "Wave 0: Bump <zookeeper.version> to 3.8.6+ or 3.9.2+ after CloudSolrClient smoke test (or exclude if SolrCloud unused)"
+    },
+    {
+      "family_id": "jetty-core-mismatch",
+      "name": "Eclipse Jetty 9.4 Core (Transitive 9.4.57 vs Fork 9.4.65.1)",
+      "triage_bucket": "bucket_1_wave0_quick_fixes",
+      "declared_pom_property": "jetty.version=9.4.65.1 (forked at intersoftdatalabs-in/jetty.project)",
+      "sbom_resolved_versions": [
+        "9.4.57.v20241219",
+        "9.4.65.1"
+      ],
+      "provenance": "rest:pom.xml (test scope) -> cxf-rt-transports-http-jetty:3.5.11 pulls 9.4.57.v20241219 because jetty-bom is not imported in root dependencyManagement; dependency-submission.yml lacks GitHub Packages auth",
+      "open_dependabot_alerts": [
+        126,
+        128,
+        149,
+        150,
+        115
+      ],
+      "severity_counts": {
+        "critical": 0,
+        "high": 2,
+        "medium": 2,
+        "low": 1
+      },
+      "cves": [
+        "CVE-2026-2332",
+        "CVE-2026-10050",
+        "CVE-2026-6790",
+        "CVE-2025-11143",
+        "CVE-2024-6763"
+      ],
+      "java8_blocker": "All 5 CVEs are already fixed in intersoftdatalabs-in/jetty.project v9.4.65.1; CVE-2024-6763 remains flagged by Dependabot under original groupId because GHSA range is <= 12.0.11",
+      "current_mitigation": "T2.13 hardening + intersoftdatalabs-in/jetty.project v9.4.65.1",
+      "recommended_action": "Wave 0: Import org.eclipse.jetty:jetty-bom:${jetty.version} in root dependencyManagement + add GitHub Packages settings.xml to dependency-submission.yml; handle CVE-2024-6763 via VEX/suppression or relocated groupId"
+    },
+    {
+      "family_id": "jetty-http2",
+      "name": "Eclipse Jetty HTTP/2 Modules (9.4.53.v20231009)",
+      "triage_bucket": "bucket_1_wave0_quick_fixes",
+      "declared_pom_property": "unmanaged (transitive)",
+      "sbom_resolved_versions": [
+        "9.4.53.v20231009"
+      ],
+      "provenance": "perc-system & perc-web-ui -> org.apache.solr:solr-solrj:8.11.4 (optional); root pom.xml:724 excluded jetty-http/io/util/client but omitted org.eclipse.jetty.http2:* and jetty-alpn-openjdk8-client",
+      "open_dependabot_alerts": [
+        112,
+        113,
+        121
+      ],
+      "severity_counts": {
+        "critical": 0,
+        "high": 2,
+        "medium": 1,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2023-44487",
+        "CVE-2024-22201",
+        "CVE-2025-5115"
+      ],
+      "java8_blocker": "PSSolrDeliveryHandler uses HttpSolrClient & CloudSolrClient (no Http2SolrClient); unused on classpath",
+      "current_mitigation": "T2.13 / T2.20",
+      "recommended_action": "Wave 0: Exclude org.eclipse.jetty.http2:* and jetty-alpn-openjdk8-client on solr-solrj in root pom.xml (or deploy http2-* from jetty.project if ever needed)"
+    },
+    {
+      "family_id": "bouncycastle-jdk18on-dup",
+      "name": "Bouncy Castle jdk18on Transitive Duplicate (1.80 / 1.80.2)",
+      "triage_bucket": "bucket_1_wave0_quick_fixes",
+      "declared_pom_property": "bc.version=1.85 (bc*-jdk15to18 pinned)",
+      "sbom_resolved_versions": [
+        "1.80",
+        "1.80.2"
+      ],
+      "provenance": "system/WebUI -> tika-parsers-standard-package:2.9.4 -> tika-parser-crypto-module:2.9.4; root pom.xml:861 excluded bc*-jdk15on and bc*-jdk15to18 but missed bc*-jdk18on",
+      "open_dependabot_alerts": [
+        158,
+        171,
+        172,
+        205,
+        206,
+        59
+      ],
+      "severity_counts": {
+        "critical": 2,
+        "high": 2,
+        "medium": 2,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2025-14813",
+        "CVE-2026-8763",
+        "CVE-2026-5598",
+        "CVE-2026-13506",
+        "CVE-2026-0636",
+        "CVE-2026-5588"
+      ],
+      "java8_blocker": "Duplicate coordinate leak \u2014 Java 8 compatible bc*-jdk15to18:1.85 is already pinned in root pom.xml and unaffected",
+      "current_mitigation": "PR #77 (bc*-jdk15to18:1.85)",
+      "recommended_action": "Wave 0: Exclude org.bouncycastle:bc{prov,pkix,mail,util}-jdk18on on tika-parsers-standard-package (or global enforcer ban)"
+    },
+    {
+      "family_id": "javax-el",
+      "name": "GlassFish Expression Language (javax.el 3.0.0)",
+      "triage_bucket": "bucket_1_wave0_quick_fixes",
+      "declared_pom_property": "hardcoded 3.0.0 in pom.xml:517",
+      "sbom_resolved_versions": [
+        "3.0.0"
+      ],
+      "provenance": "Direct in root pom.xml:515, system/pom.xml:157, WebUI/pom.xml:339 (paired with hibernate-validator)",
+      "open_dependabot_alerts": [
+        40
+      ],
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2021-28170"
+      ],
+      "java8_blocker": "Drop-in replacement exists: org.glassfish:jakarta.el:3.0.4 uses javax.el.* packages, Java 7 bytecode (major 51), zero runtime deps, and fixes CVE-2021-28170",
+      "current_mitigation": "EL interpolation disabled in system/src/main/resources/META-INF/validation.xml (T2.14)",
+      "recommended_action": "Wave 0: Replace org.glassfish:javax.el:3.0.0 with org.glassfish:jakarta.el:3.0.4 (while allowing jakarta.el:3.0.4 in dependabot.yml)"
+    },
+    {
+      "family_id": "shiro",
+      "name": "Apache Shiro (1.13.0 \u2014 Unused Transitive)",
+      "triage_bucket": "bucket_1_wave0_quick_fixes",
+      "declared_pom_property": "shiro.version=1.13.0",
+      "sbom_resolved_versions": [
+        "1.13.0"
+      ],
+      "provenance": "modules/shindig-uber/pom.xml:172 declares shiro-web:1.13.0 compile even though its shade plugin excludes shiro-web & shiro-core from the shaded jar; system/ear/WEB-INF/web.xml comments out JSecurityFilter & ShiroGuiceModule; zero Java imports in repo",
+      "open_dependabot_alerts": [
+        144,
+        145,
+        146,
+        159,
+        192,
+        193
+      ],
+      "severity_counts": {
+        "critical": 0,
+        "high": 1,
+        "medium": 2,
+        "low": 3
+      },
+      "cves": [
+        "CVE-2026-49268",
+        "CVE-2026-43827",
+        "CVE-2026-43828",
+        "CVE-2026-23901",
+        "CVE-2026-56130"
+      ],
+      "java8_blocker": "Shiro 2.x requires Java 11 (major 55); 3.x requires Java 17/21 (major 61/69) \u2014 BUT artifact appears dead/excluded at runtime",
+      "current_mitigation": "Pinned at 1.13.0 (PR #80)",
+      "recommended_action": "Wave 0: Remove unused shiro-web compile dep from modules/shindig-uber/pom.xml (after Shindig smoke test); if ever needed, apache/shiro@shiro-root-1.13.0 is an easy Wave 1 Maven fork"
+    },
+    {
+      "family_id": "antisamy-and-unattached-poms",
+      "name": "Transitive AntiSamy Leak & Unattached Legacy Module POMs",
+      "triage_bucket": "bucket_1_wave0_quick_fixes",
+      "declared_pom_property": "mixed (esapi 2.7.0.0, unattached p13n-api/segmentation-api/redirect-tool, hibernate-validator 6.2.5.Final)",
+      "sbom_resolved_versions": [
+        "1.6.0",
+        "1.7.8",
+        "2.20.17",
+        "4.5.13",
+        "4.5.14"
+      ],
+      "provenance": "root pom.xml:1042 omits antisamy exclusion on esapi:2.7.0.0 (pulling antisamy:1.7.8 into sitemanage/WebUI); modules/p13n-api & modules/segmentation-api pin jackrabbit-jcr-commons:1.6.0; modules/redirect-tool pins httpclient:4.5.13; pom.xml:111 leaves unused hibernate.validator.version=6.2.3.Final while line 511 pins 6.2.5.Final",
+      "open_dependabot_alerts": [],
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2025-58782"
+      ],
+      "java8_blocker": "POM hygiene gaps (not Java 8 blockers)",
+      "current_mitigation": "PR #161 (intended AntiSamy removal), dismissed alerts #25/#27",
+      "recommended_action": "Wave 0: Exclude antisamy on esapi in root dependencyManagement; align or archive unattached modules; bump hibernate-validator 6.2.5.Final -> 6.2.6.Final"
+    },
+    {
+      "family_id": "tika",
+      "name": "Apache Tika",
+      "triage_bucket": "bucket_2_eol_fork_candidates",
+      "declared_pom_property": "tika.version=2.9.4",
+      "sbom_resolved_versions": [
+        "2.9.4"
+      ],
+      "provenance": "Direct in system/pom.xml and WebUI/pom.xml (tika-core, tika-parsers-standard-package, tika-langdetect)",
+      "open_dependabot_alerts": [
+        45,
+        122,
+        124
+      ],
+      "severity_counts": {
+        "critical": 3,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2025-54988",
+        "CVE-2025-66516"
+      ],
+      "java8_blocker": "Tika 3.x requires Java 11 (verified tika-core 3.2.2 major 55)",
+      "current_mitigation": "T2.1: PSTikaTextConvertor 100 MB cap + 7-parser CompositeParser allowlist (includes PDFParser)",
+      "recommended_action": "Wave 1 EOL Fork (Recommended) \u2014 reachable via PDFParser, 3 Critical XXE alerts, native Maven JDK 8 CI workflow, surgical patch"
+    },
+    {
+      "family_id": "cxf",
+      "name": "Apache CXF",
+      "triage_bucket": "bucket_2_eol_fork_candidates",
+      "declared_pom_property": "cxf.version=3.5.11",
+      "sbom_resolved_versions": [
+        "3.5.11"
+      ],
+      "provenance": "Direct across system, rest, sitemanage, WebUI (REST + SOAP endpoints)",
+      "open_dependabot_alerts": [
+        152,
+        187
+      ],
+      "severity_counts": {
+        "critical": 1,
+        "high": 1,
+        "medium": 0,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2026-49875",
+        "CVE-2026-50645"
+      ],
+      "java8_blocker": "CXF 3.6.x+ requires Java 11 (verified cxf-core 3.6.12 major 55)",
+      "current_mitigation": "T2.3: LoggingFeature size limit, no WSS4J interceptors",
+      "recommended_action": "Wave 1 EOL Fork (Recommended) \u2014 active REST/SOAP stack, Critical XXE (CVE-2026-49875) + header DoS (CVE-2026-50645 + CVE-2026-64958 follow-up), clean Maven JDK 8 build"
+    },
+    {
+      "family_id": "derby",
+      "name": "Apache Derby",
+      "triage_bucket": "bucket_2_eol_fork_candidates",
+      "declared_pom_property": "derby.version=10.14.2.0",
+      "sbom_resolved_versions": [
+        "10.14.2.0"
+      ],
+      "provenance": "Direct in system, perc-jetty, deliverytiersuite (embedded + localhost DRDA)",
+      "open_dependabot_alerts": [
+        77
+      ],
+      "severity_counts": {
+        "critical": 1,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2022-46337"
+      ],
+      "java8_blocker": "10.14.2.1 was never published to Maven Central; Derby 10.15+ requires Java 9+",
+      "current_mitigation": "T2.18: localhost DRDA binding, SHA-256 auth, no LDAP provider configured",
+      "recommended_action": "Wave 1 EOL Fork / Publish (Recommended if zero-alert Critical clearance desired) \u2014 DERBY-7147 fix is already committed on Apache SVN branches/10.14; Ant JDK 8 build"
+    },
+    {
+      "family_id": "activemq",
+      "name": "Apache ActiveMQ",
+      "triage_bucket": "bucket_2_eol_fork_candidates",
+      "declared_pom_property": "activemq.version=5.16.8",
+      "sbom_resolved_versions": [
+        "5.16.8"
+      ],
+      "provenance": "Direct in system & WebUI (in-VM broker vm://localhost, empty <transportConnectors/>)",
+      "open_dependabot_alerts": [
+        48,
+        49,
+        51,
+        52,
+        54,
+        63,
+        64,
+        65,
+        78,
+        79,
+        80,
+        194,
+        195,
+        196,
+        197,
+        198
+      ],
+      "severity_counts": {
+        "critical": 0,
+        "high": 12,
+        "medium": 4,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2026-33227",
+        "CVE-2026-34197",
+        "CVE-2026-39304",
+        "CVE-2026-40466",
+        "CVE-2026-41043",
+        "CVE-2026-41044",
+        "CVE-2026-42588",
+        "CVE-2026-45505",
+        "CVE-2026-49270",
+        "CVE-2026-49434",
+        "CVE-2026-50734",
+        "CVE-2026-53917",
+        "CVE-2026-54475"
+      ],
+      "java8_blocker": "ActiveMQ 5.17+ requires Java 11 (verified 5.17.6/5.18.7/5.19.8 major 55)",
+      "current_mitigation": "T2.2: vm://localhost only, empty <transportConnectors/>, advisorySupport=false, simpleAuthenticationPlugin",
+      "recommended_action": "Wave 2 Conditional Fork \u2014 16 alerts (12 High) in Maven JDK 8 build, but high ongoing 2026 CVE churn (~13 CVEs/yr) and low real reachability in vm://localhost mode"
+    },
+    {
+      "family_id": "spring-framework",
+      "name": "Spring Framework",
+      "triage_bucket": "bucket_2_eol_fork_candidates",
+      "declared_pom_property": "spring.version=5.3.39",
+      "sbom_resolved_versions": [
+        "5.3.39"
+      ],
+      "provenance": "Direct across system, sitemanage, WebUI, rest, deliverytiersuite",
+      "open_dependabot_alerts": [
+        30,
+        33,
+        34,
+        37,
+        38,
+        39,
+        42,
+        44,
+        46,
+        47,
+        66,
+        67,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        167,
+        175,
+        182
+      ],
+      "severity_counts": {
+        "critical": 2,
+        "high": 8,
+        "medium": 12,
+        "low": 5
+      },
+      "cves": [
+        "CVE-2016-1000027",
+        "CVE-2024-38816",
+        "CVE-2024-38819",
+        "CVE-2024-38820",
+        "CVE-2024-38828",
+        "CVE-2025-22233",
+        "CVE-2025-41242",
+        "CVE-2025-41249",
+        "CVE-2026-22735",
+        "CVE-2026-22737",
+        "CVE-2026-22741",
+        "CVE-2026-22745",
+        "CVE-2026-41841",
+        "CVE-2026-41842",
+        "CVE-2026-41843",
+        "CVE-2026-41844",
+        "CVE-2026-41845",
+        "CVE-2026-41846",
+        "CVE-2026-41848",
+        "CVE-2026-41849",
+        "CVE-2026-41850",
+        "CVE-2026-41851",
+        "CVE-2026-41852",
+        "CVE-2026-41853",
+        "CVE-2026-41855",
+        "CVE-2026-47884"
+      ],
+      "java8_blocker": "Spring 6.x requires Java 17 + Jakarta EE; 5.3.40+ is Broadcom commercial support only",
+      "current_mitigation": "T2.4: favor-path-extension=false, PSSecurityHeadersFilter; zero XsltView/ScriptTemplateView/HttpInvoker/UriComponentsBuilder/MappingJackson2MessageConverter usages",
+      "recommended_action": "Wave 2 Conditional / Build-vs-Buy \u2014 highest CVE churn (27 open alerts), Gradle+JDK17 build toolchain, several fixes lack public commit links on 5.3.x; consider Broadcom/HeroDevs NES or targeted cherry-picks if Java 17 upgrade slips"
+    },
+    {
+      "family_id": "spring-security",
+      "name": "Spring Security",
+      "triage_bucket": "bucket_2_eol_fork_candidates",
+      "declared_pom_property": "hardcoded 5.8.16 in pom.xml",
+      "sbom_resolved_versions": [
+        "5.8.16"
+      ],
+      "provenance": "Direct in sitemanage and deliverytiersuite (comments, common, secure-membership)",
+      "open_dependabot_alerts": [
+        119,
+        127,
+        131,
+        147,
+        153
+      ],
+      "severity_counts": {
+        "critical": 1,
+        "high": 1,
+        "medium": 2,
+        "low": 1
+      },
+      "cves": [
+        "CVE-2025-22228",
+        "CVE-2026-22732",
+        "CVE-2026-22746",
+        "CVE-2026-41706",
+        "CVE-2026-47838"
+      ],
+      "java8_blocker": "Spring Security 6.x requires Java 17 + Jakarta EE; 5.8.17+ is Broadcom commercial support only",
+      "current_mitigation": "T2.4: explicit <security:headers defaults-disabled=\"true\"> + PSSecurityHeadersFilter; zero CookieRequestCache/X509/DaoAuthenticationProvider usages",
+      "recommended_action": "Wave 2 Conditional / Build-vs-Buy \u2014 paired with Spring Framework 5.3.x; Gradle 7.5.1 + JDK 11/17 toolchain; verify CVE-2026-22732 header-filter path vs PSSecurityHeadersFilter"
+    },
+    {
+      "family_id": "spring-ldap",
+      "name": "Spring LDAP",
+      "triage_bucket": "bucket_2_eol_fork_candidates",
+      "declared_pom_property": "hardcoded 2.4.4 in deliverytiersuite/DTS-shared-dependencies",
+      "sbom_resolved_versions": [
+        "2.4.4"
+      ],
+      "provenance": "ONLY pulled by @Deprecated perc-secure-membership (and delivery-tier-distribution)",
+      "open_dependabot_alerts": [
+        151
+      ],
+      "severity_counts": {
+        "critical": 0,
+        "high": 1,
+        "medium": 0,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2026-41720"
+      ],
+      "java8_blocker": "Spring LDAP 3.x requires Java 11/17 + Jakarta EE; 2.4.5+ is commercial only",
+      "current_mitigation": "T2.19: PR #134 NUL/control-char rejection in PSLdapMembershipAuthProvider (which uses InitialLdapContext directly, though lacks empty-password check)",
+      "recommended_action": "Wave 0/1: First confirm if deprecated perc-secure-membership can be retired/removed; otherwise add empty-password check + optional small Gradle backport (public fix commits exist)"
+    },
+    {
+      "family_id": "jackrabbit",
+      "name": "Apache Jackrabbit (jcr-commons)",
+      "triage_bucket": "bucket_2_eol_fork_candidates",
+      "declared_pom_property": "hardcoded 2.20.17 in pom.xml:632,679 (and 1.6.0 in unattached p13n-api/segmentation-api)",
+      "sbom_resolved_versions": [
+        "1.6.0",
+        "2.20.17"
+      ],
+      "provenance": "system (PSQueryResultUtils.RowIteratorAdapter) and perc-toolkit (ValueFactoryImpl); unattached p13n-api/segmentation-api pin 1.6.0",
+      "open_dependabot_alerts": [
+        43
+      ],
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2025-58782"
+      ],
+      "java8_blocker": "Jackrabbit 2.21+/2.22+ requires Java 11 (verified 2.21.25/2.22.2 major 55)",
+      "current_mitigation": "Not using JndiRepositoryFactory",
+      "recommended_action": "Replace in-repo (trivial: RowIteratorAdapter & ValueFactoryImpl are tiny JCR helpers) or Wave 1 small Maven backport (PR #229, 7 files) + clean up unattached 1.6.0 POMs"
+    },
+    {
+      "family_id": "hibernate-orm",
+      "name": "Hibernate ORM (5.6.15.Final \u2014 Non-Dependabot Active CVE)",
+      "triage_bucket": "bucket_2_eol_fork_candidates",
+      "declared_pom_property": "hibernate.version=5.6.15.Final",
+      "sbom_resolved_versions": [
+        "5.6.15.Final"
+      ],
+      "provenance": "Direct in system, sitemanage, deliverytiersuite",
+      "open_dependabot_alerts": [],
+      "severity_counts": {
+        "critical": 0,
+        "high": 1,
+        "medium": 0,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2026-0603"
+      ],
+      "java8_blocker": "Hibernate ORM 6.x requires Java 11+ & Jakarta JPA; 5.6.15.Final is last public 5.6 tag (Red Hat backported privately)",
+      "current_mitigation": "T2.14: PSRoleService.containsUnsafeIdentifierChar on String @Id entry points; no InlineIdsOrClauseBulkIdStrategy configured",
+      "recommended_action": "Keep Mitigated / Conditional Wave 2 \u2014 Dependabot does not flag 5.6.15.Final; Gradle 6.7.1 enforces JDK 8 release build; keep T2.14 audit tests unless NVD-based customer scanner demands patch"
+    },
+    {
+      "family_id": "apache-soap",
+      "name": "Apache SOAP (soap:soap 2.3.1)",
+      "triage_bucket": "bucket_3_dead_legacy_eol",
+      "declared_pom_property": "hardcoded 2.3.1 in pom.xml",
+      "sbom_resolved_versions": [
+        "2.3.1"
+      ],
+      "provenance": "Direct in system, webservices, sitemanage, rest, integrations, cactus-tests; 14 Java files import org.apache.soap",
+      "open_dependabot_alerts": [
+        29,
+        31
+      ],
+      "severity_counts": {
+        "critical": 1,
+        "high": 1,
+        "medium": 0,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2022-45378",
+        "CVE-2022-40705"
+      ],
+      "java8_blocker": "Project retired to Apache Attic in 2003; no upstream fix exists on any Java version",
+      "current_mitigation": "T2.17 (partial); alert #100 dismissed in system/pom.xml as tolerable_risk (RPCRouterServlet not exposed)",
+      "recommended_action": "Do Not Fork \u2014 migrate remaining 14 Java files to CXF/JAX-WS or verify RPCRouterServlet absence + VEX/dismiss"
+    },
+    {
+      "family_id": "commons-httpclient-3",
+      "name": "Apache Commons HttpClient 3.1",
+      "triage_bucket": "bucket_3_dead_legacy_eol",
+      "declared_pom_property": "hardcoded 3.1 in pom.xml",
+      "sbom_resolved_versions": [
+        "3.1"
+      ],
+      "provenance": "Direct in system/WebUI/extensions-main/DTS (32 Java files) + transitive via shindig-social-api:1.1-BETA5-incubating",
+      "open_dependabot_alerts": [
+        32
+      ],
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2012-5783"
+      ],
+      "java8_blocker": "EOL since 2011; superseded by HttpClient 4.5 / 5.x",
+      "current_mitigation": "T2.6; alert #23 dismissed in DTS-shared-dependencies as tolerable_risk",
+      "recommended_action": "Do Not Fork \u2014 finish migrating remaining 32 Java call sites to HttpClient 5.x (already in pom.xml)"
+    },
+    {
+      "family_id": "commons-lang-2",
+      "name": "Apache Commons Lang 2.6 / 2.4",
+      "triage_bucket": "bucket_3_dead_legacy_eol",
+      "declared_pom_property": "unmanaged (transitive)",
+      "sbom_resolved_versions": [
+        "2.6"
+      ],
+      "provenance": "Transitive via esapi:2.7.0.0 (2.6), solr-solrj:8.11.4 (2.6), and shindig-common (2.4)",
+      "open_dependabot_alerts": [
+        41
+      ],
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 1,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2025-48924"
+      ],
+      "java8_blocker": "Commons Lang 2.x is EOL; CVE-2025-48924 is fixed in commons-lang3:3.18.0+ (repo ships 3.20.0)",
+      "current_mitigation": "T2.6",
+      "recommended_action": "Do Not Fork \u2014 check if esapi/solr-solrj actually invoke ClassUtils.getClass at runtime; exclude where unused or accept/VEX"
+    },
+    {
+      "family_id": "commons-configuration-1",
+      "name": "Apache Commons Configuration 1.10",
+      "triage_bucket": "bucket_3_dead_legacy_eol",
+      "declared_pom_property": "unmanaged (transitive)",
+      "sbom_resolved_versions": [
+        "1.10"
+      ],
+      "provenance": "Pulled exclusively transitively by org.owasp.esapi:esapi:2.7.0.0",
+      "open_dependabot_alerts": [
+        120
+      ],
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 1
+      },
+      "cves": [
+        "CVE-2025-46392"
+      ],
+      "java8_blocker": "Commons Configuration 1.x is EOL; 2.x is a breaking groupId/package change (commons-configuration2)",
+      "current_mitigation": "T2.6 (no untrusted interpolation/properties)",
+      "recommended_action": "Do Not Fork \u2014 keep mitigated (ESAPI 2.x internal dependency)"
+    },
+    {
+      "family_id": "sanselan",
+      "name": "Apache Sanselan 0.97-incubator",
+      "triage_bucket": "bucket_3_dead_legacy_eol",
+      "declared_pom_property": "unmanaged (transitive in shindig-uber)",
+      "sbom_resolved_versions": [
+        "0.97-incubator"
+      ],
+      "provenance": "Transitive via shindig-gadgets:1.1-BETA5-incubating (despite PR #189 adding a local org.apache.sanselan shim in WebUI)",
+      "open_dependabot_alerts": [],
+      "severity_counts": {
+        "critical": 0,
+        "high": 2,
+        "medium": 0,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2018-17201",
+        "CVE-2018-17202"
+      ],
+      "java8_blocker": "Retired Incubator artifact (replaced by Apache Commons Imaging); flagged by OSV.dev (2 High) though omitted by Dependabot",
+      "current_mitigation": "T2.17 (PR #189 WebUI shim)",
+      "recommended_action": "Do Not Fork \u2014 exclude sanselan from shindig-gadgets in shindig-uber/pom.xml (shaded/excluded cleanly)"
+    },
+    {
+      "family_id": "other-legacy-eol",
+      "name": "Other Dead Legacy EOL (Axis 1.4.2, BeanShell 2.0b6, Shindig 1.1-BETA5, Commons Collections 3.2.2)",
+      "triage_bucket": "bucket_3_dead_legacy_eol",
+      "declared_pom_property": "axis 1.4.2, shindig 1.1-BETA5-incubating; bsh 2.0b6 & collections 3.2.2 transitive",
+      "sbom_resolved_versions": [
+        "1.1-BETA5-incubating",
+        "1.4.2",
+        "2.0b6",
+        "3.2.2"
+      ],
+      "provenance": "axis in webservices/WebUI; bsh via esapi & jmock; shindig in shindig-uber/WebUI; collections via velocity/commons-beanutils/esapi",
+      "open_dependabot_alerts": [],
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "cves": [
+        "CVE-2015-6420",
+        "CVE-2015-7501",
+        "CVE-2019-0227",
+        "CVE-2023-40743",
+        "CVE-2023-51441"
+      ],
+      "java8_blocker": "All upstream EOL / abandoned",
+      "current_mitigation": "T2.6 / T2.17 (enableUnsafeSerialization=false, Axis localhost/WSDD lockdown)",
+      "recommended_action": "Do Not Fork \u2014 keep mitigated or replace over time"
+    },
+    {
+      "family_id": "intrinsic-mitigated-bucket4",
+      "name": "API-Usage / Mitigated / Already-Fixed Dependencies (XStream, Commons Compress/BeanUtils/FileUpload, SnakeYAML, Xerces, ESAPI, PDFBox, MyFaces, SolrJ)",
+      "triage_bucket": "bucket_4_mitigated_or_closed",
+      "declared_pom_property": "xstream 1.4.21, commons-compress 1.28.0, commons-beanutils 1.11.0, commons-fileupload 1.6.0, snakeyaml 2.6, xerces 2.12.2, esapi 2.7.0.0, pdfbox 2.0.31, myfaces 2.3.11, solr 8.11.4",
+      "sbom_resolved_versions": [
+        "multiple (0 open Dependabot alerts, 0 OSV matches)"
+      ],
+      "provenance": "Various modules; historical CVEs catalogued in owasp-suppressions.xml",
+      "open_dependabot_alerts": [],
+      "severity_counts": {
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "cves": [],
+      "java8_blocker": "0 open Dependabot or OSV advisories on current versions (except PDFBox 2.0.37 / Validator 6.2.6.Final optional maintenance bumps); older CVEs stem from CPE noise or API misuse",
+      "current_mitigation": "T2.5, T2.6, T2.9, T2.11, T2.12, T2.15, T2.16",
+      "recommended_action": "Do Not Fork \u2014 keep call-site mitigations and audit tests; prune stale owasp-suppressions.xml entries"
+    }
+  ],
+  "open_dependabot_alerts": [
+    {
+      "number": 29,
+      "ecosystem": "maven",
+      "package": "soap:soap",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2022-40705",
+      "ghsa_id": "GHSA-jq8c-j47c-vvwm",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": ">= 2.2, <= 2.3.1",
+      "first_patched_version": null,
+      "summary": "Apache SOAP's RPCRouterServlet allows reading of arbitrary files over HTTP",
+      "family_id": "apache-soap",
+      "triage_bucket": "Bucket 3: Dead Legacy EOL (Replace/Remove)"
+    },
+    {
+      "number": 30,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-web",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2016-1000027",
+      "ghsa_id": "GHSA-4wrc-f8pq-fpqp",
+      "severity": "critical",
+      "cvss_score": 9.8,
+      "vulnerable_version_range": "< 6.0.0",
+      "first_patched_version": "6.0.0",
+      "summary": "Pivotal Spring Framework contains unsafe Java deserialization methods",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 31,
+      "ecosystem": "maven",
+      "package": "soap:soap",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2022-45378",
+      "ghsa_id": "GHSA-789v-h9hw-38pg",
+      "severity": "critical",
+      "cvss_score": 9.8,
+      "vulnerable_version_range": ">= 0.0.0",
+      "first_patched_version": null,
+      "summary": "Apache SOAP contains unauthenticated RPCRouterServlet",
+      "family_id": "apache-soap",
+      "triage_bucket": "Bucket 3: Dead Legacy EOL (Replace/Remove)"
+    },
+    {
+      "number": 32,
+      "ecosystem": "maven",
+      "package": "commons-httpclient:commons-httpclient",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2012-5783",
+      "ghsa_id": "GHSA-3832-9276-x7gf",
+      "severity": "medium",
+      "cvss_score": 0.0,
+      "vulnerable_version_range": ">= 3.0, < 4.0",
+      "first_patched_version": null,
+      "summary": "Improper Certificate Validation in Apache Commons HttpClient",
+      "family_id": "commons-httpclient-3",
+      "triage_bucket": "Bucket 3: Dead Legacy EOL (Replace/Remove)"
+    },
+    {
+      "number": 33,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2024-38816",
+      "ghsa_id": "GHSA-cx7f-g6mp-7hqm",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": ">= 5.3.0, <= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Path traversal vulnerability in functional web frameworks",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 34,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2024-38828",
+      "ghsa_id": "GHSA-w3c8-7r8f-9jp8",
+      "severity": "medium",
+      "cvss_score": 5.3,
+      "vulnerable_version_range": ">= 5.3.0, < 5.3.42",
+      "first_patched_version": "5.3.42",
+      "summary": "Spring MVC controller vulnerable to a DoS attack",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 37,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-context",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2024-38820",
+      "ghsa_id": "GHSA-4gc7-5j7h-4qph",
+      "severity": "medium",
+      "cvss_score": 5.3,
+      "vulnerable_version_range": "<= 5.3.40",
+      "first_patched_version": null,
+      "summary": "Spring Framework DataBinder Case Sensitive Match Exception",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 38,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-web",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2024-38820",
+      "ghsa_id": "GHSA-4gc7-5j7h-4qph",
+      "severity": "medium",
+      "cvss_score": 5.3,
+      "vulnerable_version_range": "<= 5.3.40",
+      "first_patched_version": null,
+      "summary": "Spring Framework DataBinder Case Sensitive Match Exception",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 39,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-context",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2025-22233",
+      "ghsa_id": "GHSA-4wp7-92pw-q264",
+      "severity": "low",
+      "cvss_score": 3.1,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework DataBinder Case Sensitive Match Exception",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 40,
+      "ecosystem": "maven",
+      "package": "org.glassfish:javax.el",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2021-28170",
+      "ghsa_id": "GHSA-v6w3-2prq-h95f",
+      "severity": "medium",
+      "cvss_score": 5.3,
+      "vulnerable_version_range": "<= 3.0.1-b12",
+      "first_patched_version": null,
+      "summary": "Improper Input Validation in Jakarta Expression Language",
+      "family_id": "javax-el",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes"
+    },
+    {
+      "number": 41,
+      "ecosystem": "maven",
+      "package": "commons-lang:commons-lang",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2025-48924",
+      "ghsa_id": "GHSA-j288-q9x7-2f5v",
+      "severity": "medium",
+      "cvss_score": 6.5,
+      "vulnerable_version_range": ">= 2.0, <= 2.6",
+      "first_patched_version": null,
+      "summary": "Apache Commons Lang is vulnerable to Uncontrolled Recursion when processing long inputs",
+      "family_id": "commons-lang-2",
+      "triage_bucket": "Bucket 3: Dead Legacy EOL (Replace/Remove)"
+    },
+    {
+      "number": 42,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2025-41242",
+      "ghsa_id": "GHSA-r936-gwx5-v52f",
+      "severity": "medium",
+      "cvss_score": 5.9,
+      "vulnerable_version_range": ">= 5.3.0, <= 5.3.43",
+      "first_patched_version": null,
+      "summary": "Spring Framework MVC Applications Path Traversal Vulnerability",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 43,
+      "ecosystem": "maven",
+      "package": "org.apache.jackrabbit:jackrabbit-jcr-commons",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2025-58782",
+      "ghsa_id": "GHSA-cxvc-g8f2-4gmm",
+      "severity": "medium",
+      "cvss_score": 6.5,
+      "vulnerable_version_range": ">= 1.0.0, < 2.22.2",
+      "first_patched_version": "2.22.2",
+      "summary": "Apache Jackrabbit: Core and JCR Commons are vulnerable to Deserialization of Untrusted Data",
+      "family_id": "jackrabbit",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 44,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-core",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2025-41249",
+      "ghsa_id": "GHSA-jmp9-x22r-554x",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": ">= 5.3.0, <= 5.3.44",
+      "first_patched_version": null,
+      "summary": "Spring Framework annotation detection mechanism may result in improper authorization",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 45,
+      "ecosystem": "maven",
+      "package": "org.apache.tika:tika-core",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2025-66516",
+      "ghsa_id": "GHSA-f58c-gq56-vjjf",
+      "severity": "critical",
+      "cvss_score": 0.0,
+      "vulnerable_version_range": ">= 1.13, <= 3.2.1",
+      "first_patched_version": "3.2.2",
+      "summary": "Apache Tika has XXE vulnerability",
+      "family_id": "tika",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 46,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-22735",
+      "ghsa_id": "GHSA-6hcq-hmm3-jj3c",
+      "severity": "low",
+      "cvss_score": 2.6,
+      "vulnerable_version_range": ">= 5.3.0, <= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring MVC and WebFlux has Server Sent Event stream corruption",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 47,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-22737",
+      "ghsa_id": "GHSA-4773-3jfm-qmx3",
+      "severity": "medium",
+      "cvss_score": 5.9,
+      "vulnerable_version_range": ">= 5.3.0, <= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Improper Path Limitation with Script View Templates",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 48,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-client",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-33227",
+      "ghsa_id": "GHSA-h2h4-5m64-m273",
+      "severity": "medium",
+      "cvss_score": 4.3,
+      "vulnerable_version_range": "< 5.19.3",
+      "first_patched_version": "5.19.3",
+      "summary": "Apache ActiveMQ: Improper validation and restriction of a classpath path name",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 49,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-broker",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-33227",
+      "ghsa_id": "GHSA-h2h4-5m64-m273",
+      "severity": "medium",
+      "cvss_score": 4.3,
+      "vulnerable_version_range": "< 5.19.3",
+      "first_patched_version": "5.19.3",
+      "summary": "Apache ActiveMQ: Improper validation and restriction of a classpath path name",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 51,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-client",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-39304",
+      "ghsa_id": "GHSA-5568-6qcg-g7fx",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": "< 5.19.4",
+      "first_patched_version": "5.19.4",
+      "summary": " Apache ActiveMQ: Denial of Service via Out of Memory vulnerability",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 52,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-broker",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-39304",
+      "ghsa_id": "GHSA-5568-6qcg-g7fx",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": "< 5.19.4",
+      "first_patched_version": "5.19.4",
+      "summary": " Apache ActiveMQ: Denial of Service via Out of Memory vulnerability",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 54,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-broker",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-34197",
+      "ghsa_id": "GHSA-rxpj-7qvf-xv32",
+      "severity": "high",
+      "cvss_score": 8.8,
+      "vulnerable_version_range": "< 5.19.5",
+      "first_patched_version": "5.19.5",
+      "summary": "Authenticated Apache ActiveMQ Broker and Apache ActiveMQ users could perform RCE via Jolokia MBeans",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 59,
+      "ecosystem": "maven",
+      "package": "org.bouncycastle:bcpkix-jdk18on",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-5588",
+      "ghsa_id": "GHSA-wg6q-6289-32hp",
+      "severity": "medium",
+      "cvss_score": 0.0,
+      "vulnerable_version_range": ">= 1.49, < 1.84",
+      "first_patched_version": "1.84",
+      "summary": "Bouncy Castle Crypto Package For Java: Use of a Broken or Risky Cryptographic Algorithm vulnerability in bcpkix modules",
+      "family_id": "bouncycastle-jdk18on-dup",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes"
+    },
+    {
+      "number": 63,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-broker",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-40466",
+      "ghsa_id": "GHSA-w3w2-mpp5-92gm",
+      "severity": "high",
+      "cvss_score": 8.8,
+      "vulnerable_version_range": "< 5.19.6",
+      "first_patched_version": "5.19.6",
+      "summary": "Apache ActiveMQ Vulnerable to Improper Input Validation and Code Injection",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 64,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-broker",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41043",
+      "ghsa_id": "GHSA-2jp3-2923-9h52",
+      "severity": "medium",
+      "cvss_score": 6.5,
+      "vulnerable_version_range": "< 5.19.6",
+      "first_patched_version": "5.19.6",
+      "summary": "Apache ActiveMQ Vulnerable to Cross-site Scripting",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 65,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-broker",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41044",
+      "ghsa_id": "GHSA-mr6m-xj7v-3cv3",
+      "severity": "high",
+      "cvss_score": 8.8,
+      "vulnerable_version_range": "< 5.19.6",
+      "first_patched_version": "5.19.6",
+      "summary": "Apache ActiveMQ Vulnerable to Code Injection",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 66,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-22741",
+      "ghsa_id": "GHSA-wg35-8jpf-2xv3",
+      "severity": "low",
+      "cvss_score": 3.1,
+      "vulnerable_version_range": "<= 5.3.47",
+      "first_patched_version": null,
+      "summary": "Spring MVC and WebFlux applications are vulnerable to cache poisoning when resolving static resources.",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 67,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-22745",
+      "ghsa_id": "GHSA-6p4f-wcwh-5vvm",
+      "severity": "medium",
+      "cvss_score": 5.3,
+      "vulnerable_version_range": "<= 5.3.47",
+      "first_patched_version": null,
+      "summary": "Spring MVC and WebFlux applications are vulnerable to Denial of Service attacks when resolving static resources",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 77,
+      "ecosystem": "maven",
+      "package": "org.apache.derby:derby",
+      "manifest_path": "pom.xml",
+      "scope": "development",
+      "cve_id": "CVE-2022-46337",
+      "ghsa_id": "GHSA-rcjc-c4pj-xxrp",
+      "severity": "critical",
+      "cvss_score": 9.8,
+      "vulnerable_version_range": "= 10.14.2.0",
+      "first_patched_version": "10.14.2.1",
+      "summary": "Apache Derby: LDAP injection vulnerability in authenticator",
+      "family_id": "derby",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 78,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-broker",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-42588",
+      "ghsa_id": "GHSA-hg6c-8mvr-jqc9",
+      "severity": "high",
+      "cvss_score": 8.1,
+      "vulnerable_version_range": "< 5.19.7",
+      "first_patched_version": "5.19.7",
+      "summary": "Apache ActiveMQ Broker, Apache ActiveMQ All, Apache ActiveMQ have a Code Injection issue",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 79,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-broker",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-45505",
+      "ghsa_id": "GHSA-v853-w46p-fv2h",
+      "severity": "high",
+      "cvss_score": 8.8,
+      "vulnerable_version_range": "< 5.19.7",
+      "first_patched_version": "5.19.7",
+      "summary": "Apache ActiveMQ Broker, Apache ActiveMQ All, Apache ActiveMQ have a Code Injection issue",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 80,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-broker",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-49270",
+      "ghsa_id": "GHSA-hf52-78x8-6w3w",
+      "severity": "medium",
+      "cvss_score": 5.9,
+      "vulnerable_version_range": "< 5.19.7",
+      "first_patched_version": "5.19.7",
+      "summary": "Apache ActiveMQ Broker, Apache ActiveMQ, Apache ActiveMQ All have an Exposure of Sensitive Information Through Metadata vulnerability",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 85,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41841",
+      "ghsa_id": "GHSA-mq64-j8f9-9gcj",
+      "severity": "medium",
+      "cvss_score": 5.9,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Information Disclosure via Static Resource Cache in Spring MVC and WebFlux",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 86,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41842",
+      "ghsa_id": "GHSA-x23c-287f-qqv5",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Denial of Service via Versioned Resources in Spring MVC and WebFlux",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 87,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41843",
+      "ghsa_id": "GHSA-72pg-x5f8-j25j",
+      "severity": "medium",
+      "cvss_score": 5.9,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Path Traversal via Versioned Static Resources in Spring MVC and WebFlux",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 88,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-expression",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41851",
+      "ghsa_id": "GHSA-wxpp-56q6-5pcg",
+      "severity": "medium",
+      "cvss_score": 5.3,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Denial of Service via Unbounded Cache in SpEL",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 89,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-expression",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41849",
+      "ghsa_id": "GHSA-775g-4xr8-78h8",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Denial of Service via Integer Overflow in SpEL Expressions",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 90,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41845",
+      "ghsa_id": "GHSA-3chg-m5w7-qfv5",
+      "severity": "high",
+      "cvss_score": 7.1,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Cross-site Scripting via JavaScriptUtils",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 91,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41844",
+      "ghsa_id": "GHSA-h3qp-gqrc-q736",
+      "severity": "medium",
+      "cvss_score": 4.2,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Open Redirect in Spring MVC and WebFlux",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 92,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-expression",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41852",
+      "ghsa_id": "GHSA-9f52-rjqv-25qv",
+      "severity": "low",
+      "cvss_score": 3.7,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Arbitrary Method Invocation in SpEL Expressions",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 93,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-expression",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41850",
+      "ghsa_id": "GHSA-r5w3-xv2f-j59q",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Algorithmic Denial of Service via SpEL Expressions",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 94,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-core",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41848",
+      "ghsa_id": "GHSA-659m-px2c-25wj",
+      "severity": "low",
+      "cvss_score": 3.7,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Denial of Service via AntPathMatcher",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 95,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41853",
+      "ghsa_id": "GHSA-cjpg-rgq5-fr37",
+      "severity": "medium",
+      "cvss_score": 5.3,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Multipart Request Smuggling in Spring MVC and WebFlux",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 96,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41846",
+      "ghsa_id": "GHSA-957g-f97v-vppc",
+      "severity": "medium",
+      "cvss_score": 5.9,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Cross-site Scripting via JSP Form Tags",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 112,
+      "ecosystem": "maven",
+      "package": "org.eclipse.jetty.http2:http2-common",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2024-22201",
+      "ghsa_id": "GHSA-rggv-cv7r-mw98",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": ">= 9.3.0, <= 9.4.53",
+      "first_patched_version": "9.4.54",
+      "summary": "Connection leaking on idle timeout when TCP congested",
+      "family_id": "jetty-http2",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes"
+    },
+    {
+      "number": 113,
+      "ecosystem": "maven",
+      "package": "org.eclipse.jetty.http2:http2-common",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2023-44487",
+      "ghsa_id": "GHSA-qppj-fm5r-hxr3",
+      "severity": "medium",
+      "cvss_score": 5.3,
+      "vulnerable_version_range": ">= 9.3.0, < 9.4.53",
+      "first_patched_version": "9.4.53",
+      "summary": "HTTP/2 Stream Cancellation Attack",
+      "family_id": "jetty-http2",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes"
+    },
+    {
+      "number": 114,
+      "ecosystem": "maven",
+      "package": "org.apache.zookeeper:zookeeper",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2024-23944",
+      "ghsa_id": "GHSA-r978-9m6m-6gm6",
+      "severity": "medium",
+      "cvss_score": 5.3,
+      "vulnerable_version_range": ">= 3.6.0, <= 3.7.2",
+      "first_patched_version": null,
+      "summary": "Apache ZooKeeper vulnerable to information disclosure in persistent watchers handling",
+      "family_id": "zookeeper",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes"
+    },
+    {
+      "number": 115,
+      "ecosystem": "maven",
+      "package": "org.eclipse.jetty:jetty-http",
+      "manifest_path": "pom.xml",
+      "scope": "development",
+      "cve_id": "CVE-2024-6763",
+      "ghsa_id": "GHSA-qh8g-58pp-2wxh",
+      "severity": "medium",
+      "cvss_score": 3.7,
+      "vulnerable_version_range": ">= 7.0.0, <= 12.0.11",
+      "first_patched_version": "12.0.12",
+      "summary": "Eclipse Jetty URI parsing of invalid authority",
+      "family_id": "jetty-core-mismatch",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (and Bucket 2: Jetty 9.4 Fork)"
+    },
+    {
+      "number": 119,
+      "ecosystem": "maven",
+      "package": "org.springframework.security:spring-security-crypto",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2025-22228",
+      "ghsa_id": "GHSA-mg83-c7gq-rv5c",
+      "severity": "high",
+      "cvss_score": 7.4,
+      "vulnerable_version_range": ">= 5.8.0, <= 5.8.17",
+      "first_patched_version": "5.8.18",
+      "summary": "Spring Security Does Not Enforce Password Length",
+      "family_id": "spring-security",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 120,
+      "ecosystem": "maven",
+      "package": "commons-configuration:commons-configuration",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2025-46392",
+      "ghsa_id": "GHSA-pvp8-3xj6-8c6x",
+      "severity": "low",
+      "cvss_score": 0.0,
+      "vulnerable_version_range": "<= 1.10",
+      "first_patched_version": null,
+      "summary": "Apache Commons Configuration Uncontrolled Resource Consumption",
+      "family_id": "commons-configuration-1",
+      "triage_bucket": "Bucket 3: Dead Legacy EOL (Replace/Remove)"
+    },
+    {
+      "number": 121,
+      "ecosystem": "maven",
+      "package": "org.eclipse.jetty.http2:http2-common",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2025-5115",
+      "ghsa_id": "GHSA-mmxm-8w33-wc4h",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": ">= 9.3.0, <= 9.4.57",
+      "first_patched_version": "9.4.58",
+      "summary": "Eclipse Jetty affected by MadeYouReset HTTP/2 vulnerability",
+      "family_id": "jetty-http2",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes"
+    },
+    {
+      "number": 122,
+      "ecosystem": "maven",
+      "package": "org.apache.tika:tika-parser-pdf-module",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2025-54988",
+      "ghsa_id": "GHSA-p72g-pv48-7w9x",
+      "severity": "critical",
+      "cvss_score": 9.8,
+      "vulnerable_version_range": ">= 1.13, < 3.2.2",
+      "first_patched_version": "3.2.2",
+      "summary": "Apache Tika XXE Vulnerability via Crafted XFA File Inside a PDF",
+      "family_id": "tika",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 124,
+      "ecosystem": "maven",
+      "package": "org.apache.tika:tika-parser-pdf-module",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2025-66516",
+      "ghsa_id": "GHSA-f58c-gq56-vjjf",
+      "severity": "critical",
+      "cvss_score": 0.0,
+      "vulnerable_version_range": ">= 2.0.0, <= 3.2.1",
+      "first_patched_version": "3.2.2",
+      "summary": "Apache Tika has XXE vulnerability",
+      "family_id": "tika",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 126,
+      "ecosystem": "maven",
+      "package": "org.eclipse.jetty:jetty-http",
+      "manifest_path": "pom.xml",
+      "scope": "development",
+      "cve_id": "CVE-2025-11143",
+      "ghsa_id": "GHSA-wjpw-4j6x-6rwh",
+      "severity": "low",
+      "cvss_score": 3.7,
+      "vulnerable_version_range": ">= 9.4.0, <= 9.4.58",
+      "first_patched_version": null,
+      "summary": "org.eclipse.jetty:jetty-http has different parsing of invalid URIs",
+      "family_id": "jetty-core-mismatch",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (and Bucket 2: Jetty 9.4 Fork)"
+    },
+    {
+      "number": 127,
+      "ecosystem": "maven",
+      "package": "org.springframework.security:spring-security-web",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-22732",
+      "ghsa_id": "GHSA-mf92-479x-3373",
+      "severity": "critical",
+      "cvss_score": 9.1,
+      "vulnerable_version_range": ">= 5.8.0, <= 5.8.16",
+      "first_patched_version": null,
+      "summary": "Spring Security HTTP Headers Are not Written Under Some Conditions",
+      "family_id": "spring-security",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 128,
+      "ecosystem": "maven",
+      "package": "org.eclipse.jetty:jetty-http",
+      "manifest_path": "pom.xml",
+      "scope": "development",
+      "cve_id": "CVE-2026-2332",
+      "ghsa_id": "GHSA-355h-qmc2-wpwf",
+      "severity": "high",
+      "cvss_score": 7.4,
+      "vulnerable_version_range": ">= 9.4.0, <= 9.4.59",
+      "first_patched_version": "9.4.60",
+      "summary": "Jetty has HTTP Request Smuggling via Chunked Extension Quoted-String Parsing",
+      "family_id": "jetty-core-mismatch",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (and Bucket 2: Jetty 9.4 Fork)"
+    },
+    {
+      "number": 131,
+      "ecosystem": "maven",
+      "package": "org.springframework.security:spring-security-core",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-22746",
+      "ghsa_id": "GHSA-vxf7-qj7q-83fh",
+      "severity": "low",
+      "cvss_score": 3.7,
+      "vulnerable_version_range": ">= 5.8.0, <= 5.8.24",
+      "first_patched_version": null,
+      "summary": "Spring Security Vulnerable to User Attribute Enumeration when Using DaoAuthenticationProvider",
+      "family_id": "spring-security",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 144,
+      "ecosystem": "maven",
+      "package": "org.apache.shiro:shiro-core",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-49268",
+      "ghsa_id": "GHSA-x96m-rh44-vgv8",
+      "severity": "high",
+      "cvss_score": 0.0,
+      "vulnerable_version_range": "< 2.2.1",
+      "first_patched_version": "2.2.1",
+      "summary": "Apache Shiro: LDAP DN Injection in DefaultLdapRealm",
+      "family_id": "shiro",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (Unused/Remove) / Fallback Bucket 2"
+    },
+    {
+      "number": 145,
+      "ecosystem": "maven",
+      "package": "org.apache.shiro:shiro-core",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-43827",
+      "ghsa_id": "GHSA-fcvm-3cpj-f9qx",
+      "severity": "medium",
+      "cvss_score": 0.0,
+      "vulnerable_version_range": ">= 1.0.0-incubating, < 2.2.0",
+      "first_patched_version": "2.2.0",
+      "summary": "Apache Shiro has a session fixation vulnerability",
+      "family_id": "shiro",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (Unused/Remove) / Fallback Bucket 2"
+    },
+    {
+      "number": 146,
+      "ecosystem": "maven",
+      "package": "org.apache.shiro:shiro-web",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-43828",
+      "ghsa_id": "GHSA-c6r4-qjmw-cvj2",
+      "severity": "medium",
+      "cvss_score": 0.0,
+      "vulnerable_version_range": ">= 1.0.0-incubating, < 2.2.0",
+      "first_patched_version": "2.2.0",
+      "summary": "Apache Shiro sends sensitive cookies in HTTPS session without 'Secure' attribute",
+      "family_id": "shiro",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (Unused/Remove) / Fallback Bucket 2"
+    },
+    {
+      "number": 147,
+      "ecosystem": "maven",
+      "package": "org.springframework.security:spring-security-web",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-47838",
+      "ghsa_id": "GHSA-293q-567p-wmwq",
+      "severity": "medium",
+      "cvss_score": 6.8,
+      "vulnerable_version_range": ">= 5.8.0, <= 5.8.16",
+      "first_patched_version": null,
+      "summary": "Spring Security Vulnerable to Unauthorized User Impersonation when Using X.509 Client Certificates",
+      "family_id": "spring-security",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 149,
+      "ecosystem": "maven",
+      "package": "org.eclipse.jetty:jetty-security",
+      "manifest_path": "pom.xml",
+      "scope": "development",
+      "cve_id": "CVE-2026-10050",
+      "ghsa_id": "GHSA-2fvj-hgj9-j2gr",
+      "severity": "high",
+      "cvss_score": 0.0,
+      "vulnerable_version_range": ">= 9.4.0.v20161208, <= 9.4.58.v20250814",
+      "first_patched_version": "9.4.63",
+      "summary": "Eclipse Jetty Digest Authentication: ISO-8859-1 lossy encoding allows authentication bypass via character substitution",
+      "family_id": "jetty-core-mismatch",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (and Bucket 2: Jetty 9.4 Fork)"
+    },
+    {
+      "number": 150,
+      "ecosystem": "maven",
+      "package": "org.eclipse.jetty:jetty-server",
+      "manifest_path": "pom.xml",
+      "scope": "development",
+      "cve_id": "CVE-2026-6790",
+      "ghsa_id": "GHSA-7p3p-8qv8-m2vh",
+      "severity": "medium",
+      "cvss_score": 5.3,
+      "vulnerable_version_range": ">= 9.4.0.v20161208, <= 9.4.58.v20250814",
+      "first_patched_version": null,
+      "summary": "Eclipse Jetty: HTTP Authority/Host mismatch",
+      "family_id": "jetty-core-mismatch",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (and Bucket 2: Jetty 9.4 Fork)"
+    },
+    {
+      "number": 151,
+      "ecosystem": "maven",
+      "package": "org.springframework.ldap:spring-ldap-core",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41720",
+      "ghsa_id": "GHSA-jrv5-8w28-4265",
+      "severity": "high",
+      "cvss_score": 7.4,
+      "vulnerable_version_range": "<= 2.4.4",
+      "first_patched_version": null,
+      "summary": "Spring LDAP has Authentication Bypass with Empty Password",
+      "family_id": "spring-ldap",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 152,
+      "ecosystem": "maven",
+      "package": "org.apache.cxf:cxf-core",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-50645",
+      "ghsa_id": "GHSA-ghvc-7hp8-2g2v",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": "< 3.6.12",
+      "first_patched_version": "3.6.12",
+      "summary": "Apache cxf-core: No restriction on attachment headers per message",
+      "family_id": "cxf",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 153,
+      "ecosystem": "maven",
+      "package": "org.springframework.security:spring-security-web",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41706",
+      "ghsa_id": "GHSA-x2r2-rvhq-2mqv",
+      "severity": "medium",
+      "cvss_score": 6.1,
+      "vulnerable_version_range": ">= 5.8.0, <= 5.8.25",
+      "first_patched_version": null,
+      "summary": "Spring Security: Open Redirect via Unvalidated Post-Login Redirect URL Stored in CookieRequestCache",
+      "family_id": "spring-security",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 158,
+      "ecosystem": "maven",
+      "package": "org.bouncycastle:bcprov-jdk18on",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2025-14813",
+      "ghsa_id": "GHSA-574f-3g2m-x479",
+      "severity": "critical",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": ">= 1.59, <= 1.80.1",
+      "first_patched_version": "1.80.2",
+      "summary": "Bouncy Castle for Java GOST 28147 CTR mode reuses keystream after 255 blocks",
+      "family_id": "bouncycastle-jdk18on-dup",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes"
+    },
+    {
+      "number": 159,
+      "ecosystem": "maven",
+      "package": "org.apache.shiro:shiro-core",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-23901",
+      "ghsa_id": "GHSA-c4qc-4q9p-m9q9",
+      "severity": "low",
+      "cvss_score": 0.0,
+      "vulnerable_version_range": "< 2.1.0",
+      "first_patched_version": "2.1.0",
+      "summary": "Apache Shiro Affected by an Observable Timing Discrepancy Vulnerability",
+      "family_id": "shiro",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (Unused/Remove) / Fallback Bucket 2"
+    },
+    {
+      "number": 167,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-jms",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-41855",
+      "ghsa_id": "GHSA-x863-p983-p4f7",
+      "severity": "high",
+      "cvss_score": 8.1,
+      "vulnerable_version_range": "<= 5.3.39",
+      "first_patched_version": null,
+      "summary": "Spring Framework Unsafe Deserialization via Jackson JMS Converters",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 171,
+      "ecosystem": "maven",
+      "package": "org.bouncycastle:bcprov-jdk18on",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-8763",
+      "ghsa_id": "GHSA-9pwp-9qqc-pr26",
+      "severity": "critical",
+      "cvss_score": 9.1,
+      "vulnerable_version_range": "< 1.85",
+      "first_patched_version": "1.85",
+      "summary": "Bouncy Castle: Name Constraints bypass via trailing dot in rfc822Name and URI",
+      "family_id": "bouncycastle-jdk18on-dup",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes"
+    },
+    {
+      "number": 172,
+      "ecosystem": "maven",
+      "package": "org.bouncycastle:bcprov-jdk18on",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-13506",
+      "ghsa_id": "GHSA-qp49-qgx5-5m26",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": "< 1.85",
+      "first_patched_version": "1.85",
+      "summary": "Bouncy Castle: Lazy ASN.1 sequence forcing resets nesting-depth guard",
+      "family_id": "bouncycastle-jdk18on-dup",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes"
+    },
+    {
+      "number": 175,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2024-38819",
+      "ghsa_id": "GHSA-g5vr-rgqm-vf78",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": "<= 5.3.40",
+      "first_patched_version": null,
+      "summary": "Spring Framework Path Traversal vulnerability",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 182,
+      "ecosystem": "maven",
+      "package": "org.springframework:spring-webmvc",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-47884",
+      "ghsa_id": "GHSA-pc63-qcmh-9cmg",
+      "severity": "critical",
+      "cvss_score": 9.8,
+      "vulnerable_version_range": ">= 5.3.0, <= 5.3.49",
+      "first_patched_version": null,
+      "summary": "Spring Framework Improper Path Limitation in XsltView",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 187,
+      "ecosystem": "maven",
+      "package": "org.apache.cxf:cxf-core",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-49875",
+      "ghsa_id": "GHSA-xw5h-cmh3-8j6j",
+      "severity": "critical",
+      "cvss_score": 9.8,
+      "vulnerable_version_range": "< 3.6.12",
+      "first_patched_version": "3.6.12",
+      "summary": "Apache CXF has Improper Restriction of XML External Entity Reference",
+      "family_id": "cxf",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 191,
+      "ecosystem": "maven",
+      "package": "com.google.guava:guava",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-102554",
+      "ghsa_id": "GHSA-xxph-c9ww-hj94",
+      "severity": "high",
+      "cvss_score": 5.9,
+      "vulnerable_version_range": ">= 4.0, <= 33.7.1",
+      "first_patched_version": "33.7.2",
+      "summary": "Google Guava: CompactHashMap/CompactHashSet/MapMakerInternalMap deserialization triggers uncontrolled memory allocation",
+      "family_id": "guava",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes"
+    },
+    {
+      "number": 192,
+      "ecosystem": "maven",
+      "package": "org.apache.shiro:shiro-web",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-56130",
+      "ghsa_id": "GHSA-m8g6-vrr2-x7ff",
+      "severity": "low",
+      "cvss_score": 0.0,
+      "vulnerable_version_range": ">= 1.2.4, < 3.0.0",
+      "first_patched_version": "3.0.0",
+      "summary": "Apache Shiro's \"remember me\" cookie age is not verified on the server.",
+      "family_id": "shiro",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (Unused/Remove) / Fallback Bucket 2"
+    },
+    {
+      "number": 193,
+      "ecosystem": "maven",
+      "package": "org.apache.shiro:shiro-core",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-56130",
+      "ghsa_id": "GHSA-m8g6-vrr2-x7ff",
+      "severity": "low",
+      "cvss_score": 0.0,
+      "vulnerable_version_range": ">= 1.2.4, < 3.0.0",
+      "first_patched_version": "3.0.0",
+      "summary": "Apache Shiro's \"remember me\" cookie age is not verified on the server.",
+      "family_id": "shiro",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (Unused/Remove) / Fallback Bucket 2"
+    },
+    {
+      "number": 194,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-broker",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-49434",
+      "ghsa_id": "GHSA-h5gm-rvw6-2xpx",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": "< 5.19.8",
+      "first_patched_version": "5.19.8",
+      "summary": "Apache ActiveMQ Broker, Apache ActiveMQ, Apache ActiveMQ All have an Improper Input Validation vulnerability",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 195,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-client",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-50734",
+      "ghsa_id": "GHSA-7259-vf48-52q3",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": "< 5.19.8",
+      "first_patched_version": "5.19.8",
+      "summary": "Apache ActiveMQ Client, Apache ActiveMQ, Apache ActiveMQ All has a Memory Allocation with Excessive Size Value vulnerability",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 196,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-broker",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-53917",
+      "ghsa_id": "GHSA-f77w-px59-cqf5",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": "< 5.19.8",
+      "first_patched_version": "5.19.8",
+      "summary": "Apache ActiveMQ, Apache ActiveMQ All, Apache ActiveMQ Client, Apache ActiveMQ Broker have Memory Allocation with Excessive Size Value vulnerability",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 197,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-client",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-53917",
+      "ghsa_id": "GHSA-f77w-px59-cqf5",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": "< 5.19.8",
+      "first_patched_version": "5.19.8",
+      "summary": "Apache ActiveMQ, Apache ActiveMQ All, Apache ActiveMQ Client, Apache ActiveMQ Broker have Memory Allocation with Excessive Size Value vulnerability",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 198,
+      "ecosystem": "maven",
+      "package": "org.apache.activemq:activemq-broker",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-54475",
+      "ghsa_id": "GHSA-mhp6-f224-j2c3",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": "< 5.19.8",
+      "first_patched_version": "5.19.8",
+      "summary": "Apache ActiveMQ Broker, Apache ActiveMQ All, Apache ActiveMQ have a Missing Authorization vulnerability",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates"
+    },
+    {
+      "number": 205,
+      "ecosystem": "maven",
+      "package": "org.bouncycastle:bcprov-jdk18on",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-5598",
+      "ghsa_id": "GHSA-p93r-85wp-75v3",
+      "severity": "high",
+      "cvss_score": 7.5,
+      "vulnerable_version_range": ">= 1.71, < 1.80.2",
+      "first_patched_version": "1.80.2",
+      "summary": "Bouncy Castle Has Covert Timing Channel Vulnerability",
+      "family_id": "bouncycastle-jdk18on-dup",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes"
+    },
+    {
+      "number": 206,
+      "ecosystem": "maven",
+      "package": "org.bouncycastle:bcprov-jdk18on",
+      "manifest_path": "pom.xml",
+      "scope": "runtime",
+      "cve_id": "CVE-2026-0636",
+      "ghsa_id": "GHSA-c3fc-8qff-9hwx",
+      "severity": "medium",
+      "cvss_score": 6.5,
+      "vulnerable_version_range": ">= 1.74, < 1.80.2",
+      "first_patched_version": "1.80.2",
+      "summary": "Bouncy Castle has an LDAP injection",
+      "family_id": "bouncycastle-jdk18on-dup",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes"
+    }
+  ],
+  "dismissed_dependabot_alerts": [
+    {
+      "number": 4,
+      "ecosystem": "npm",
+      "package": "express",
+      "manifest_path": "cui/components/widgel/sample/package.json",
+      "cve_id": "CVE-2024-29041",
+      "ghsa_id": "GHSA-rv95-896h-c2vc",
+      "severity": "medium",
+      "dismissed_reason": "not_used",
+      "dismissed_comment": "Express is a dev dependency of Widgel_Sample (cui/components/widgel/sample/package.json). It's a sample bower app for the widget library, not part of any production webapp."
+    },
+    {
+      "number": 5,
+      "ecosystem": "npm",
+      "package": "express",
+      "manifest_path": "cui/components/widgel/sample/package.json",
+      "cve_id": "CVE-2024-43796",
+      "ghsa_id": "GHSA-qw6h-vgh9-j6wx",
+      "severity": "low",
+      "dismissed_reason": "not_used",
+      "dismissed_comment": "Express is a dev dependency of Widgel_Sample (cui/components/widgel/sample/package.json). It's a sample bower app for the widget library, not part of any production webapp."
+    },
+    {
+      "number": 6,
+      "ecosystem": "npm",
+      "package": "express",
+      "manifest_path": "cui/components/widgel/sample/package.json",
+      "cve_id": "CVE-2024-9266",
+      "ghsa_id": "GHSA-jj78-5fmv-mv28",
+      "severity": "low",
+      "dismissed_reason": "not_used",
+      "dismissed_comment": "Express is a dev dependency of Widgel_Sample (cui/components/widgel/sample/package.json). It's a sample bower app for the widget library, not part of any production webapp."
+    },
+    {
+      "number": 7,
+      "ecosystem": "npm",
+      "package": "express",
+      "manifest_path": "cui/components/widgel/sample/package.json",
+      "cve_id": "CVE-2024-10491",
+      "ghsa_id": "GHSA-cm5g-3pgc-8rg4",
+      "severity": "medium",
+      "dismissed_reason": "not_used",
+      "dismissed_comment": "Express is a dev dependency of Widgel_Sample (cui/components/widgel/sample/package.json). It's a sample bower app for the widget library, not part of any production webapp."
+    },
+    {
+      "number": 23,
+      "ecosystem": "maven",
+      "package": "commons-httpclient:commons-httpclient",
+      "manifest_path": "deliverytiersuite/delivery-tier-suite/DTS-shared-dependencies/pom.xml",
+      "cve_id": "CVE-2012-5783",
+      "ghsa_id": "GHSA-3832-9276-x7gf",
+      "severity": "medium",
+      "dismissed_reason": "tolerable_risk",
+      "dismissed_comment": "Migrated to org.apache.httpcomponents.client5:httpclient5 in PR #88. The legacy commons-httpclient:3.1 artifact is no longer in the dependency graph on main."
+    },
+    {
+      "number": 25,
+      "ecosystem": "maven",
+      "package": "org.apache.jackrabbit:jackrabbit-jcr-commons",
+      "manifest_path": "modules/p13n-api/pom.xml",
+      "cve_id": "CVE-2025-58782",
+      "ghsa_id": "GHSA-cxvc-g8f2-4gmm",
+      "severity": "medium",
+      "dismissed_reason": "not_used",
+      "dismissed_comment": "CVE-2025-58782 fix is in jackrabbit-jcr-commons 2.22.2 which requires Java 11+; no Java 8 patch line exists. Our usage of jackrabbit ValueFactory is limited to safe createValue(String/Long/Double/...) overloads that never hit the vulnerable deserialization path."
+    },
+    {
+      "number": 26,
+      "ecosystem": "npm",
+      "package": "phantomjs",
+      "manifest_path": "modules/perc-tinymce/src/main/resources/META-INF/resources/sys_resources/tinymce/plugins/codemirror/codemirror-4.8/package.json",
+      "cve_id": "CVE-2019-17221",
+      "ghsa_id": "GHSA-x43g-gj9x-838x",
+      "severity": "high",
+      "dismissed_reason": "tolerable_risk",
+      "dismissed_comment": "phantomjs is a CLI binary shipped in install distribution (installServer.xml). No network surface; the CVE-2019-17221 is a local file-read via malicious HTML processed by the headless browser, not a server-accessible path."
+    },
+    {
+      "number": 27,
+      "ecosystem": "maven",
+      "package": "org.apache.jackrabbit:jackrabbit-jcr-commons",
+      "manifest_path": "modules/segmentation-api/pom.xml",
+      "cve_id": "CVE-2025-58782",
+      "ghsa_id": "GHSA-cxvc-g8f2-4gmm",
+      "severity": "medium",
+      "dismissed_reason": "not_used",
+      "dismissed_comment": "CVE-2025-58782 fix is in jackrabbit-jcr-commons 2.22.2 which requires Java 11+; no Java 8 patch line exists. Our usage of jackrabbit ValueFactory is limited to safe createValue(String/Long/Double/...) overloads that never hit the vulnerable deserialization path."
+    },
+    {
+      "number": 100,
+      "ecosystem": "maven",
+      "package": "soap:soap",
+      "manifest_path": "system/pom.xml",
+      "cve_id": "CVE-2022-45378",
+      "ghsa_id": "GHSA-789v-h9hw-38pg",
+      "severity": "critical",
+      "dismissed_reason": "tolerable_risk",
+      "dismissed_comment": "RPCRouterServlet wired in RxServices.war/web.xml but Jetty install removes RxServices entirely (Installer/install.xml:1391). SOAP CVEs only exploitable on legacy JBoss deploys. Apache-SOAP is EOL; should be dropped in follow-up."
+    }
+  ],
+  "osv_active_gavs": {
+    "com.google.guava:guava@33.7.1-jre": {
+      "group_artifact": "com.google.guava:guava",
+      "resolved_version": "33.7.1-jre",
+      "family_id": "guava",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-xxph-c9ww-hj94",
+          "cve_id": "CVE-2026-102554",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "33.7.2"
+          ],
+          "summary": "Google Guava: CompactHashMap/CompactHashSet/MapMakerInternalMap deserialization triggers uncontrolled memory allocation"
+        }
+      ]
+    },
+    "commons-configuration:commons-configuration@1.10": {
+      "group_artifact": "commons-configuration:commons-configuration",
+      "resolved_version": "1.10",
+      "family_id": "commons-configuration-1",
+      "triage_bucket": "Bucket 3: Dead Legacy EOL (Replace/Remove)",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-pvp8-3xj6-8c6x",
+          "cve_id": "CVE-2025-46392",
+          "severity": "LOW",
+          "fixed_versions": [],
+          "summary": "Apache Commons Configuration Uncontrolled Resource Consumption"
+        }
+      ]
+    },
+    "commons-httpclient:commons-httpclient@3.1": {
+      "group_artifact": "commons-httpclient:commons-httpclient",
+      "resolved_version": "3.1",
+      "family_id": "commons-httpclient-3",
+      "triage_bucket": "Bucket 3: Dead Legacy EOL (Replace/Remove)",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-3832-9276-x7gf",
+          "cve_id": "CVE-2012-5783",
+          "severity": "MODERATE",
+          "fixed_versions": [],
+          "summary": "Improper Certificate Validation in Apache Commons HttpClient"
+        }
+      ]
+    },
+    "commons-lang:commons-lang@2.6": {
+      "group_artifact": "commons-lang:commons-lang",
+      "resolved_version": "2.6",
+      "family_id": "commons-lang-2",
+      "triage_bucket": "Bucket 3: Dead Legacy EOL (Replace/Remove)",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-j288-q9x7-2f5v",
+          "cve_id": "CVE-2025-48924",
+          "severity": "MODERATE",
+          "fixed_versions": [],
+          "summary": "Apache Commons Lang is vulnerable to Uncontrolled Recursion when processing long inputs"
+        }
+      ]
+    },
+    "org.apache.activemq:activemq-broker@5.16.8": {
+      "group_artifact": "org.apache.activemq:activemq-broker",
+      "resolved_version": "5.16.8",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 12,
+      "advisories": [
+        {
+          "osv_id": "GHSA-2jp3-2923-9h52",
+          "cve_id": "CVE-2026-41043",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "5.19.6",
+            "6.2.5"
+          ],
+          "summary": "Apache ActiveMQ Vulnerable to Cross-site Scripting"
+        },
+        {
+          "osv_id": "GHSA-5568-6qcg-g7fx",
+          "cve_id": "CVE-2026-39304",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "5.19.4",
+            "6.2.4"
+          ],
+          "summary": " Apache ActiveMQ: Denial of Service via Out of Memory vulnerability"
+        },
+        {
+          "osv_id": "GHSA-f77w-px59-cqf5",
+          "cve_id": "CVE-2026-53917",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "5.19.8",
+            "6.2.7"
+          ],
+          "summary": "Apache ActiveMQ, Apache ActiveMQ All, Apache ActiveMQ Client, Apache ActiveMQ Broker have Memory Allocation with Excessive Size Value vulnerability"
+        },
+        {
+          "osv_id": "GHSA-h2h4-5m64-m273",
+          "cve_id": "CVE-2026-33227",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "5.19.3",
+            "6.2.2"
+          ],
+          "summary": "Apache ActiveMQ: Improper validation and restriction of a classpath path name"
+        },
+        {
+          "osv_id": "GHSA-h5gm-rvw6-2xpx",
+          "cve_id": "CVE-2026-49434",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "5.19.8",
+            "6.2.7"
+          ],
+          "summary": "Apache ActiveMQ Broker, Apache ActiveMQ, Apache ActiveMQ All have an Improper Input Validation vulnerability"
+        },
+        {
+          "osv_id": "GHSA-hf52-78x8-6w3w",
+          "cve_id": "CVE-2026-49270",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "5.19.7",
+            "6.2.6"
+          ],
+          "summary": "Apache ActiveMQ Broker, Apache ActiveMQ, Apache ActiveMQ All have an Exposure of Sensitive Information Through Metadata vulnerability"
+        },
+        {
+          "osv_id": "GHSA-hg6c-8mvr-jqc9",
+          "cve_id": "CVE-2026-42588",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "5.19.7",
+            "6.2.6"
+          ],
+          "summary": "Apache ActiveMQ Broker, Apache ActiveMQ All, Apache ActiveMQ have a Code Injection issue"
+        },
+        {
+          "osv_id": "GHSA-mhp6-f224-j2c3",
+          "cve_id": "CVE-2026-54475",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "5.19.8",
+            "6.2.7"
+          ],
+          "summary": "Apache ActiveMQ Broker, Apache ActiveMQ All, Apache ActiveMQ have a Missing Authorization vulnerability"
+        },
+        {
+          "osv_id": "GHSA-mr6m-xj7v-3cv3",
+          "cve_id": "CVE-2026-41044",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "5.19.6",
+            "6.2.5"
+          ],
+          "summary": "Apache ActiveMQ Vulnerable to Code Injection"
+        },
+        {
+          "osv_id": "GHSA-rxpj-7qvf-xv32",
+          "cve_id": "CVE-2026-34197",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "5.19.5",
+            "6.2.3"
+          ],
+          "summary": "Authenticated Apache ActiveMQ Broker and Apache ActiveMQ users could perform RCE via Jolokia MBeans"
+        },
+        {
+          "osv_id": "GHSA-v853-w46p-fv2h",
+          "cve_id": "CVE-2026-45505",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "5.19.7",
+            "6.2.6"
+          ],
+          "summary": "Apache ActiveMQ Broker, Apache ActiveMQ All, Apache ActiveMQ have a Code Injection issue"
+        },
+        {
+          "osv_id": "GHSA-w3w2-mpp5-92gm",
+          "cve_id": "CVE-2026-40466",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "5.19.6",
+            "6.2.5"
+          ],
+          "summary": "Apache ActiveMQ Vulnerable to Improper Input Validation and Code Injection"
+        }
+      ]
+    },
+    "org.apache.activemq:activemq-client@5.16.8": {
+      "group_artifact": "org.apache.activemq:activemq-client",
+      "resolved_version": "5.16.8",
+      "family_id": "activemq",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 4,
+      "advisories": [
+        {
+          "osv_id": "GHSA-5568-6qcg-g7fx",
+          "cve_id": "CVE-2026-39304",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "5.19.4",
+            "6.2.4"
+          ],
+          "summary": " Apache ActiveMQ: Denial of Service via Out of Memory vulnerability"
+        },
+        {
+          "osv_id": "GHSA-7259-vf48-52q3",
+          "cve_id": "CVE-2026-50734",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "5.19.8",
+            "6.2.7"
+          ],
+          "summary": "Apache ActiveMQ Client, Apache ActiveMQ, Apache ActiveMQ All has a Memory Allocation with Excessive Size Value vulnerability"
+        },
+        {
+          "osv_id": "GHSA-f77w-px59-cqf5",
+          "cve_id": "CVE-2026-53917",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "5.19.8",
+            "6.2.7"
+          ],
+          "summary": "Apache ActiveMQ, Apache ActiveMQ All, Apache ActiveMQ Client, Apache ActiveMQ Broker have Memory Allocation with Excessive Size Value vulnerability"
+        },
+        {
+          "osv_id": "GHSA-h2h4-5m64-m273",
+          "cve_id": "CVE-2026-33227",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "5.19.3",
+            "6.2.2"
+          ],
+          "summary": "Apache ActiveMQ: Improper validation and restriction of a classpath path name"
+        }
+      ]
+    },
+    "org.apache.cxf:cxf-core@3.5.11": {
+      "group_artifact": "org.apache.cxf:cxf-core",
+      "resolved_version": "3.5.11",
+      "family_id": "cxf",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 2,
+      "advisories": [
+        {
+          "osv_id": "GHSA-ghvc-7hp8-2g2v",
+          "cve_id": "CVE-2026-50645",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "3.6.12",
+            "4.1.7",
+            "4.2.2"
+          ],
+          "summary": "Apache cxf-core: No restriction on attachment headers per message"
+        },
+        {
+          "osv_id": "GHSA-xw5h-cmh3-8j6j",
+          "cve_id": "CVE-2026-49875",
+          "severity": "CRITICAL",
+          "fixed_versions": [
+            "3.6.12",
+            "4.1.7",
+            "4.2.2"
+          ],
+          "summary": "Apache CXF has Improper Restriction of XML External Entity Reference"
+        }
+      ]
+    },
+    "org.apache.derby:derby@10.14.2.0": {
+      "group_artifact": "org.apache.derby:derby",
+      "resolved_version": "10.14.2.0",
+      "family_id": "derby",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-rcjc-c4pj-xxrp",
+          "cve_id": "CVE-2022-46337",
+          "severity": "CRITICAL",
+          "fixed_versions": [
+            "10.14.2.1",
+            "10.15.2.1",
+            "10.16.1.2"
+          ],
+          "summary": "Apache Derby: LDAP injection vulnerability in authenticator"
+        }
+      ]
+    },
+    "org.apache.jackrabbit:jackrabbit-jcr-commons@1.6.0": {
+      "group_artifact": "org.apache.jackrabbit:jackrabbit-jcr-commons",
+      "resolved_version": "1.6.0",
+      "family_id": "jackrabbit",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-cxvc-g8f2-4gmm",
+          "cve_id": "CVE-2025-58782",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "2.22.2"
+          ],
+          "summary": "Apache Jackrabbit: Core and JCR Commons are vulnerable to Deserialization of Untrusted Data"
+        }
+      ]
+    },
+    "org.apache.jackrabbit:jackrabbit-jcr-commons@2.20.17": {
+      "group_artifact": "org.apache.jackrabbit:jackrabbit-jcr-commons",
+      "resolved_version": "2.20.17",
+      "family_id": "jackrabbit",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-cxvc-g8f2-4gmm",
+          "cve_id": "CVE-2025-58782",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "2.22.2"
+          ],
+          "summary": "Apache Jackrabbit: Core and JCR Commons are vulnerable to Deserialization of Untrusted Data"
+        }
+      ]
+    },
+    "org.apache.sanselan:sanselan@0.97-incubator": {
+      "group_artifact": "org.apache.sanselan:sanselan",
+      "resolved_version": "0.97-incubator",
+      "family_id": "sanselan",
+      "triage_bucket": "Bucket 3: Dead Legacy EOL (Replace/Remove)",
+      "advisory_count": 2,
+      "advisories": [
+        {
+          "osv_id": "GHSA-g99m-3m46-4gm9",
+          "cve_id": "CVE-2018-17202",
+          "severity": "HIGH",
+          "fixed_versions": [],
+          "summary": "Infinite Loop in Apache Sanselan"
+        },
+        {
+          "osv_id": "GHSA-rjx9-2936-9ffx",
+          "cve_id": "CVE-2018-17201",
+          "severity": "HIGH",
+          "fixed_versions": [],
+          "summary": "Improper Input Validation in Apache Sanselan"
+        }
+      ]
+    },
+    "org.apache.shiro:shiro-core@1.13.0": {
+      "group_artifact": "org.apache.shiro:shiro-core",
+      "resolved_version": "1.13.0",
+      "family_id": "shiro",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (Unused/Remove) / Fallback Bucket 2",
+      "advisory_count": 4,
+      "advisories": [
+        {
+          "osv_id": "GHSA-c4qc-4q9p-m9q9",
+          "cve_id": "CVE-2026-23901",
+          "severity": "LOW",
+          "fixed_versions": [
+            "2.1.0"
+          ],
+          "summary": "Apache Shiro Affected by an Observable Timing Discrepancy Vulnerability"
+        },
+        {
+          "osv_id": "GHSA-fcvm-3cpj-f9qx",
+          "cve_id": "CVE-2026-43827",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "2.2.0",
+            "3.0.0-alpha-2"
+          ],
+          "summary": "Apache Shiro has a session fixation vulnerability"
+        },
+        {
+          "osv_id": "GHSA-m8g6-vrr2-x7ff",
+          "cve_id": "CVE-2026-56130",
+          "severity": "LOW",
+          "fixed_versions": [
+            "3.0.0"
+          ],
+          "summary": "Apache Shiro's \"remember me\" cookie age is not verified on the server."
+        },
+        {
+          "osv_id": "GHSA-x96m-rh44-vgv8",
+          "cve_id": "CVE-2026-49268",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "2.2.1",
+            "3.0.0-alpha-2"
+          ],
+          "summary": "Apache Shiro: LDAP DN Injection in DefaultLdapRealm"
+        }
+      ]
+    },
+    "org.apache.shiro:shiro-web@1.13.0": {
+      "group_artifact": "org.apache.shiro:shiro-web",
+      "resolved_version": "1.13.0",
+      "family_id": "shiro",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (Unused/Remove) / Fallback Bucket 2",
+      "advisory_count": 2,
+      "advisories": [
+        {
+          "osv_id": "GHSA-c6r4-qjmw-cvj2",
+          "cve_id": "CVE-2026-43828",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "2.2.0",
+            "3.0.0-alpha-2"
+          ],
+          "summary": "Apache Shiro sends sensitive cookies in HTTPS session without 'Secure' attribute"
+        },
+        {
+          "osv_id": "GHSA-m8g6-vrr2-x7ff",
+          "cve_id": "CVE-2026-56130",
+          "severity": "LOW",
+          "fixed_versions": [
+            "3.0.0"
+          ],
+          "summary": "Apache Shiro's \"remember me\" cookie age is not verified on the server."
+        }
+      ]
+    },
+    "org.apache.tika:tika-core@2.9.4": {
+      "group_artifact": "org.apache.tika:tika-core",
+      "resolved_version": "2.9.4",
+      "family_id": "tika",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-f58c-gq56-vjjf",
+          "cve_id": "CVE-2025-66516",
+          "severity": "CRITICAL",
+          "fixed_versions": [
+            "3.2.2"
+          ],
+          "summary": "Apache Tika has XXE vulnerability"
+        }
+      ]
+    },
+    "org.apache.tika:tika-parser-pdf-module@2.9.4": {
+      "group_artifact": "org.apache.tika:tika-parser-pdf-module",
+      "resolved_version": "2.9.4",
+      "family_id": "tika",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 2,
+      "advisories": [
+        {
+          "osv_id": "GHSA-f58c-gq56-vjjf",
+          "cve_id": "CVE-2025-66516",
+          "severity": "CRITICAL",
+          "fixed_versions": [
+            "3.2.2"
+          ],
+          "summary": "Apache Tika has XXE vulnerability"
+        },
+        {
+          "osv_id": "GHSA-p72g-pv48-7w9x",
+          "cve_id": "CVE-2025-54988",
+          "severity": "CRITICAL",
+          "fixed_versions": [
+            "3.2.2"
+          ],
+          "summary": "Apache Tika XXE Vulnerability via Crafted XFA File Inside a PDF"
+        }
+      ]
+    },
+    "org.apache.zookeeper:zookeeper@3.7.2": {
+      "group_artifact": "org.apache.zookeeper:zookeeper",
+      "resolved_version": "3.7.2",
+      "family_id": "zookeeper",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-r978-9m6m-6gm6",
+          "cve_id": "CVE-2024-23944",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "3.8.4",
+            "3.9.2"
+          ],
+          "summary": "Apache ZooKeeper vulnerable to information disclosure in persistent watchers handling"
+        }
+      ]
+    },
+    "org.bouncycastle:bcpkix-jdk18on@1.80.2": {
+      "group_artifact": "org.bouncycastle:bcpkix-jdk18on",
+      "resolved_version": "1.80.2",
+      "family_id": "bouncycastle-jdk18on-dup",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-wg6q-6289-32hp",
+          "cve_id": "CVE-2026-5588",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "1.84"
+          ],
+          "summary": "Bouncy Castle Crypto Package For Java: Use of a Broken or Risky Cryptographic Algorithm vulnerability in bcpkix modules"
+        }
+      ]
+    },
+    "org.bouncycastle:bcprov-jdk18on@1.80": {
+      "group_artifact": "org.bouncycastle:bcprov-jdk18on",
+      "resolved_version": "1.80",
+      "family_id": "bouncycastle-jdk18on-dup",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes",
+      "advisory_count": 5,
+      "advisories": [
+        {
+          "osv_id": "GHSA-574f-3g2m-x479",
+          "cve_id": "CVE-2025-14813",
+          "severity": "CRITICAL",
+          "fixed_versions": [
+            "1.80.2",
+            "1.81.1",
+            "1.84"
+          ],
+          "summary": "Bouncy Castle for Java GOST 28147 CTR mode reuses keystream after 255 blocks"
+        },
+        {
+          "osv_id": "GHSA-9pwp-9qqc-pr26",
+          "cve_id": "CVE-2026-8763",
+          "severity": "CRITICAL",
+          "fixed_versions": [
+            "1.85"
+          ],
+          "summary": "Bouncy Castle: Name Constraints bypass via trailing dot in rfc822Name and URI"
+        },
+        {
+          "osv_id": "GHSA-c3fc-8qff-9hwx",
+          "cve_id": "CVE-2026-0636",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "1.80.2",
+            "1.81.1",
+            "1.84"
+          ],
+          "summary": "Bouncy Castle has an LDAP injection"
+        },
+        {
+          "osv_id": "GHSA-p93r-85wp-75v3",
+          "cve_id": "CVE-2026-5598",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "1.80.2",
+            "1.84"
+          ],
+          "summary": "Bouncy Castle Has Covert Timing Channel Vulnerability"
+        },
+        {
+          "osv_id": "GHSA-qp49-qgx5-5m26",
+          "cve_id": "CVE-2026-13506",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "1.85"
+          ],
+          "summary": "Bouncy Castle: Lazy ASN.1 sequence forcing resets nesting-depth guard"
+        }
+      ]
+    },
+    "org.eclipse.jetty.http2:http2-common@9.4.53.v20231009": {
+      "group_artifact": "org.eclipse.jetty.http2:http2-common",
+      "resolved_version": "9.4.53.v20231009",
+      "family_id": "jetty-http2",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes",
+      "advisory_count": 2,
+      "advisories": [
+        {
+          "osv_id": "GHSA-mmxm-8w33-wc4h",
+          "cve_id": "CVE-2025-5115",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "10.0.26",
+            "11.0.26",
+            "9.4.58"
+          ],
+          "summary": "Eclipse Jetty affected by MadeYouReset HTTP/2 vulnerability"
+        },
+        {
+          "osv_id": "GHSA-rggv-cv7r-mw98",
+          "cve_id": "CVE-2024-22201",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "10.0.20",
+            "11.0.20",
+            "9.4.54"
+          ],
+          "summary": "Connection leaking on idle timeout when TCP congested"
+        }
+      ]
+    },
+    "org.eclipse.jetty:jetty-http@9.4.57.v20241219": {
+      "group_artifact": "org.eclipse.jetty:jetty-http",
+      "resolved_version": "9.4.57.v20241219",
+      "family_id": "jetty-core-mismatch",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (and Bucket 2: Jetty 9.4 Fork)",
+      "advisory_count": 3,
+      "advisories": [
+        {
+          "osv_id": "GHSA-355h-qmc2-wpwf",
+          "cve_id": "CVE-2026-2332",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "10.0.28",
+            "11.0.29",
+            "12.0.33",
+            "12.1.7",
+            "9.4.60"
+          ],
+          "summary": "Jetty has HTTP Request Smuggling via Chunked Extension Quoted-String Parsing"
+        },
+        {
+          "osv_id": "GHSA-qh8g-58pp-2wxh",
+          "cve_id": "CVE-2024-6763",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "12.0.12"
+          ],
+          "summary": "Eclipse Jetty URI parsing of invalid authority"
+        },
+        {
+          "osv_id": "GHSA-wjpw-4j6x-6rwh",
+          "cve_id": "CVE-2025-11143",
+          "severity": "LOW",
+          "fixed_versions": [
+            "12.0.31",
+            "12.1.5"
+          ],
+          "summary": "org.eclipse.jetty:jetty-http has different parsing of invalid URIs"
+        }
+      ]
+    },
+    "org.eclipse.jetty:jetty-security@9.4.57.v20241219": {
+      "group_artifact": "org.eclipse.jetty:jetty-security",
+      "resolved_version": "9.4.57.v20241219",
+      "family_id": "jetty-core-mismatch",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (and Bucket 2: Jetty 9.4 Fork)",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-2fvj-hgj9-j2gr",
+          "cve_id": "CVE-2026-10050",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "10.0.31",
+            "11.0.31",
+            "12.0.36",
+            "12.1.10",
+            "9.4.63"
+          ],
+          "summary": "Eclipse Jetty Digest Authentication: ISO-8859-1 lossy encoding allows authentication bypass via character substitution"
+        }
+      ]
+    },
+    "org.eclipse.jetty:jetty-server@9.4.57.v20241219": {
+      "group_artifact": "org.eclipse.jetty:jetty-server",
+      "resolved_version": "9.4.57.v20241219",
+      "family_id": "jetty-core-mismatch",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes (and Bucket 2: Jetty 9.4 Fork)",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-7p3p-8qv8-m2vh",
+          "cve_id": "CVE-2026-6790",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "12.0.35",
+            "12.1.9"
+          ],
+          "summary": "Eclipse Jetty: HTTP Authority/Host mismatch"
+        }
+      ]
+    },
+    "org.glassfish:javax.el@3.0.0": {
+      "group_artifact": "org.glassfish:javax.el",
+      "resolved_version": "3.0.0",
+      "family_id": "javax-el",
+      "triage_bucket": "Bucket 1: Wave 0 Quick Fixes",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-v6w3-2prq-h95f",
+          "cve_id": "CVE-2021-28170",
+          "severity": "MODERATE",
+          "fixed_versions": [],
+          "summary": "Improper Input Validation in Jakarta Expression Language"
+        }
+      ]
+    },
+    "org.springframework.ldap:spring-ldap-core@2.4.4": {
+      "group_artifact": "org.springframework.ldap:spring-ldap-core",
+      "resolved_version": "2.4.4",
+      "family_id": "spring-ldap",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-jrv5-8w28-4265",
+          "cve_id": "CVE-2026-41720",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "3.3.8",
+            "4.0.4"
+          ],
+          "summary": "Spring LDAP has Authentication Bypass with Empty Password"
+        }
+      ]
+    },
+    "org.springframework.security:spring-security-core@5.8.16": {
+      "group_artifact": "org.springframework.security:spring-security-core",
+      "resolved_version": "5.8.16",
+      "family_id": "spring-security",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-vxf7-qj7q-83fh",
+          "cve_id": "CVE-2026-22746",
+          "severity": "LOW",
+          "fixed_versions": [
+            "6.5.10",
+            "7.0.5"
+          ],
+          "summary": "Spring Security Vulnerable to User Attribute Enumeration when Using DaoAuthenticationProvider"
+        }
+      ]
+    },
+    "org.springframework.security:spring-security-crypto@5.8.16": {
+      "group_artifact": "org.springframework.security:spring-security-crypto",
+      "resolved_version": "5.8.16",
+      "family_id": "spring-security",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-mg83-c7gq-rv5c",
+          "cve_id": "CVE-2025-22228",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "5.7.16",
+            "5.8.18",
+            "6.0.16",
+            "6.1.14",
+            "6.2.10",
+            "6.3.8",
+            "6.4.4"
+          ],
+          "summary": "Spring Security Does Not Enforce Password Length"
+        }
+      ]
+    },
+    "org.springframework.security:spring-security-web@5.8.16": {
+      "group_artifact": "org.springframework.security:spring-security-web",
+      "resolved_version": "5.8.16",
+      "family_id": "spring-security",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 3,
+      "advisories": [
+        {
+          "osv_id": "GHSA-293q-567p-wmwq",
+          "cve_id": "CVE-2026-47838",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "6.5.11"
+          ],
+          "summary": "Spring Security Vulnerable to Unauthorized User Impersonation when Using X.509 Client Certificates"
+        },
+        {
+          "osv_id": "GHSA-mf92-479x-3373",
+          "cve_id": "CVE-2026-22732",
+          "severity": "CRITICAL",
+          "fixed_versions": [
+            "6.5.9",
+            "7.0.4"
+          ],
+          "summary": "Spring Security HTTP Headers Are not Written Under Some Conditions"
+        },
+        {
+          "osv_id": "GHSA-x2r2-rvhq-2mqv",
+          "cve_id": "CVE-2026-41706",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "6.5.11",
+            "7.0.6"
+          ],
+          "summary": "Spring Security: Open Redirect via Unvalidated Post-Login Redirect URL Stored in CookieRequestCache"
+        }
+      ]
+    },
+    "org.springframework:spring-context@5.3.39": {
+      "group_artifact": "org.springframework:spring-context",
+      "resolved_version": "5.3.39",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 2,
+      "advisories": [
+        {
+          "osv_id": "GHSA-4gc7-5j7h-4qph",
+          "cve_id": "CVE-2024-38820",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "6.1.14"
+          ],
+          "summary": "Spring Framework DataBinder Case Sensitive Match Exception"
+        },
+        {
+          "osv_id": "GHSA-4wp7-92pw-q264",
+          "cve_id": "CVE-2025-22233",
+          "severity": "LOW",
+          "fixed_versions": [
+            "6.1.20",
+            "6.2.7"
+          ],
+          "summary": "Spring Framework DataBinder Case Sensitive Match Exception"
+        }
+      ]
+    },
+    "org.springframework:spring-core@5.3.39": {
+      "group_artifact": "org.springframework:spring-core",
+      "resolved_version": "5.3.39",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 2,
+      "advisories": [
+        {
+          "osv_id": "GHSA-659m-px2c-25wj",
+          "cve_id": "CVE-2026-41848",
+          "severity": "LOW",
+          "fixed_versions": [
+            "6.2.19",
+            "7.0.8"
+          ],
+          "summary": "Spring Framework Denial of Service via AntPathMatcher"
+        },
+        {
+          "osv_id": "GHSA-jmp9-x22r-554x",
+          "cve_id": "CVE-2025-41249",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "6.2.11"
+          ],
+          "summary": "Spring Framework annotation detection mechanism may result in improper authorization"
+        }
+      ]
+    },
+    "org.springframework:spring-expression@5.3.39": {
+      "group_artifact": "org.springframework:spring-expression",
+      "resolved_version": "5.3.39",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 4,
+      "advisories": [
+        {
+          "osv_id": "GHSA-775g-4xr8-78h8",
+          "cve_id": "CVE-2026-41849",
+          "severity": "HIGH",
+          "fixed_versions": [],
+          "summary": "Spring Framework Denial of Service via Integer Overflow in SpEL Expressions"
+        },
+        {
+          "osv_id": "GHSA-9f52-rjqv-25qv",
+          "cve_id": "CVE-2026-41852",
+          "severity": "LOW",
+          "fixed_versions": [
+            "6.2.19",
+            "7.0.8"
+          ],
+          "summary": "Spring Framework Arbitrary Method Invocation in SpEL Expressions"
+        },
+        {
+          "osv_id": "GHSA-r5w3-xv2f-j59q",
+          "cve_id": "CVE-2026-41850",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "6.2.19",
+            "7.0.8"
+          ],
+          "summary": "Spring Framework Algorithmic Denial of Service via SpEL Expressions"
+        },
+        {
+          "osv_id": "GHSA-wxpp-56q6-5pcg",
+          "cve_id": "CVE-2026-41851",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "6.2.19",
+            "7.0.8"
+          ],
+          "summary": "Spring Framework Denial of Service via Unbounded Cache in SpEL"
+        }
+      ]
+    },
+    "org.springframework:spring-jms@5.3.39": {
+      "group_artifact": "org.springframework:spring-jms",
+      "resolved_version": "5.3.39",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 1,
+      "advisories": [
+        {
+          "osv_id": "GHSA-x863-p983-p4f7",
+          "cve_id": "CVE-2026-41855",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "6.2.19",
+            "7.0.8"
+          ],
+          "summary": "Spring Framework Unsafe Deserialization via Jackson JMS Converters"
+        }
+      ]
+    },
+    "org.springframework:spring-web@5.3.39": {
+      "group_artifact": "org.springframework:spring-web",
+      "resolved_version": "5.3.39",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 2,
+      "advisories": [
+        {
+          "osv_id": "GHSA-4gc7-5j7h-4qph",
+          "cve_id": "CVE-2024-38820",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "6.1.14"
+          ],
+          "summary": "Spring Framework DataBinder Case Sensitive Match Exception"
+        },
+        {
+          "osv_id": "GHSA-4wrc-f8pq-fpqp",
+          "cve_id": "CVE-2016-1000027",
+          "severity": "CRITICAL",
+          "fixed_versions": [
+            "6.0.0"
+          ],
+          "summary": "Pivotal Spring Framework contains unsafe Java deserialization methods"
+        }
+      ]
+    },
+    "org.springframework:spring-webmvc@5.3.39": {
+      "group_artifact": "org.springframework:spring-webmvc",
+      "resolved_version": "5.3.39",
+      "family_id": "spring-framework",
+      "triage_bucket": "Bucket 2: Primary EOL Fork Candidates",
+      "advisory_count": 16,
+      "advisories": [
+        {
+          "osv_id": "GHSA-3chg-m5w7-qfv5",
+          "cve_id": "CVE-2026-41845",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "6.2.19",
+            "7.0.8"
+          ],
+          "summary": "Spring Framework Cross-site Scripting via JavaScriptUtils"
+        },
+        {
+          "osv_id": "GHSA-4773-3jfm-qmx3",
+          "cve_id": "CVE-2026-22737",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "6.2.17",
+            "7.0.6"
+          ],
+          "summary": "Spring Framework Improper Path Limitation with Script View Templates"
+        },
+        {
+          "osv_id": "GHSA-6hcq-hmm3-jj3c",
+          "cve_id": "CVE-2026-22735",
+          "severity": "LOW",
+          "fixed_versions": [
+            "6.2.17",
+            "7.0.6"
+          ],
+          "summary": "Spring MVC and WebFlux has Server Sent Event stream corruption"
+        },
+        {
+          "osv_id": "GHSA-6p4f-wcwh-5vvm",
+          "cve_id": "CVE-2026-22745",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "6.2.18",
+            "7.0.7"
+          ],
+          "summary": "Spring MVC and WebFlux applications are vulnerable to Denial of Service attacks when resolving static resources"
+        },
+        {
+          "osv_id": "GHSA-72pg-x5f8-j25j",
+          "cve_id": "CVE-2026-41843",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "6.2.19",
+            "7.0.8"
+          ],
+          "summary": "Spring Framework Path Traversal via Versioned Static Resources in Spring MVC and WebFlux"
+        },
+        {
+          "osv_id": "GHSA-957g-f97v-vppc",
+          "cve_id": "CVE-2026-41846",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "6.2.19",
+            "7.0.8"
+          ],
+          "summary": "Spring Framework Cross-site Scripting via JSP Form Tags"
+        },
+        {
+          "osv_id": "GHSA-cjpg-rgq5-fr37",
+          "cve_id": "CVE-2026-41853",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "6.2.19",
+            "7.0.8"
+          ],
+          "summary": "Spring Framework Multipart Request Smuggling in Spring MVC and WebFlux"
+        },
+        {
+          "osv_id": "GHSA-cx7f-g6mp-7hqm",
+          "cve_id": "CVE-2024-38816",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "6.1.13"
+          ],
+          "summary": "Path traversal vulnerability in functional web frameworks"
+        },
+        {
+          "osv_id": "GHSA-g5vr-rgqm-vf78",
+          "cve_id": "CVE-2024-38819",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "6.1.14"
+          ],
+          "summary": "Spring Framework Path Traversal vulnerability"
+        },
+        {
+          "osv_id": "GHSA-h3qp-gqrc-q736",
+          "cve_id": "CVE-2026-41844",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "6.2.19",
+            "7.0.8"
+          ],
+          "summary": "Spring Framework Open Redirect in Spring MVC and WebFlux"
+        },
+        {
+          "osv_id": "GHSA-mq64-j8f9-9gcj",
+          "cve_id": "CVE-2026-41841",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "6.2.19",
+            "7.0.8"
+          ],
+          "summary": "Spring Framework Information Disclosure via Static Resource Cache in Spring MVC and WebFlux"
+        },
+        {
+          "osv_id": "GHSA-pc63-qcmh-9cmg",
+          "cve_id": "CVE-2026-47884",
+          "severity": "CRITICAL",
+          "fixed_versions": [
+            "7.0.9"
+          ],
+          "summary": "Spring Framework Improper Path Limitation in XsltView"
+        },
+        {
+          "osv_id": "GHSA-r936-gwx5-v52f",
+          "cve_id": "CVE-2025-41242",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "6.2.10"
+          ],
+          "summary": "Spring Framework MVC Applications Path Traversal Vulnerability"
+        },
+        {
+          "osv_id": "GHSA-w3c8-7r8f-9jp8",
+          "cve_id": "CVE-2024-38828",
+          "severity": "MODERATE",
+          "fixed_versions": [
+            "5.3.42"
+          ],
+          "summary": "Spring MVC controller vulnerable to a DoS attack"
+        },
+        {
+          "osv_id": "GHSA-wg35-8jpf-2xv3",
+          "cve_id": "CVE-2026-22741",
+          "severity": "LOW",
+          "fixed_versions": [
+            "6.2.18",
+            "7.0.7"
+          ],
+          "summary": "Spring MVC and WebFlux applications are vulnerable to cache poisoning when resolving static resources."
+        },
+        {
+          "osv_id": "GHSA-x23c-287f-qqv5",
+          "cve_id": "CVE-2026-41842",
+          "severity": "HIGH",
+          "fixed_versions": [
+            "6.2.19",
+            "7.0.8"
+          ],
+          "summary": "Spring Framework Denial of Service via Versioned Resources in Spring MVC and WebFlux"
+        }
+      ]
+    },
+    "soap:soap@2.3.1": {
+      "group_artifact": "soap:soap",
+      "resolved_version": "2.3.1",
+      "family_id": "apache-soap",
+      "triage_bucket": "Bucket 3: Dead Legacy EOL (Replace/Remove)",
+      "advisory_count": 2,
+      "advisories": [
+        {
+          "osv_id": "GHSA-789v-h9hw-38pg",
+          "cve_id": "CVE-2022-45378",
+          "severity": "CRITICAL",
+          "fixed_versions": [],
+          "summary": "Apache SOAP contains unauthenticated RPCRouterServlet"
+        },
+        {
+          "osv_id": "GHSA-jq8c-j47c-vvwm",
+          "cve_id": "CVE-2022-40705",
+          "severity": "HIGH",
+          "fixed_versions": [],
+          "summary": "Apache SOAP's RPCRouterServlet allows reading of arbitrary files over HTTP"
+        }
+      ]
+    }
+  },
+  "suppression_reconciliation": [
+    {
+      "block_index": 0,
+      "tier": "T2.1",
+      "documented_gav": "org.apache.tika:tika-core@2.9.4",
+      "sbom_current_versions": [
+        "2.9.4"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 13,
+      "sample_cves": [
+        "CVE-2016-4434",
+        "CVE-2016-6809",
+        "CVE-2018-11761",
+        "CVE-2018-11762",
+        "CVE-2018-11796"
+      ]
+    },
+    {
+      "block_index": 1,
+      "tier": "T2.1",
+      "documented_gav": "org.apache.tika:tika-parser-pdf-module@2.9.4",
+      "sbom_current_versions": [
+        "2.9.4"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2025-54988",
+        "CVE-2025-66516"
+      ]
+    },
+    {
+      "block_index": 2,
+      "tier": "T2.2",
+      "documented_gav": "org.apache.activemq:activemq-broker@5.16.8",
+      "sbom_current_versions": [
+        "5.16.8"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 21,
+      "sample_cves": [
+        "BIT-activemq-2026-33227",
+        "BIT-activemq-2026-34197",
+        "BIT-activemq-2026-39304",
+        "BIT-activemq-2026-40466",
+        "BIT-activemq-2026-41043"
+      ]
+    },
+    {
+      "block_index": 3,
+      "tier": "T2.2",
+      "documented_gav": "org.apache.activemq:activemq-client@5.16.8",
+      "sbom_current_versions": [
+        "5.16.8"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 22,
+      "sample_cves": [
+        "BIT-activemq-2023-46604",
+        "BIT-activemq-2025-27533",
+        "BIT-activemq-2026-33227",
+        "BIT-activemq-2026-39304",
+        "CVE-2013-1879"
+      ]
+    },
+    {
+      "block_index": 4,
+      "tier": "T2.2",
+      "documented_gav": "org.apache.activemq:activemq-openwire-legacy@5.16.8",
+      "sbom_current_versions": [
+        "5.16.8"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 4,
+      "sample_cves": [
+        "BIT-activemq-2023-46604",
+        "BIT-activemq-2025-27533",
+        "CVE-2023-46604",
+        "CVE-2025-27533"
+      ]
+    },
+    {
+      "block_index": 5,
+      "tier": "T2.3",
+      "documented_gav": "org.apache.cxf:cxf-core@3.5.11",
+      "sbom_current_versions": [
+        "3.5.11"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 13,
+      "sample_cves": [
+        "CVE-2014-0035",
+        "CVE-2014-0109",
+        "CVE-2014-0110",
+        "CVE-2016-6812",
+        "CVE-2016-8739"
+      ]
+    },
+    {
+      "block_index": 6,
+      "tier": "T2.3",
+      "documented_gav": "org.apache.cxf:cxf-rt-frontend-jaxrs@3.5.11",
+      "sbom_current_versions": [
+        "3.5.11"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 4,
+      "sample_cves": [
+        "CVE-2010-2076",
+        "CVE-2013-0239",
+        "CVE-2013-2160",
+        "CVE-2014-3584"
+      ]
+    },
+    {
+      "block_index": 7,
+      "tier": "T2.3",
+      "documented_gav": "org.apache.cxf:cxf-rt-transports-http@3.5.11",
+      "sbom_current_versions": [
+        "3.5.11"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 3,
+      "sample_cves": [
+        "CVE-2012-5575",
+        "CVE-2018-8039",
+        "CVE-2024-41172"
+      ]
+    },
+    {
+      "block_index": 8,
+      "tier": "T2.4",
+      "documented_gav": "org.springframework:spring-web@5.3.39",
+      "sbom_current_versions": [
+        "5.3.39"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 13,
+      "sample_cves": [
+        "CVE-2013-6429",
+        "CVE-2013-6430",
+        "CVE-2015-3192",
+        "CVE-2016-1000027",
+        "CVE-2018-11039"
+      ]
+    },
+    {
+      "block_index": 9,
+      "tier": "T2.4",
+      "documented_gav": "org.springframework:spring-webmvc@5.3.39",
+      "sbom_current_versions": [
+        "5.3.39"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 25,
+      "sample_cves": [
+        "CVE-2014-0054",
+        "CVE-2014-0225",
+        "CVE-2014-1904",
+        "CVE-2014-3625",
+        "CVE-2016-9878"
+      ]
+    },
+    {
+      "block_index": 10,
+      "tier": "T2.4",
+      "documented_gav": "org.springframework.security:spring-security-crypto@5.8.16",
+      "sbom_current_versions": [
+        "5.8.16"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2025-22228"
+      ]
+    },
+    {
+      "block_index": 11,
+      "tier": "T2.4",
+      "documented_gav": "org.springframework:spring-beans@5.3.39",
+      "sbom_current_versions": [
+        "5.3.39"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2022-22965",
+        "CVE-2022-22970"
+      ]
+    },
+    {
+      "block_index": 12,
+      "tier": "T2.4",
+      "documented_gav": "org.springframework:spring-context@5.3.39",
+      "sbom_current_versions": [
+        "5.3.39"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 3,
+      "sample_cves": [
+        "CVE-2022-22968",
+        "CVE-2024-38820",
+        "CVE-2025-22233"
+      ]
+    },
+    {
+      "block_index": 13,
+      "tier": "T2.4",
+      "documented_gav": "org.springframework:spring-core@5.3.39",
+      "sbom_current_versions": [
+        "5.3.39"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 19,
+      "sample_cves": [
+        "CVE-2009-1190",
+        "CVE-2011-2730",
+        "CVE-2011-2894",
+        "CVE-2014-3578",
+        "CVE-2015-0201"
+      ]
+    },
+    {
+      "block_index": 14,
+      "tier": "T2.4",
+      "documented_gav": "org.springframework:spring-expression@5.3.39",
+      "sbom_current_versions": [
+        "5.3.39"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 8,
+      "sample_cves": [
+        "CVE-2022-22950",
+        "CVE-2023-20861",
+        "CVE-2023-20863",
+        "CVE-2024-38808",
+        "CVE-2026-41849"
+      ]
+    },
+    {
+      "block_index": 15,
+      "tier": "T2.4",
+      "documented_gav": "org.springframework.security:spring-security-config@5.8.16",
+      "sbom_current_versions": [
+        "5.8.16"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 5,
+      "sample_cves": [
+        "CVE-2023-34034",
+        "CVE-2023-34035",
+        "CVE-2023-34042",
+        "CVE-2026-22753",
+        "CVE-2026-22754"
+      ]
+    },
+    {
+      "block_index": 16,
+      "tier": "T2.4",
+      "documented_gav": "org.springframework.security:spring-security-core@5.8.16",
+      "sbom_current_versions": [
+        "5.8.16"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 31,
+      "sample_cves": [
+        "CVE-2010-3700",
+        "CVE-2011-2731",
+        "CVE-2011-2732",
+        "CVE-2011-2894",
+        "CVE-2012-5055"
+      ]
+    },
+    {
+      "block_index": 17,
+      "tier": "T2.4",
+      "documented_gav": "org.springframework.security:spring-security-web@5.8.16",
+      "sbom_current_versions": [
+        "5.8.16"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 7,
+      "sample_cves": [
+        "CVE-2021-22112",
+        "CVE-2022-22978",
+        "CVE-2024-38821",
+        "CVE-2026-22732",
+        "CVE-2026-22747"
+      ]
+    },
+    {
+      "block_index": 18,
+      "tier": "T2.5",
+      "documented_gav": "com.thoughtworks.xstream:xstream@1.4.21",
+      "sbom_current_versions": [
+        "1.4.21"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 50,
+      "sample_cves": [
+        "BIT-activemq-2020-26217",
+        "BIT-activemq-2021-21341",
+        "BIT-activemq-2021-21342",
+        "BIT-activemq-2021-21343",
+        "BIT-activemq-2021-21344"
+      ]
+    },
+    {
+      "block_index": 19,
+      "tier": "T2.6",
+      "documented_gav": "commons-beanutils:commons-beanutils@1.11.0",
+      "sbom_current_versions": [
+        "1.11.0"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 3,
+      "sample_cves": [
+        "CVE-2014-0114",
+        "CVE-2019-10086",
+        "CVE-2025-48734"
+      ]
+    },
+    {
+      "block_index": 20,
+      "tier": "T2.6",
+      "documented_gav": "commons-collections:commons-collections@3.2.2",
+      "sbom_current_versions": [
+        "3.2.2"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2015-6420",
+        "CVE-2015-7501"
+      ]
+    },
+    {
+      "block_index": 21,
+      "tier": "T2.6",
+      "documented_gav": "org.apache.commons:commons-compress@1.28.0",
+      "sbom_current_versions": [
+        "1.28.0"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 11,
+      "sample_cves": [
+        "CVE-2012-2098",
+        "CVE-2018-11771",
+        "CVE-2018-1324",
+        "CVE-2019-12402",
+        "CVE-2021-35515"
+      ]
+    },
+    {
+      "block_index": 22,
+      "tier": "T2.6",
+      "documented_gav": "commons-configuration:commons-configuration@1.10",
+      "sbom_current_versions": [
+        "1.10"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2025-46392"
+      ]
+    },
+    {
+      "block_index": 23,
+      "tier": "T2.6",
+      "documented_gav": "org.apache.commons:commons-email@1.6.0",
+      "sbom_current_versions": [
+        "1.6.0"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2017-9801",
+        "CVE-2018-1294"
+      ]
+    },
+    {
+      "block_index": 24,
+      "tier": "T2.6",
+      "documented_gav": "commons-fileupload:commons-fileupload@1.6.0",
+      "sbom_current_versions": [
+        "1.6.0"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 7,
+      "sample_cves": [
+        "CVE-2013-0248",
+        "CVE-2013-2186",
+        "CVE-2014-0050",
+        "CVE-2016-1000031",
+        "CVE-2016-3092"
+      ]
+    },
+    {
+      "block_index": 25,
+      "tier": "T2.6",
+      "documented_gav": "commons-httpclient:commons-httpclient@3.1",
+      "sbom_current_versions": [
+        "3.1"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2012-5783"
+      ]
+    },
+    {
+      "block_index": 26,
+      "tier": "T2.6",
+      "documented_gav": "commons-io:commons-io@2.21.0",
+      "sbom_current_versions": [
+        "2.21.0"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2021-29425",
+        "CVE-2024-47554"
+      ]
+    },
+    {
+      "block_index": 27,
+      "tier": "T2.6",
+      "documented_gav": "commons-lang:commons-lang@2.6",
+      "sbom_current_versions": [
+        "2.6"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2025-48924"
+      ]
+    },
+    {
+      "block_index": 28,
+      "tier": "T2.6",
+      "documented_gav": "org.apache.commons:commons-collections4@4.5.0",
+      "sbom_current_versions": [
+        "4.5.0"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2015-6420",
+        "CVE-2015-7501"
+      ]
+    },
+    {
+      "block_index": 29,
+      "tier": "T2.6",
+      "documented_gav": "org.apache.commons:commons-lang3@3.20.0",
+      "sbom_current_versions": [
+        "3.20.0"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2025-48924"
+      ]
+    },
+    {
+      "block_index": 30,
+      "tier": "T2.6",
+      "documented_gav": "org.apache.commons:commons-text@1.15.0",
+      "sbom_current_versions": [
+        "1.15.0"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2022-42889"
+      ]
+    },
+    {
+      "block_index": 31,
+      "tier": "T2.7",
+      "documented_gav": "org.apache.tomcat:tomcat-juli@9.0.118",
+      "sbom_current_versions": [
+        "9.0.121"
+      ],
+      "status": "VERSION_CHANGED_IN_SBOM",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2007-5342"
+      ]
+    },
+    {
+      "block_index": 32,
+      "tier": "T2.7",
+      "documented_gav": "org.apache.tomcat:tomcat-servlet-api@9.0.118",
+      "sbom_current_versions": [
+        "9.0.121"
+      ],
+      "status": "VERSION_CHANGED_IN_SBOM",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2001-0590"
+      ]
+    },
+    {
+      "block_index": 33,
+      "tier": "T2.8",
+      "documented_gav": "org.apache.logging.log4j:log4j-1.2-api@2.25.3",
+      "sbom_current_versions": [
+        "2.26.1"
+      ],
+      "status": "VERSION_CHANGED_IN_SBOM",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2026-34479"
+      ]
+    },
+    {
+      "block_index": 34,
+      "tier": "T2.8",
+      "documented_gav": "org.apache.logging.log4j:log4j-api@2.25.3",
+      "sbom_current_versions": [
+        "2.26.1"
+      ],
+      "status": "VERSION_CHANGED_IN_SBOM",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2026-49844"
+      ]
+    },
+    {
+      "block_index": 35,
+      "tier": "T2.8",
+      "documented_gav": "org.apache.logging.log4j:log4j-core@2.25.3",
+      "sbom_current_versions": [
+        "2.26.1"
+      ],
+      "status": "VERSION_CHANGED_IN_SBOM",
+      "suppressed_cve_count": 11,
+      "sample_cves": [
+        "CVE-2017-5645",
+        "CVE-2020-9488",
+        "CVE-2021-44228",
+        "CVE-2021-44832",
+        "CVE-2021-45046"
+      ]
+    },
+    {
+      "block_index": 36,
+      "tier": "T2.9",
+      "documented_gav": "org.apache.pdfbox:pdfbox@2.0.31",
+      "sbom_current_versions": [
+        "2.0.31"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 8,
+      "sample_cves": [
+        "CVE-2016-2175",
+        "CVE-2018-11797",
+        "CVE-2018-8036",
+        "CVE-2019-0228",
+        "CVE-2021-27807"
+      ]
+    },
+    {
+      "block_index": 37,
+      "tier": "T2.10",
+      "documented_gav": "org.apache.poi:poi@5.2.2",
+      "sbom_current_versions": [
+        "5.4.0"
+      ],
+      "status": "VERSION_CHANGED_IN_SBOM",
+      "suppressed_cve_count": 7,
+      "sample_cves": [
+        "CVE-2012-0213",
+        "CVE-2014-3529",
+        "CVE-2014-3574",
+        "CVE-2014-9527",
+        "CVE-2017-12626"
+      ]
+    },
+    {
+      "block_index": 38,
+      "tier": "T2.10",
+      "documented_gav": "org.apache.poi:poi-scratchpad@5.2.2",
+      "sbom_current_versions": [
+        "5.4.0"
+      ],
+      "status": "VERSION_CHANGED_IN_SBOM",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2012-0213",
+        "CVE-2022-26336"
+      ]
+    },
+    {
+      "block_index": 39,
+      "tier": "T2.11",
+      "documented_gav": "org.yaml:snakeyaml@2.6",
+      "sbom_current_versions": [
+        "2.6"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 8,
+      "sample_cves": [
+        "CVE-2017-18640",
+        "CVE-2022-1471",
+        "CVE-2022-25857",
+        "CVE-2022-38749",
+        "CVE-2022-38750"
+      ]
+    },
+    {
+      "block_index": 40,
+      "tier": "T2.12",
+      "documented_gav": "xerces:xercesImpl@2.12.2",
+      "sbom_current_versions": [
+        "2.12.2"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 5,
+      "sample_cves": [
+        "CVE-2009-2625",
+        "CVE-2012-0881",
+        "CVE-2013-4002",
+        "CVE-2020-14338",
+        "CVE-2022-23437"
+      ]
+    },
+    {
+      "block_index": 41,
+      "tier": "T2.13",
+      "documented_gav": "org.eclipse.jetty:jetty-util@9.4.58.v20250814",
+      "sbom_current_versions": [
+        "9.4.57.v20241219"
+      ],
+      "status": "VERSION_CHANGED_IN_SBOM",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2026-8384"
+      ]
+    },
+    {
+      "block_index": 42,
+      "tier": "T2.13",
+      "documented_gav": "org.eclipse.jetty:jetty-server@9.4.58.v20250814",
+      "sbom_current_versions": [
+        "9.4.57.v20241219"
+      ],
+      "status": "VERSION_CHANGED_IN_SBOM",
+      "suppressed_cve_count": 35,
+      "sample_cves": [
+        "BIT-jenkins-2021-28165",
+        "BIT-kafka-2020-27218",
+        "BIT-nifi-2020-27223",
+        "BIT-solr-2020-27223",
+        "BIT-spark-2020-27218"
+      ]
+    },
+    {
+      "block_index": 43,
+      "tier": "T2.14",
+      "documented_gav": "org.hibernate:hibernate-core@5.6.15.Final",
+      "sbom_current_versions": [
+        "5.6.15.Final"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 3,
+      "sample_cves": [
+        "CVE-2019-14900",
+        "CVE-2020-25638",
+        "CVE-2026-0603"
+      ]
+    },
+    {
+      "block_index": 44,
+      "tier": "T2.14",
+      "documented_gav": "org.hibernate.validator:hibernate-validator@6.2.5.Final",
+      "sbom_current_versions": [
+        "6.2.5.Final"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 4,
+      "sample_cves": [
+        "CVE-2019-10219",
+        "CVE-2020-10693",
+        "CVE-2023-1932",
+        "CVE-2025-35036"
+      ]
+    },
+    {
+      "block_index": 45,
+      "tier": "T2.15",
+      "documented_gav": "org.apache.myfaces.core:myfaces-impl@2.3.11",
+      "sbom_current_versions": [
+        "2.3.11"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2010-2057",
+        "CVE-2011-4367"
+      ]
+    },
+    {
+      "block_index": 46,
+      "tier": "T2.16",
+      "documented_gav": "org.owasp.antisamy:antisamy@1.7.8",
+      "sbom_current_versions": [
+        "1.7.8"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 7,
+      "sample_cves": [
+        "CVE-2016-10006",
+        "CVE-2017-14735",
+        "CVE-2021-35043",
+        "CVE-2022-28367",
+        "CVE-2022-29577"
+      ]
+    },
+    {
+      "block_index": 47,
+      "tier": "T2.16",
+      "documented_gav": "org.owasp.esapi:esapi@2.7.0.0",
+      "sbom_current_versions": [
+        "2.7.0.0"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 5,
+      "sample_cves": [
+        "CVE-2010-3300",
+        "CVE-2013-5679",
+        "CVE-2013-5960",
+        "CVE-2022-23457",
+        "CVE-2022-24891"
+      ]
+    },
+    {
+      "block_index": 48,
+      "tier": "T2.17",
+      "documented_gav": "axis:axis@1.4.2",
+      "sbom_current_versions": [
+        "1.4.2"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 6,
+      "sample_cves": [
+        "CVE-2012-5784",
+        "CVE-2014-3596",
+        "CVE-2018-8032",
+        "CVE-2019-0227",
+        "CVE-2023-40743"
+      ]
+    },
+    {
+      "block_index": 49,
+      "tier": "T2.17",
+      "documented_gav": "org.apache.axis:axis@1.4.1-SNAPSHOT",
+      "sbom_current_versions": [],
+      "status": "REMOVED_FROM_SBOM",
+      "suppressed_cve_count": 7,
+      "sample_cves": [
+        "CVE-2007-2353",
+        "CVE-2012-5784",
+        "CVE-2014-3596",
+        "CVE-2018-8032",
+        "CVE-2019-0227"
+      ]
+    },
+    {
+      "block_index": 50,
+      "tier": "T2.17",
+      "documented_gav": "org.jasypt:jasypt@1.9.3",
+      "sbom_current_versions": [],
+      "status": "REMOVED_FROM_SBOM",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2014-9970"
+      ]
+    },
+    {
+      "block_index": 51,
+      "tier": "T2.17",
+      "documented_gav": "org.codehaus.jettison:jettison@1.5.4",
+      "sbom_current_versions": [],
+      "status": "REMOVED_FROM_SBOM",
+      "suppressed_cve_count": 5,
+      "sample_cves": [
+        "CVE-2022-40149",
+        "CVE-2022-40150",
+        "CVE-2022-45685",
+        "CVE-2022-45693",
+        "CVE-2023-1436"
+      ]
+    },
+    {
+      "block_index": 52,
+      "tier": "T2.17",
+      "documented_gav": "net.sf.json-lib:json-lib@2.4",
+      "sbom_current_versions": [],
+      "status": "REMOVED_FROM_SBOM",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2024-47855"
+      ]
+    },
+    {
+      "block_index": 53,
+      "tier": "T2.17",
+      "documented_gav": "org.apache-extras.beanshell:bsh@2.0b6",
+      "sbom_current_versions": [
+        "2.0b6"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2016-2510"
+      ]
+    },
+    {
+      "block_index": 54,
+      "tier": "T2.17",
+      "documented_gav": "org.mozilla:rhino@1.7.15.1",
+      "sbom_current_versions": [],
+      "status": "REMOVED_FROM_SBOM",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2025-66453"
+      ]
+    },
+    {
+      "block_index": 55,
+      "tier": "T2.17",
+      "documented_gav": "soap:soap@2.3.1",
+      "sbom_current_versions": [
+        "2.3.1"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2022-40705",
+        "CVE-2022-45378"
+      ]
+    },
+    {
+      "block_index": 56,
+      "tier": "T2.17",
+      "documented_gav": "org.apache.sanselan:sanselan@0.97-incubator",
+      "sbom_current_versions": [
+        "0.97-incubator"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2018-17201",
+        "CVE-2018-17202"
+      ]
+    },
+    {
+      "block_index": 57,
+      "tier": "T2.19",
+      "documented_gav": "org.springframework.ldap:spring-ldap-core@2.4.4",
+      "sbom_current_versions": [
+        "2.4.4"
+      ],
+      "status": "PRESENT_SAME_VERSION",
+      "suppressed_cve_count": 3,
+      "sample_cves": [
+        "CVE-2017-8028",
+        "CVE-2024-38829",
+        "CVE-2026-41720"
+      ]
+    },
+    {
+      "block_index": 58,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2026-3505"
+      ]
+    },
+    {
+      "block_index": 59,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 3,
+      "sample_cves": [
+        "CVE-2023-33202",
+        "CVE-2025-8916",
+        "CVE-2026-5588"
+      ]
+    },
+    {
+      "block_index": 60,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 10,
+      "sample_cves": [
+        "CVE-2023-33201",
+        "CVE-2023-33202",
+        "CVE-2024-29857",
+        "CVE-2024-30171",
+        "CVE-2024-30172"
+      ]
+    },
+    {
+      "block_index": 61,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2025-58782"
+      ]
+    },
+    {
+      "block_index": 62,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 12,
+      "sample_cves": [
+        "CVE-2016-4437",
+        "CVE-2019-12422",
+        "CVE-2020-11989",
+        "CVE-2020-13933",
+        "CVE-2020-1957"
+      ]
+    },
+    {
+      "block_index": 63,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 5,
+      "sample_cves": [
+        "CVE-2016-6802",
+        "CVE-2020-17523",
+        "CVE-2023-34478",
+        "CVE-2023-46750",
+        "CVE-2026-43828"
+      ]
+    },
+    {
+      "block_index": 64,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 6,
+      "sample_cves": [
+        "BIT-gradle-2020-11979",
+        "CVE-2020-11979",
+        "CVE-2020-1945",
+        "CVE-2021-36373",
+        "CVE-2021-36374"
+      ]
+    },
+    {
+      "block_index": 65,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2024-21742"
+      ]
+    },
+    {
+      "block_index": 66,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2022-31159"
+      ]
+    },
+    {
+      "block_index": 67,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 4,
+      "sample_cves": [
+        "CVE-2024-29857",
+        "CVE-2024-30171",
+        "CVE-2024-30172",
+        "CVE-2025-8885"
+      ]
+    },
+    {
+      "block_index": 68,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2021-47621"
+      ]
+    },
+    {
+      "block_index": 69,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2021-37533"
+      ]
+    },
+    {
+      "block_index": 70,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2021-28490"
+      ]
+    },
+    {
+      "block_index": 71,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2016-15026"
+      ]
+    },
+    {
+      "block_index": 72,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2018-1000632",
+        "CVE-2020-10683"
+      ]
+    },
+    {
+      "block_index": 73,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2017-5661"
+      ]
+    },
+    {
+      "block_index": 74,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2024-28168"
+      ]
+    },
+    {
+      "block_index": 75,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 3,
+      "sample_cves": [
+        "CVE-2020-7692",
+        "CVE-2021-22573",
+        "SNYK-JAVA-COMGOOGLEOAUTHCLIENT-575276"
+      ]
+    },
+    {
+      "block_index": 76,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2025-55163"
+      ]
+    },
+    {
+      "block_index": 77,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 6,
+      "sample_cves": [
+        "CVE-2023-1428",
+        "CVE-2023-32731",
+        "CVE-2023-32732",
+        "PYSEC-2026-1425",
+        "PYSEC-2026-1426"
+      ]
+    },
+    {
+      "block_index": 78,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2022-25647",
+        "SNYK-JAVA-COMGOOGLECODEGSON-1730327"
+      ]
+    },
+    {
+      "block_index": 79,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 4,
+      "sample_cves": [
+        "CVE-2018-10237",
+        "CVE-2020-8908",
+        "CVE-2023-2976",
+        "SNYK-JAVA-COMGOOGLEGUAVA-1015415"
+      ]
+    },
+    {
+      "block_index": 80,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "BIT-jenkins-2023-36478",
+        "CVE-2023-36478"
+      ]
+    },
+    {
+      "block_index": 81,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 6,
+      "sample_cves": [
+        "CVE-2011-1498",
+        "CVE-2012-6153",
+        "CVE-2013-4366",
+        "CVE-2014-3577",
+        "CVE-2015-5262"
+      ]
+    },
+    {
+      "block_index": 82,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 6,
+      "sample_cves": [
+        "CVE-2011-1498",
+        "CVE-2012-6153",
+        "CVE-2013-4366",
+        "CVE-2014-3577",
+        "CVE-2015-5262"
+      ]
+    },
+    {
+      "block_index": 83,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2021-23792"
+      ]
+    },
+    {
+      "block_index": 84,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2020-28491"
+      ]
+    },
+    {
+      "block_index": 85,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2016-3720",
+        "CVE-2016-7051"
+      ]
+    },
+    {
+      "block_index": 86,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2018-1000873"
+      ]
+    },
+    {
+      "block_index": 87,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2021-28170"
+      ]
+    },
+    {
+      "block_index": 88,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "BIT-solr-2021-33813",
+        "CVE-2021-33813"
+      ]
+    },
+    {
+      "block_index": 89,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2016-5725"
+      ]
+    },
+    {
+      "block_index": 90,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2022-45688",
+        "CVE-2023-5072"
+      ]
+    },
+    {
+      "block_index": 91,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 4,
+      "sample_cves": [
+        "CVE-2015-6748",
+        "CVE-2021-37714",
+        "CVE-2022-36033",
+        "CVE-2026-71497"
+      ]
+    },
+    {
+      "block_index": 92,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2020-15250"
+      ]
+    },
+    {
+      "block_index": 93,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2022-24613",
+        "CVE-2022-24614"
+      ]
+    },
+    {
+      "block_index": 94,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2026-42577"
+      ]
+    },
+    {
+      "block_index": 95,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2020-11988"
+      ]
+    },
+    {
+      "block_index": 96,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 5,
+      "sample_cves": [
+        "CVE-2021-22569",
+        "CVE-2022-3171",
+        "CVE-2022-3509",
+        "CVE-2022-3510",
+        "CVE-2024-7254"
+      ]
+    },
+    {
+      "block_index": 97,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2019-13990"
+      ]
+    },
+    {
+      "block_index": 98,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2017-1000190"
+      ]
+    },
+    {
+      "block_index": 99,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 4,
+      "sample_cves": [
+        "BIT-solr-2020-13957",
+        "BIT-solr-2023-50298",
+        "CVE-2020-13957",
+        "CVE-2023-50298"
+      ]
+    },
+    {
+      "block_index": 100,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 3,
+      "sample_cves": [
+        "CVE-2018-1270",
+        "CVE-2018-1275",
+        "CVE-2022-22971"
+      ]
+    },
+    {
+      "block_index": 101,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2013-4152",
+        "CVE-2013-7315"
+      ]
+    },
+    {
+      "block_index": 102,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "CVE-2018-25031",
+        "CVE-2019-17495"
+      ]
+    },
+    {
+      "block_index": 103,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2022-40152"
+      ]
+    },
+    {
+      "block_index": 104,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2021-23926"
+      ]
+    },
+    {
+      "block_index": 105,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2016-4216"
+      ]
+    },
+    {
+      "block_index": 106,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2025-12383"
+      ]
+    },
+    {
+      "block_index": 107,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2021-28168"
+      ]
+    },
+    {
+      "block_index": 108,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2022-0839"
+      ]
+    },
+    {
+      "block_index": 109,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2025-59250"
+      ]
+    },
+    {
+      "block_index": 110,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2025-59250"
+      ]
+    },
+    {
+      "block_index": 111,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2023-22102"
+      ]
+    },
+    {
+      "block_index": 112,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2023-32697"
+      ]
+    },
+    {
+      "block_index": 113,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 19,
+      "sample_cves": [
+        "BIT-apisix-2023-44487",
+        "BIT-aspnet-core-2023-44487",
+        "BIT-contour-2023-44487",
+        "BIT-dotnet-2023-44487",
+        "BIT-dotnet-sdk-2023-44487"
+      ]
+    },
+    {
+      "block_index": 114,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 2,
+      "sample_cves": [
+        "BIT-jenkins-2023-36478",
+        "CVE-2023-36478"
+      ]
+    },
+    {
+      "block_index": 115,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 19,
+      "sample_cves": [
+        "BIT-apisix-2023-44487",
+        "BIT-aspnet-core-2023-44487",
+        "BIT-contour-2023-44487",
+        "BIT-dotnet-2023-44487",
+        "BIT-dotnet-sdk-2023-44487"
+      ]
+    },
+    {
+      "block_index": 116,
+      "tier": "T2.20",
+      "documented_gav": "case-by-case",
+      "sbom_current_versions": [],
+      "status": "T2_20_CATCH_ALL_BLOCK",
+      "suppressed_cve_count": 1,
+      "sample_cves": [
+        "CVE-2015-0254"
+      ]
+    }
+  ]
+}
