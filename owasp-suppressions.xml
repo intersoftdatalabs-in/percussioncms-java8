@@ -340,7 +340,7 @@
     <!--
         T2.6: Apache Commons hardening.
 
-        GAVs in scope: 12 | CVEs in scope: 34 (Tier 2 0 + Tier 3 34)
+        GAVs in scope: 11 | CVEs in scope: 33 (Tier 2 0 + Tier 3 33)
     -->
 
     <suppress>
@@ -403,13 +403,6 @@
         <cve>CVE-2016-3092</cve>
         <cve>CVE-2023-24998</cve>
         <cve>CVE-2025-48976</cve>
-    </suppress>
-
-    <suppress>
-        <notes><![CDATA[
-             T2.6 (Tier 3) hardening (epic #73). Apache Commons hardening. commons-fileupload 1.6.0 size + count caps (PR #83, #90, #173 issues #89, #172). commons-compress 1.28.0 archive-path validation including ZipSlipGuard (PR #175, issue #174). commons-collections 3.2.2 JVM-startup deserialization lockdown via a system-class-property gate (PR #177, issue #176). EOL migrations: commons-lang 2.6 -> commons-lang3 3.20.0 (PR #85, issue #84); commons-collections 3.2.2 -> commons-collections4 4.5.0 (PR #87, issue #86). commons-beanutils 1.11.0 class-injection guard (PR #110, issue #109). commons-text 1.15.0 + commons-io 2.21.0 + commons-email 1.6.0 + commons-httpclient 3.1 + commons-configuration 1.10 are addressed by caller-side validation; see SECURITY-MITIGATIONS.md. GAV commons-httpclient:commons-httpclient@3.1 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.6 entry.
-        ]]></notes>
-        <cve>CVE-2012-5783</cve>
     </suppress>
 
     <suppress>
@@ -701,9 +694,9 @@
     </suppress>
 
     <!--
-        T2.17: Library replacements for EOL dependencies. (Pruned removed GAVs in Wave 0 #292.)
+        T2.17: Library replacements for EOL dependencies. (Pruned removed GAVs in Wave 0 #292 and Wave 2 #310.)
 
-        GAVs in scope: 3 | CVEs in scope: 9 (Tier 2 0 + Tier 3 9)
+        GAVs in scope: 2 | CVEs in scope: 7 (Tier 2 0 + Tier 3 7)
     -->
 
     <suppress>
@@ -723,14 +716,6 @@
              T2.17 (Tier 3) hardening (epic #73). Library replacements for EOL dependencies. jasypt 1.9.3 replaced with Spring Security Crypto (PR #120, #122, issues #119, #121). json-lib 2.4 fully removed across 5 PRs (#140, #142, #144, #146, #148, #150, issues #139, #141, #143, #145, #147, #149). jettison 1.5.4 migrated to Jackson (#112, #126, issues #111, #125). jtds 1.3.1 replaced with mssql-jdbc (#179, issue #178). rhino 1.7.15.1 replaced with Nashorn (#185, issue #184). sanselan 0.97-incubator replaced with a clean Java shim (#189, issue #186). bsh + axis + soap + shindig: see docs/SECURITY-MITIGATIONS.md T2.17 catch-all. GAV org.apache-extras.beanshell:bsh@2.0b6 (HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.17 entry.
         ]]></notes>
         <cve>CVE-2016-2510</cve>
-    </suppress>
-
-    <suppress>
-        <notes><![CDATA[
-             T2.17 (Tier 3) hardening (epic #73). Library replacements for EOL dependencies. jasypt 1.9.3 replaced with Spring Security Crypto (PR #120, #122, issues #119, #121). json-lib 2.4 fully removed across 5 PRs (#140, #142, #144, #146, #148, #150, issues #139, #141, #143, #145, #147, #149). jettison 1.5.4 migrated to Jackson (#112, #126, issues #111, #125). jtds 1.3.1 replaced with mssql-jdbc (#179, issue #178). rhino 1.7.15.1 replaced with Nashorn (#185, issue #184). sanselan 0.97-incubator replaced with a clean Java shim (#189, issue #186). bsh + axis + soap + shindig: see docs/SECURITY-MITIGATIONS.md T2.17 catch-all. GAV soap:soap@2.3.1 (CRITICAL, HIGH). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.17 entry.
-        ]]></notes>
-        <cve>CVE-2022-40705</cve>
-        <cve>CVE-2022-45378</cve>
     </suppress>
 
     <!--

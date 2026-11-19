@@ -68,10 +68,11 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 
 /**
  * This class provide services to create content in a delivery server. You have to specify a server
@@ -900,15 +901,18 @@ public class PSDeliveryContentGenerator extends PSGenericContentGenerator<Delive
         // add a comment.
         List<NameValuePair> values = new ArrayList<NameValuePair>();
 
-        values.add(new NameValuePair("site", getSiteName(allComments.getPagePath())));
-        values.add(new NameValuePair("pagepath", getRelativePagePath(allComments.getPagePath())));
-
-        values.add(new NameValuePair("title", addCopyNumber(comment.getTitle(), i, realCount)));
-        values.add(new NameValuePair("text", addCopyNumber(comment.getBody(), i, realCount)));
+        values.add(new BasicNameValuePair("site", getSiteName(allComments.getPagePath())));
         values.add(
-            new NameValuePair("username", addCopyNumber(comment.getUsername(), i, realCount)));
-        values.add(new NameValuePair("email", addCopyNumber(comment.getEmail(), i, realCount)));
-        values.add(new NameValuePair("url", addCopyNumber(comment.getUrl(), i, realCount)));
+            new BasicNameValuePair("pagepath", getRelativePagePath(allComments.getPagePath())));
+
+        values.add(
+            new BasicNameValuePair("title", addCopyNumber(comment.getTitle(), i, realCount)));
+        values.add(new BasicNameValuePair("text", addCopyNumber(comment.getBody(), i, realCount)));
+        values.add(
+            new BasicNameValuePair("username", addCopyNumber(comment.getUsername(), i, realCount)));
+        values.add(
+            new BasicNameValuePair("email", addCopyNumber(comment.getEmail(), i, realCount)));
+        values.add(new BasicNameValuePair("url", addCopyNumber(comment.getUrl(), i, realCount)));
 
         try {
           log.info("Creating comment '" + comment.getTitle() + "'");

@@ -81,17 +81,23 @@ public class TrackRestClientTest {
         servletRequest.setCookies(new Cookie[] {c});
         
         client.clientRequest(servletRequest, servletResponse, tr);
-        String body = tw.getRequestBody();
-        assertRequestBody( 
+        assertRequestContains(
                 "GET /soln-p13n/track/track" +
                 "?address=127.0.0.1&hostname=localhost&locale=en&userId=test&visitorProfileId=100&actionName=login&segmentWeights%5Ba%5D=100" +
-                " HTTP/1.1\n" +
-        		"User-Agent: Jakarta Commons-HttpClient/3.1\n" +
-        		"Host: localhost:9990\n" +
-        		"Cookie: $Version=0; visitorProfileId=100\n",
-        		body);
+                " HTTP/1.1",
+                "User-Agent: Apache-HttpClient/",
+                "Host: localhost:9990",
+                "Cookie: visitorProfileId=100");
     }
     
+    public void assertRequestContains(String... expectedLines) {
+        String actual = tw.getRequestBody().replaceAll("\r\n", "\n");
+        for (String expected : expectedLines) {
+            assertTrue("Expected request to contain <" + expected + "> but was:\n" + actual,
+                    actual.contains(expected));
+        }
+    }
+
     public void assertRequestBody(String expected, String actual) {
         assertEquals(expected.replaceAll("\n", ""), actual.replaceAll("\r\n", ""));
     }

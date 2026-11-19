@@ -30,7 +30,6 @@ import com.percussion.cms.objectstore.PSKey;
 import com.percussion.cms.objectstore.PSSaveResults;
 import com.percussion.cms.objectstore.ws.PSLocatorWithName;
 import com.percussion.cms.objectstore.ws.PSRemoteFolderProcessor;
-import com.percussion.cms.objectstore.ws.PSWsFolderProcessor;
 import com.percussion.design.objectstore.PSLocator;
 import com.percussion.design.objectstore.PSUnknownNodeTypeException;
 import com.percussion.error.PSException;
@@ -75,7 +74,7 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
 
     // get to be created folder object from the input document
     Element root = inputDoc.getDocumentElement();
-    PSXMLDomUtil.checkNode(root, PSWsFolderProcessor.CREATE_FOLDER_REQUEST);
+    PSXMLDomUtil.checkNode(root, PSRemoteFolderProcessor.CREATE_FOLDER_REQUEST);
 
     Element folderEl = PSXMLDomUtil.getFirstElementChild(root);
     folderEl = validateCreateFolderRequest(folderEl);
@@ -107,8 +106,8 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     int folderId =
         getFolderIdFromDoc(
             request.getInputDocument(),
-            PSWsFolderProcessor.OPEN_FOLDER_REQUEST,
-            PSWsFolderProcessor.FOLDER_ID_EL,
+            PSRemoteFolderProcessor.OPEN_FOLDER_REQUEST,
+            PSRemoteFolderProcessor.FOLDER_ID_EL,
             PSRemoteFolderProcessor.OPEN_FOLDER_OPERATION);
 
     PSLocator locator = new PSLocator(folderId, 1);
@@ -145,8 +144,8 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     int folderId =
         getFolderIdFromDoc(
             inputDoc,
-            PSWsFolderProcessor.DELETE_FOLDER_REQUEST,
-            PSWsFolderProcessor.FOLDER_ID_EL,
+            PSRemoteFolderProcessor.DELETE_FOLDER_REQUEST,
+            PSRemoteFolderProcessor.FOLDER_ID_EL,
             PSRemoteFolderProcessor.DELETE_FOLDER_OPERATION);
 
     PSServerFolderProcessor proxy = PSServerFolderProcessor.getInstance();
@@ -174,8 +173,8 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     int folderId =
         getFolderIdFromDoc(
             inputDoc,
-            PSWsFolderProcessor.PURGE_FOLDER_REQUEST,
-            PSWsFolderProcessor.FOLDER_ID_EL,
+            PSRemoteFolderProcessor.PURGE_FOLDER_REQUEST,
+            PSRemoteFolderProcessor.FOLDER_ID_EL,
             PSRemoteFolderProcessor.PURGE_FOLDER_OPERATION);
 
     purgeFolderAndChildItems(folderId, request);
@@ -264,7 +263,7 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
 
     // get to be updated folder object from the input document
     Element root = inputDoc.getDocumentElement();
-    PSXMLDomUtil.checkNode(root, PSWsFolderProcessor.UPDATE_FOLDER_REQUEST);
+    PSXMLDomUtil.checkNode(root, PSRemoteFolderProcessor.UPDATE_FOLDER_REQUEST);
 
     Element folderEl = PSXMLDomUtil.getFirstElementChild(root);
     PSFolder folder = new PSFolder(folderEl);
@@ -293,9 +292,9 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     ParentChildIds pcIds =
         new ParentChildIds(
             request.getInputDocument(),
-            PSWsFolderProcessor.ADD_FOLDERCHILDREN_REQUEST,
-            PSWsFolderProcessor.TARGET_PARENT_ID_EL,
-            PSWsFolderProcessor.ADD_FOLDERCHILDREN_OPERATION);
+            PSRemoteFolderProcessor.ADD_FOLDERCHILDREN_REQUEST,
+            PSRemoteFolderProcessor.TARGET_PARENT_ID_EL,
+            PSRemoteFolderProcessor.ADD_FOLDERCHILDREN_OPERATION);
 
     PSServerFolderProcessor.getInstance()
         .addChildren(pcIds.getChildLocators(), pcIds.getParentLocator());
@@ -317,10 +316,10 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     ParentChildIds pcIds =
         new ParentChildIds(
             request.getInputDocument(),
-            PSWsFolderProcessor.COPY_FOLDERCHILDREN_REQUEST,
-            PSWsFolderProcessor.TARGET_PARENT_ID_EL,
+            PSRemoteFolderProcessor.COPY_FOLDERCHILDREN_REQUEST,
+            PSRemoteFolderProcessor.TARGET_PARENT_ID_EL,
             true,
-            PSWsFolderProcessor.COPY_FOLDERCHILDREN_OPERATION);
+            PSRemoteFolderProcessor.COPY_FOLDERCHILDREN_OPERATION);
 
     PSServerFolderProcessor proxy = PSServerFolderProcessor.getInstance();
 
@@ -349,8 +348,8 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     int id =
         getFolderIdFromDoc(
             request.getInputDocument(),
-            PSWsFolderProcessor.GET_FOLDERCHILDREN_REQUEST,
-            PSWsFolderProcessor.FOLDER_ID_EL,
+            PSRemoteFolderProcessor.GET_FOLDERCHILDREN_REQUEST,
+            PSRemoteFolderProcessor.FOLDER_ID_EL,
             PSRemoteFolderProcessor.GET_FOLDERCHILDREN_OPERATION);
 
     summaryArray = proxy.getChildSummaries(new PSLocator(id, 1));
@@ -379,9 +378,9 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     int id =
         getFolderIdFromDoc(
             request.getInputDocument(),
-            PSWsFolderProcessor.GET_FOLDERCOMMUNITIES_REQUEST,
-            PSWsFolderProcessor.FOLDER_ID_EL,
-            PSWsFolderProcessor.GET_FOLDERCOMMUNITIES_OPERATION);
+            PSRemoteFolderProcessor.GET_FOLDERCOMMUNITIES_REQUEST,
+            PSRemoteFolderProcessor.FOLDER_ID_EL,
+            PSRemoteFolderProcessor.GET_FOLDERCOMMUNITIES_OPERATION);
 
     Set communities = proxy.getFolderCommunities(new PSLocator(id, 1));
 
@@ -441,11 +440,11 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     ParentChildIds pcIds =
         new ParentChildIds(
             request.getInputDocument(),
-            PSWsFolderProcessor.MOVE_FOLDERCHILDREN_REQUEST,
-            PSWsFolderProcessor.SOURCE_PARENT_ID_EL,
-            PSWsFolderProcessor.TARGET_PARENT_ID_EL,
-            PSWsFolderProcessor.FORCE,
-            PSWsFolderProcessor.MOVE_FOLDERCHILDREN_OPERATION);
+            PSRemoteFolderProcessor.MOVE_FOLDERCHILDREN_REQUEST,
+            PSRemoteFolderProcessor.SOURCE_PARENT_ID_EL,
+            PSRemoteFolderProcessor.TARGET_PARENT_ID_EL,
+            PSRemoteFolderProcessor.FORCE,
+            PSRemoteFolderProcessor.MOVE_FOLDERCHILDREN_OPERATION);
 
     PSServerFolderProcessor proxy = PSServerFolderProcessor.getInstance();
 
@@ -470,15 +469,16 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
   void copyFolderSecurityAction(PSRequest request, Document parent) throws PSException {
     // get the input data from request
     Element root = request.getInputDocument().getDocumentElement();
-    PSXMLDomUtil.checkNode(root, PSWsFolderProcessor.COPY_FOLDERSECURITY_REQUEST);
+    PSXMLDomUtil.checkNode(root, PSRemoteFolderProcessor.COPY_FOLDERSECURITY_REQUEST);
 
-    Element el = PSXMLDomUtil.getFirstElementChild(root, PSWsFolderProcessor.SOURCE_FOLDER_ID_EL);
+    Element el =
+        PSXMLDomUtil.getFirstElementChild(root, PSRemoteFolderProcessor.SOURCE_FOLDER_ID_EL);
 
-    int srcFolderId = getContentId(el, PSWsFolderProcessor.COPY_FOLDERSECURITY_OPERATION);
+    int srcFolderId = getContentId(el, PSRemoteFolderProcessor.COPY_FOLDERSECURITY_OPERATION);
 
-    el = PSXMLDomUtil.getNextElementSibling(el, PSWsFolderProcessor.TARGET_FOLDER_ID_EL);
+    el = PSXMLDomUtil.getNextElementSibling(el, PSRemoteFolderProcessor.TARGET_FOLDER_ID_EL);
 
-    int tgtFolderId = getContentId(el, PSWsFolderProcessor.COPY_FOLDERSECURITY_OPERATION);
+    int tgtFolderId = getContentId(el, PSRemoteFolderProcessor.COPY_FOLDERSECURITY_OPERATION);
 
     PSServerFolderProcessor proxy = PSServerFolderProcessor.getInstance();
     proxy.copyFolderSecurity(new PSLocator(srcFolderId, 1), new PSLocator(tgtFolderId, 1));
@@ -500,11 +500,11 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     ParentChildIds pcIds =
         new ParentChildIds(
             request.getInputDocument(),
-            PSWsFolderProcessor.REMOVE_FOLDERCHILDREN_REQUEST,
-            PSWsFolderProcessor.PARENT_ID_EL,
+            PSRemoteFolderProcessor.REMOVE_FOLDERCHILDREN_REQUEST,
+            PSRemoteFolderProcessor.PARENT_ID_EL,
             null,
-            PSWsFolderProcessor.FORCE,
-            PSWsFolderProcessor.REMOVE_FOLDERCHILDREN_OPERATION);
+            PSRemoteFolderProcessor.FORCE,
+            PSRemoteFolderProcessor.REMOVE_FOLDERCHILDREN_OPERATION);
 
     PSServerFolderProcessor proxy = PSServerFolderProcessor.getInstance();
 
@@ -545,18 +545,19 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     int id =
         getFolderIdFromDoc(
             request.getInputDocument(),
-            PSWsFolderProcessor.GET_FOLDER_PATH_REQUEST,
-            PSWsFolderProcessor.CHILD_ID_EL,
+            PSRemoteFolderProcessor.GET_FOLDER_PATH_REQUEST,
+            PSRemoteFolderProcessor.CHILD_ID_EL,
             PSRemoteFolderProcessor.GET_FOLDER_PATH_OPERATION);
 
     String[] paths = proxy.getFolderPaths(new PSLocator(id, 1));
     Element parent =
         PSXmlDocumentBuilder.addEmptyElement(
-            response, response.getDocumentElement(), PSWsFolderProcessor.FOLDER_PATHS_EL);
+            response, response.getDocumentElement(), PSRemoteFolderProcessor.FOLDER_PATHS_EL);
     if (paths.length >= 1 && paths[0] != null && paths[0].trim().length() > 0) {
       // return the valid path
       for (int i = 0; i < paths.length; i++) {
-        PSXmlDocumentBuilder.addElement(response, parent, PSWsFolderProcessor.PATH_EL, paths[i]);
+        PSXmlDocumentBuilder.addElement(
+            response, parent, PSRemoteFolderProcessor.PATH_EL, paths[i]);
       }
     } else {
       // validating the content id
@@ -595,8 +596,8 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     int id =
         getFolderIdFromDoc(
             request.getInputDocument(),
-            PSWsFolderProcessor.GET_PARENTFOLDER_REQUEST,
-            PSWsFolderProcessor.CHILD_ID_EL,
+            PSRemoteFolderProcessor.GET_PARENTFOLDER_REQUEST,
+            PSRemoteFolderProcessor.CHILD_ID_EL,
             PSRemoteFolderProcessor.GET_PARENTFOLDER_OPERATION);
     summaryArray = proxy.getParentSummaries(new PSLocator(id, 1));
 
@@ -631,8 +632,8 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     int id =
         getFolderIdFromDoc(
             request.getInputDocument(),
-            PSWsFolderProcessor.GET_DESCENDENTSLOCATORS_REQUEST,
-            PSWsFolderProcessor.PARENT_ID_EL,
+            PSRemoteFolderProcessor.GET_DESCENDENTSLOCATORS_REQUEST,
+            PSRemoteFolderProcessor.PARENT_ID_EL,
             PSRemoteFolderProcessor.GET_DESCENDENTSLOCATORS_OPERATION);
 
     locatorArray = proxy.getDescendentFolderLocators(new PSLocator(id, 1));
@@ -662,8 +663,8 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     int id =
         getFolderIdFromDoc(
             request.getInputDocument(),
-            PSWsFolderProcessor.GET_DESCENDENTSLOCATORS_WITHOUTFILTER_REQUEST,
-            PSWsFolderProcessor.PARENT_ID_EL,
+            PSRemoteFolderProcessor.GET_DESCENDENTSLOCATORS_WITHOUTFILTER_REQUEST,
+            PSRemoteFolderProcessor.PARENT_ID_EL,
             PSRemoteFolderProcessor.GET_DESCENDENTSLOCATORS_WITHOUTFILTER_OPERATION);
 
     locatorArray = proxy.getDescendentFolderLocatorsWithoutFilter(new PSLocator(id, 1));
@@ -691,8 +692,8 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     String path =
         getRequestValueFromDoc(
             req.getInputDocument(),
-            PSWsFolderProcessor.GET_SUMMARYBYPATH_REQUEST,
-            PSWsFolderProcessor.PATH_EL);
+            PSRemoteFolderProcessor.GET_SUMMARYBYPATH_REQUEST,
+            PSRemoteFolderProcessor.PATH_EL);
     PSComponentSummary summary = proxy.getSummary(path);
 
     // create response document
@@ -922,7 +923,7 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
       m_parentId = getContentId(parentIdEl, action);
 
       Element childIdsEl =
-          PSXMLDomUtil.getNextElementSibling(parentIdEl, PSWsFolderProcessor.CHILD_IDS_EL);
+          PSXMLDomUtil.getNextElementSibling(parentIdEl, PSRemoteFolderProcessor.CHILD_IDS_EL);
 
       m_childIds = getChildLocators(childIdsEl, action);
 
@@ -944,7 +945,7 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
         m_hasRecursive = hasRecursive;
 
         Element recursiveEl =
-            PSXMLDomUtil.getNextElementSibling(childIdsEl, PSWsFolderProcessor.RECURSIVE_EL);
+            PSXMLDomUtil.getNextElementSibling(childIdsEl, PSRemoteFolderProcessor.RECURSIVE_EL);
         m_recursive = PSXMLDomUtil.getBooleanElementData(recursiveEl);
       }
     }
@@ -967,10 +968,11 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
     private List getChildLocators(Element childIdsEl, String action) throws PSException {
       Set childIds = new HashSet();
 
-      Element el = PSXMLDomUtil.getFirstElementChild(childIdsEl, PSWsFolderProcessor.CHILD_ID_EL);
+      Element el =
+          PSXMLDomUtil.getFirstElementChild(childIdsEl, PSRemoteFolderProcessor.CHILD_ID_EL);
       boolean isFirstElement = true;
       while (el != null) {
-        PSXMLDomUtil.checkNode(el, PSWsFolderProcessor.CHILD_ID_EL);
+        PSXMLDomUtil.checkNode(el, PSRemoteFolderProcessor.CHILD_ID_EL);
         int id = getContentId(el, action);
         String name = el.getAttribute(PSLocatorWithName.ATTR_OVERRIDE_NAME);
         // Make sure all child elements either specify "name" or do not
@@ -981,7 +983,7 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
           if (isFirstElement) {
             hasName = false;
           } else if (hasName) {
-            String args[] = new String[] {PSWsFolderProcessor.CHILD_ID_EL, action};
+            String args[] = new String[] {PSRemoteFolderProcessor.CHILD_ID_EL, action};
             throw new PSException(IPSWebServicesErrors.INVALID_MIXED_CHILD_IDS, args);
           }
 
@@ -990,7 +992,7 @@ public class PSFolderHandler extends PSWebServicesBaseHandler {
           if (isFirstElement) {
             hasName = true;
           } else if (!hasName) {
-            String args[] = new String[] {PSWsFolderProcessor.CHILD_ID_EL, action};
+            String args[] = new String[] {PSRemoteFolderProcessor.CHILD_ID_EL, action};
             throw new PSException(IPSWebServicesErrors.INVALID_MIXED_CHILD_IDS, args);
           }
 

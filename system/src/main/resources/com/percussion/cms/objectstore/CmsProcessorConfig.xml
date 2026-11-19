@@ -5,7 +5,6 @@
 	<!-- Conforms schema sys_CmsProcessorConfig.xsd -->
 	<CmsComponent type="PSFolder">
 		<Processors>
-			<Processor type="webservice" className="com.percussion.cms.objectstore.ws.PSWsFolderProcessor"/>
 			<Processor type="remote" className="com.percussion.cms.objectstore.ws.PSRemoteFolderProcessor"/>
 			<Processor type="local" className="com.percussion.server.webservices.PSServerFolderProcessor"/>
 		</Processors>

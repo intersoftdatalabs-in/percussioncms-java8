@@ -20,6 +20,7 @@ import com.percussion.server.PSServer;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -29,9 +30,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -144,25 +146,20 @@ public class PSSingleSignonFilter implements Filter {
    */
   private boolean validateSession(String pssessid, String baseUrl) {
     // make call to server
-    boolean valid = false;
-    HttpMethod method = null;
-    try {
-      HttpClient hc = new HttpClient();
-      method =
-          new GetMethod(
+    try (CloseableHttpClient hc = HttpClients.createDefault()) {
+      String encodedSessionId = URLEncoder.encode(pssessid, StandardCharsets.UTF_8.name());
+      HttpGet method =
+          new HttpGet(
               baseUrl
                   + "/"
                   + SSOSERVER_APPCONTEXT_ROOT
                   + "/__validateSession__?pssessionid="
-                  + pssessid);
-      int respCode = hc.executeMethod(method);
-      if (respCode == 200) valid = true;
+                  + encodedSessionId);
+      return hc.execute(method, response -> response.getCode() == HttpStatus.SC_OK);
     } catch (Exception e) {
       ms_log.error(e);
-    } finally {
-      if (method != null) method.releaseConnection();
     }
-    return valid;
+    return false;
   }
 
   /*

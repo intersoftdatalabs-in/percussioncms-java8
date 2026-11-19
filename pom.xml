@@ -608,11 +608,6 @@
                 <artifactId>commons-cli</artifactId>
                 <version>${commons-cli.version}</version>
             </dependency>
-            <dependency>
-                <groupId>commons-httpclient</groupId>
-                <artifactId>commons-httpclient</artifactId>
-                <version>3.1</version>
-            </dependency>
             <!-- https://mvnrepository.com/artifact/org.aspectj/aspectjrt 
                 1.5.2 no longer on maven -->
             <dependency>
@@ -1368,12 +1363,6 @@
                 <groupId>javax.xml</groupId>
                 <artifactId>jaxrpc-api</artifactId>
                 <version>1.1</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/soap/soap -->
-            <dependency>
-                <groupId>soap</groupId>
-                <artifactId>soap</artifactId>
-                <version>2.3.1</version>
             </dependency>
             <dependency>
                 <groupId>com.googlecode.json-simple</groupId>
@@ -2815,6 +2804,8 @@
                                         <exclude>org.springframework.security:*</exclude>
                                         <exclude>com.percussion.deliverytier:perc-secure-membership</exclude>
                                         <exclude>org.apache.jackrabbit:jackrabbit-jcr-commons</exclude>
+                                        <exclude>soap:soap</exclude>
+                                        <exclude>commons-httpclient:commons-httpclient</exclude>
                                     </excludes>
                                 </bannedDependencies>
                             </rules>

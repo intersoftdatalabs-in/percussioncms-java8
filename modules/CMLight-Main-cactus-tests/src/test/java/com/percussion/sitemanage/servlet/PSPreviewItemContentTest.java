@@ -36,11 +36,15 @@ import com.percussion.webservices.content.IPSContentWs;
 import com.percussion.webservices.system.IPSSystemWs;
 
 import java.net.URL;
-
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
+import java.nio.charset.StandardCharsets;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.junit.Assert;
 import org.junit.experimental.categories.Category;
 
@@ -59,7 +63,7 @@ public class PSPreviewItemContentTest extends PSServletTestCase
     /**
      * Used for all tests
      */
-    private static HttpClient conn;
+    private static CloseableHttpClient conn;
 
     @Override	
     public void setUp() throws Exception
@@ -72,8 +76,9 @@ public class PSPreviewItemContentTest extends PSServletTestCase
         int port = url.getPort();
         String host = url.getHost();
 
-        conn = new HttpClient();
-        conn.getState().setCredentials(new AuthScope(host, port), new UsernamePasswordCredentials("admin1", "demo"));
+        BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(new AuthScope(host, port), new UsernamePasswordCredentials("admin1", "demo".toCharArray()));
+        conn = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
         //FB:IJU_SETUP_NO_SUPER NC 1-16-16
         super.setUp();
     }
@@ -86,7 +91,25 @@ public class PSPreviewItemContentTest extends PSServletTestCase
     @Override
     protected void tearDown() throws Exception
     {
+        if (conn != null)
+        {
+            conn.close();
+        }
         fixture.tearDown();
+    }
+
+    private void assertGetStatus(String path, int expectedStatus, String messagePrefix) throws Exception
+    {
+        HttpGet req = new HttpGet(path);
+        String reqPath = req.getRequestUri();
+        conn.execute(req, response -> {
+            int status = response.getCode();
+            HttpEntity entity = response.getEntity();
+            String src = entity == null ? "" : EntityUtils.toString(entity, StandardCharsets.UTF_8);
+            Assert.assertTrue(messagePrefix + reqPath + " http status code " + status, status == expectedStatus);
+            System.out.println(status + "\n" + src);
+            return null;
+        });
     }
 
     public void testPageFriendlyUrl() throws Exception
@@ -107,20 +130,7 @@ public class PSPreviewItemContentTest extends PSServletTestCase
         String path = getUrlRoot() + pageFinderPath;
 
         System.out.println("pageFinderPath " + pageFinderPath);
-        GetMethod req = new GetMethod(path);
-        try
-        {
-            int status = conn.executeMethod(req);
-
-            Assert.assertTrue("Request to get page " + req.getPath() + " succeed with http status code " + status,
-                    status == 200);
-            String src = req.getResponseBodyAsString();
-            System.out.println(status + "\n" + src);
-        }
-        finally
-        {
-            req.releaseConnection();
-        }
+        assertGetStatus(path, 200, "Request to get page ");
     }
 
     public void testUpperCasePageFriendlyUrl() throws Exception
@@ -144,19 +154,7 @@ public class PSPreviewItemContentTest extends PSServletTestCase
         String path = getUrlRoot() + pageFinderPath;
         System.out.println("pageFinderPath " + pageFinderPath);
 
-        GetMethod req = new GetMethod(path);
-        try
-        {
-            int status = conn.executeMethod(req);
-            Assert.assertTrue("Request to get asset " + req.getPath() + " succeed with http status code " + status,
-                    status == 200);
-            String src = req.getResponseBodyAsString();
-            System.out.println(status + "\n" + src);
-        }
-        finally
-        {
-            req.releaseConnection();
-        }
+        assertGetStatus(path, 200, "Request to get asset ");
     }
 
     public void testNotFoundFriendlyUrl() throws Exception
@@ -166,19 +164,7 @@ public class PSPreviewItemContentTest extends PSServletTestCase
         String path = getUrlRoot() + pageFinderPath;
         System.out.println("pageFinderPath " + pageFinderPath);
 
-        GetMethod req = new GetMethod(path);
-        try
-        {
-            int status = conn.executeMethod(req);
-            Assert.assertTrue("Request to get page " + req.getPath() + " failed with http status code " + status,
-                    status == 404);
-            String src = req.getResponseBodyAsString();
-            System.out.println(status + "\n" + src);
-        }
-        finally
-        {
-            req.releaseConnection();
-        }
+        assertGetStatus(path, 404, "Request to get page ");
     }
 
     public void testAssetFriendlyUrl() throws Exception
@@ -201,19 +187,7 @@ public class PSPreviewItemContentTest extends PSServletTestCase
         String path = getUrlRoot() + assetFinderPath;
         System.out.println("assetFinderPath " + assetFinderPath);
 
-        GetMethod req = new GetMethod(path);
-        try
-        {
-            int status = conn.executeMethod(req);
-            Assert.assertTrue("Request to get asset " + req.getPath() + " succeed with http status code " + status,
-                    status == 200);
-            String src = req.getResponseBodyAsString();
-            System.out.println(status + "\n" + src);
-        }
-        finally
-        {
-            req.releaseConnection();
-        }
+        assertGetStatus(path, 200, "Request to get asset ");
     }
 
     /**

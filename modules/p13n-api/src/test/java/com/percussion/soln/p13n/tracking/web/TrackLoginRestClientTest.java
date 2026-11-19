@@ -42,28 +42,28 @@ public class TrackLoginRestClientTest extends TrackRestClientTest {
 
         VisitorTrackingResponse r = loginClient.login("agent", w);
         assertNotNull(r);
-        assertRequestBody(
-                "GET /soln-p13n/track/track?userId=agent&actionName=login&segmentWeights%5Bfoo%5D=100&segmentWeights%5Bbar%5D=200 HTTP/1.1" +
-        		"User-Agent: Jakarta Commons-HttpClient/3.1" +
-        		"Host: localhost:9990");
+        assertRequestContains(
+                "GET /soln-p13n/track/track?userId=agent&actionName=login&segmentWeights%5Bfoo%5D=100&segmentWeights%5Bbar%5D=200 HTTP/1.1",
+                "User-Agent: Apache-HttpClient/",
+                "Host: localhost:9990");
     }
     
     @Test
     public void testLoginWithProfileId() throws Exception {
         loginClient.login("100", "agent", w);
-        assertRequestBody(
-                "GET /soln-p13n/track/track?userId=agent&visitorProfileId=100&actionName=login&segmentWeights%5Bfoo%5D=100&segmentWeights%5Bbar%5D=200 HTTP/1.1" +
-        		"User-Agent: Jakarta Commons-HttpClient/3.1" +
-        		"Host: localhost:9990");
+        assertRequestContains(
+                "GET /soln-p13n/track/track?userId=agent&visitorProfileId=100&actionName=login&segmentWeights%5Bfoo%5D=100&segmentWeights%5Bbar%5D=200 HTTP/1.1",
+                "User-Agent: Apache-HttpClient/",
+                "Host: localhost:9990");
     }
     
     @Test
     public void testLoginWithServlet() throws Exception {
         loginClient.login(servletRequest, servletResponse, "agent", w);
-        assertRequestBody(
-                "GET /soln-p13n/track/track?address=127.0.0.1&hostname=localhost&locale=en&userId=agent&actionName=login&segmentWeights%5Bfoo%5D=100&segmentWeights%5Bbar%5D=200 HTTP/1.1" +
-        		"User-Agent: Jakarta Commons-HttpClient/3.1" +
-        		"Host: localhost:9990");
+        assertRequestContains(
+                "GET /soln-p13n/track/track?address=127.0.0.1&hostname=localhost&locale=en&userId=agent&actionName=login&segmentWeights%5Bfoo%5D=100&segmentWeights%5Bbar%5D=200 HTTP/1.1",
+                "User-Agent: Apache-HttpClient/",
+                "Host: localhost:9990");
     }
     
 }

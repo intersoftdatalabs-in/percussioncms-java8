@@ -29,14 +29,13 @@ import com.percussion.security.PSEncryptionException;
 import com.percussion.security.PSEncryptor;
 import com.percussion.utils.io.PathUtils;
 import java.io.IOException;
-import java.security.SecureRandom;
+import java.nio.charset.StandardCharsets;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.net.ssl.SSLContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -57,11 +56,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -385,43 +390,48 @@ public class PSFormRestService extends PSAbstractRestService implements IPSFormR
         if (percFields.get(FORM_PROCESSORURL) != null) {
           processorUrl = percFields.get(FORM_PROCESSORURL)[0];
           Security.addProvider(new BouncyCastleProvider());
-          SSLContext sslContext = SSLContext.getInstance("TLS");
-          sslContext.init(null, null, new SecureRandom());
 
-          Protocol.registerProtocol(
-              "https", new Protocol("https", new PSTlsSocketFactory(this.enabledCiphers), 443));
-
-          HttpClient client = new HttpClient();
-          PostMethod post = new PostMethod(processorUrl);
+          PSTlsSocketFactory tlsFactory = new PSTlsSocketFactory(this.enabledCiphers);
           List<NameValuePair> data = new ArrayList<>();
-          String urlParameters = "";
-          // Loop through form parameters and set up for re-posting
           for (String key : params.keySet()) {
             for (String value : params.get(key)) {
-              post.addParameter(key, value);
+              data.add(new BasicNameValuePair(key, value));
             }
           }
 
           boolean success = false;
-
-          // execute method and handle any error responses.
-          client.executeMethod(post);
-          String body = post.getResponseBodyAsString();
-
-          log.debug("Response Body: {}", body);
-
-          if (post.getStatusCode() >= 200 && post.getStatusCode() <= 399) {
-            success = true;
-          } else {
-            log.error(
-                "Post to remote form service: {} failed with error code: {} and a response body of: {}",
-                processorUrl,
-                post.getStatusCode(),
-                body);
-            log.error("Redirecting to error page...");
+          try (PoolingHttpClientConnectionManager cm =
+                  PoolingHttpClientConnectionManagerBuilder.create()
+                      .setTlsSocketStrategy(tlsFactory.createTlsSocketStrategy())
+                      .build();
+              CloseableHttpClient client = HttpClients.custom().setConnectionManager(cm).build()) {
+            HttpPost post = new HttpPost(processorUrl);
+            post.setEntity(new UrlEncodedFormEntity(data, StandardCharsets.UTF_8));
+            final String targetUrl = processorUrl;
+            success =
+                client.execute(
+                    post,
+                    response -> {
+                      HttpEntity entity = response.getEntity();
+                      String body =
+                          entity != null
+                              ? EntityUtils.toString(entity, StandardCharsets.UTF_8)
+                              : "";
+                      log.debug("Response Body: {}", body);
+                      int status = response.getCode();
+                      if (status >= 200 && status <= 399) {
+                        return true;
+                      }
+                      log.error(
+                          "Post to remote form service: {} failed with error code: {} and a response body of: {}",
+                          targetUrl,
+                          status,
+                          body);
+                      log.error("Redirecting to error page...");
+                      return false;
+                    });
           }
 
-          post.releaseConnection();
           if (success) {
             handleRedirect(successRedirect, encryptExist, hostRedirect, resp);
             return;

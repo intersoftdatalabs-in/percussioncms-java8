@@ -16,7 +16,7 @@
  */
 package com.percussion.pso.restservice.model;
 
-import org.apache.commons.httpclient.Header;
+import org.apache.hc.core5.http.Header;
 import org.jsoup.nodes.Document;
 
 public class HttpHtmlResponse extends BaseHttpResponse {

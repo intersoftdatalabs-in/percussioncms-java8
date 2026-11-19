@@ -23,15 +23,21 @@ import com.rometools.rome.feed.synd.SyndPerson;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -251,84 +257,107 @@ public class PSSynFeedProxy {
   }
 
   /**
-   * * Initializes this instances of the proxy with the specified feed url.
+   * Initializes this instance of the proxy with the specified feed url.
    *
    * @param urlString
-   * @throws HttpException
    * @throws IOException
    * @throws IllegalArgumentException
    */
   public PSSynFeedProxy(String urlString)
-      throws HttpException, IOException, IllegalArgumentException, FeedException, FeedException {
-    HttpClient client = new HttpClient();
-
-    // Set up the proxy server if there is one.
+      throws IOException, IllegalArgumentException, FeedException {
     HTTPProxyClientConfig proxy = new HTTPProxyClientConfig();
-
-    if (!proxy.getProxyServer().equals("")) {
-      client
-          .getHostConfiguration()
-          .setProxy(proxy.getProxyServer(), Integer.parseInt(proxy.getProxyPort()));
+    RequestConfig.Builder reqConfig = RequestConfig.custom();
+    if (StringUtils.isNotBlank(proxy.getProxyServer())
+        && StringUtils.isNotBlank(proxy.getProxyPort())) {
+      reqConfig.setProxy(
+          new HttpHost(proxy.getProxyServer(), Integer.parseInt(proxy.getProxyPort())));
     }
 
-    HttpMethod get = new GetMethod(urlString);
+    byte[] bodyBytes;
+    try (CloseableHttpClient client =
+        HttpClients.custom().setDefaultRequestConfig(reqConfig.build()).build()) {
+      HttpGet get = new HttpGet(urlString);
+      bodyBytes =
+          client.execute(
+              get,
+              response -> {
+                HttpEntity entity = response.getEntity();
+                return entity == null ? new byte[0] : EntityUtils.toByteArray(entity);
+              });
+    }
 
-    try {
-      int code = client.executeMethod(get);
-
-      SyndFeedInput input = new SyndFeedInput();
-      log.debug("Requesting feed from " + urlString);
-      SyndFeed f = input.build(new XmlReader(get.getResponseBodyAsStream()));
+    SyndFeedInput input = new SyndFeedInput();
+    log.debug("Requesting feed from " + urlString);
+    try (XmlReader reader = new XmlReader(new ByteArrayInputStream(bodyBytes))) {
+      SyndFeed f = input.build(reader);
       this.feed = f;
-    } finally {
-      get.releaseConnection();
     }
   }
 
   public PSSynFeedProxy(String urlString, String eTag, String lastModified)
       throws IllegalArgumentException, FeedException, IOException {
-    HttpClient client = new HttpClient();
-
-    // Set up the proxy server if there is one.
     HTTPProxyClientConfig proxy = new HTTPProxyClientConfig();
-
-    if (!proxy.getProxyServer().equals("")) {
+    RequestConfig.Builder reqConfig =
+        RequestConfig.custom()
+            .setConnectionRequestTimeout(Timeout.ofMilliseconds(2000))
+            .setRedirectsEnabled(true);
+    if (StringUtils.isNotBlank(proxy.getProxyServer())
+        && StringUtils.isNotBlank(proxy.getProxyPort())) {
       log.debug("Setting Proxy server to " + proxy.getProxyServer() + ":" + proxy.getProxyPort());
-      client
-          .getHostConfiguration()
-          .setProxy(proxy.getProxyServer(), Integer.parseInt(proxy.getProxyPort()));
+      reqConfig.setProxy(
+          new HttpHost(proxy.getProxyServer(), Integer.parseInt(proxy.getProxyPort())));
     }
-    client.getParams().setConnectionManagerTimeout(2000);
 
-    GetMethod get = new GetMethod(urlString);
+    HttpGet get = new HttpGet(urlString);
+    if (eTag != null && !eTag.trim().equals("")) {
+      get.addHeader(HTTP_IFNONEMATCH, eTag);
+    }
+    if (lastModified != null && !lastModified.trim().equals("")) {
+      get.addHeader(HTTP_IFMODIFIED, lastModified);
+    }
 
-    try {
-      // Add the modification check headers if we have valid params.
-      if (eTag != null && !eTag.trim().equals("")) {
-        get.addRequestHeader(HTTP_IFNONEMATCH, eTag);
+    FeedFetchResult result;
+    try (CloseableHttpClient client =
+        HttpClients.custom().setDefaultRequestConfig(reqConfig.build()).build()) {
+      result =
+          client.execute(
+              get,
+              response -> {
+                int code = response.getCode();
+                byte[] body = null;
+                if (code == HttpStatus.SC_OK && response.getEntity() != null) {
+                  body = EntityUtils.toByteArray(response.getEntity());
+                }
+                return new FeedFetchResult(code, body);
+              });
+    }
+
+    if (result.statusCode == HttpStatus.SC_NOT_MODIFIED) {
+      log.debug("Feed URL not modified.");
+    } else if (result.statusCode == HttpStatus.SC_OK) {
+      SyndFeedInput input = new SyndFeedInput();
+      log.debug("Requesting feed from " + urlString);
+      byte[] bytes = result.body != null ? result.body : new byte[0];
+      try (XmlReader reader = new XmlReader(new ByteArrayInputStream(bytes))) {
+        this.feed = input.build(reader);
       }
+      // @TODO: Add logic into this section to persist the lastmodified header.
+    } else {
+      log.debug(
+          "Unexpected response from server for url"
+              + urlString
+              + " Response Code:"
+              + result.statusCode);
+    }
+  }
 
-      if (lastModified != null && !lastModified.trim().equals("")) {
-        get.addRequestHeader(HTTP_IFMODIFIED, lastModified);
-      }
+  private static final class FeedFetchResult {
+    final int statusCode;
+    final byte[] body;
 
-      get.setFollowRedirects(true);
-      int code = client.executeMethod(get);
-
-      if (code == HttpStatus.SC_NOT_MODIFIED) {
-        log.debug("Feed URL not modified.");
-      } else if (code == HttpStatus.SC_OK) {
-        SyndFeedInput input = new SyndFeedInput();
-        log.debug("Requesting feed from " + urlString);
-        this.feed = input.build(new XmlReader(get.getResponseBodyAsStream()));
-
-        // @TODO: Add logic into this section to persist the lastmodified header.
-
-      } else {
-        log.debug("Unexpected response from server for url" + urlString + " Response Code:" + code);
-      }
-    } finally {
-      get.releaseConnection();
+    FeedFetchResult(int statusCode, byte[] body) {
+      this.statusCode = statusCode;
+      this.body = body;
     }
   }
 }
