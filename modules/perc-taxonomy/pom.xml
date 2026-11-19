@@ -32,27 +32,27 @@
             <artifactId>simple-xml</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
             <version>${spring.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-tx</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-orm</artifactId>
             <scope>provided</scope>
         </dependency>

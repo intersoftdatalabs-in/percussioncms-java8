@@ -94,15 +94,15 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>
         <dependency>

@@ -34,6 +34,10 @@
                     <artifactId>*</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.intsof.lts.springframework</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.hibernate</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>

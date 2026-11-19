@@ -257,7 +257,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
         </dependency>
         <dependency>
@@ -293,7 +293,7 @@
             <artifactId>jackson-datatype-jdk8</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-tx</artifactId>
         </dependency>
         <dependency>
@@ -342,7 +342,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
             <scope>compile</scope>
         </dependency>
@@ -378,7 +378,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <scope>compile</scope>
         </dependency>
@@ -388,12 +388,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <scope>compile</scope>
         </dependency>
@@ -403,7 +403,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-beans</artifactId>
             <scope>compile</scope>
         </dependency>
@@ -450,7 +450,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <scope>compile</scope>
         </dependency>

@@ -104,7 +104,7 @@
             <version>${guava.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>
         <dependency>
@@ -129,7 +129,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-beans</artifactId>
             <version>${spring.version}</version>
         </dependency>

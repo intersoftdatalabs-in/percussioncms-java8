@@ -36,15 +36,15 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
+            <groupId>com.intsof.lts.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
         </dependency>
         <dependency>

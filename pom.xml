@@ -202,7 +202,7 @@
         <snappy.version>1.1.10.9</snappy.version>
         <solr.version>8.11.4</solr.version>
         <spotless.plugin.version>2.30.0</spotless.plugin.version>
-        <spring.version>5.3.39</spring.version>
+        <spring.version>5.3.39.1</spring.version>
         <sqlite.version>3.43.2.2</sqlite.version>
         <stax.version>1.0.1</stax.version>
         <swagger.ui.version>5.31.2</swagger.ui.version>
@@ -313,63 +313,68 @@
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.springframework/spring-core -->
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-core</artifactId>
                 <version>${spring.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>com.intsof.lts.springframework</groupId>
                         <artifactId>spring-jcl</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-aop</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-aspects</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-context</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-context-support</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-expression</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-jdbc</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-jms</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
+                <artifactId>spring-messaging</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-orm</artifactId>
                 <version>${spring.version}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.springframework</groupId>
+                        <groupId>com.intsof.lts.springframework</groupId>
                         <artifactId>spring-jcl</artifactId>
                     </exclusion>
                     <exclusion>
@@ -379,27 +384,27 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-oxm</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-test</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-tx</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-web</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework</groupId>
+                <groupId>com.intsof.lts.springframework</groupId>
                 <artifactId>spring-webmvc</artifactId>
                 <version>${spring.version}</version>
             </dependency>
@@ -1032,6 +1037,12 @@
                 <groupId>com.intsof.lts.activemq</groupId>
                 <artifactId>activemq-spring</artifactId>
                 <version>${activemq.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.intsof.lts.activemq</groupId>
@@ -2183,6 +2194,14 @@
             <name>Intersoft Spring Security 5.8 Java 8 LTS Fork</name>
             <url>https://maven.pkg.github.com/intersoftdatalabs-in/spring-security</url>
         </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>github-intersoft-spring-framework</id>
+            <name>Intersoft Spring Framework 5.3 Java 8 LTS Fork</name>
+            <url>https://maven.pkg.github.com/intersoftdatalabs-in/spring-framework</url>
+        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -2791,6 +2810,7 @@
                                         <exclude>org.apache.cxf:*</exclude>
                                         <exclude>org.apache.derby:*:(,10.14.2.1)</exclude>
                                         <exclude>org.apache.activemq:*</exclude>
+                                        <exclude>org.springframework:*</exclude>
                                         <exclude>org.springframework.ldap:*</exclude>
                                         <exclude>org.springframework.security:*</exclude>
                                         <exclude>com.percussion.deliverytier:perc-secure-membership</exclude>
