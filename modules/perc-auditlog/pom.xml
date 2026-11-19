@@ -46,7 +46,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.tika</groupId>
+            <groupId>com.intsof.lts.tika</groupId>
             <artifactId>tika-core</artifactId>
             <scope>provided</scope>
         </dependency>
