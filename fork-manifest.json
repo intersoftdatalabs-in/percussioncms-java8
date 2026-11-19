@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "description": "Maps Intersoft Java 8 LTS forked/patched dependencies back to upstream Maven coordinates for automated weekly OSV upstream CVE monitoring.",
+  "forks": [
+    {
+      "id": "jetty-9.4",
+      "coordinate_strategy": "upstream_extended",
+      "fork_repo": "https://github.com/intersoftdatalabs-in/jetty.project",
+      "branch": "jetty-9.4.x",
+      "release_tag": "v9.4.65.1",
+      "intersoft_group_id": "org.eclipse.jetty",
+      "intersoft_version": "9.4.65.1",
+      "upstream_base_version": "9.4.58.v20250814",
+      "upstream_gavs": [
+        "org.eclipse.jetty:jetty-http",
+        "org.eclipse.jetty:jetty-server",
+        "org.eclipse.jetty:jetty-security",
+        "org.eclipse.jetty:jetty-servlet",
+        "org.eclipse.jetty:jetty-webapp",
+        "org.eclipse.jetty:jetty-io",
+        "org.eclipse.jetty:jetty-util",
+        "org.eclipse.jetty:jetty-proxy"
+      ],
+      "patched_cves": [
+        "CVE-2024-6763",
+        "CVE-2025-11143",
+        "CVE-2026-2332",
+        "CVE-2026-6790",
+        "CVE-2026-10050",
+        "CVE-2026-18659",
+        "CVE-2026-18660",
+        "CVE-2026-18662",
+        "CVE-2026-19203"
+      ]
+    }
+  ]
+}
