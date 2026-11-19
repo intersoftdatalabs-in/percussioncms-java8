@@ -141,6 +141,45 @@ public class TestSecureStringUtils {
             "%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5cwindows%5cwin.ini",
             "unit.test");
     assertNull(testPath);
+
+    // Reject double/multiple URL encoding and malformed percent escapes fail-closed
+    assertNull(
+        SecureStringUtils.cleanWildPath(
+            resourcePaths, "/cm/%252e%252e/%252e%252e/etc/passwd", "unit.test"));
+    assertNull(SecureStringUtils.cleanWildPath(resourcePaths, "/cm/%ZZbad", "unit.test"));
+    assertNull(SecureStringUtils.cleanWildPath(resourcePaths, null, "unit.test"));
+  }
+
+  @Test
+  public void testSanitizeStringForLDAP() {
+    assertNull(SecureStringUtils.sanitizeStringForLDAP(null, true));
+    assertEquals(
+        "user\\2a\\28cn\\29\\5cpath\\2fname\\00",
+        SecureStringUtils.sanitizeStringForLDAP("user*(cn)\\path/name\0", true));
+    assertEquals(
+        "user*\\28cn\\29\\5cpath\\2fname\\00",
+        SecureStringUtils.sanitizeStringForLDAP("user*(cn)\\path/name\0", false));
+    // UTF-8 hex escaping for non-ASCII characters matching RFC 4515 / ESAPI behavior
+    assertEquals("Jos\\c3\\a9", SecureStringUtils.sanitizeStringForLDAP("José", true));
+  }
+
+  @Test
+  public void testSanitizeForJson() {
+    assertNull(SecureStringUtils.sanitizeForJson(null));
+    String encoded = SecureStringUtils.sanitizeForJson("a'\"&</script>\\");
+    assertNotNull(encoded);
+    assertFalse(encoded.contains("'"));
+    assertFalse(encoded.contains("\""));
+    assertFalse(encoded.contains("&"));
+    assertFalse(encoded.contains("</script>"));
+    assertTrue(encoded.contains("\\\\"));
+  }
+
+  @Test
+  public void testUrlEncode() {
+    assertNull(SecureStringUtils.urlEncode(null));
+    assertEquals("hello+world%26a%3Db%3Fc%2Fd", SecureStringUtils.urlEncode("hello world&a=b?c/d"));
+    assertEquals("Jos%C3%A9", SecureStringUtils.urlEncode("José"));
   }
 
   @Test
@@ -160,13 +199,17 @@ public class TestSecureStringUtils {
 
   @Test
   public void testIsHTML() {
-    assertFalse(SecureStringUtils.isXML("x"));
-    assertTrue(SecureStringUtils.isXML("<div></div>"));
-    assertTrue(SecureStringUtils.isXML("<a href='#'>x</a>"));
+    assertFalse(SecureStringUtils.isHTML(null));
+    assertFalse(SecureStringUtils.isHTML(""));
+    assertFalse(SecureStringUtils.isHTML("x"));
+    assertTrue(SecureStringUtils.isHTML("<div></div>"));
+    assertTrue(SecureStringUtils.isHTML("<a href='#'>x</a>"));
   }
 
   @Test
   public void testIsXML() {
+    assertFalse(SecureStringUtils.isXML(null));
+    assertFalse(SecureStringUtils.isXML(""));
     assertFalse(SecureStringUtils.isXML("x"));
     assertTrue(SecureStringUtils.isXML("<div></div>"));
     assertTrue(SecureStringUtils.isXML("<a href='#'>x</a>"));
