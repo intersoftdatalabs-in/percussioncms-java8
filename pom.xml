@@ -131,7 +131,7 @@
         <jdk.version>1.8</jdk.version>
         <jenkins.buildNumber>2024</jenkins.buildNumber>
         <jetty.maven.plugin.version>9.4.58.v20250814</jetty.maven.plugin.version>
-        <jetty.version>9.4.65.1</jetty.version>
+        <jetty.version>9.4.65.2</jetty.version>
         <jfx.version>11.0.2</jfx.version>
         <json.version>20260719</json.version>
         <jsoup.version>1.23.2</jsoup.version>
@@ -438,6 +438,16 @@
                 <groupId>com.intsof.lts.cxf</groupId>
                 <artifactId>cxf-rt-transports-http-jetty</artifactId>
                 <version>${cxf.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty.http2</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.intsof.lts.cxf</groupId>
@@ -446,18 +456,18 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
+                <groupId>com.intsof.lts.jetty</groupId>
                 <artifactId>jetty-servlet</artifactId>
                 <version>${jetty.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
+                <groupId>com.intsof.lts.jetty</groupId>
                 <artifactId>jetty-start</artifactId>
                 <version>${jetty.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
+                <groupId>com.intsof.lts.jetty</groupId>
                 <artifactId>jetty-bom</artifactId>
                 <version>${jetty.version}</version>
                 <type>pom</type>
@@ -2802,7 +2812,7 @@
                                         <exclude>org.bouncycastle:bcmail-jdk18on</exclude>
                                         <exclude>org.bouncycastle:bcutil-jdk18on</exclude>
                                         <exclude>org.eclipse.jetty.http2:*</exclude>
-                                        <exclude>org.eclipse.jetty:jetty-alpn-openjdk8-client</exclude>
+                                        <exclude>org.eclipse.jetty:*</exclude>
                                         <exclude>org.apache.tika:*</exclude>
                                         <exclude>org.apache.cxf:*</exclude>
                                         <exclude>org.apache.derby:*:(,10.14.2.1)</exclude>

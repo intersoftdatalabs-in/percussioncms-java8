@@ -572,19 +572,19 @@
     <!--
         T2.13: Eclipse Jetty 9.
 
-        GAVs in scope: 2 | CVEs in scope: 30 (Tier 2 0 + Tier 3 30)
+        GAVs in scope: 2 | CVEs in scope: 29 (Tier 2 0 + Tier 3 29) — relocated to com.intsof.lts.jetty@9.4.65.2 (#319), CVE-2026-6790 patched
     -->
 
     <suppress>
         <notes><![CDATA[
-             T2.13 (Tier 3) hardening (epic #73). Eclipse Jetty 9.4.58 hardening. TLS configuration (PR #114, issue #113); webdefault.xml session/cookie/MIME hardening (PR #116, issue #115); start.ini HTTP config hardening (PR #118, issue #117). Follow-up vendor patch of jetty.xml in PR #207. The 35 CVEs are pinned at the latest Java 1.8 line because Jetty 10+ requires Java 11+. GAV org.eclipse.jetty:jetty-util@9.4.58.v20250814 (MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.13 entry.
+             T2.13 (Tier 3) hardening (epic #73). Relocated to Intersoft Java 8 LTS com.intsof.lts.jetty:jetty-util@9.4.65.2 in Wave 3 Stage 3 (issue #319) with TLS configuration (PR #114, issue #113); webdefault.xml session/cookie/MIME hardening (PR #116, issue #115); start.ini HTTP config hardening (PR #118, issue #117); follow-up vendor patch of jetty.xml (PR #207). Remaining Tier 3 advisory retained at the Java 1.8 line because Jetty 10+ requires Java 11+; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.13 entry.
         ]]></notes>
         <cve>CVE-2026-8384</cve>
     </suppress>
 
     <suppress>
         <notes><![CDATA[
-             T2.13 (Tier 3) hardening (epic #73). Eclipse Jetty 9.4.58 hardening. TLS configuration (PR #114, issue #113); webdefault.xml session/cookie/MIME hardening (PR #116, issue #115); start.ini HTTP config hardening (PR #118, issue #117). Follow-up vendor patch of jetty.xml in PR #207. The 35 CVEs are pinned at the latest Java 1.8 line because Jetty 10+ requires Java 11+. GAV org.eclipse.jetty:jetty-server@9.4.58.v20250814 (CRITICAL, HIGH, LOW, MODERATE). Tier 3 CVEs have no Java 8 fix at a newer line; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.13 entry.
+             T2.13 (Tier 3) hardening (epic #73). Relocated to Intersoft Java 8 LTS com.intsof.lts.jetty:jetty-server@9.4.65.2 in Wave 3 Stage 3 (issue #319) with TLS configuration (PR #114, issue #113); webdefault.xml session/cookie/MIME hardening (PR #116, issue #115); start.ini HTTP config hardening (PR #118, issue #117); follow-up vendor patch of jetty.xml (PR #207). CVE-2026-6790 (plus fork-manifest.json CVEs) is patched in the Intersoft fork; remaining Tier 3 advisories retained at the Java 1.8 line because Jetty 10+ requires Java 11+; mitigation is documented in docs/SECURITY-MITIGATIONS.md T2.13 entry.
         ]]></notes>
         <cve>BIT-jenkins-2021-28165</cve>
         <cve>BIT-kafka-2020-27218</cve>
@@ -620,7 +620,6 @@
         <cve>CVE-2024-8184</cve>
         <cve>CVE-2026-10051</cve>
         <cve>CVE-2026-1605</cve>
-        <cve>CVE-2026-6790</cve>
     </suppress>
 
     <!--
