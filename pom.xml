@@ -70,7 +70,7 @@
         <url>https://github.com/intersoftdatalabs-in/percussioncms</url>
     </scm>
     <properties>
-        <activemq.version>5.16.8</activemq.version>
+        <activemq.version>5.16.8.1</activemq.version>
         <ant.contrib.version>1.0b3</ant.contrib.version>
         <ant.version>1.10.14</ant.version>
         <avalon.version>4.1.5</avalon.version>
@@ -1014,32 +1014,32 @@
                 <version>${commons.compress.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>com.intsof.lts.activemq</groupId>
                 <artifactId>activemq-broker</artifactId>
                 <version>${activemq.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>com.intsof.lts.activemq</groupId>
                 <artifactId>activemq-client</artifactId>
                 <version>${activemq.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>com.intsof.lts.activemq</groupId>
                 <artifactId>activemq-kahadb-store</artifactId>
                 <version>${activemq.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>com.intsof.lts.activemq</groupId>
                 <artifactId>activemq-spring</artifactId>
                 <version>${activemq.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>com.intsof.lts.activemq</groupId>
                 <artifactId>activemq-jms-pool</artifactId>
                 <version>${activemq.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.activemq</groupId>
+                <groupId>com.intsof.lts.activemq</groupId>
                 <artifactId>activemq-jaas</artifactId>
                 <version>${activemq.version}</version>
             </dependency>
@@ -2167,6 +2167,14 @@
             <name>Intersoft Derby Java 8 LTS Build</name>
             <url>https://maven.pkg.github.com/intersoftdatalabs-in/derby</url>
         </repository>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>github-intersoft-activemq</id>
+            <name>Intersoft ActiveMQ Java 8 LTS Fork</name>
+            <url>https://maven.pkg.github.com/intersoftdatalabs-in/activemq</url>
+        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -2774,6 +2782,7 @@
                                         <exclude>org.apache.tika:*</exclude>
                                         <exclude>org.apache.cxf:*</exclude>
                                         <exclude>org.apache.derby:*:(,10.14.2.1)</exclude>
+                                        <exclude>org.apache.activemq:*</exclude>
                                         <exclude>org.springframework.ldap:*</exclude>
                                         <exclude>org.springframework.security:spring-security-ldap</exclude>
                                         <exclude>com.percussion.deliverytier:perc-secure-membership</exclude>
