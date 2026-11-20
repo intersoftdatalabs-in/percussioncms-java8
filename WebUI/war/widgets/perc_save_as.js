@@ -162,10 +162,11 @@
         var leaf_selectable = settings.selectable_object == "leaf" || settings.selectable_object == "all";
         var folder_selectable = settings.selectable_object == "folder" || settings.selectable_object == "all";
     
-        var top = window.parent.parent.jQuery("<div>"
+        var parentJQuery = (window.parent && window.parent.parent && window.parent.parent.jQuery) || $;
+        var top = parentJQuery("<div>"
 
             //A field at the top of the dialog to hold error messages.
-            + "<p id='perc-saveas-dialog-error' class='perc-field-error'>"
+            + "<p id='perc-saveas-dialog-error' class='perc-field-error'></p>"
 
             //Text field for the name under which to save the asset
             + ut.input( settings.asset_name ,
@@ -179,7 +180,7 @@
                 sa_tabindex )
 
             //Space for the directory navigation.
-            + "</p><div id='perc-saveas-dialog-direc'></div>"
+            + "<div id='perc-saveas-dialog-direc'></div>"
             + "</div>"
         );
     
@@ -249,6 +250,8 @@
     
         function set_path( path ) 
         {
+            top.find("#perc-saveas-dialog-error").text("");
+
             //Set the new folder callback to create a folder at the current path.
             new_folder_callback = create_folder_at( ut.acop( path ) );
         
@@ -257,6 +260,7 @@
                 //If the asset name reflects the selected asset, it should be cleared
                 //when the folder changes.
                 asset_name.val( "" );
+                current_spec = null;
             }
         
             //Set the location dropdown based on the current path.
@@ -344,16 +348,22 @@
             //When there is an error, such as an AJAX error, put the text at the
             //top of the save as dialog and call attention to it by a pulsating
             //effect.
-            $("#perc-saveas-dialog-error").text( x ).effect('pulsate', {times: 1});
+            var errorEl = top.find("#perc-saveas-dialog-error");
+            errorEl.text( x );
+            if ( typeof errorEl.effect === "function" )
+            {
+                errorEl.stop( true, true ).effect('pulsate', {times: 1});
+            }
         }
         function save_callback()
         {
             var aname = asset_name.val();
-            if( !aname || aname == "" )
+            if( !aname || aname == "" || ( !settings.new_asset_option && !current_spec ) )
             {
                 err(settings.no_name_error);
                 return;
             }
+            top.find("#perc-saveas-dialog-error").text("");
             
             //If the name is present, call the onSave callback with the current path
             //and the selected asset name. The third and fourth arguments allow the
@@ -387,6 +397,7 @@
             var sclass = 'perc-saveas-dialog-selected';
             function selectAnchor(evt)
             {
+                top.find("#perc-saveas-dialog-error").text("");
                 anchor.siblings( '.'+sclass ).removeClass( sclass );
                 anchor.addClass( sclass );
                 if( spec['leaf'] )
@@ -404,13 +415,21 @@
                 if( leaf_selectable )
                 {
                     anchor.on("click",  function(evt){
+                        evt.preventDefault();
                         selectAnchor(evt);
                     } );
                     anchor.on("dblclick", function(evt)
                     {
-                        anchor.trigger("click");
-                        $("#perc-saveas-dialog-save-button").trigger("click");
+                        evt.preventDefault();
+                        selectAnchor(evt);
+                        save_callback();
                     });
+                }
+                else
+                {
+                    anchor.on("click", function(evt){
+                        evt.preventDefault();
+                    } );
                 }
             }
             else
@@ -418,11 +437,19 @@
                 if( folder_selectable )
                 {
                     anchor.on("click", function(evt){
+                        evt.preventDefault();
                         selectAnchor(evt);
+                    } );
+                }
+                else
+                {
+                    anchor.on("click", function(evt){
+                        evt.preventDefault();
                     } );
                 }
                 anchor.on("dblclick", function(evt)
                 {
+                    evt.preventDefault();
                     set_path( item_path );
                 });
             }

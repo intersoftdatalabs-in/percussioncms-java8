@@ -323,7 +323,7 @@
                     anchor.on("dblclick", function()
                     {
                         anchor.trigger("click");
-                        $("#perc-saveas-dialog-save-button").trigger("click");
+                        $("#perc-save-as-save").trigger("click");
                     });
                 }
             }
