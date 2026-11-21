@@ -4,8 +4,9 @@
   "description": "Percussion CMS QA Automation tests using Playwright",
   "scripts": {
     "test": "playwright test",
-    "test:login": "playwright test tests/login.spec.js",
-    "test:install": "playwright test tests/install",
+    "test:setup": "playwright test --project=setup",
+    "test:login": "playwright test tests/login.spec.js --no-deps",
+    "test:install": "playwright test tests/install --no-deps",
     "test:functional": "playwright test tests/functional",
     "test:widgets": "playwright test tests/widgets"
   },

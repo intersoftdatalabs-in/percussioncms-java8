@@ -3,7 +3,7 @@ import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { loginAsAdmin, selectPage } from '../helpers/cms-ui';
-import { PUBLISH_DIR, CMS_LOG } from '../helpers/qa-env';
+import { PUBLISH_DIR, CMS_LOG, TEST_ASSET_FOLDER } from '../helpers/qa-env';
 
 const OUT = PUBLISH_DIR;
 const LOG = CMS_LOG;
@@ -31,13 +31,13 @@ test.describe('Pages and assets are published', () => {
 
   for (const file of ASSETS) {
     test(`Pages and assets are published - asset: ${file} is published and the published file is byte-identical to the upload`, async ({ page }) => {
-      const published = `${OUT}/Assets/New-Folder/${file}`;
+      const published = `${OUT}/Assets/${TEST_ASSET_FOLDER}/${file}`;
       fs.rmSync(published, { force: true });
       await loginAsAdmin(page);
       await page.getByText('Assets', { exact: true }).first().click();
       await expect(page.locator('#mcol-path-summary')).toHaveValue('/Assets');
-      await page.getByText('New-Folder', { exact: true }).first().click();
-      await expect(page.locator('#mcol-path-summary')).toHaveValue('/Assets/New-Folder');
+      await page.getByText(TEST_ASSET_FOLDER, { exact: true }).first().click();
+      await expect(page.locator('#mcol-path-summary')).toHaveValue(`/Assets/${TEST_ASSET_FOLDER}`);
       await page.getByText(file, { exact: true }).first().dblclick();
       await publishOpenItem(page);
 

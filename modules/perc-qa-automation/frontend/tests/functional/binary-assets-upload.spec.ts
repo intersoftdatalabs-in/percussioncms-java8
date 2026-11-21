@@ -3,7 +3,7 @@ import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { loginAsAdmin } from '../helpers/cms-ui';
-import { CMS_URL } from '../helpers/qa-env';
+import { CMS_URL, TEST_ASSET_FOLDER } from '../helpers/qa-env';
 
 const FIXTURES = ['excel.xlsx', 'excel97.xls', 'ppt.pptx', 'ppt.ppt', 'word.docx', 'test.pdf'];
 const sha = (b: Buffer) => crypto.createHash('sha256').update(b).digest('hex');
@@ -21,9 +21,9 @@ test.describe('Binary assets upload', () => {
     test(`Binary assets upload: upload ${file} as a File asset and download it back unchanged`, async ({ page }) => {
       const src = path.join(__dirname, '..', 'fixtures', file);
       const title = `QA-${file}-${Date.now()}`;
-      await openFolder(page, 'New-Folder');
+      await openFolder(page, TEST_ASSET_FOLDER);
 
-      await expect(page.locator('#mcol-path-summary')).toHaveValue('/Assets/New-Folder');
+      await expect(page.locator('#mcol-path-summary')).toHaveValue(`/Assets/${TEST_ASSET_FOLDER}`);
       await page.locator('#mcol-new-asset.ui-enabled').click();
       await page.locator('text=/^File$/ >> visible=true').first().click({ timeout: 60_000 });
       await page.getByRole('button', { name: 'Next' }).click();

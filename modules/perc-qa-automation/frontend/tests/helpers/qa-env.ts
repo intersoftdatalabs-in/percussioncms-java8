@@ -21,6 +21,13 @@ function readProp(file: string, key: string): string | undefined {
   }
 }
 
+/** True when the folder exists; used to skip scenarios that need an install this machine does not have. */
+export const dirExists = (dir: string): boolean => fs.existsSync(dir);
+
+/** HTTP URL of the DTS installed in `dir`, read from its perc-catalina.properties (http.port). */
+export const dtsUrlFor = (dir: string): string =>
+  `http://localhost:${readProp(path.join(dir, 'Deployment/Server/conf/perc/perc-catalina.properties'), 'http.port') ?? '9980'}`;
+
 /** CMS base URL (DEV_PERCUSSION_URL, else discovered from the install). `CMS_URL` overrides for ad-hoc runs. */
 export const CMS_URL: string = process.env.CMS_URL ?? auth.BASE_URL;
 
@@ -37,6 +44,10 @@ export const installDir = (name: string): string => norm(path.join(INSTALLS_ROOT
 /** Site/folder that the page and widget scenarios create their test pages in. */
 export const TEST_SITE: string = process.env.QA_SITE ?? 'QA-Widgets';
 export const TEST_FOLDER: string = process.env.QA_FOLDER ?? 'widgets';
+/** Folder under /Assets that the asset scenarios upload their files into. */
+export const TEST_ASSET_FOLDER: string = process.env.QA_ASSET_FOLDER ?? 'qa-assets';
+/** Name of the page template created together with the test site (a base layout with left/content/right regions). */
+export const TEST_TEMPLATE: string = process.env.QA_TEMPLATE ?? 'qa-base';
 
 /** DTS delivery (HTTP) URL and admin (HTTPS) URL for the in-place DTS next to the CMS. */
 const catalina = path.join(CMS_INSTALL, 'Deployment/Server/conf/perc/perc-catalina.properties');
