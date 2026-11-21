@@ -13,3 +13,4 @@ For existing Windows services installed before this change, append the option pa
 tomcat9.exe //US//PercussionProductionDTS ++JvmOptions "-XX:+IgnoreUnrecognizedVMOptions;-XX:-UseBASE64Intrinsics"
 tomcat9.exe //US//PercussionStagingDTS ++JvmOptions "-XX:+IgnoreUnrecognizedVMOptions;-XX:-UseBASE64Intrinsics"
 ```
+
