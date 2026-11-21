@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.percussion.share.service.IPSDataService.PSThemeNotFoundException;
 import com.percussion.theme.data.PSRegionCSS;
 import com.percussion.theme.data.PSRegionCSS.Property;
 import com.percussion.theme.data.PSRegionCssList;
@@ -31,6 +32,7 @@ import com.percussion.theme.data.PSThemeSummary;
 import com.percussion.theme.service.impl.PSThemeService;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
@@ -300,6 +302,87 @@ public class PSThemeServiceTest {
       } catch (IllegalArgumentException expected) {
         // expected
       }
+    }
+  }
+
+  @Test
+  public void clearCacheRegionCSSRejectsSymlinkedSessionDirectory() throws Exception {
+    File installDir = tempFolder.newFolder("cms-install-symlink-cache");
+    File jettyDir = new File(installDir, "jetty");
+    assertTrue(jettyDir.mkdirs());
+    String rxDeployDir = jettyDir.getAbsolutePath() + File.separator + "..";
+
+    File tempRoot = new File(installDir, "sys_resources/temp/themes");
+    File otherSessionDir = new File(tempRoot, "other-session");
+    File keepFile = new File(otherSessionDir, "keep.css");
+    FileUtils.writeStringToFile(keepFile, "/* keep */", StandardCharsets.UTF_8);
+
+    PSThemeService svc = new PSThemeService();
+    svc.setThemesTempRootDirectory(
+        rxDeployDir
+            + File.separator
+            + "sys_resources"
+            + File.separator
+            + "temp"
+            + File.separator
+            + "themes");
+
+    File pssessionLink = new File(tempRoot, "pssession");
+    Files.createSymbolicLink(pssessionLink.toPath(), otherSessionDir.toPath());
+    try {
+      svc.clearCacheRegionCSS("percussion", "qa-blog-index");
+      fail("expected IllegalArgumentException for symlinked session directory");
+    } catch (IllegalArgumentException expected) {
+      // expected
+    }
+    assertTrue("Other session file must not be deleted", keepFile.exists());
+
+    Files.delete(pssessionLink.toPath());
+    Files.createSymbolicLink(pssessionLink.toPath(), tempRoot.toPath());
+    try {
+      svc.clearCacheRegionCSS("percussion", "qa-blog-index");
+      fail("expected IllegalArgumentException for session symlink pointing to tempRoot");
+    } catch (IllegalArgumentException expected) {
+      // expected
+    }
+    assertTrue("Temp root contents must not be deleted", keepFile.exists());
+  }
+
+  @Test
+  public void findAllSkipsThemeWithEscapingRegionCssSymlink() throws Exception {
+    File installDir = tempFolder.newFolder("cms-install-symlink-theme");
+    File themesRoot = new File(installDir, "web_resources/themes");
+    File outsideDir = tempFolder.newFolder("outside-theme-target");
+    FileUtils.writeStringToFile(
+        new File(outsideDir, "perc_region.css"),
+        "#container.perc-region { font-size: 10px; }\n",
+        StandardCharsets.UTF_8);
+
+    FileUtils.writeStringToFile(
+        new File(themesRoot, "valid-theme/perc_theme.css"), "body {}\n", StandardCharsets.UTF_8);
+    FileUtils.writeStringToFile(
+        new File(themesRoot, "valid-theme/perc/perc_region.css"),
+        "#container.perc-region { font-size: 11px; }\n",
+        StandardCharsets.UTF_8);
+
+    File escapingThemeDir = new File(themesRoot, "escaping-theme");
+    FileUtils.writeStringToFile(
+        new File(escapingThemeDir, "perc_theme.css"), "body {}\n", StandardCharsets.UTF_8);
+    Files.createSymbolicLink(new File(escapingThemeDir, "perc").toPath(), outsideDir.toPath());
+
+    PSThemeService svc = new PSThemeService();
+    svc.setThemesRootDirectory(themesRoot.getAbsolutePath());
+    svc.setThemesRootRelativeUrl("/web_resources/themes");
+
+    List<PSThemeSummary> summaries = svc.findAll();
+    assertEquals(1, summaries.size());
+    assertEquals("valid-theme", summaries.get(0).getName());
+
+    try {
+      svc.find("escaping-theme");
+      fail("expected PSThemeNotFoundException for theme with escaping region CSS symlink");
+    } catch (PSThemeNotFoundException expected) {
+      // expected
     }
   }
 }
