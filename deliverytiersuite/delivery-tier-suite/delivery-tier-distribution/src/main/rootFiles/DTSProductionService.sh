@@ -146,12 +146,8 @@ sed -e "s/\${PercussionProductionDTS_service}/$SERVICE_NAME/" ${CATALINA_HOME}/b
 sed -i "3 a CATALINA_HOME=${CATALINA_HOME}" /etc/init.d/${SERVICE_NAME}
 sed -i "4 a JAVA_HOME=${JAVA_HOME}" /etc/init.d/${SERVICE_NAME}
 
-# Issue #326: the init script is the stock catalina.sh. Make it
-#  1. read the settings written to /etc/default/<service> below (JAVA_HOME, CATALINA_PID, CATALINA_OUT,
-#     TOMCAT_USER, ...); they were never read before, so the pid file was never used, and
-#  2. run Tomcat as the owner of the installation. The service is started by root (boot, 'service <name> start')
-#     but the SecurityListener in conf/server.xml refuses to start Tomcat as root, so Tomcat shut itself down
-#     as soon as it had started while the script still reported "Tomcat started".
+# Issue #326: a root-started init script must source /etc/default/<service> and drop to the install owner,
+# because the SecurityListener in conf/server.xml refuses to run Tomcat as root.
 INIT_PATCH=$(mktemp)
 cat > "${INIT_PATCH}" <<'PATCH'
 [ -r "/etc/default/@SERVICE_NAME@" ] && . "/etc/default/@SERVICE_NAME@"

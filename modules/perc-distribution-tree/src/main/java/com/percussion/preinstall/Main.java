@@ -321,12 +321,8 @@ public class Main {
         debugFlag = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8054";
       }
 
-      // Ant tasks such as <fixcrlf> rewrite a file by writing a temp file and moving it over the
-      // original. On Windows the moved file keeps the ACL of the temp file, so with the default
-      // java.io.tmpdir (the user profile's Temp folder) the rewritten files lose the normal
-      // "Users" read permission of the install folder. A service running as a different account
-      // (the Windows service runs as LocalService) then cannot read them (issue #326). Keep the
-      // Ant temp files inside the install folder so they inherit its permissions.
+      // On Windows, Ant temp files keep the tmpdir ACL, so java.io.tmpdir must be under the install
+      // dir or LocalService cannot read the rewritten files (#326).
       Path antTempDir = installDir.toAbsolutePath().resolve("temp");
       Files.createDirectories(antTempDir);
 
