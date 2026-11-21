@@ -145,8 +145,34 @@ echo "Copying startup script ${CATALINA_HOME}/bin/catalina.sh /etc/init.d/${SERV
 sed -e "s/\${PercussionProductionDTS_service}/$SERVICE_NAME/" ${CATALINA_HOME}/bin/catalina.sh  >> /etc/init.d/${SERVICE_NAME}
 sed -i "3 a CATALINA_HOME=${CATALINA_HOME}" /etc/init.d/${SERVICE_NAME}
 sed -i "4 a JAVA_HOME=${JAVA_HOME}" /etc/init.d/${SERVICE_NAME}
+
+# Issue #326: the init script is the stock catalina.sh. Make it
+#  1. read the settings written to /etc/default/<service> below (JAVA_HOME, CATALINA_PID, CATALINA_OUT,
+#     TOMCAT_USER, ...); they were never read before, so the pid file was never used, and
+#  2. run Tomcat as the owner of the installation. The service is started by root (boot, 'service <name> start')
+#     but the SecurityListener in conf/server.xml refuses to start Tomcat as root, so Tomcat shut itself down
+#     as soon as it had started while the script still reported "Tomcat started".
+INIT_PATCH=$(mktemp)
+cat > "${INIT_PATCH}" <<'PATCH'
+[ -r "/etc/default/@SERVICE_NAME@" ] && . "/etc/default/@SERVICE_NAME@"
+if [ "$(id -u)" = "0" ] && [ -n "${TOMCAT_USER}" ] && [ "${TOMCAT_USER}" != "root" ]; then
+  # /var/run is recreated empty at boot: make sure the pid folder exists and belongs to the Tomcat user
+  if [ -n "${CATALINA_PID}" ]; then
+    mkdir -p "$(dirname "${CATALINA_PID}")"
+    chown "${TOMCAT_USER}:${TOMCAT_GROUP:-${TOMCAT_USER}}" "$(dirname "${CATALINA_PID}")"
+  fi
+  exec su -s /bin/bash "${TOMCAT_USER}" -c "$(printf '%q ' "$0" "$@")"
+fi
+PATCH
+sed -i "s/@SERVICE_NAME@/${SERVICE_NAME}/g" "${INIT_PATCH}"
+sed -i "5 r ${INIT_PATCH}" /etc/init.d/${SERVICE_NAME}
+rm -f "${INIT_PATCH}"
 chmod 755 "/etc/init.d/${SERVICE_NAME}"
 
+if [ "${RX_USER}" == "root" ]; then
+	echo "WARNING: the installation is owned by root. Tomcat refuses to run as root (SecurityListener in conf/server.xml), so the service will not stay up."
+	echo "         Change the owner of the installation folder to a non-root user and reinstall the service."
+fi
 
 cat <<-EOF > /etc/default/${SERVICE_NAME}
 	JAVA_HOME="${JAVA_HOME}"
@@ -156,9 +182,8 @@ cat <<-EOF > /etc/default/${SERVICE_NAME}
 	CATALINA_OUT="${CATALINA_HOME}/logs/catalina.log"
 	CATALINA_PID="${TOMCAT_RUN}/PercussionProductionDTS.pid"
 	CATALINA_OPTS="-XX:+IgnoreUnrecognizedVMOptions -XX:-UseBASE64Intrinsics"
-	echo "Setting up pid folder /var/run${SERVICE_NAME} setting ownership to user=${RX_USER} group=${RX_GROUP}"
-  mkdir -p ${TOMCAT_RUN}
-  chown -R "${RX_USER}:${RX_GROUP}" "${TOMCAT_RUN}"
+	TOMCAT_USER="${RX_USER}"
+	TOMCAT_GROUP="${RX_GROUP}"
 EOF
 
 echo "Configuration for service ${SERVICE_NAME} in /etc/init.d/${SERVICE_NAME} must reinstall or update if paths change"

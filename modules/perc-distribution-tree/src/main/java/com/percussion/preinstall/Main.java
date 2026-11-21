@@ -321,33 +321,30 @@ public class Main {
         debugFlag = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8054";
       }
 
-      ProcessBuilder builder;
+      // Ant tasks such as <fixcrlf> rewrite a file by writing a temp file and moving it over the
+      // original. On Windows the moved file keeps the ACL of the temp file, so with the default
+      // java.io.tmpdir (the user profile's Temp folder) the rewritten files lose the normal
+      // "Users" read permission of the install folder. A service running as a different account
+      // (the Windows service runs as LocalService) then cannot read them (issue #326). Keep the
+      // Ant temp files inside the install folder so they inherit its permissions.
+      Path antTempDir = installDir.toAbsolutePath().resolve("temp");
+      Files.createDirectories(antTempDir);
+
+      List<String> command = new ArrayList<>();
+      command.add(javabin);
       if (debugFlag.trim().length() > 0) {
-        builder =
-            new ProcessBuilder(
-                    javabin,
-                    debugFlag,
-                    "-Dfile.encoding=UTF-8",
-                    "-Dsun.jnu.encoding=UTF-8",
-                    "-Dinstall.dir=" + installDir.toAbsolutePath().toString(),
-                    "-jar",
-                    jar.toAbsolutePath().toString(),
-                    "-f",
-                    ANT_INSTALL)
-                .directory(execPath.toFile());
-      } else {
-        builder =
-            new ProcessBuilder(
-                    javabin,
-                    "-Dfile.encoding=UTF-8",
-                    "-Dsun.jnu.encoding=UTF-8",
-                    "-Dinstall.dir=" + installDir.toAbsolutePath().toString(),
-                    "-jar",
-                    jar.toAbsolutePath().toString(),
-                    "-f",
-                    ANT_INSTALL)
-                .directory(execPath.toFile());
+        command.add(debugFlag);
       }
+      command.add("-Dfile.encoding=UTF-8");
+      command.add("-Dsun.jnu.encoding=UTF-8");
+      command.add("-Djava.io.tmpdir=" + antTempDir);
+      command.add("-Dinstall.dir=" + installDir.toAbsolutePath().toString());
+      command.add("-jar");
+      command.add(jar.toAbsolutePath().toString());
+      command.add("-f");
+      command.add(ANT_INSTALL);
+
+      ProcessBuilder builder = new ProcessBuilder(command).directory(execPath.toFile());
       // pass in known flags
       builder.environment().put(DEVELOPMENT, developmentFlag);
       builder.environment().put(PERCUSSION_VERSION, percVersion);
