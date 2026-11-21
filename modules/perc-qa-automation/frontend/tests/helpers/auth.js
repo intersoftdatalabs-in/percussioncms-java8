@@ -55,8 +55,9 @@ function getPasswordsFromInstall(installPath) {
 }
 
 function updateEnvFile(key, value) {
-  let envContent = fs.readFileSync(envPath, 'utf-8');
-  
+  // .env is git-ignored, so it may not exist yet on a fresh checkout.
+  let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
+
   const regex = new RegExp(`^${key}=.*$`, 'm');
   if (regex.test(envContent)) {
     envContent = envContent.replace(regex, `${key}=${value}`);
@@ -126,7 +127,8 @@ async function login(page, username, password) {
   await page.selectOption('select[name="j_locale"]', 'en-us');
   await page.click('button[type="submit"]');
   
-  await page.waitForURL('**/cm/app/**', { timeout: 10000 });
+  // The first login after a (re)start can be slow while the CMS finishes warming up.
+  await page.waitForURL('**/cm/app/**', { timeout: Number(process.env.LOGIN_TIMEOUT || 60000) });
 }
 
 async function loginAsAdmin(page) {
