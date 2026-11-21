@@ -129,7 +129,7 @@ public class PSThemeService implements IPSThemeService {
 
   private File getRegionCssFile(String themeName) throws PSThemeNotFoundException {
     File themeFolder = getThemeFolder(themeName);
-    return new File(themeFolder, THEME_REGION_CSS_PATH);
+    return resolveUnderRoot(themeFolder, THEME_REGION_CSS_PATH);
   }
 
   /**
@@ -173,7 +173,48 @@ public class PSThemeService implements IPSThemeService {
 
   private File getCachedRegionCSSFileOnly(String theme) {
     String path = getCachedRegionCSSRelativePath(theme);
-    return new File(getThemesTempRootDirectory() + File.separator + path);
+    return resolveUnderRoot(new File(getThemesTempRootDirectory()), path);
+  }
+
+  /**
+   * Resolves {@code relativePath} under {@code rootDir} and enforces canonical containment. Uses
+   * {@link File#getCanonicalPath()} directly so directories that are deleted on startup (such as
+   * {@code themesTempRootDirectory} in {@link #init()}) resolve cleanly before they exist on disk.
+   */
+  private static File resolveUnderRoot(File rootDir, String relativePath) {
+    if (rootDir == null) {
+      throw new IllegalArgumentException("rootDir must not be null");
+    }
+    if (relativePath == null) {
+      throw new IllegalArgumentException("relativePath must not be null");
+    }
+    if (relativePath.indexOf('\0') >= 0) {
+      throw new IllegalArgumentException("relativePath contains a NUL byte");
+    }
+    if (new File(relativePath).isAbsolute()) {
+      throw new IllegalArgumentException("relativePath must be relative: " + relativePath);
+    }
+    String baseCanonical;
+    String resolvedCanonical;
+    try {
+      baseCanonical = rootDir.getCanonicalPath();
+      resolvedCanonical = new File(rootDir, relativePath).getCanonicalPath();
+    } catch (IOException e) {
+      throw new IllegalArgumentException(
+          "Failed to resolve canonical path under '" + rootDir + "': " + e.getMessage(), e);
+    }
+    String baseNorm = baseCanonical.replace('\\', '/');
+    String resolvedNorm = resolvedCanonical.replace('\\', '/');
+    String baseWithSep = baseNorm.endsWith("/") ? baseNorm : baseNorm + "/";
+    if (!resolvedNorm.equals(baseNorm) && !resolvedNorm.startsWith(baseWithSep)) {
+      throw new IllegalArgumentException(
+          "Resolved path '"
+              + resolvedCanonical
+              + "' is not under base directory '"
+              + baseCanonical
+              + "' (path-traversal attempt blocked)");
+    }
+    return new File(resolvedCanonical);
   }
 
   private File getCachedRegionCSSFile(String theme, boolean overrideCachedFile)
@@ -520,10 +561,8 @@ public class PSThemeService implements IPSThemeService {
     log.debug("clearCache for '{}", theme);
 
     File sessionDir =
-        new File(
-            getThemesTempRootDirectory()
-                + File.separator
-                + safeSessionSegment(getCurrentSessionId()));
+        resolveUnderRoot(
+            new File(getThemesTempRootDirectory()), safeSessionSegment(getCurrentSessionId()));
     // codeql[java/path-injection] justification: safeSessionSegment above strips to [a-zA-Z0-9._-];
     // GHAS does not model in-repo sanitizer; re-review by 2027-07-31
     if (sessionDir.exists()) { // codeql[java/path-injection]

@@ -23,14 +23,25 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.percussion.theme.data.PSRegionCSS;
+import com.percussion.theme.data.PSRegionCSS.Property;
+import com.percussion.theme.data.PSRegionCssList;
 import com.percussion.theme.data.PSTheme;
 import com.percussion.theme.data.PSThemeSummary;
 import com.percussion.theme.service.impl.PSThemeService;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class PSThemeServiceTest {
+  @Rule public TemporaryFolder tempFolder = new TemporaryFolder();
+
   private PSThemeService themeService;
 
   @Before
@@ -197,6 +208,97 @@ public class PSThemeServiceTest {
             "Expected IllegalArgumentException or IllegalArgumentException cause, got "
                 + other.getClass().getName(),
             other);
+      }
+    }
+  }
+
+  @Test
+  public void regionCssOperationsAllowRxDeployDirWithDotDotSegmentAndRejectTraversal()
+      throws Exception {
+    File installDir = tempFolder.newFolder("cms-install");
+    File jettyDir = new File(installDir, "jetty");
+    assertTrue(jettyDir.mkdirs());
+    String rxDeployDir = jettyDir.getAbsolutePath() + File.separator + "..";
+
+    File regionCssFile =
+        new File(installDir, "web_resources/themes/percussion/perc/perc_region.css");
+    FileUtils.writeStringToFile(
+        regionCssFile,
+        "#container.perc-region { font-size: 11px; }\n"
+            + "#container.perc-region #header.perc-region { font-size: 22px; }\n",
+        StandardCharsets.UTF_8);
+
+    File noRegionCssFile =
+        new File(installDir, "web_resources/themes/no-region-css/perc_theme.css");
+    FileUtils.writeStringToFile(noRegionCssFile, "body { margin: 0; }\n", StandardCharsets.UTF_8);
+
+    PSThemeService svc = new PSThemeService();
+    svc.setThemesRootDirectory(
+        rxDeployDir + File.separator + "web_resources" + File.separator + "themes");
+    svc.setThemesRootRelativeUrl("/web_resources/themes");
+    svc.setThemesTempRootDirectory(
+        rxDeployDir
+            + File.separator
+            + "sys_resources"
+            + File.separator
+            + "temp"
+            + File.separator
+            + "themes");
+    svc.setThemesTempRootRelativeUrl("/sys_resources/temp/themes");
+    svc.init();
+
+    String existingUrl = svc.getCachedRegionCSSRelativeURL("percussion");
+    assertEquals("pssession/percussion/perc/perc_region.css", existingUrl);
+
+    String emptyUrl = svc.getCachedRegionCSSRelativeURL("no-region-css");
+    assertEquals("pssession/no-region-css/perc/perc_region.css", emptyUrl);
+    File cachedEmpty =
+        new File(
+            installDir, "sys_resources/temp/themes/pssession/no-region-css/perc/perc_region.css");
+    assertTrue(
+        FileUtils.readFileToString(cachedEmpty, StandardCharsets.UTF_8).contains(".percDummyRule"));
+
+    svc.prepareForEditRegionCSS("percussion", "qa-blog-index");
+
+    PSRegionCSS found = svc.getRegionCSS("percussion", "qa-blog-index", "container", "header");
+    assertEquals("header", found.getRegionName());
+
+    PSRegionCSS updated = new PSRegionCSS("container", "middle");
+    updated.setProperties(Collections.singletonList(new Property("height", "25px")));
+    svc.saveRegionCSS("percussion", "qa-blog-index", updated);
+    assertEquals(
+        "middle",
+        svc.getRegionCSS("percussion", "qa-blog-index", "container", "middle").getRegionName());
+
+    svc.deleteRegionCSS("percussion", "qa-blog-index", "container", "header");
+    assertNull(
+        svc.getRegionCSS("percussion", "qa-blog-index", "container", "header").getRegionName());
+
+    svc.mergeRegionCSS("percussion", "qa-blog-index", new PSRegionCssList());
+    assertTrue(
+        FileUtils.readFileToString(regionCssFile, StandardCharsets.UTF_8).contains("#middle"));
+
+    svc.clearCacheRegionCSS("percussion", "qa-blog-index");
+    assertFalse(new File(installDir, "sys_resources/temp/themes/pssession").exists());
+
+    for (String badTheme : new String[] {"../escape", "..\\escape"}) {
+      try {
+        svc.getCachedRegionCSSRelativeURL(badTheme);
+        fail("expected IllegalArgumentException for " + badTheme);
+      } catch (IllegalArgumentException expected) {
+        // expected
+      }
+      try {
+        svc.prepareForEditRegionCSS(badTheme, "qa-blog-index");
+        fail("expected IllegalArgumentException for " + badTheme);
+      } catch (IllegalArgumentException expected) {
+        // expected
+      }
+      try {
+        svc.getRegionCSS(badTheme, "qa-blog-index", "container", "header");
+        fail("expected IllegalArgumentException for " + badTheme);
+      } catch (IllegalArgumentException expected) {
+        // expected
       }
     }
   }
