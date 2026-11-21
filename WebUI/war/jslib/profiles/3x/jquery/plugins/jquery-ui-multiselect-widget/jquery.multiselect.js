@@ -333,7 +333,7 @@
         "aria-disabled": isDisabled ? "true" : null
       };
       for (var name in inputAttribs) {
-        if (inputAttribs[name] !== null) {
+        if (inputAttribs[name] !== null && inputAttribs[name] !== undefined) {
           input.setAttribute(name,inputAttribs[name]);
         }
       }
@@ -396,38 +396,46 @@
 
       this.inputIdCounter = 0;
 
-      this.element.children().each( function() {
-        var elem = this;
+      function processChildren($container) {
+        $container.children().each( function() {
+          var elem = this;
+          var tagName = elem.tagName ? elem.tagName.toUpperCase() : '';
 
-        if (elem.tagName.toUpperCase() === 'OPTGROUP') {
-          var options = [];
+          if (tagName === 'OPTGROUP') {
+            var options = [];
 
-          $(elem).children().each( function() {
-            options.push(self._makeOption(this));
-          });
+            $(elem).find('option').each( function() {
+              options.push(self._makeOption(this));
+            });
 
-          // Build the list section for this optgroup, complete w/ option inputs...
-          var $collapseButton = !!self.options.groupsCollapsable
-                                 ? $( document.createElement('button') )
-                                    .attr({'title': self.linkInfo.collapse.title})
-                                    .addClass('ui-state-default ui-corner-all ui-multiselect-collapser')
-                                    .html(self.linkInfo.collapse.icon)
-                                 : null;
-          var $optGroupLabel = $( document.createElement('a') )
-                                    .addClass('ui-multiselect-grouplabel')
-                                    .html( elem.getAttribute('label') );
-          var $optionGroup = $( document.createElement('ul') ).append(options);
-          var $optGroupItem = $( document.createElement('li') )
-                                 .addClass('ui-multiselect-optgroup'
-                                    + (self.options.groupColumns ? ' ui-multiselect-columns' : '')
-                                    + (elem.className ? ' ' + elem.className : ''))
-                                 .append($collapseButton, $optGroupLabel, $optionGroup)
-          list.push($optGroupItem);
-        }
-        else {
-          list.push(self._makeOption(elem));
-        }
-      });
+            // Build the list section for this optgroup, complete w/ option inputs...
+            var $collapseButton = !!self.options.groupsCollapsable
+                                   ? $( document.createElement('button') )
+                                      .attr({'title': self.linkInfo.collapse.title})
+                                      .addClass('ui-state-default ui-corner-all ui-multiselect-collapser')
+                                      .html(self.linkInfo.collapse.icon)
+                                   : null;
+            var $optGroupLabel = $( document.createElement('a') )
+                                      .addClass('ui-multiselect-grouplabel')
+                                      .html( elem.getAttribute('label') );
+            var $optionGroup = $( document.createElement('ul') ).append(options);
+            var $optGroupItem = $( document.createElement('li') )
+                                   .addClass('ui-multiselect-optgroup'
+                                      + (self.options.groupColumns ? ' ui-multiselect-columns' : '')
+                                      + (elem.className ? ' ' + elem.className : ''))
+                                   .append($collapseButton, $optGroupLabel, $optionGroup);
+            list.push($optGroupItem);
+          }
+          else if (tagName === 'OPTION') {
+            list.push(self._makeOption(elem));
+          }
+          else if (elem.children && elem.children.length > 0) {
+            processChildren($(elem));
+          }
+        });
+      }
+
+      processChildren(this.element);
 
       this.$checkboxes.empty().append(list);
    },

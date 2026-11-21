@@ -3364,28 +3364,26 @@ onchange    %Script;       #IMPLIED
    <xsl:template match="DisplayEntry" mode="psxcontrol-sysdropdownmultiple">
       <xsl:param name="controlValue"/>
       <xsl:param name="paramName"/>
-      <div class="datadisplay">
-         <option value="{Value}">
-            <xsl:if test="Value = $controlValue">
-               <xsl:attribute name="selected"><xsl:value-of select="'selected'"/></xsl:attribute>
-            </xsl:if>
-            <xsl:if test="@selected='yes'">
-               <xsl:attribute name="selected"><xsl:value-of select="'selected'"/></xsl:attribute>
-            </xsl:if>
-            <xsl:choose>
-               <xsl:when test="@sourceType">
-                  <xsl:call-template name="getLocaleDisplayLabel">
-                     <xsl:with-param name="sourceType" select="@sourceType"/>
-                     <xsl:with-param name="paramName" select="$paramName"/>
-                     <xsl:with-param name="displayVal" select="DisplayLabel"/>
-                  </xsl:call-template>
-               </xsl:when>
-               <xsl:otherwise>
-                  <xsl:value-of select="DisplayLabel"/>
-               </xsl:otherwise>
-            </xsl:choose>
-         </option>
-      </div>
+      <option value="{Value}">
+         <xsl:if test="Value = $controlValue">
+            <xsl:attribute name="selected"><xsl:value-of select="'selected'"/></xsl:attribute>
+         </xsl:if>
+         <xsl:if test="@selected='yes'">
+            <xsl:attribute name="selected"><xsl:value-of select="'selected'"/></xsl:attribute>
+         </xsl:if>
+         <xsl:choose>
+            <xsl:when test="@sourceType">
+               <xsl:call-template name="getLocaleDisplayLabel">
+                  <xsl:with-param name="sourceType" select="@sourceType"/>
+                  <xsl:with-param name="paramName" select="$paramName"/>
+                  <xsl:with-param name="displayVal" select="DisplayLabel"/>
+               </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>
+               <xsl:value-of select="DisplayLabel"/>
+            </xsl:otherwise>
+         </xsl:choose>
+      </option>
    </xsl:template>
    <!-- read only template for dropdown multiple -->
    <xsl:template match="Control[@name='sys_DropDownMultiple' and @isReadOnly='yes']" priority="10" mode="psxcontrol">
