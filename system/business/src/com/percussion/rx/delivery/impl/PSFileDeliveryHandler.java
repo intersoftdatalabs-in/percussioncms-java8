@@ -32,18 +32,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Objects;
@@ -160,33 +154,15 @@ public class PSFileDeliveryHandler extends PSBaseDeliveryHandler
          }
 
          if (item.getFile() != null) {
-            try (InputStream is = new FileInputStream(item.getFile())) {
-               try(FileOutputStream os = new FileOutputStream(destination)) {
-                  if (needsTextEncoding(item.getMimeType())) {
-                     try (Writer w = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
-                        try (Reader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-                           IOUtils.copy(reader,w);
-                        }
-                     }
-                  } else {
-                     IOUtils.copy(is, os, COPY_BUFFER_SIZE);
-                  }
-               }
+            try (InputStream is = new FileInputStream(item.getFile());
+                 FileOutputStream os = new FileOutputStream(destination)) {
+               IOUtils.copy(is, os, COPY_BUFFER_SIZE);
             }
-         }else{
-            try(InputStream is = item.getResultStream()){
-               try(FileOutputStream os = new FileOutputStream(destination)) {
-                  if(needsTextEncoding(item.getMimeType())){
-                     try(Reader reader = new BufferedReader(new InputStreamReader(is,StandardCharsets.UTF_8))){
-                        try(Writer writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))){
-                           IOUtils.copy(reader,writer);
-                        }
-                     }
-                  }else {
-                     // Copy temp file to permanent location.
-                     IOUtils.copy(is, os, COPY_BUFFER_SIZE);
-                  }
-               }
+         } else {
+            try (InputStream is = item.getResultStream();
+                 FileOutputStream os = new FileOutputStream(destination)) {
+               // Copy temp file to permanent location.
+               IOUtils.copy(is, os, COPY_BUFFER_SIZE);
             }
          }
       }
@@ -201,7 +177,7 @@ public class PSFileDeliveryHandler extends PSBaseDeliveryHandler
       catch (Exception e)
       {
          de = new PSDeliveryException(IPSDeliveryErrors.COPY_FILE_FAILED, e,
-               item.getFile().getAbsolutePath(),
+               item.getFile() != null ? item.getFile().getAbsolutePath() : String.valueOf(item.getId()),
                destination.getAbsolutePath(), (StringUtils.isBlank(e
                      .getLocalizedMessage()) ? e.getClass().getName() : e
                      .getLocalizedMessage()));
@@ -215,10 +191,6 @@ public class PSFileDeliveryHandler extends PSBaseDeliveryHandler
       return new PSDeliveryResult(Outcome.DELIVERED, null, item.getId(),
                jobId, item.getReferenceId(), destPath.getBytes(StandardCharsets.UTF_8));
 
-   }
-
-   private boolean needsTextEncoding(String mimeType) {
-      return mimeType.toLowerCase().contains("html") || mimeType.toLowerCase().contains("xml");
    }
 
    @Override
