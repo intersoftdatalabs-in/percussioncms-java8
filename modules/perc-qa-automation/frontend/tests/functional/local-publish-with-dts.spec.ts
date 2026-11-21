@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
-import { loginAsAdmin, selectPage } from '../helpers/cms-ui';
+import { loginAsAdmin, selectPage, configurePublishing } from '../helpers/cms-ui';
 import { PUBLISH_DIR, CMS_LOG, DTS_ADMIN_URL } from '../helpers/qa-env';
 
 const OUT = PUBLISH_DIR;
@@ -13,15 +13,8 @@ test.describe('Local publish with DTS', () => {
     await loginAsAdmin(page);
     await expect(page.getByText('Welcome, Admin')).toBeVisible({ timeout: 90_000 });
 
-    // select the DTS server in the site's publish server configuration
-    await page.goto('/cm/app/?view=publish&pathType=unknown');
-    await page.getByText('QA-Widgets', { exact: true }).first().click();
-    await page.locator('.perc-edit-server-properties').click({ timeout: 30_000 });
-    const sel = page.locator('select[name="publishServer"]');
-    await expect(sel).toBeVisible({ timeout: 30_000 });
-    expect(await sel.locator('option').allTextContents(), 'DTS server offered').toContain(DTS_URL);
-    await sel.selectOption({ label: DTS_URL });
-    await page.getByRole('button', { name: /save/i }).first().click();
+    // select the DTS server in the site's publish server configuration (default output folder)
+    await configurePublishing(page, DTS_URL, 'default');
 
     const logStart = fs.statSync(LOG).size;
     fs.rmSync(`${OUT}/index.html`, { force: true });

@@ -1,6 +1,6 @@
 import { Page, expect } from '@playwright/test';
 import * as fs from 'fs';
-import { CMS_LOG, TEST_SITE, TEST_FOLDER, TEST_ASSET_FOLDER, TEST_TEMPLATE } from './qa-env';
+import { CMS_LOG, DTS_WEB_ROOT, TEST_SITE, TEST_FOLDER, TEST_ASSET_FOLDER, TEST_TEMPLATE } from './qa-env';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const auth = require('./auth');
@@ -84,6 +84,28 @@ export async function uploadFileAsset(page: Page, folder: string, fixturePath: s
   await page.getByRole('button', { name: 'Save' }).click();
   await page.waitForURL(/view=editAsset.*name=/, { timeout: 60_000 });
   return new URL(page.url()).searchParams.get('name')!;
+}
+
+/**
+ * Publish > QA site > Server Properties: sets the DTS server ('NONE' or the DTS admin URL label) and where the files are written:
+ * `webRoot: 'dts'` writes into the web root the DTS serves (so the published page can be opened over HTTP and its delivery
+ * services work); `'default'` restores the "Server Default" folder (<site>apps/ROOT) that the local-publish scenarios inspect.
+ */
+export async function configurePublishing(page: Page, dts: string, webRoot: 'default' | 'dts') {
+  await page.goto('/cm/app/?view=publish&pathType=unknown');
+  await page.getByText(TEST_SITE, { exact: true }).first().click();
+  await page.locator('.perc-edit-server-properties').click({ timeout: 30_000 });
+  const field = page.locator('select[name="publishServer"]');
+  await expect(field).toBeVisible({ timeout: 30_000 });
+  await field.selectOption({ label: dts });
+  if (webRoot === 'dts') {
+    await page.getByText('Exact Path', { exact: true }).click();
+    await page.locator('#ownServer').fill(DTS_WEB_ROOT);
+  } else {
+    await page.getByText('Server Default', { exact: true }).click();
+  }
+  await page.getByRole('button', { name: /save/i }).first().click();
+  await expect(field).toBeHidden({ timeout: 30_000 });
 }
 
 /** Selects a page in the finder (Sites > site > page), waiting for each level to load. Returns after the page is selected. */
@@ -182,4 +204,90 @@ export async function createPage(page: Page, title: string): Promise<string> {
   await dlg.getByRole('button', { name: 'Save' }).click();
   await expect(page).toHaveURL(/view=editor.*mode=edit/, { timeout: 60_000 });
   return name;
+}
+
+/**
+ * Pages published through "Publish" on a single item do not deliver the shared scripts they reference
+ * (/web_resources/cm/jslib/jquery.js, perc_common_ui.js, ...). A Full publish of the site does, so run one when the DTS web root
+ * does not have them yet. Needed by every widget whose list is built in the browser from DTS services.
+ */
+export async function ensureDeliveryResources(page: Page) {
+  const marker = `${DTS_WEB_ROOT}/web_resources/cm/jslib/jquery.js`;
+  if (fs.existsSync(marker)) return;
+  const count = () => fs.readFileSync(CMS_LOG).toString().split('Publishing Finished').length;
+  const before = count();
+  await page.goto('/cm/app/?view=publish&pathType=unknown');
+  await page.getByText(TEST_SITE, { exact: true }).first().click();
+  await page.getByText('Full', { exact: true }).first().click();
+  await expect.poll(count, { timeout: 240_000 }).toBeGreaterThan(before);
+  await expect.poll(() => fs.existsSync(marker), { timeout: 120_000 }).toBeTruthy();
+}
+
+/** Site Navigation view (view=arch) of the test site. */
+export async function openNavigationView(page: Page) {
+  await page.goto(`/cm/app/?view=arch&site=${encodeURIComponent(TEST_SITE)}&path=${encodeURIComponent('/Sites/' + TEST_SITE)}`);
+  await expect(page.locator('.perc-site-map-sectiontitle').first()).toBeVisible({ timeout: 60_000 });
+}
+
+/**
+ * Navigation view: adds a section (type "Section & landing page") on `level` (2 = directly below Home, 3 = below the section
+ * that is expanded). `folderName` becomes the section's folder. The "add section" button of a level is the first one in its row.
+ */
+async function addSection(page: Page, level: 2 | 3, title: string, folderName: string) {
+  const addButton = level === 2 ? { x: 52, y: 617 } : { x: 52, y: 763 };
+  const dlg = page.locator('.ui-dialog:visible', { hasText: 'New Section' });
+  await expect(async () => {            // the map binds the button's click handler a moment after drawing it
+    if (!(await dlg.isVisible())) await page.mouse.click(addButton.x, addButton.y);
+    await expect(dlg).toBeVisible({ timeout: 3_000 });
+  }).toPass({ timeout: 60_000 });
+  const inputs = dlg.locator('input[type=text]:visible');
+  await inputs.nth(0).fill(title);
+  await inputs.nth(1).fill(folderName);
+  await dlg.getByRole('button', { name: 'Save' }).click();
+  await expect(dlg).toBeHidden({ timeout: 60_000 });
+  await expect(page.locator('.perc-site-map-sectiontitle', { hasText: title })).toBeVisible({ timeout: 60_000 });
+}
+
+/** Makes sure a level-2 section with this title exists (creates it when missing) and expands it so its children (level 3) show. */
+export async function ensureLevel2Section(page: Page, title: string, folderName: string) {
+  await openNavigationView(page);
+  const node = page.locator('.perc-site-map-sectiontitle', { hasText: title });
+  if (!(await node.first().isVisible().catch(() => false))) await addSection(page, 2, title, folderName);
+  // the "children" arrow on the section's box; the map binds its click handlers a moment after it is drawn, so retry
+  await expect(async () => {
+    const box = (await node.first().boundingBox())!;
+    await page.mouse.click(box.x + 47, box.y + 79);
+    await expect(page.getByText('Level 3')).toBeVisible({ timeout: 3_000 });
+  }).toPass({ timeout: 60_000 });
+}
+
+/** Adds a level-3 section below the expanded level-2 section (call ensureLevel2Section first). */
+export async function addLevel3Section(page: Page, title: string, folderName: string) {
+  await addSection(page, 3, title, folderName);
+}
+
+/**
+ * Opens a page in the editor in EDIT mode by clicking through the finder: Sites > site > folders... > page. The page is picked in the
+ * deepest finder column (the same file name, e.g. index.html, also exists in the columns to the left) and its full path is checked.
+ */
+export async function openPageByPath(page: Page, segments: string[], pageName: string) {
+  await page.goto('/cm/app/?view=dash');
+  await expect(page.getByText('Welcome, Admin')).toBeVisible({ timeout: 90_000 });
+  const path = page.locator('#mcol-path-summary');
+  await page.getByText('Sites', { exact: true }).first().click();
+  let current = '/Sites';
+  await expect(path).toHaveValue(current, { timeout: 30_000 });
+  for (const s of [TEST_SITE, ...segments]) {
+    await page.getByText(s, { exact: true }).last().click();
+    current += `/${s}`;
+    await expect(path).toHaveValue(current, { timeout: 30_000 });
+  }
+  const item = page.getByText(pageName, { exact: true }).last();
+  await expect(item).toBeVisible({ timeout: 30_000 });
+  await item.dblclick();
+  await expect(path).toHaveValue(`${current}/${pageName}`, { timeout: 30_000 });
+  await expect(page).toHaveURL(/view=editor/, { timeout: 60_000 });
+  // double click opens the page read-only ("Viewing Page"); Edit switches to edit mode (checks the page out)
+  await page.getByRole('button', { name: 'Edit', exact: true }).click({ timeout: 60_000 });
+  await expect(page).toHaveURL(/mode=edit/, { timeout: 60_000 });
 }

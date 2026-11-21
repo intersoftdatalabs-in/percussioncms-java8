@@ -61,6 +61,9 @@ export const PUBLISH_DIR: string = norm(
   process.env.PUBLISH_DIR ?? path.join(CMS_INSTALL, 'Deployment/Server', `${TEST_SITE}apps/ROOT`),
 );
 
+/** Web root that the in-place DTS serves over HTTP (DTS_URL). Widgets that call delivery services are verified from pages published here. */
+export const DTS_WEB_ROOT: string = norm(process.env.DTS_WEB_ROOT ?? path.join(CMS_INSTALL, 'Deployment/Server/webapps/ROOT'));
+
 /** Source fixtures (binary documents) used by the asset scenarios. */
 export const FIXTURES_DIR: string = norm(path.join(__dirname, '..', 'fixtures'));
 
