@@ -28,7 +28,15 @@ module.exports = defineConfig({
   },
   projects: [
     {
+      // Creates the test site/template/folder when they do not exist yet. Skip it with --no-deps or QA_SKIP_SETUP=true.
+      name: 'setup',
+      testMatch: /setup\/.*\.setup\.ts$/,
+      use: { browserName: 'chromium' },
+    },
+    {
       name: 'chromium',
+      testIgnore: /setup\//,
+      dependencies: ['setup'],
       use: { browserName: 'chromium' },
     },
   ],

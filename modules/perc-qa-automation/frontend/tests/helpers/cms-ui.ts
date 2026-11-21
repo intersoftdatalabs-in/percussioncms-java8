@@ -1,6 +1,6 @@
 import { Page, expect } from '@playwright/test';
 import * as fs from 'fs';
-import { CMS_LOG, TEST_SITE, TEST_FOLDER } from './qa-env';
+import { CMS_LOG, TEST_SITE, TEST_FOLDER, TEST_ASSET_FOLDER, TEST_TEMPLATE } from './qa-env';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const auth = require('./auth');
@@ -8,6 +8,82 @@ const auth = require('./auth');
 /** Logs in as Admin through the module's shared auth helper (credentials are discovered from the install). */
 export async function loginAsAdmin(page: Page) {
   await auth.loginAsAdmin(page);
+}
+
+/**
+ * Makes sure the site and folder that the page/widget scenarios work in exist (QA_SITE / QA_FOLDER), creating them
+ * through the UI on a fresh install: the site with its own page template (a base layout with left/content/right
+ * regions) and then the folder. Does nothing when they already exist, so it is safe to call before every run.
+ */
+export async function ensureTestSite(page: Page) {
+  const path = page.locator('#mcol-path-summary');
+  const site = page.getByText(TEST_SITE, { exact: true }).first();
+  await page.goto('/cm/app/?view=dash');
+  await expect(page.getByText('Welcome, Admin')).toBeVisible({ timeout: 90_000 });
+  await page.getByText('Sites', { exact: true }).first().click();
+  await expect(path).toHaveValue('/Sites', { timeout: 30_000 });
+
+  if (!(await site.waitFor({ timeout: 5_000 }).then(() => true, () => false))) {
+    await mouseClick(page, '#perc-finder-new-site');
+    const dlg = page.locator('.ui-dialog', { hasText: 'Create Site' }).last();
+    await dlg.waitFor();
+    // the first visible text box on the page is the finder's path box, so always scope to the dialog
+    await dlg.locator('input[type=text]:visible').first().pressSequentially(TEST_SITE);
+    await dlg.getByText('Percussion Templates').click();
+    await dlg.getByRole('button', { name: 'Next' }).click();
+    await dlg.getByText('Template name:').waitFor();
+    await dlg.locator('input[type=text]:visible').first().pressSequentially(TEST_TEMPLATE);
+    await dlg.getByText('rightLeftSidebar', { exact: true }).click();   // layout with left sidebar, content and right sidebar regions
+    await dlg.getByRole('button', { name: 'Finish' }).click();
+    await expect(path).toHaveValue(`/Sites/${TEST_SITE}`, { timeout: 90_000 });
+  }
+
+  await site.click();
+  await expect(path).toHaveValue(`/Sites/${TEST_SITE}`, { timeout: 30_000 });
+  await ensureFolderHere(page, TEST_FOLDER);
+
+  // the folder that the asset scenarios upload their files into
+  await page.getByText('Assets', { exact: true }).first().click();
+  await expect(path).toHaveValue('/Assets', { timeout: 30_000 });
+  await ensureFolderHere(page, TEST_ASSET_FOLDER);
+}
+
+/** In the finder folder that is currently selected: creates the folder `name` unless it is already listed. */
+async function ensureFolderHere(page: Page, name: string) {
+  const folder = page.getByText(name, { exact: true }).first();
+  if (await folder.waitFor({ timeout: 5_000 }).then(() => true, () => false)) return;
+  await mouseClick(page, '#perc-finder-new-folder');
+  // the server creates "New-Folder" and the finder then shows its name in an edit box: wait for that box, then rename
+  const editBox = await page.waitForFunction(() =>
+    Array.from(document.querySelectorAll<HTMLInputElement>('input[type=text]'))
+      .find(i => i.id !== 'mcol-path-summary' && /^New-Folder/.test(i.value)) ?? null, undefined, { timeout: 30_000 });
+  const input = editBox.asElement()!;
+  await input.fill(name);
+  await input.press('Enter');
+  await expect(folder).toBeVisible({ timeout: 30_000 });
+}
+
+/**
+ * Uploads a file as a new File asset into /Assets/<folder> (New Asset > File) and returns the name the CMS gave the asset
+ * (named after the file; a number is added when the name is taken). The new asset is a never-published Draft and is left open in the editor.
+ */
+export async function uploadFileAsset(page: Page, folder: string, fixturePath: string): Promise<string> {
+  const path = page.locator('#mcol-path-summary');
+  await page.goto('/cm/app/?view=dash');
+  await expect(page.getByText('Welcome, Admin')).toBeVisible({ timeout: 90_000 });
+  await page.getByText('Assets', { exact: true }).first().click();
+  await expect(path).toHaveValue('/Assets', { timeout: 30_000 });
+  await page.getByText(folder, { exact: true }).first().click();
+  await expect(path).toHaveValue(`/Assets/${folder}`, { timeout: 30_000 });
+  await page.locator('#mcol-new-asset.ui-enabled').click();
+  await page.locator('text=/^File$/ >> visible=true').first().click({ timeout: 60_000 });
+  await page.getByRole('button', { name: 'Next' }).click();
+  const frame = page.frameLocator('iframe[src*="psx_cepercFileAsset"]');
+  await frame.locator('input[name="linktext"], input[type="text"]').first().fill(`QA-${Date.now()}`);
+  await frame.locator('input[type="file"]').setInputFiles(fixturePath);
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.waitForURL(/view=editAsset.*name=/, { timeout: 60_000 });
+  return new URL(page.url()).searchParams.get('name')!;
 }
 
 /** Selects a page in the finder (Sites > site > page), waiting for each level to load. Returns after the page is selected. */

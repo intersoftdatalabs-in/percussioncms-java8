@@ -1,12 +1,14 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
-import { installDir } from '../helpers/qa-env';
+import { dirExists, dtsUrlFor, installDir } from '../helpers/qa-env';
 
-const DTS = process.env.DTS_URL ?? 'http://localhost:9981';
+// A freshly installed, standalone DTS (not next to a CMS). Defaults to <QA_INSTALLS_ROOT>/dts-new; override with DTS_INSTALL_DIR.
 const DTS_DIR = process.env.DTS_INSTALL_DIR ?? installDir('dts-new');
+const DTS = process.env.DTS_URL ?? dtsUrlFor(DTS_DIR);
 
 test.describe('Install DTS - Standalone new install', () => {
   test('Install DTS - Standalone new install: all DTS web apps are deployed and the server answers on its HTTP port', async ({ page, request }) => {
+    test.skip(!dirExists(`${DTS_DIR}/Deployment/Server`), `No standalone DTS install at ${DTS_DIR}; set DTS_INSTALL_DIR (and start it) to run this scenario`);
     // every war must have been exploded by Tomcat
     for (const app of ['feeds', 'perc-comments-services', 'perc-common-ui', 'perc-form-processor',
       'perc-integrations', 'perc-membership-services', 'perc-metadata-services', 'perc-polls-services']) {

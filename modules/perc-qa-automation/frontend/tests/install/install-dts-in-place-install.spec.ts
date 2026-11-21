@@ -1,13 +1,15 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import { loginAsAdmin } from '../helpers/cms-ui';
-import { installDir } from '../helpers/qa-env';
+import { CMS_INSTALL, dirExists, dtsUrlFor } from '../helpers/qa-env';
 
-const DIR = process.env.CMS_INSTALL_DIR ?? installDir('cms-new');
-const DTS = process.env.DTS_URL ?? 'http://localhost:9982';
+// The CMS under test normally has the DTS installed in the same folder; point CMS_INSTALL_DIR elsewhere to test another one.
+const DIR = process.env.CMS_INSTALL_DIR ?? CMS_INSTALL;
+const DTS = process.env.DTS_URL ?? dtsUrlFor(DIR);
 
 test.describe('Install DTS - In place install', () => {
   test('Install DTS - In place install: CMS and DTS coexist in one directory; CMS still works and DTS serves', async ({ page, request }) => {
+    test.skip(!dirExists(`${DIR}/Deployment/Server`), `No in-place DTS found in ${DIR}; install the DTS into the CMS folder or set CMS_INSTALL_DIR`);
     expect(fs.existsSync(`${DIR}/Deployment/Server/webapps/feeds/WEB-INF`)).toBeTruthy();
     expect(fs.existsSync(`${DIR}/jetty/base`)).toBeTruthy();
 
