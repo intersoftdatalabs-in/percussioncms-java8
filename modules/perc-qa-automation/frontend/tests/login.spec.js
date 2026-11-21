@@ -1,38 +1,15 @@
-const { chromium } = require('playwright');
-const { loginAsAdmin, BASE_URL, ADMIN_USERNAME } = require('./helpers/auth');
+const { test, expect } = require('@playwright/test');
+const { loginAsAdmin, BASE_URL } = require('./helpers/auth');
 
-(async () => {
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext();
-  const page = await context.newPage();
-
-  try {
-    console.log('Logging in as Admin...');
-    console.log(`Using BASE_URL: ${BASE_URL}`);
-    
+// Previously a standalone script (own chromium launch + process.exit), which the Playwright runner could not execute.
+// Now a regular spec: same login check, but with assertions and the runner's browser/config.
+test.describe('Login', () => {
+  test('Admin can log in and lands on the CMS app', async ({ page }) => {
     await loginAsAdmin(page);
 
     const url = page.url();
-    const title = await page.title();
-
-    console.log('Current URL after login:', url);
-    console.log('Page title:', title);
-
-    if (url.includes('error') || title.includes('Error')) {
-      console.log('Login failed - redirected to error page');
-      process.exit(1);
-    } else if (url.includes('login') || url.includes('Login')) {
-      console.log('Still on login page - authentication may have failed');
-      process.exit(1);
-    } else {
-      console.log('Login successful!');
-      process.exit(0);
-    }
-
-  } catch (error) {
-    console.error('Error:', error.message);
-    process.exit(1);
-  } finally {
-    await browser.close();
-  }
-})();
+    expect(url, `logged in against ${BASE_URL}`).toContain('/cm/app/');
+    expect(url).not.toMatch(/error|login/i);
+    await expect(page).not.toHaveTitle(/error/i);
+  });
+});

@@ -147,3 +147,40 @@ test('use configuration', async ({ page }) => {
 });
 ```
 
+
+## Test layout
+
+```
+frontend/tests/
+├── login.spec.js        # Admin login
+├── install/             # CMS/DTS install, upgrade and start/stop-script scenarios
+├── functional/          # binary assets, local publish (with/without DTS), pages + assets published, last-modified
+├── widgets/             # one spec per widget, named after the ticket (e.g. archive-list-widget.spec.ts)
+├── fixtures/            # binary documents (xlsx, xls, pptx, ppt, docx, pdf) used by the asset scenarios
+└── helpers/
+    ├── auth.js          # login + install auto-discovery (JS)
+    ├── qa-env.ts        # shared paths/URLs derived from auth.js (CMS_URL, CMS_LOG, PUBLISH_DIR, installDir, ...)
+    └── cms-ui.ts        # finder/editor helpers: selectPage, createPage, publishOpenItem, addWidget, openLayoutTab, ...
+```
+
+Specs may be JavaScript or TypeScript (Playwright compiles `.ts` natively). Run one area at a time:
+
+```bash
+npm run test:login | test:install | test:functional | test:widgets
+HEADLESS=false SLOWMO=300 npm run test:widgets   # watch the browser
+```
+
+### Extra configuration (all optional)
+
+|        Variable         |                                     Purpose                                     |
+|-------------------------|---------------------------------------------------------------------------------|
+| `HEADLESS`              | `false` shows the browser (default `true`)                                      |
+| `SLOWMO`                | Milliseconds to slow each browser action (default `0`)                          |
+| `QA_SITE` / `QA_FOLDER` | Site and folder the page/widget scenarios create pages in (`QA-Widgets` / `widgets`) |
+| `QA_INSTALLS_ROOT`      | Folder holding sibling installs (`cms-new`, `dts-new`, ...) for the install scenarios |
+| `PUBLISH_DIR`           | Local publish output folder for the test site                                   |
+| `CMS_LOG`               | CMS `server.log` (used to wait for "Publishing Finished")                       |
+| `DTS_ADMIN_URL`         | DTS HTTPS admin URL (defaults from `perc-catalina.properties`)                  |
+| `LOGIN_TIMEOUT`         | Login wait in ms (default `60000`)                                              |
+
+The functional and widget specs need a test site (default `QA-Widgets`, template `qa-base`, folder `widgets`) in the CMS under test.
