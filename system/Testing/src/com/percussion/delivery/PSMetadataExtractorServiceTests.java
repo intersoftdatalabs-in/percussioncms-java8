@@ -32,6 +32,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
@@ -84,6 +85,7 @@ public class PSMetadataExtractorServiceTests {
             }
 
             assertEquals("test",map.get("dcterms:source"));
+            assertEquals("Home", map.get("dcterms:title"));
         }
 
     }
@@ -107,6 +109,7 @@ public class PSMetadataExtractorServiceTests {
                 map.put(prop.getName(),prop.getValue());
             }
             assertEquals("standard-flex",map.get("dcterms:source"));
+            assertEquals("Coronavirus Updates | Baldwin Wallace University", map.get("dcterms:title"));
             assertEquals("2020-04-27T09:50:00",map.get("dcterms:created"));
             assertEquals("2020-03-16T17:02:57",map.get("dcterms:modified"));
             assertEquals("Modified Spring Semester Schedule",entry.getLinktext());
@@ -146,12 +149,17 @@ public class PSMetadataExtractorServiceTests {
 
             assertNotNull(entry);
             HashMap<String, String> map = new HashMap<>();
+            int titleCount = 0;
 
             for (IPSMetadataProperty prop : entry.getProperties()) {
                 map.put(prop.getName(), prop.getValue());
+                if ("dcterms:title".equals(prop.getName())) {
+                    titleCount++;
+                }
             }
 
-            // Check title
+            // Explicit RDFa dcterms:title must win without duplicating <title>
+            assertEquals(1, titleCount);
             assertEquals("Comprehensive Test Title & More", map.get("dcterms:title"));
             
             // Check description - entities should be resolved by the parser
@@ -221,6 +229,80 @@ public class PSMetadataExtractorServiceTests {
         assertNotNull(entry);
         assertEquals("page", entry.getType());
         assertEquals("/Sites/test/minimal-gcse.html", entry.getPagepath());
+        String extractedTitle = null;
+        for (IPSMetadataProperty prop : entry.getProperties()) {
+            if ("dcterms:title".equals(prop.getName())) {
+                extractedTitle = prop.getValue();
+            }
+        }
+        assertEquals("x", extractedTitle);
+    }
+
+    @Test
+    public void testHtmlTitleExtractedAsDctermsTitle() {
+        String html = "<!DOCTYPE html><html prefix=\"dcterms: http://purl.org/dc/terms/\">"
+                + "<head><title>  QAArch1234567 Source One &amp; Two  </title>"
+                + "<meta property=\"dcterms:type\" content=\"page\"/>"
+                + "<meta property=\"dcterms:alternative\" content=\"Link Title\"/>"
+                + "</head><body><p>Body</p></body></html>";
+        PSMetadataExtractorService svc = new PSMetadataExtractorService();
+        PSMetadataEntry entry =
+                svc.process(new StringReader(html), "text/html", "/Sites/QA-Widgets/source-one.html", null);
+
+        assertNotNull(entry);
+        assertEquals("Link Title", entry.getLinktext());
+        String title = null;
+        int titleCount = 0;
+        for (IPSMetadataProperty prop : entry.getProperties()) {
+            if ("dcterms:title".equals(prop.getName())) {
+                title = prop.getValue();
+                titleCount++;
+            }
+        }
+        assertEquals(1, titleCount);
+        assertEquals("QAArch1234567 Source One & Two", title);
+    }
+
+    @Test
+    public void testEmptyOrSvgOnlyTitleDoesNotAddDctermsTitle() {
+        PSMetadataExtractorService svc = new PSMetadataExtractorService();
+
+        String blankTitleHtml = "<!DOCTYPE html><html><head><title>   </title></head><body></body></html>";
+        PSMetadataEntry blankEntry =
+                svc.process(new StringReader(blankTitleHtml), "text/html", "/Sites/test/blank-title.html", null);
+        for (IPSMetadataProperty prop : blankEntry.getProperties()) {
+            assertFalse("Blank <title> must not produce dcterms:title", "dcterms:title".equals(prop.getName()));
+        }
+
+        String svgOnlyHtml = "<!DOCTYPE html><html><head></head>"
+                + "<body><svg><title>Icon</title></svg></body></html>";
+        PSMetadataEntry svgEntry =
+                svc.process(new StringReader(svgOnlyHtml), "text/html", "/Sites/test/svg-title.html", null);
+        for (IPSMetadataProperty prop : svgEntry.getProperties()) {
+            assertFalse("Body <svg><title> must not produce dcterms:title", "dcterms:title".equals(prop.getName()));
+        }
+    }
+
+    @Test
+    public void testAdditionalDctermsTitleTakesPrecedenceOverHtmlTitle() {
+        String html = "<!DOCTYPE html><html><head><title>Fallback Title</title></head><body></body></html>";
+        PSMetadataExtractorService svc = new PSMetadataExtractorService();
+        PSMetadataEntry entry = svc.process(
+                new StringReader(html),
+                "text/html",
+                "/Sites/test/override-title.html",
+                Collections.<String, Object>singletonMap("dcterms:title", "Override Title"));
+
+        String title = null;
+        int titleCount = 0;
+        for (IPSMetadataProperty prop : entry.getProperties()) {
+            if ("dcterms:title".equals(prop.getName())) {
+                title = prop.getValue();
+                titleCount++;
+            }
+        }
+        assertEquals(1, titleCount);
+        assertEquals("Override Title", title);
     }
 
     /**

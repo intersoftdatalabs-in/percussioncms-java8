@@ -78,6 +78,8 @@ public class PSMetadataExtractorService implements IPSMetadataExtractorService
 
     public static final String ALTERNATIVE_PROPERTY_NAME = "dcterms:alternative";
 
+    public static final String TITLE_PROPERTY_NAME = "dcterms:title";
+
     public static final String TYPE_PROPERTY_NAME = "dterms:type";
 
     private static final String APPS_SUFFIX = "apps";
@@ -307,9 +309,18 @@ public class PSMetadataExtractorService implements IPSMetadataExtractorService
               }
 
              /** Redo Abstract as any23 is corrupting it. */
+             String htmlTitle = null;
              try (InputStream is = documentSource.openInputStream()) {
                  Document doc = null;
                  doc = Jsoup.parse(is, null, "/");
+
+                 Element titleEle = doc.select("head > title").first();
+                 if (titleEle != null) {
+                     String titleText = titleEle.text().trim();
+                     if (!titleText.isEmpty()) {
+                         htmlTitle = titleText;
+                     }
+                 }
 
                  Element abstractEle = doc.select("div[property=dcterms:abstract]").first();
                  String originalAbstract = null;
@@ -361,6 +372,10 @@ public class PSMetadataExtractorService implements IPSMetadataExtractorService
                      }
                  }
              }
+
+             if (htmlTitle != null && !hasProperty(propSet, TITLE_PROPERTY_NAME)) {
+                 propSet.add(new PSMetadataProperty(TITLE_PROPERTY_NAME, htmlTitle));
+             }
              metadataEntry.setPagepath(pagePath);
              metadataEntry.setName(pageName);
 
@@ -389,6 +404,16 @@ public class PSMetadataExtractorService implements IPSMetadataExtractorService
          handler = null;
       }
    }
+
+    private static boolean hasProperty(Set<IPSMetadataProperty> properties, String propertyName)
+    {
+        for (IPSMetadataProperty prop : properties) {
+            if (propertyName.equals(prop.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Creates the 'folder' value for a metadata entry, according to the site
