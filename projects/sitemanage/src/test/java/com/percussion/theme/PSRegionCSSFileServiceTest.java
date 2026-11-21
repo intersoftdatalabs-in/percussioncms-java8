@@ -22,6 +22,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.percussion.pagemanagement.data.PSRegionTree;
 import com.percussion.pagemanagement.data.PSRegionTreeTest;
@@ -33,19 +34,26 @@ import com.percussion.theme.data.PSThemeSummary;
 import com.percussion.theme.service.impl.PSRegionCSSFileService;
 import com.percussion.theme.service.impl.PSThemeService;
 import com.percussion.util.PSPurgableTempFile;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class PSRegionCSSFileServiceTest {
+  @Rule public TemporaryFolder tempFolder = new TemporaryFolder();
+
   private PSThemeService themeService;
 
   private PSRegionCSSFileService cssService;
@@ -426,5 +434,114 @@ public class PSRegionCSSFileServiceTest {
   private void addProperty(PSRegionCSS r, String pname, String pvalue) {
     PSRegionCSS.Property p = new PSRegionCSS.Property(pname, pvalue);
     r.getProperties().add(p);
+  }
+
+  @Test
+  public void testTraversalAndNulPathsRejected() throws Exception {
+    for (String badPath :
+        new String[] {"../../etc/passwd", "/tmp/foo/../bar.css", "foo\0bar.css"}) {
+      try {
+        cssService.read(badPath);
+        fail("expected IllegalArgumentException for " + badPath);
+      } catch (IllegalArgumentException expected) {
+        // expected
+      }
+      try {
+        cssService.copyFile(null, badPath);
+        fail("expected IllegalArgumentException for " + badPath);
+      } catch (IllegalArgumentException expected) {
+        // expected
+      }
+    }
+  }
+
+  @Test
+  public void testRxDeployDirWithDotDotAllowsValidPathsAndBlocksSubpathTraversal()
+      throws Exception {
+    File installDir = tempFolder.newFolder("cms-install");
+    File jettyDir = new File(installDir, "jetty");
+    assertTrue(jettyDir.mkdirs());
+    String rxDeployDirWithDotDot = jettyDir.getAbsolutePath() + File.separator + "..";
+
+    File srcCss = new File(installDir, "web_resources/themes/percussion/perc/perc_region.css");
+    FileUtils.writeStringToFile(
+        srcCss,
+        "#container.perc-region { font-size: 11px; }\n"
+            + "#container.perc-region #header.perc-region { font-size: 22px; }\n",
+        StandardCharsets.UTF_8);
+
+    String srcWithDotDot =
+        rxDeployDirWithDotDot
+            + File.separator
+            + "web_resources"
+            + File.separator
+            + "themes"
+            + File.separator
+            + "percussion"
+            + File.separator
+            + "perc"
+            + File.separator
+            + "perc_region.css";
+    String tempCssWithDotDot =
+        rxDeployDirWithDotDot
+            + File.separator
+            + "sys_resources"
+            + File.separator
+            + "temp"
+            + File.separator
+            + "themes"
+            + File.separator
+            + "sess"
+            + File.separator
+            + "percussion"
+            + File.separator
+            + "perc"
+            + File.separator
+            + "perc_region.css";
+
+    String prevRxDeployDir = System.getProperty("rxdeploydir");
+    System.setProperty("rxdeploydir", rxDeployDirWithDotDot);
+    try {
+      cssService.copyFile(srcWithDotDot, tempCssWithDotDot);
+      List<PSRegionCSS> readBack = cssService.read(tempCssWithDotDot);
+      assertEquals(2, readBack.size());
+      assertNotNull(cssService.findRegionCSS("container", "header", tempCssWithDotDot));
+
+      PSRegionCSS middle = createTestRegionCSS("container", "middle");
+      cssService.save(middle, tempCssWithDotDot);
+      assertNotNull(cssService.findRegionCSS("container", "middle", tempCssWithDotDot));
+
+      cssService.delete("container", "header", tempCssWithDotDot);
+      assertNull(cssService.findRegionCSS("container", "header", tempCssWithDotDot));
+
+      cssService.write(tempCssWithDotDot, Arrays.asList(middle));
+      cssService.mergeFile(getRegionTree(), tempCssWithDotDot, srcWithDotDot);
+      assertNotNull(cssService.findRegionCSS("container", "middle", srcWithDotDot));
+
+      String escapeAttempt =
+          rxDeployDirWithDotDot
+              + File.separator
+              + "web_resources"
+              + File.separator
+              + "themes"
+              + File.separator
+              + ".."
+              + File.separator
+              + ".."
+              + File.separator
+              + "escape.css";
+      try {
+        cssService.read(escapeAttempt);
+        fail("expected IllegalArgumentException for subpath traversal after rxdeploydir");
+      } catch (IllegalArgumentException expected) {
+        // expected
+      }
+    } finally {
+      if (prevRxDeployDir == null) {
+        System.clearProperty("rxdeploydir");
+      } else {
+        System.setProperty("rxdeploydir", prevRxDeployDir);
+      }
+    }
   }
 }
