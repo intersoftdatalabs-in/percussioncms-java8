@@ -132,13 +132,19 @@ modules/perc-qa-automation/
 ├── frontend/
 │   ├── tests/
 │   │   ├── login.spec.js           # Authentication tests
+│   │   ├── install/                # install / upgrade / start-stop scenarios
+│   │   ├── functional/             # publish, assets, last-modified scenarios
+│   │   ├── widgets/                # one spec per widget, named after the ticket
+│   │   ├── fixtures/               # binary documents used by asset scenarios
 │   │   ├── bugs/
 │   │   │   ├── bug-123.spec.js    # Individual bug verification tests
 │   │   │   └── ...
 │   │   ├── workflows/              # End-to-end workflow tests
 │   │   ├── components/             # UI component tests
 │   │   └── helpers/
-│   │       └── auth.js             # Authentication helpers
+│   │       ├── auth.js             # Authentication helpers
+│   │       ├── qa-env.ts           # Shared paths/URLs (derived from auth.js)
+│   │       └── cms-ui.ts           # Finder/editor/publish/widget helpers
 │   ├── playwright.config.js
 │   └── package.json
 ├── .env                           # Local configuration (gitignored)

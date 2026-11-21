@@ -7,6 +7,7 @@ The "Pages by Status: Default Workflow - Pending (All Sites)" and the related
 8.1.8. The browser console shows `POST /Rhythmyx/services/pagemanagement/page/searchPageByStatus 400 (Bad Request)` and the gadgets render a deserialization error.
 
 ### Backend error
+
 ```
 HTTP 500 Internal Server Error
 Cannot deserialize value of type `java.lang.String` from Array value
@@ -17,6 +18,7 @@ com.percussion.search.management.data.PSSearchCriteria["searchFields"]
 ```
 
 ### Browser stack points to
+
 - `perc_workflow_status_gadget.js` (`loadGadget`)
 - `perc_dashboard.packed.min.js` (`getAsyncSearchResult`, `makeAjaxRequest`)
 
@@ -30,6 +32,7 @@ com.percussion.search.management.data.PSSearchCriteria["searchFields"]
   JSON request body directly into `PSSearchCriteria`. For `Map<String, String>`,
   Jackson expects a JSON object whose keys are the map's keys and whose values
   are strings:
+
   ```json
   "searchFields": {
     "templateid": "1",
@@ -51,6 +54,7 @@ object of `key -> value` pairs, matching the `Map<String, String>` that the
 backend expects.
 
 ### Files changed
+
 1. `system/Packages/perc.gadget.pageByStatus/.../perc_workflow_status_gadget.js`
    - `loadGadget()` now converts the local `searchFields` array of `{key,value}`
      entries into a `{key: value}` object before attaching it to the
@@ -104,20 +108,20 @@ format is therefore the flat `{"psmap":{"entries":{"k1":"v1"}}}`.
 
 But several front-end callers still speak the legacy JAXB envelope:
 
-| Call site | File:line | Behavior |
-|---|---|---|
-| `encryptString` / `decryptString` | `WebUI/war/services/PercUtilService.js:64,162` | **sends** `{"psmap":{"entries":{"entry":{"key":"string","value":str}}}}` and **reads** `result.data.psmap.entries.entry.value` |
-| `encryptStrings` / `decryptStrings` | `system/Packages/perc.widget.form/.../PercFormController.js:1778` | sends the same envelope |
-| `getSaaSSiteNames` / `getCopySiteInfo` | `WebUI/war/widgets/perc_site_map.js:628,651`, `WebUI/war/plugins/PercCopySiteDialog.js:39` | **reads** `psmap.entries` via `convertMapToArray` |
-| Google Analytics setup gadget | `system/Packages/perc.gadget.googleSetup/.../perc_google_setup_gadget.xml:548-549` | **reads** `result.data.psmap.entries.entry` via `$.perc_utils.convertCXFArray` |
+|               Call site                |                                         File:line                                          |                                                            Behavior                                                            |
+|----------------------------------------|--------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| `encryptString` / `decryptString`      | `WebUI/war/services/PercUtilService.js:64,162`                                             | **sends** `{"psmap":{"entries":{"entry":{"key":"string","value":str}}}}` and **reads** `result.data.psmap.entries.entry.value` |
+| `encryptStrings` / `decryptStrings`    | `system/Packages/perc.widget.form/.../PercFormController.js:1778`                          | sends the same envelope                                                                                                        |
+| `getSaaSSiteNames` / `getCopySiteInfo` | `WebUI/war/widgets/perc_site_map.js:628,651`, `WebUI/war/plugins/PercCopySiteDialog.js:39` | **reads** `psmap.entries` via `convertMapToArray`                                                                              |
+| Google Analytics setup gadget          | `system/Packages/perc.gadget.googleSetup/.../perc_google_setup_gadget.xml:548-549`         | **reads** `result.data.psmap.entries.entry` via `$.perc_utils.convertCXFArray`                                                 |
 
 Server endpoints involved:
 - `PSUtilityRestService.encryptString / decryptString / encryptStrings / decryptStrings`
-  (`projects/sitemanage/src/main/java/com/percussion/utils/service/impl/PSUtilityRestService.java:98,113,129,147`)
+(`projects/sitemanage/src/main/java/com/percussion/utils/service/impl/PSUtilityRestService.java:98,113,129,147`)
 - `PSSiteDataRestService.getCopySiteInfo / getSaaSSiteNames`
-  (`projects/sitemanage/src/main/java/com/percussion/sitemanage/service/impl/PSSiteDataRestService.java:242,261`)
+(`projects/sitemanage/src/main/java/com/percussion/sitemanage/service/impl/PSSiteDataRestService.java:242,261`)
 - `PSMonitor.getStats()`
-  (`projects/sitemanage/src/main/java/com/percussion/monitor/service/PSMonitor.java:30`)
+(`projects/sitemanage/src/main/java/com/percussion/monitor/service/PSMonitor.java:30`)
 
 ### `PSPathItem.typeProperties`
 

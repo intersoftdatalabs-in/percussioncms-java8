@@ -147,3 +147,54 @@ test('use configuration', async ({ page }) => {
 });
 ```
 
+
+## Test layout
+
+```
+frontend/tests/
+├── login.spec.js        # Admin login
+├── setup/               # creates the test site, template and folders on a fresh install (runs first)
+├── install/             # CMS/DTS install, upgrade and start/stop-script scenarios
+├── functional/          # binary assets, local publish (with/without DTS), pages + assets published, last-modified
+├── widgets/             # one spec per widget, named after the ticket (e.g. archive-list-widget.spec.ts)
+├── fixtures/            # binary documents (xlsx, xls, pptx, ppt, docx, pdf) used by the asset scenarios
+└── helpers/
+    ├── auth.js          # login + install auto-discovery (JS)
+    ├── qa-env.ts        # shared paths/URLs derived from auth.js (CMS_URL, CMS_LOG, PUBLISH_DIR, installDir, ...)
+    └── cms-ui.ts        # finder/editor helpers: ensureTestSite, selectPage, createPage, uploadFileAsset, publishOpenItem, addWidget, ...
+```
+
+Specs may be JavaScript or TypeScript (Playwright compiles `.ts` natively). Run one area at a time:
+
+```bash
+npm run test:login | test:install | test:functional | test:widgets
+npm run test:setup                               # only create/check the test site and folders
+HEADLESS=false SLOWMO=300 npm run test:widgets   # watch the browser
+```
+
+### Extra configuration (all optional)
+
+|        Variable         |                                     Purpose                                     |
+|-------------------------|---------------------------------------------------------------------------------|
+| `HEADLESS`              | `false` shows the browser (default `true`)                                      |
+| `SLOWMO`                | Milliseconds to slow each browser action (default `0`)                          |
+| `QA_SITE` / `QA_FOLDER` | Site and folder the page/widget scenarios create pages in (`QA-Widgets` / `widgets`) |
+| `QA_TEMPLATE`          | Page template created with the test site (`qa-base`)                            |
+| `QA_ASSET_FOLDER`      | Folder under /Assets the asset scenarios upload into (`qa-assets`)               |
+| `QA_SKIP_SETUP`        | `true` skips the setup project (also skipped by `--no-deps`)                    |
+| `EXPECTED_BUILD_NUMBER` | Optional: assert the installed `Version.properties` build number equals this     |
+| `QA_UPGRADE_SINCE`      | ISO date/time of the upgrade; needed by the two DTS "upgrade install" scenarios   |
+| `QA_TEST_WINDOWS_SERVICE` | `true` runs the Windows service scenario (creates and removes a service; needs an Administrator/UAC session) |
+| `QA_INSTALLS_ROOT`      | Folder holding sibling installs (`cms-new`, `dts-new`, ...) for the install scenarios |
+| `PUBLISH_DIR`           | Local publish output folder for the test site                                   |
+| `CMS_LOG`               | CMS `server.log` (used to wait for "Publishing Finished")                       |
+| `DTS_ADMIN_URL`         | DTS HTTPS admin URL (defaults from `perc-catalina.properties`)                  |
+| `LOGIN_TIMEOUT`         | Login wait in ms (default `60000`)                                              |
+
+The functional and widget specs need a test site (default `QA-Widgets`, template `qa-base`, folder `widgets`) and an asset folder (`/Assets/qa-assets`) in the CMS under test. The `setup` project creates them through the UI when they are missing, so a fresh install works out of the box.
+
+### Scenarios that skip
+
+A scenario that needs something this machine does not have is skipped with the reason shown, instead of failing: the standalone and upgraded DTS installs (`<QA_INSTALLS_ROOT>/dts-new`, `dts-upgrade`, `dts-inplace-upgrade`, or `DTS_INSTALL_DIR`), the upgrade date (`QA_UPGRADE_SINCE`), the Windows service scenario (opt-in, see above), and the start/stop scenario while the CMS is already running (it starts and stops the CMS itself).
+
+Known product defect: the three Office files (`.xlsx`, `.pptx`, `.docx`) in "Pages and assets are published" fail until #325 is fixed.

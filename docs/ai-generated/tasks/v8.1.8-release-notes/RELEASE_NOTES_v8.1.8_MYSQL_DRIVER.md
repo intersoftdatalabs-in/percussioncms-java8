@@ -20,10 +20,10 @@ Connector/J 3.5.x for MariaDB servers. Both drivers run on Java 8.
 On every CMS and DTS install or upgrade, all `mysql-connector*.jar` and `mm.mysql*.jar` files are deleted from the managed JDBC
 directories, and the shipped driver is installed. Each removed file is written to the installer log (`Deleting <path>`).
 
-| Product | Managed directories |
-|---------|---------------------|
-| DTS | `Deployment/Server/common/lib`, `lib`, `lib/jdbc`, `perc-lib`, `perc-lib/jdbc` |
-| CMS | `jetty/base/lib/jdbc` |
+| Product |                              Managed directories                               |
+|---------|--------------------------------------------------------------------------------|
+| DTS     | `Deployment/Server/common/lib`, `lib`, `lib/jdbc`, `perc-lib`, `perc-lib/jdbc` |
+| CMS     | `jetty/base/lib/jdbc`                                                          |
 
 On upgrade the installers also change `com.mysql.jdbc.Driver` to `com.mysql.cj.jdbc.Driver` in the datasource configuration:
 `perc-datasources.properties` / `perc-datasources.xml` (DTS), and `perc-ds.properties`, `perc-ds.xml`, `rxconfig/Server/config.xml`
@@ -53,3 +53,4 @@ and `rxconfig/Installer/rxrepository.properties` (CMS).
 - Real DTS and CMS installers were run on Java 8 as fresh installs and as upgrades over trees seeded with Connector/J 5.1.12. Only the
   shipped driver remained afterwards. DTS started cleanly against MySQL 8.0.46 and 8.4.13 with a `caching_sha2_password` user, and the
   CMS datasource connected to MySQL 8.4.13 the same way.
+

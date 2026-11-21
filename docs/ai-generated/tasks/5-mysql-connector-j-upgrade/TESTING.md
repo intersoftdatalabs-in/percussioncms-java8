@@ -6,15 +6,15 @@ to test. Test installs and datasource edits were made in scratch directories onl
 
 ## Results
 
-| # | Criterion | Result | Evidence |
-|---|-----------|--------|----------|
-| 1 | Decision recorded | Pass | `README.md` in this folder: mysql-connector-j 8.4.0 plus MariaDB 3.5.x. Both jars are Java 8 bytecode (class major 52) and ran on JDK 8. |
-| 2 | Connector(s) shipped in DTS and CMS | Pass | Built DTS tree has `mysql-connector-j-8.4.0.jar` and `mariadb-java-client-3.5.11.jar`; built CMS tree has `jetty/base/lib/jdbc/mysql-connector.jar` (identical to 8.4.0). |
-| 3 | Upgrade removes legacy connectors | Pass | Real DTS and CMS installers re-run as upgrades over trees seeded with a real Connector/J 5.1.12 jar (and 5.1.32, 8.0.x, `mm.mysql`, generic-name copies) in every managed dir. Only the shipped jar remained; removals logged (`Deleting <path>`: 13 DTS, 4 CMS); checker clean. |
-| 4 | Clean DTS start on MySQL 8 with `caching_sha2_password` | Pass | MySQL 8.0.46 and 8.4.13. Tomcat on JDK 8 with the legacy `com.mysql.jdbc.Driver` name: 0 ERROR/SEVERE, 60 pooled connections, 18 tables created, no authentication-protocol error. |
-| 5 | No dual registration | Pass | In the live DTS `Deployment/` tree the only MySQL `java.sql.Driver` entry is `com.mysql.cj.jdbc.Driver` (plus MariaDB); no legacy driver found. |
-| 6 | Operator doc / release note | Pass | `../v8.1.8-release-notes/RELEASE_NOTES_v8.1.8_MYSQL_DRIVER.md` (every claim in it was checked, see below). |
-| 7 | Scripted check that fails if 5.1.x remains | Pass | `scripts/test-mysql-connector-upgrade.py` (14 checks) runs in CI. It passes here and in a stock Ubuntu 24.04 container using apt `ant` + `ant-contrib`; run against the pre-#273 `install.xml` it fails 3 checks. |
+| # |                        Criterion                        | Result |                                                                                                                                     Evidence                                                                                                                                     |
+|---|---------------------------------------------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1 | Decision recorded                                       | Pass   | `README.md` in this folder: mysql-connector-j 8.4.0 plus MariaDB 3.5.x. Both jars are Java 8 bytecode (class major 52) and ran on JDK 8.                                                                                                                                         |
+| 2 | Connector(s) shipped in DTS and CMS                     | Pass   | Built DTS tree has `mysql-connector-j-8.4.0.jar` and `mariadb-java-client-3.5.11.jar`; built CMS tree has `jetty/base/lib/jdbc/mysql-connector.jar` (identical to 8.4.0).                                                                                                        |
+| 3 | Upgrade removes legacy connectors                       | Pass   | Real DTS and CMS installers re-run as upgrades over trees seeded with a real Connector/J 5.1.12 jar (and 5.1.32, 8.0.x, `mm.mysql`, generic-name copies) in every managed dir. Only the shipped jar remained; removals logged (`Deleting <path>`: 13 DTS, 4 CMS); checker clean. |
+| 4 | Clean DTS start on MySQL 8 with `caching_sha2_password` | Pass   | MySQL 8.0.46 and 8.4.13. Tomcat on JDK 8 with the legacy `com.mysql.jdbc.Driver` name: 0 ERROR/SEVERE, 60 pooled connections, 18 tables created, no authentication-protocol error.                                                                                               |
+| 5 | No dual registration                                    | Pass   | In the live DTS `Deployment/` tree the only MySQL `java.sql.Driver` entry is `com.mysql.cj.jdbc.Driver` (plus MariaDB); no legacy driver found.                                                                                                                                  |
+| 6 | Operator doc / release note                             | Pass   | `../v8.1.8-release-notes/RELEASE_NOTES_v8.1.8_MYSQL_DRIVER.md` (every claim in it was checked, see below).                                                                                                                                                                       |
+| 7 | Scripted check that fails if 5.1.x remains              | Pass   | `scripts/test-mysql-connector-upgrade.py` (14 checks) runs in CI. It passes here and in a stock Ubuntu 24.04 container using apt `ant` + `ant-contrib`; run against the pre-#273 `install.xml` it fails 3 checks.                                                                |
 
 Optional item not implemented: WARN on an unknown extra `mysql-*.jar`. The installers delete every `mysql-connector*.jar` and
 `mm.mysql*.jar` from the managed directories, so a leftover can only have a different name pattern.
@@ -48,3 +48,4 @@ python3 -I scripts/check-legacy-mysql-connector.py               # tracked files
 python3 -I scripts/check-legacy-mysql-connector.py <Deployment dir or jetty/base/lib/jdbc>   # an upgraded install
 python3 -I scripts/test-mysql-connector-upgrade.py               # upgrade simulation (needs Ant 1.10 + ant-contrib)
 ```
+
