@@ -17,12 +17,13 @@
 
 package com.percussion.delivery.integrations;
 
-import javax.servlet.http.Cookie;
+import com.percussion.delivery.spring.PSCsrfTokenHelper;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Component;
 
 @Path("/integrations")
@@ -36,17 +37,16 @@ public class IntegrationsRestService {
   @HEAD
   @Path("/csrf")
   public void csrf(@Context HttpServletRequest request, @Context HttpServletResponse response) {
-    Cookie[] cookies = request.getCookies();
-    if (cookies == null) {
+    CsrfToken csrfToken = PSCsrfTokenHelper.resolveCsrfToken(request);
+    if (csrfToken == null) {
       return;
     }
-    for (Cookie cookie : cookies) {
-      if ("XSRF-TOKEN".equals(cookie.getName())) {
-        response.setHeader("X-CSRF-HEADER", "X-XSRF-TOKEN");
-        // CR/LF strip before writing the cookie value into a response header
-        // (CWE-113 / CodeQL java/http-response-splitting).
-        response.setHeader("X-CSRF-TOKEN", cookie.getValue().replaceAll("[\\r\\n]", ""));
-      }
-    }
+    // CR/LF strip before writing header values into the response
+    // (CWE-113 / CodeQL java/http-response-splitting).
+    response.setHeader(
+        PSCsrfTokenHelper.RESPONSE_CSRF_HEADER,
+        csrfToken.getHeaderName().replaceAll("[\\r\\n]", ""));
+    response.setHeader(
+        PSCsrfTokenHelper.RESPONSE_CSRF_TOKEN, csrfToken.getToken().replaceAll("[\\r\\n]", ""));
   }
 }

@@ -25,6 +25,7 @@ import com.percussion.delivery.feeds.data.PSFeedDescriptors;
 import com.percussion.delivery.feeds.data.PSFeedItem;
 import com.percussion.delivery.listeners.IPSServiceDataChangeListener;
 import com.percussion.delivery.services.PSAbstractRestService;
+import com.percussion.delivery.spring.PSCsrfTokenHelper;
 import com.percussion.delivery.utils.security.PSHttpClient;
 import com.percussion.error.PSExceptionUtils;
 import com.percussion.security.PSEncryptionException;
@@ -47,7 +48,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
@@ -83,6 +83,7 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Component;
 
 /**
@@ -112,18 +113,17 @@ public class PSFeedService extends PSAbstractRestService implements IPSFeedsRest
   @HEAD
   @Path("/csrf")
   public void csrf(@Context HttpServletRequest request, @Context HttpServletResponse response) {
-    Cookie[] cookies = request.getCookies();
-    if (cookies == null) {
+    CsrfToken csrfToken = PSCsrfTokenHelper.resolveCsrfToken(request);
+    if (csrfToken == null) {
       return;
     }
-    for (Cookie cookie : cookies) {
-      if ("XSRF-TOKEN".equals(cookie.getName())) {
-        response.setHeader("X-CSRF-HEADER", "X-XSRF-TOKEN");
-        // CR/LF strip before writing the cookie value into a response header
-        // (CWE-113 / CodeQL java/http-response-splitting).
-        response.setHeader("X-CSRF-TOKEN", cookie.getValue().replaceAll("[\\r\\n]", ""));
-      }
-    }
+    // CR/LF strip before writing header values into the response
+    // (CWE-113 / CodeQL java/http-response-splitting).
+    response.setHeader(
+        PSCsrfTokenHelper.RESPONSE_CSRF_HEADER,
+        csrfToken.getHeaderName().replaceAll("[\\r\\n]", ""));
+    response.setHeader(
+        PSCsrfTokenHelper.RESPONSE_CSRF_TOKEN, csrfToken.getToken().replaceAll("[\\r\\n]", ""));
   }
 
   private PSHttpClient httpClient;
