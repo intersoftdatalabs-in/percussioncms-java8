@@ -18,6 +18,7 @@
 package com.percussion.linkmanagement.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -106,108 +107,29 @@ public class PSManagedJSONPayloadPathOutputTransformer extends PSDefaultExtensio
         log.debug("Done parsing payload array");
       }
 
-      String newPath = "";
-
       for (int i = 0; i < objectArray.size(); i++) {
         ObjectNode entry = (ObjectNode) objectArray.get(i);
         if (log.isDebugEnabled()) {
           log.debug("Processing payload entry " + i);
         }
-
-        // Images
-        if (entry.has(IPSManagedLinkService.PERC_IMAGEPATH)) {
-          if (entry.has(IPSManagedLinkService.PERC_IMAGEPATH_LINKID)) {
-            if (!StringUtils.isBlank(
-                    entry.path(IPSManagedLinkService.PERC_IMAGEPATH_LINKID).asText())
-                && (!StringUtils.isBlank(cid) || !StringUtils.isNumeric(cid))) {
-              if (log.isDebugEnabled()) {
-                log.debug(
-                    "Getting updated path for Image entry: "
-                        + entry.path(IPSManagedLinkService.PERC_IMAGEPATH_LINKID).asText()
-                        + " with current path of "
-                        + entry.path(IPSManagedLinkService.PERC_IMAGEPATH).asText());
-              }
-              newPath =
-                  renderItemPath(entry.path(IPSManagedLinkService.PERC_IMAGEPATH_LINKID).asText());
-              if (log.isDebugEnabled()) {
-                log.debug(
-                    "Updating payload for Image entry: "
-                        + entry.path(IPSManagedLinkService.PERC_IMAGEPATH_LINKID).asText()
-                        + " with new path of "
-                        + newPath);
-              }
-
-              entry.put(IPSManagedLinkService.PERC_IMAGEPATH, newPath);
-              objectArray.set(i, entry);
-              if (log.isDebugEnabled()) {
-                log.debug("Done updating.");
-              }
-            }
-          }
-        }
-
-        // Files
-        if (entry.has(IPSManagedLinkService.PERC_FILEPATH)) {
-          if (entry.has(IPSManagedLinkService.PERC_FILEPATH_LINKID)) {
-            if (!StringUtils.isBlank(
-                    entry.path(IPSManagedLinkService.PERC_FILEPATH_LINKID).asText())
-                && (!StringUtils.isBlank(cid) || !StringUtils.isNumeric(cid))) {
-              if (log.isDebugEnabled()) {
-                log.debug(
-                    "Getting updated path for File entry: "
-                        + entry.path(IPSManagedLinkService.PERC_FILEPATH_LINKID).asText()
-                        + " with current path of "
-                        + entry.path(IPSManagedLinkService.PERC_FILEPATH).asText());
-              }
-              newPath =
-                  renderItemPath(entry.path(IPSManagedLinkService.PERC_FILEPATH_LINKID).asText());
-              if (log.isDebugEnabled()) {
-                log.debug(
-                    "Updating payload for File entry: "
-                        + entry.path(IPSManagedLinkService.PERC_FILEPATH_LINKID).asText()
-                        + " with new path of "
-                        + newPath);
-              }
-
-              entry.put(IPSManagedLinkService.PERC_FILEPATH, newPath);
-              objectArray.set(i, entry);
-              if (log.isDebugEnabled()) {
-                log.debug("Done updating.");
-              }
-            }
-          }
-        }
-
-        // Pages
-        if (entry.has(IPSManagedLinkService.PERC_PAGEPATH)) {
-          if (entry.has(IPSManagedLinkService.PERC_PAGEPATH_LINKID)) {
-            if (!StringUtils.isBlank(
-                    entry.path(IPSManagedLinkService.PERC_PAGEPATH_LINKID).asText())
-                && (!StringUtils.isBlank(cid) || !StringUtils.isNumeric(cid))) {
-              if (log.isDebugEnabled()) {
-                log.debug(
-                    "Getting updated path for Page entry: "
-                        + entry.path(IPSManagedLinkService.PERC_PAGEPATH_LINKID).asText()
-                        + " with current path of "
-                        + entry.path(IPSManagedLinkService.PERC_PAGEPATH).asText());
-              }
-              newPath =
-                  renderItemPath(entry.path(IPSManagedLinkService.PERC_PAGEPATH_LINKID).asText());
-              if (log.isDebugEnabled()) {
-                log.debug(
-                    "Updating payload for File entry: "
-                        + entry.path(IPSManagedLinkService.PERC_PAGEPATH_LINKID).asText()
-                        + " with new path of "
-                        + newPath);
-              }
-              entry.put(IPSManagedLinkService.PERC_PAGEPATH, newPath);
-              objectArray.set(i, entry);
-              if (log.isDebugEnabled()) {
-                log.debug("Done updating.");
-              }
-            }
-          }
-        }
+        renderJsonPath(
+            entry,
+            IPSManagedLinkService.PERC_IMAGEPATH,
+            IPSManagedLinkService.PERC_IMAGEPATH_LINKID,
+            "Image",
+            cid);
+        renderJsonPath(
+            entry,
+            IPSManagedLinkService.PERC_FILEPATH,
+            IPSManagedLinkService.PERC_FILEPATH_LINKID,
+            "File",
+            cid);
+        renderJsonPath(
+            entry,
+            IPSManagedLinkService.PERC_PAGEPATH,
+            IPSManagedLinkService.PERC_PAGEPATH_LINKID,
+            "Page",
+            cid);
       }
 
       if (log.isDebugEnabled()) {
@@ -229,6 +151,48 @@ public class PSManagedJSONPayloadPathOutputTransformer extends PSDefaultExtensio
       log.debug("Returning updated payload with any managed path updates: " + object.toString());
     }
     return object.toString();
+  }
+
+  private static String getJsonText(ObjectNode entry, String fieldName) {
+    JsonNode node = entry.get(fieldName);
+    if (node == null || node.isNull()) {
+      return "";
+    }
+    return node.asText("");
+  }
+
+  private void renderJsonPath(
+      ObjectNode entry, String pathKey, String linkIdKey, String entryType, String cid) {
+    if (!entry.has(pathKey)) {
+      return;
+    }
+    String linkIdText = getJsonText(entry, linkIdKey);
+    if (!StringUtils.isBlank(linkIdText)
+        && (!StringUtils.isBlank(cid) || !StringUtils.isNumeric(cid))) {
+      if (log.isDebugEnabled()) {
+        log.debug(
+            "Getting updated path for "
+                + entryType
+                + " entry: "
+                + linkIdText
+                + " with current path of "
+                + getJsonText(entry, pathKey));
+      }
+      String newPath = renderItemPath(linkIdText);
+      if (log.isDebugEnabled()) {
+        log.debug(
+            "Updating payload for "
+                + entryType
+                + " entry: "
+                + linkIdText
+                + " with new path of "
+                + newPath);
+      }
+      entry.put(pathKey, StringUtils.defaultString(newPath));
+      if (log.isDebugEnabled()) {
+        log.debug("Done updating.");
+      }
+    }
   }
 
   private String renderItemPath(String linkId) {
