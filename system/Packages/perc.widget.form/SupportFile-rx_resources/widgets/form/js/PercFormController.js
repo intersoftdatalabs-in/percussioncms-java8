@@ -2987,7 +2987,7 @@
                         value : optVal,
                         label : optVal
                     };
-                    if($(this).is('option:selected') || $(this).prev().is('input[type=radio]:checked'))
+                    if($(this).is('select') || $(this).is('option:selected') || $(this).prev().is('input[type=radio]:checked'))
                     {
                         fieldData.defaultValue = fieldData.options[i].value;
                     }
@@ -3007,12 +3007,17 @@
                 fieldEditorHtml.append("<div class='form-widget-label' style='padding-right:10px;margin-bottom:-8px;' " + $.PercFormConstants.FIELD_EDITOR_LABEL_CLASS + " >Select a widget</div></br>");
                 var s = $('<select class="dataDropDownSelect" />');
                 var selectedValue = fieldData.defaultValue;
-                if(!selectedValue && fieldData.options && fieldData.options.length > 0)
+                if((!selectedValue || String(selectedValue).trim() === "") && fieldData.options && fieldData.options.length > 0)
                 {
                     selectedValue = fieldData.options[0].value;
                 }
+                if(selectedValue && String(selectedValue).trim() !== "")
+                {
+                    s.append($('<option/>').val(selectedValue).text(selectedValue).prop('selected', true));
+                }
                 $.getJSON($.perc_paths.ASSET_TYPES + "?filterDisabledWidgets=yes", function(data) {
                     var widgetContentTypes = extractWidgetContentTypes(data);
+                    var options = [];
                     for (var i = 0; i < widgetContentTypes.length; i++) {
                         var item = widgetContentTypes[i];
                         if(!item || !item.contentTypeName)
@@ -3024,7 +3029,14 @@
                         {
                             opt.prop('selected', true);
                         }
-                        s.append(opt);
+                        options.push(opt);
+                    }
+                    if(options.length > 0)
+                    {
+                        s.empty();
+                        for (var j = 0; j < options.length; j++) {
+                            s.append(options[j]);
+                        }
                     }
                 });
                 fieldEditorHtml.append(s);
