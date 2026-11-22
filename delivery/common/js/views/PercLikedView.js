@@ -32,6 +32,24 @@
     var likeCookieState;
     //var likeService = $.PercLikedService;
     var likeWidgetState = UNLIKED;
+
+    /**
+     * Parses a total likes count into a base-10 integer.
+     * @param rawTotalLikes (number|string) raw count
+     * @return (number|null) parsed integer count, or null if not a valid integer
+     */
+    function parseTotalLikes(rawTotalLikes) {
+        if (typeof rawTotalLikes === "number") {
+            return isFinite(rawTotalLikes) ? Math.floor(rawTotalLikes) : null;
+        }
+        if (typeof rawTotalLikes === "string") {
+            var trimmed = rawTotalLikes.replace(/^\s+|\s+$/g, "");
+            if (/^-?\d+$/.test(trimmed)) {
+                return parseInt(trimmed, 10);
+            }
+        }
+        return null;
+    }
     
     function initLikeWidget() {
     
@@ -66,12 +84,16 @@
     
     function renderLikeWidget(likeWidgetState, likeTotalLikes) {
 		if("undefined" === typeof (likeWidgetState) || null === likeWidgetState){ return false;}
-		if("undefined" === typeof (likeTotalLikes) || null === likeTotalLikes) {return false;}
+		var parsedTotalLikes = parseTotalLikes(likeTotalLikes);
+		if(null === parsedTotalLikes) {return false;}
+		likeTotalLikes = parsedTotalLikes;
 		
         var likeWidget = $(PERC_LIKE_WIDGET);
         var button = likeWidget.find("button");
         button.trigger("blur");
         var totalLikes = likeWidget.find(PERC_LIKE_TOTAL_LIKES);
+        var counter = likeWidget.find(".perc-like-counter");
+        var people = likeWidget.find(".perc-like-people");
         if(likeWidgetState === LIKED) {
             likeWidget
                 .removeClass(PERC_UNLIKED)
@@ -91,19 +113,21 @@
             })
                 .attr("title", "Like");
         }
-        if(0 !== likeTotalLikes && "undefined" !== typeof (likeTotalLikes) && null !== likeTotalLikes) {
-            $(".perc-like-counter").show();
+        if(likeTotalLikes > 0) {
+            counter.show();
             totalLikes.text(likeTotalLikes);
 			if(1 === likeTotalLikes)
 			{
-				$('.perc-like-people').text('person');
+				people.text('person');
 			}
 			else
 			{
-				$('.perc-like-people').text('people');
+				people.text('people');
 			}
         } else {
-            $(".perc-like-counter").hide();
+            totalLikes.text(0);
+            people.text('people');
+            counter.hide();
         }
     }
     
