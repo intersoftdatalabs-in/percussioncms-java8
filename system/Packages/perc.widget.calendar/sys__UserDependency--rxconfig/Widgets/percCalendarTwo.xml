@@ -665,7 +665,7 @@
                         percNewEventListElem.addClass('perc-list-first');
                     }
 
-                    if ( eventIterator == eventCount || (eventIterator + 1) == maxResults ) {
+                    if ( (eventIterator + 1) == eventCount || (eventIterator + 1) == maxResults ) {
                         percNewEventListElem.addClass('perc-list-last');
                     }
 
