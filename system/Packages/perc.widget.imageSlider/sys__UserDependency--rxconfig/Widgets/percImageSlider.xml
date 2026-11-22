@@ -477,10 +477,10 @@
 
           ## First check if path is broken
           ## If path is broken the image has been deleted and should not be included in the slider
-           #if( $image.path("percImagePath").asText() && $image.path("percImagePath").asText() != '#' )##
+           #if( $image.path("percImagePath").asText() != "" && $image.path("percImagePath").asText() != '#' )##
           #set( $query = "" )##
-          #if($rx.pageutils.isValidString(${{image.path("percImageContentId").asText()}}))##
-          #set( $query = "select * from rx:percImageAsset where rx:sys_contentid = ${{image.path("percImageContentId").asText()}}")##
+          #if($rx.pageutils.isValidString(${image.path("percImageContentId").asText()}))##
+          #set( $query = "select * from rx:percImageAsset where rx:sys_contentid = ${image.path('percImageContentId').asText()}")##
           #set( $maxResults = 1 )##
           #set( $params= $rx.string.stringToMap(null) )##
           #set( $dummy = $params.put('query', $query) )##
@@ -522,10 +522,10 @@
           #if( $image.path("linkSetting").asText() == "internal")##
 
           ## Only run queries if we have a valid internal page path
-          #if( $image.path("percPagePath").asText() && $image.path("percPagePath").asText() != "#" )
+          #if( $image.path("percPagePath").asText() != "" && $image.path("percPagePath").asText() != "#" )
           ## check the content status of the linked internal page
           #set( $query = "" )##
-          #set( $query = "select * from rx:percPage where rx:sys_contentid = ${{image.path("percPageContentId").asText()}}")##
+          #set( $query = "select * from rx:percPage where rx:sys_contentid = ${image.path('percPageContentId').asText()}")##
           #set( $maxResults = 1 )##
           #set( $params = $rx.string.stringToMap(null) )##
           #set( $dummy = $params.put('query', $query) )##
@@ -573,27 +573,27 @@
                   #if( $image.path("clickableLink").asText() != "" )##
 					<a href="$image.path("clickableLink").asText()" target="$perc_slide_targetblank" rel="noopener noreferrer">
                   #end##
-                  <$perc_slide_caption_tag_type class="perc-slide-image-caption perc-slide-caption-horizontal-${perc_slide_caption_alignment} $captionclass">${{image.path("imageCaption").asText()}}</$perc_slide_caption_tag_type>
+                  <$perc_slide_caption_tag_type class="perc-slide-image-caption perc-slide-caption-horizontal-${perc_slide_caption_alignment} $captionclass">${image.path("imageCaption").asText()}</$perc_slide_caption_tag_type>
                   #if( $image.path("clickableLink").asText() != "" )##
                   </a>
                   #end
-                  <$perc_slide_caption_2_tag_type class="perc-slide-image-caption-2 perc-slide-caption-horizontal-${perc_slide_caption_alignment} $captionclass">${{image.path("imageCaption2").asText()}}</$perc_slide_caption_2_tag_type>
+                  <$perc_slide_caption_2_tag_type class="perc-slide-image-caption-2 perc-slide-caption-horizontal-${perc_slide_caption_alignment} $captionclass">${image.path("imageCaption2").asText()}</$perc_slide_caption_2_tag_type>
                 </div>
                 #end##
 
 				#if( $perc_slide_image_link == "false" )##
 
-                  <div class="perc-slide-image-container" style="background-image: url('${{image.path("percImagePath").asText()}}')" role="img" aria-label="$image.path("altText").asText()">
+                  <div class="perc-slide-image-container" style="background-image: url('${image.path("percImagePath").asText()}')" role="img" aria-label="$image.path("altText").asText()">
 				  #if( $image.path("clickableLink").asText() != "" )##
 				    <a href="$image.path("clickableLink").asText()" target="$perc_slide_targetblank" rel="noopener noreferrer">
 				  #end##
                   #if( $perc_slide_caption_location == "over" && $image.path("hasCaptions").asText() == "Y" )##
                   <div class="perc-slide-caption-overlay-container perc-slide-caption-overlay-container-vertical-${perc_slide_caption_vertical_alignment}">
-                  <$perc_slide_caption_tag_type class="perc-slide-image-caption perc-slide-caption-horizontal-${perc_slide_caption_alignment} perc-slide-caption-vertical-${perc_slide_caption_vertical_alignment} $captionclass">${{image.path("imageCaption").asText()}}</$perc_slide_caption_tag_type>
+                  <$perc_slide_caption_tag_type class="perc-slide-image-caption perc-slide-caption-horizontal-${perc_slide_caption_alignment} perc-slide-caption-vertical-${perc_slide_caption_vertical_alignment} $captionclass">${image.path("imageCaption").asText()}</$perc_slide_caption_tag_type>
                   #if( $image.path("hasCaption1").asText() == "Y" && $image.path("hasCaption2").asText() == "Y")##
                   <span class="image-caption-overlay-divider"></span>
                   #end##
-                  <$perc_slide_caption_2_tag_type class="perc-slide-image-caption-2 perc-slide-caption-horizontal-${perc_slide_caption_alignment} perc-slide-caption-vertical-${perc_slide_caption_vertical_alignment} $captionclass">${{image.path("imageCaption2").asText()}}</$perc_slide_caption_2_tag_type>
+                  <$perc_slide_caption_2_tag_type class="perc-slide-image-caption-2 perc-slide-caption-horizontal-${perc_slide_caption_alignment} perc-slide-caption-vertical-${perc_slide_caption_vertical_alignment} $captionclass">${image.path("imageCaption2").asText()}</$perc_slide_caption_2_tag_type>
                   </div>
                   #end##
 				  </div>
@@ -605,14 +605,14 @@
                   #if( $image.path("clickableLink").asText() != "" )##
 					<a href="$image.path("clickableLink").asText()" target="$perc_slide_targetblank" rel="noopener noreferrer">
                   #end##
-                  <div class="perc-slide-image-container" style="background-image: url('${{image.path("percImagePath").asText()}}')" role="img" aria-label="$image.path("altText").asText()">
+                  <div class="perc-slide-image-container" style="background-image: url('${image.path("percImagePath").asText()}')" role="img" aria-label="$image.path("altText").asText()">
                   #if( $perc_slide_caption_location == "over" && $image.path("hasCaptions").asText() == "Y" )##
                   <div class="perc-slide-caption-overlay-container perc-slide-caption-overlay-container-vertical-${perc_slide_caption_vertical_alignment}">
-                  <$perc_slide_caption_tag_type class="perc-slide-image-caption perc-slide-caption-horizontal-${perc_slide_caption_alignment} perc-slide-caption-vertical-${perc_slide_caption_vertical_alignment} $captionclass">${{image.path("imageCaption").asText()}}</$perc_slide_caption_tag_type>
+                  <$perc_slide_caption_tag_type class="perc-slide-image-caption perc-slide-caption-horizontal-${perc_slide_caption_alignment} perc-slide-caption-vertical-${perc_slide_caption_vertical_alignment} $captionclass">${image.path("imageCaption").asText()}</$perc_slide_caption_tag_type>
                   #if( $image.path("hasCaption1").asText() == "Y" && $image.path("hasCaption2").asText() == "Y")##
                   <span class="image-caption-overlay-divider"></span>
                   #end##
-                  <$perc_slide_caption_2_tag_type class="perc-slide-image-caption-2 perc-slide-caption-horizontal-${perc_slide_caption_alignment} perc-slide-caption-vertical-${perc_slide_caption_vertical_alignment} $captionclass">${{image.path("imageCaption2").asText()}}</$perc_slide_caption_2_tag_type>
+                  <$perc_slide_caption_2_tag_type class="perc-slide-image-caption-2 perc-slide-caption-horizontal-${perc_slide_caption_alignment} perc-slide-caption-vertical-${perc_slide_caption_vertical_alignment} $captionclass">${image.path("imageCaption2").asText()}</$perc_slide_caption_2_tag_type>
                   </div>
                   #end##
                   </div>
@@ -628,11 +628,11 @@
                   #if( $image.path("clickableLink").asText() != "" )##
 				    <a href="$image.path("clickableLink").asText()" target="$perc_slide_targetblank" rel="noopener noreferrer">
                   #end##
-                  <$perc_slide_caption_tag_type class="perc-slide-image-caption perc-slide-caption-horizontal-${perc_slide_caption_alignment} $captionclass">${{image.path("imageCaption").asText()}}</$perc_slide_caption_tag_type>
+                  <$perc_slide_caption_tag_type class="perc-slide-image-caption perc-slide-caption-horizontal-${perc_slide_caption_alignment} $captionclass">${image.path("imageCaption").asText()}</$perc_slide_caption_tag_type>
                   #if( $image.path("clickableLink").asText() != "" )##
                   </a>
                   #end
-                  <$perc_slide_caption_2_tag_type class="perc-slide-image-caption-2 perc-slide-caption-horizontal-${perc_slide_caption_alignment} $captionclass">${{image.path("imageCaption2").asText()}}</$perc_slide_caption_2_tag_type>
+                  <$perc_slide_caption_2_tag_type class="perc-slide-image-caption-2 perc-slide-caption-horizontal-${perc_slide_caption_alignment} $captionclass">${image.path("imageCaption2").asText()}</$perc_slide_caption_2_tag_type>
                 </div>
                 #end##
               </div>
@@ -644,7 +644,7 @@
         <div class="perc-image-slider ${sliderName}-${sliderId}-navigation" data-slick='{}'>
           #foreach ($image in $qualifiedImages)##
             <div class="perc-slide-outer-container">
-              <div class="perc-slide-thumbnail-container" style="background-image: url('${{image.path("percImagePath").asText()}}')" role="img" aria-label="$image.path("altText").asText()" >
+              <div class="perc-slide-thumbnail-container" style="background-image: url('${image.path("percImagePath").asText()}')" role="img" aria-label="$image.path("altText").asText()" >
               </div>
             </div>
           #end##
