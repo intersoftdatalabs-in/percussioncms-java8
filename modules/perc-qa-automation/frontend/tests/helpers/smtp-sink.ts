@@ -8,7 +8,10 @@ export type Mail = { from: string; to: string[]; data: string };
 
 export async function startSmtpSink(port = 2525): Promise<{ mails: Mail[]; close: () => Promise<void> }> {
   const mails: Mail[] = [];
+  const sockets = new Set<net.Socket>();
   const server = net.createServer(socket => {
+    sockets.add(socket);
+    socket.on('close', () => sockets.delete(socket));
     let current: Mail = { from: '', to: [], data: '' };
     let inData = false;
     let buf = '';
@@ -43,7 +46,7 @@ export async function startSmtpSink(port = 2525): Promise<{ mails: Mail[]; close
     socket.on('error', () => {});
   });
   await new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', () => resolve()); });
-  return { mails, close: () => new Promise<void>(resolve => server.close(() => resolve())) };
+  return { mails, close: () => new Promise<void>(resolve => { server.close(() => resolve()); sockets.forEach(s => s.destroy()); }) };
 }
 
 /** Decodes quoted-printable / base64 bodies enough to search them for text. */

@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import { test, expect, Page } from '@playwright/test';
-import { loginAsAdmin, createPage, publishOpenItem, configurePublishing } from '../helpers/cms-ui';
+import { loginAsAdmin, createPage, publishOpenItem, configurePublishing, ensureDeliveryResources } from '../helpers/cms-ui';
 import { placeWidget, saveLayout, openContentTab, openWidgetConfigure, confirmWidgetConfigure } from '../helpers/widgets-ui';
 import { DTS_URL, DTS_ADMIN_URL, TEST_FOLDER } from '../helpers/qa-env';
 
@@ -40,6 +40,7 @@ test.describe('jQuery Widget', () => {
   test('jQuery Widget: with the default options the jQuery script is in the head, not deferred, without Migrate, and jQuery runs', async ({ page }) => {
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
     const url = await publishJQueryPage(page, run, 'jquery-widget-defaults');
     await page.goto(url);
     expect(await jqueryTags(page), 'one jQuery tag in the head, plain').toEqual([{ src: JQUERY, where: 'head', defer: false }]);
@@ -52,6 +53,7 @@ test.describe('jQuery Widget', () => {
   test('jQuery Widget: script location, defer and jQuery Migrate from Configure are written to the published page and run', async ({ page }) => {
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
     const url = await publishJQueryPage(page, run, 'jquery-widget-bodyclose-defer-migrate', async form => {
       await form.locator('input[name="jQueryLocation"]').fill(JQUERY);
       await form.locator('input[name="jQueryMigrateLocation"]').fill(MIGRATE);
@@ -72,6 +74,7 @@ test.describe('jQuery Widget', () => {
   test('jQuery Widget: "After Body Start" puts the script in the body', async ({ page }) => {
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
     const url = await publishJQueryPage(page, run, 'jquery-widget-after-body-start', async form => {
       await form.locator('select[name="scriptLocation"]').selectOption('afterBodyStart', { timeout: 10_000 });
     });
@@ -83,6 +86,7 @@ test.describe('jQuery Widget', () => {
   test('jQuery Widget: "Include on Published Page" = No leaves the jQuery script out of the published page', async ({ page }) => {
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
     const url = await publishJQueryPage(page, run, 'jquery-widget-not-included', async form => {
       await form.locator('select[name="includeOnPublishedPage"]').selectOption('no', { timeout: 10_000 });
     });
@@ -108,6 +112,7 @@ test.describe('jQuery Widget', () => {
   test('jQuery Widget: CDN addresses with SRI hash and cross-origin setting are written as given and the browser loads them', async ({ page }) => {
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
     const jqHash = await sri(page, CDN_JQUERY);
     const migHash = await sri(page, CDN_MIGRATE);
     const url = await publishJQueryPage(page, run, 'jquery-widget-cdn-sri', async form => {
@@ -132,6 +137,7 @@ test.describe('jQuery Widget', () => {
   test('jQuery Widget: a wrong SRI hash is written to the tag and the browser refuses to run the script', async ({ page }) => {
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
     const wrong = 'sha384-' + Buffer.alloc(48, 7).toString('base64');
     const url = await publishJQueryPage(page, run, 'jquery-widget-cdn-wrong-sri', async form => {
       await form.locator('input[name="jQueryLocation"]').fill(CDN_JQUERY);
@@ -149,6 +155,7 @@ test.describe('jQuery Widget', () => {
   test('jQuery Widget: an address that cannot be reached falls back to the system jQuery', async ({ page }) => {
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
     const missing = `https://code.jquery.com/does-not-exist-${run}.js`;
     const url = await publishJQueryPage(page, run, 'jquery-widget-cdn-unreachable', async form => {
       await form.locator('input[name="jQueryLocation"]').fill(missing);

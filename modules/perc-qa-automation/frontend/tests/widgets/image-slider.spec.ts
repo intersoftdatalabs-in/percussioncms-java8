@@ -58,7 +58,9 @@ test.describe.serial('Image Slider', () => {
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
     await ensureDeliveryResources(page);
     imageA = await uploadImageAsset(page, TEST_ASSET_FOLDER, IMAGE, `QA Slide A ${run}`, `QA slide A alt ${run}`);
+    await publishOpenItem(page);   // the slider only renders Approved/Live images, so Draft assets would give 0 slides
     imageB = await uploadImageAsset(page, TEST_ASSET_FOLDER, IMAGE, `QA Slide B ${run}`, `QA slide B alt ${run}`);
+    await publishOpenItem(page);
     expect(imageA, 'two different assets').not.toBe(imageB);
 
     const url = await publishSliderPage(page, 'image-slider-two-slides', async form => {
@@ -75,9 +77,13 @@ test.describe.serial('Image Slider', () => {
     await expect(slider.locator('.slick-next'), 'next arrow').toBeVisible();
     await expect(slider.locator('.slick-current').getByText(`Slide one ${run}`), 'first slide shown first, with its text').toBeVisible();
     await expect(slider.locator('.slick-current').getByText(`Second line one ${run}`)).toBeVisible();
-    const img = slider.locator('.slick-current img').first();
-    await expect(img).toHaveJSProperty('complete', true);
-    expect(await img.evaluate((e: HTMLImageElement) => e.naturalWidth), 'slide image loaded').toBeGreaterThan(0);
+    // the slide image is a CSS background-image on the slide container, not an <img>: read its URL and fetch it
+    const bg = await slider.locator('.slick-current .perc-slide-image-container').first().evaluate(e => getComputedStyle(e).backgroundImage);
+    const imgUrl = bg.match(/url\(["']?(.*?)["']?\)/)?.[1];
+    expect(imgUrl, 'slide has a background image').toBeTruthy();
+    const imgRes = await page.request.get(new URL(imgUrl!, page.url()).toString());
+    expect(imgRes.ok(), 'slide image is served').toBe(true);
+    expect((await imgRes.body()).length, 'slide image has content').toBeGreaterThan(0);
     await page.screenshot({ path: 'screenshots/image-slider-published-page-first-slide.png' });
 
     await slider.locator('.slick-next').click();
@@ -107,7 +113,7 @@ test.describe.serial('Image Slider', () => {
     await expect(slider.locator('.slick-slide:not(.slick-cloned)')).toHaveCount(2);
     await expect(slider.locator('.slick-dots'), 'dots are off').toHaveCount(0);
     await expect(slider.locator('.slick-prev, .slick-next'), 'arrows are off').toHaveCount(0);
-    await expect(slider.locator('h3', { hasText: `Slide one ${run}` }), 'first text line uses the chosen format (Heading 3)').toHaveCount(1);
+    await expect(slider.locator('.slick-slide:not(.slick-cloned) h3', { hasText: `Slide one ${run}` }), 'first text line uses the chosen format (Heading 3)').toHaveCount(1);
     await page.screenshot({ path: 'screenshots/image-slider-published-page-without-dots-and-arrows.png' });
   });
 });
