@@ -15,7 +15,8 @@ const norm = (p: string): string => p.replace(/\\/g, '/');
 
 function readProp(file: string, key: string): string | undefined {
   try {
-    return fs.readFileSync(file, 'utf8').match(new RegExp(`^${key}=(\\S+)`, 'm'))?.[1];
+    const escaped = key.replace(/\./g, '\\.');
+    return fs.readFileSync(file, 'utf8').match(new RegExp(`^${escaped}=(\\S+)`, 'm'))?.[1];
   } catch {
     return undefined;
   }
@@ -33,6 +34,19 @@ export const CMS_URL: string = process.env.CMS_URL ?? auth.BASE_URL;
 
 /** Root of the CMS installation under test (DEV_PERCUSSION_INSTALL). */
 export const CMS_INSTALL: string = norm(auth.INSTALL_PATH ?? '');
+
+/** Root of the DTS installation (DEV_PERCUSSION_DTS_INSTALL, falling back to the in-place DTS inside CMS_INSTALL). */
+export const DTS_INSTALL: string = norm(auth.DTS_INSTALL_PATH || CMS_INSTALL);
+
+/** True when the DTS Deployment/Server/conf/perc/perc-email.properties points at a local unencrypted SMTP listener on `port`. */
+export function isLocalSmtpConfigured(port = 2525): boolean {
+  if (!DTS_INSTALL) return false;
+  const file = path.join(DTS_INSTALL, 'Deployment/Server/conf/perc/perc-email.properties');
+  const host = readProp(file, 'email.hostName')?.toLowerCase();
+  const propPort = readProp(file, 'email.portNumber');
+  const tls = readProp(file, 'email.TLS')?.toLowerCase();
+  return (host === 'localhost' || host === '127.0.0.1') && propPort === String(port) && tls !== 'true';
+}
 
 export const CMS_LOG: string = norm(process.env.CMS_LOG ?? path.join(CMS_INSTALL, 'jetty/base/logs/server.log'));
 export const CMS_JETTY_DIR: string = norm(process.env.CMS_JETTY_DIR ?? path.join(CMS_INSTALL, 'jetty'));

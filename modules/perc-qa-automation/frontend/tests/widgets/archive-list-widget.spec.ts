@@ -60,7 +60,9 @@ test.describe('Archive List Widget', () => {
     const host = await publishArchiveHost(page, run, async frame => {
       await frame.locator('.fancytree-title', { hasText: /^Sites$/ }).click();
       await frame.locator('.fancytree-title', { hasText: new RegExp(`^${TEST_SITE}$`) }).click();
-      await frame.locator('.perc-pagetemplates-chkbox').check();
+      // the site can offer more than one template (e.g. leftovers of other tests): choose the one under test by name
+      await frame.locator('div:has(> .perc-pagetemplates-chkbox)').filter({ hasText: TEST_TEMPLATE }).filter({ hasNotText: 'qa-blog-index' })
+        .locator('.perc-pagetemplates-chkbox').check();
     }, 'archive-list-widget-site-and-template');
 
     const expected = await dtsCount(page, ["type = 'page'", `site = '${TEST_SITE}'`, `dcterms:source = '${TEST_TEMPLATE}'`]);

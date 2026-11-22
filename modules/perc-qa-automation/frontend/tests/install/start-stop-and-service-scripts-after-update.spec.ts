@@ -11,7 +11,7 @@ const JETTY = process.env.CMS_JETTY_DIR ?? CMS_JETTY_DIR;
 async function up(url: string, timeoutMs: number) {
   const end = Date.now() + timeoutMs;
   while (Date.now() < end) {
-    try { const r = await fetch(url, { redirect: 'manual' }); if (r.status) return true; } catch { /* not yet */ }
+    try { const r = await fetch(url, { redirect: 'manual' }); if (r.status && r.status < 500) return true; } catch { /* not yet */ }
     await new Promise(r => setTimeout(r, 3000));
   }
   return false;
@@ -34,7 +34,7 @@ test.describe('Start-stop and Windows service scripts after update', () => {
     test.skip(!(await down(url, 1000)), `${CMS_URL} is already serving. This scenario starts and stops the CMS itself, so stop the CMS first.`);
 
     spawn(CMD, ['/c', path.join(JETTY, 'StartJetty.bat')], { cwd: JETTY, detached: true, stdio: 'ignore' }).unref();
-    expect(await up(url, 400_000), 'CMS reachable after StartJetty.bat').toBeTruthy();
+    expect(await up(url, Number(process.env.QA_START_TIMEOUT_MS ?? 240_000)), 'CMS reachable (HTTP < 500) after StartJetty.bat within 4 minutes').toBeTruthy();
 
     await loginAsAdmin(page);
     await expect(page.getByText('Welcome, Admin')).toBeVisible({ timeout: 90_000 });
@@ -63,7 +63,7 @@ test.describe('Start-stop and Windows service scripts after update', () => {
       // The service runs as LocalService, so this fails if the installed files are not readable by that account (#326)
       const started = out(run('start'));
       expect(started, 'start command').toContain('succeeded');
-      expect(await up(url, 400_000), 'CMS reachable through the Windows service').toBeTruthy();
+      expect(await up(url, Number(process.env.QA_START_TIMEOUT_MS ?? 180_000)), 'CMS reachable (HTTP < 500) through the Windows service within 3 minutes').toBeTruthy();
 
       await loginAsAdmin(page);
       await expect(page.getByText('Welcome, Admin')).toBeVisible({ timeout: 90_000 });

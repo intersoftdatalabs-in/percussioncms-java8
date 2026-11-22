@@ -67,7 +67,7 @@ async function ensureFolderHere(page: Page, name: string) {
  * Uploads a file as a new File asset into /Assets/<folder> (New Asset > File) and returns the name the CMS gave the asset
  * (named after the file; a number is added when the name is taken). The new asset is a never-published Draft and is left open in the editor.
  */
-export async function uploadFileAsset(page: Page, folder: string, fixturePath: string): Promise<string> {
+export async function uploadFileAsset(page: Page, folder: string, fixturePath: string, linkText: string = `QA-${Date.now()}`): Promise<string> {
   const path = page.locator('#mcol-path-summary');
   await page.goto('/cm/app/?view=dash');
   await expect(page.getByText('Welcome, Admin')).toBeVisible({ timeout: 90_000 });
@@ -79,7 +79,7 @@ export async function uploadFileAsset(page: Page, folder: string, fixturePath: s
   await page.locator('text=/^File$/ >> visible=true').first().click({ timeout: 60_000 });
   await page.getByRole('button', { name: 'Next' }).click();
   const frame = page.frameLocator('iframe[src*="psx_cepercFileAsset"]');
-  await frame.locator('input[name="linktext"], input[type="text"]').first().fill(`QA-${Date.now()}`);
+  await frame.locator('input[name="linktext"], input[type="text"]').first().fill(linkText);
   await frame.locator('input[type="file"]').setInputFiles(fixturePath);
   await page.getByRole('button', { name: 'Save' }).click();
   await page.waitForURL(/view=editAsset.*name=/, { timeout: 60_000 });
@@ -169,6 +169,7 @@ export async function addWidget(page: Page, widgetKey: string, region: 'leftside
   if (!(await lib.isVisible())) await page.getByText('Add Widget').first().click();
   const tile = page.locator(`#widget-${widgetKey}-0`);
   await tile.waitFor({ state: 'visible' });
+  await tile.scrollIntoViewIfNeeded();   // tiles further along the library are clipped until scrolled to
   const frame = page.frameLocator('iframe#frame');
   const regionBox = await frame.locator(`#${region}`).boundingBox();
   const frameBox = await page.locator('iframe#frame').boundingBox();
@@ -218,7 +219,9 @@ export async function ensureDeliveryResources(page: Page) {
   const before = count();
   await page.goto('/cm/app/?view=publish&pathType=unknown');
   await page.getByText(TEST_SITE, { exact: true }).first().click();
-  await page.getByText('Full', { exact: true }).first().click();
+  const full = page.locator('a.perc-publish-button[data-perc-publish-type="full"]').first();
+  if (!(await full.isVisible())) await page.getByRole('button', { name: 'Toggle dropdown' }).first().click({ timeout: 15_000 });
+  await full.click();
   await expect.poll(count, { timeout: 240_000 }).toBeGreaterThan(before);
   await expect.poll(() => fs.existsSync(marker), { timeout: 120_000 }).toBeTruthy();
 }
@@ -290,4 +293,34 @@ export async function openPageByPath(page: Page, segments: string[], pageName: s
   // double click opens the page read-only ("Viewing Page"); Edit switches to edit mode (checks the page out)
   await page.getByRole('button', { name: 'Edit', exact: true }).click({ timeout: 60_000 });
   await expect(page).toHaveURL(/mode=edit/, { timeout: 60_000 });
+}
+
+/**
+ * Uploads an image as a new Image asset into /Assets/<folder> (New Asset > Image) with the given title and alt text and returns the name
+ * the CMS gave the asset. The new asset is a never-published Draft and is left open in the asset editor.
+ */
+export async function uploadImageAsset(page: Page, folder: string, fixturePath: string, title: string, alt: string, linkText?: string): Promise<string> {
+  const path = page.locator('#mcol-path-summary');
+  await page.goto('/cm/app/?view=dash');
+  await expect(page.getByText('Welcome, Admin')).toBeVisible({ timeout: 90_000 });
+  await page.getByText('Assets', { exact: true }).first().click();
+  await expect(path).toHaveValue('/Assets', { timeout: 30_000 });
+  await page.getByText(folder, { exact: true }).first().click();
+  await expect(path).toHaveValue(`/Assets/${folder}`, { timeout: 30_000 });
+  await page.locator('#mcol-new-asset.ui-enabled').click();
+  await page.locator('text=/^Image$/ >> visible=true').first().click({ timeout: 60_000 });
+  await page.getByRole('button', { name: 'Next' }).click();
+  const frame = page.frameLocator('iframe[src*="psx_cepercImageAsset"]');
+  await frame.locator('#perc-content-edit-displaytitle').pressSequentially(title, { delay: 10 });
+  await frame.locator('#perc-content-edit-alttext').pressSequentially(alt, { delay: 10 });
+  await frame.locator('#perc-select-image').setInputFiles(fixturePath);
+  await expect(frame.locator('#asset_main_width'), 'size of the chosen image is read').not.toHaveValue('', { timeout: 30_000 });
+  if (linkText) {
+    // "Link text" is in the Meta-data section; the Image Auto-List shows it as the caption
+    await frame.getByText('Meta-data').first().click();
+    await frame.locator('#perc-content-edit-resource_link_title').pressSequentially(linkText, { delay: 10 });
+  }
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.waitForURL(/view=editAsset.*name=/, { timeout: 60_000 });
+  return new URL(page.url()).searchParams.get('name')!;
 }
