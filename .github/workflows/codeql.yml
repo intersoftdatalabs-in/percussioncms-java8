@@ -43,8 +43,60 @@ permissions:
   contents: read
 
 jobs:
+  # On pull_request events, detect which CodeQL languages have relevant file
+  # changes so unchanged languages skip full CodeQL extraction/analysis.
+  # push to main, schedule, and workflow_dispatch always run both languages.
+  changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      java-kotlin: ${{ github.event_name != 'pull_request' || steps.filter.outputs['java-kotlin'] == 'true' }}
+      javascript-typescript: ${{ github.event_name != 'pull_request' || steps.filter.outputs['javascript-typescript'] == 'true' }}
+    steps:
+      - name: Check changed files for pull request
+        if: github.event_name == 'pull_request'
+        id: filter
+        # Pinned to v4.0.3 (uses GitHub REST API on pull_request; no checkout needed)
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          filters: |
+            java-kotlin:
+              - '**/*.java'
+              - '**/*.kt'
+              - '**/*.jsp'
+              - '**/*.jspf'
+              - '**/*.xml'
+              - '**/pom.xml'
+              - '**/*.properties'
+              - '**/*.gradle'
+              - '**/*.gradle.kts'
+              - '.mvn/**'
+              - 'mvn-env.sh'
+              - 'mvn-env.bat'
+              - '.github/codeql/**'
+              - '.github/workflows/codeql.yml'
+            javascript-typescript:
+              - '**/*.js'
+              - '**/*.jsx'
+              - '**/*.ts'
+              - '**/*.tsx'
+              - '**/*.mjs'
+              - '**/*.cjs'
+              - '**/*.vue'
+              - '**/*.html'
+              - '**/*.htm'
+              - '**/package.json'
+              - '**/package-lock.json'
+              - '**/tsconfig*.json'
+              - '.github/codeql/**'
+              - '.github/workflows/codeql.yml'
+
   analyze:
     name: Analyze (${{ matrix.language }})
+    needs: changes
     runs-on: ubuntu-latest
     permissions:
       # required to upload SARIF / open code-scanning alerts
@@ -74,9 +126,11 @@ jobs:
 
     steps:
       - name: Checkout repository
+        if: github.event_name != 'pull_request' || needs.changes.outputs[matrix.language] == 'true'
         uses: actions/checkout@v4
 
       - name: Initialize CodeQL
+        if: github.event_name != 'pull_request' || needs.changes.outputs[matrix.language] == 'true'
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
@@ -86,6 +140,43 @@ jobs:
           # Models remain in-repo for docs; use sink-line // codeql + query-filters.
 
       - name: Perform CodeQL Analysis
+        if: github.event_name != 'pull_request' || needs.changes.outputs[matrix.language] == 'true'
         uses: github/codeql-action/analyze@v4
         with:
+          category: "/language:${{ matrix.language }}"
+
+      # PR-only fast no-op for unchanged languages: GitHub's code_scanning
+      # ruleset expects every CodeQL category present on refs/heads/main to
+      # report on the PR, otherwise merges block indefinitely (github/codeql-action#4330).
+      # Guarded strictly by github.event_name == 'pull_request' so default-branch
+      # pushes/schedules always run full analysis and never close open alerts.
+      - name: Generate no-op SARIF for unchanged PR language
+        if: github.event_name == 'pull_request' && needs.changes.outputs[matrix.language] != 'true'
+        env:
+          LANGUAGE: ${{ matrix.language }}
+        run: |
+          cat <<'EOF' > "${RUNNER_TEMP}/noop-${LANGUAGE}.sarif"
+          {
+            "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+            "version": "2.1.0",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "CodeQL",
+                    "rules": []
+                  }
+                },
+                "results": []
+              }
+            ]
+          }
+          EOF
+          echo "Skipped full ${LANGUAGE} CodeQL analysis (no matching files changed in PR); uploading PR-only no-op SARIF to satisfy CodeQL merge protection."
+
+      - name: Upload no-op SARIF for unchanged PR language
+        if: github.event_name == 'pull_request' && needs.changes.outputs[matrix.language] != 'true'
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: ${{ runner.temp }}/noop-${{ matrix.language }}.sarif
           category: "/language:${{ matrix.language }}"
