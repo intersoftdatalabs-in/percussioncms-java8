@@ -22,7 +22,9 @@ import com.percussion.security.utils.PSRedirectValidation;
 import com.percussion.security.utils.PSValidatedRedirect;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -32,6 +34,8 @@ import org.apache.logging.log4j.Logger;
 @Provider
 public class PSUncaughtError extends Throwable implements ExceptionMapper<Throwable> {
   private static final long serialVersionUID = 1L;
+  private static final String DEFAULT_ERROR_PATH = "/error.html";
+  private static final String SERVLET_ERROR_STATUS_CODE = "javax.servlet.error.status_code";
 
   private static final Logger log = LogManager.getLogger(PSUncaughtError.class);
 
@@ -42,28 +46,31 @@ public class PSUncaughtError extends Throwable implements ExceptionMapper<Throwa
   @Override
   public Response toResponse(Throwable exception) {
     try {
-      if (request != null & response != null) {
+      if (request != null && response != null) {
         log.warn(
             "Page redirecting to error {} : . Error code {} : . Error message {} : ",
             request.getHeader("referer"),
             response.getStatus(),
-            exception.getLocalizedMessage());
+            exception != null ? exception.getLocalizedMessage() : null);
         // CWE-601 / java/unvalidated-url-redirection #598: never build the error redirect
-        // from the Referer header (open-redirect vector). Always use a local relative path.
-        String context = request.getContextPath();
-        if (context == null) {
-          context = "";
-        }
-        String errorPath = context + "/error.html";
-        String safe = PSRedirectValidation.validateInternalRedirectUrl(errorPath);
+        // from the Referer header (open-redirect vector). Always target the root error page
+        // (webapps/ROOT/error.html), because per-service webapps map /* to Jersey and have no
+        // /error.html endpoint of their own.
+        String safe = PSRedirectValidation.validateInternalRedirectUrl(DEFAULT_ERROR_PATH);
         String rebuilt = safe == null ? null : PSRedirectValidation.rebuildInternalRedirect(safe);
         if (rebuilt == null) {
-          rebuilt = PSRedirectValidation.rebuildInternalRedirect("/error.html");
+          rebuilt = DEFAULT_ERROR_PATH;
         }
-        if (rebuilt == null) {
-          rebuilt = "/error.html";
+        // Guard against an infinite self-redirect loop if a service is ever mounted at root ("").
+        if (rebuilt.equals(request.getRequestURI())) {
+          return Response.status(resolveErrorStatus(exception))
+              .entity("A server error happened. Please try your request again.")
+              .type(MediaType.TEXT_PLAIN)
+              .build();
         }
-        PSValidatedRedirect.send(response, rebuilt);
+        if (!response.isCommitted()) {
+          PSValidatedRedirect.send(response, rebuilt);
+        }
       } else {
         logErrorMessage(exception);
       }
@@ -73,8 +80,25 @@ public class PSUncaughtError extends Throwable implements ExceptionMapper<Throwa
     return null;
   }
 
+  private int resolveErrorStatus(Throwable exception) {
+    Object attr = request.getAttribute(SERVLET_ERROR_STATUS_CODE);
+    if (attr instanceof Integer) {
+      int code = (Integer) attr;
+      if (code >= 400 && code < 600) {
+        return code;
+      }
+    }
+    if (exception instanceof WebApplicationException) {
+      Response errResp = ((WebApplicationException) exception).getResponse();
+      if (errResp != null && errResp.getStatus() >= 400) {
+        return errResp.getStatus();
+      }
+    }
+    return Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
+  }
+
   private void logErrorMessage(Throwable exception) {
-    String errorMessage = exception.getMessage();
+    String errorMessage = exception == null ? "Unknown error" : exception.getMessage();
     if (exception instanceof Exception) {
       errorMessage = PSExceptionUtils.getMessageForLog((Exception) exception);
       log.debug(PSExceptionUtils.getDebugMessageForLog((Exception) exception));
