@@ -626,6 +626,9 @@ $__style
 #end##
 #end##
 #end##
+#if($instancesUI.size() > 0 && !$perc.isEditMode())##
+#print_jqueryUI("additionalHeadContent")##
+#end##
 
 #if ($stripCustomCanonical)##
 #set($tmplAdditionalHeadContent = $rx.pageutils.stripLinkCanonical($!perc.template.additionalHeadContent))##
@@ -692,10 +695,12 @@ display:none;
 #if($js_link.getUrl().endsWith("/jquery-ui.js"))##
 #if($perc.isEditMode())##
 <script src='/cm/jslib/profiles/3x/jquery/libraries/jquery-ui/jquery-ui.js'></script>
-#elseif ($perc.isPreviewMode() && ($perc.linkContext.site.overrideSystemJQueryUI==false) && ($jqueryUIwidget.size()==0) )##
+#elseif ($jqueryUIwidget.size() == 0)##
+#if ($perc.isPreviewMode() && ($perc.linkContext.site.overrideSystemJQueryUI==false))##
 <script src='/cm/jslib/profiles/3x/jquery/libraries/jquery-ui/jquery-ui.js'#if($deferDependents) defer#end></script>
 #else##
 #print_jqueryUI("additionalHeadContent")##
+#end##
 #end##
 #end##
 #end##
