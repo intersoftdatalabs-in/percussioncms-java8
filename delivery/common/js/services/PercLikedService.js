@@ -27,6 +27,25 @@
 		
 		"PERC_ONE_YEAR"                            : 365
 	};
+
+    /**
+     * Parses a total likes count returned by the delivery service into a base-10 integer.
+     * makeXdmJsonRequest uses dataType: "text", so numeric responses arrive as strings.
+     * @param rawTotalLikes (number|string) raw count returned by the service
+     * @return (number|null) parsed integer count, or null if not a valid integer
+     */
+    var parseTotalLikes = function(rawTotalLikes) {
+        if (typeof rawTotalLikes === "number") {
+            return isFinite(rawTotalLikes) ? Math.floor(rawTotalLikes) : null;
+        }
+        if (typeof rawTotalLikes === "string") {
+            var trimmed = rawTotalLikes.replace(/^\s+|\s+$/g, "");
+            if (/^-?\d+$/.test(trimmed)) {
+                return parseInt(trimmed, 10);
+            }
+        }
+        return null;
+    };
 	
     /**
      * Increments the number of times this item has been liked.
@@ -52,13 +71,15 @@
         $.PercServiceUtils.makeXdmJsonRequest(null, likeServiceUrl, $.PercServiceUtils.TYPE_POST, function(status, results)
         {
             if(status === $.PercServiceUtils.STATUS_SUCCESS){
-                var data = {url : site, totalLikes : results.data};
-				setThisLiked(true, data.url);
-                callback(true, data);
+                var totalLikes = parseTotalLikes(results ? results.data : null);
+                if(totalLikes !== null){
+                    var data = {url : site, totalLikes : totalLikes};
+                    setThisLiked(true, data.url);
+                    callback(true, data);
+                    return;
+                }
             }
-            else{
-                callback(false, null);
-            }
+            callback(false, null);
         });
     };
     /**
@@ -88,13 +109,15 @@
         $.PercServiceUtils.makeXdmJsonRequest(null, likeServiceUrl, $.PercServiceUtils.TYPE_POST, function(status, results)
         {
             if(status === $.PercServiceUtils.STATUS_SUCCESS){
-                var data = {url : site, totalLikes : results.data};
-				setThisLiked(false, data.url);
-                callback(true, data);
+                var totalLikes = parseTotalLikes(results ? results.data : null);
+                if(totalLikes !== null){
+                    var data = {url : site, totalLikes : totalLikes};
+                    setThisLiked(false, data.url);
+                    callback(true, data);
+                    return;
+                }
             }
-            else{
-                callback(false, null);
-            }
+            callback(false, null);
         });
     };
 
@@ -120,12 +143,14 @@
         $.PercServiceUtils.makeXdmJsonRequest(null, likeServiceUrl, $.PercServiceUtils.TYPE_POST, function(status, results)
         {
             if(status === $.PercServiceUtils.STATUS_SUCCESS){
-                var data = {url : site, totalLikes : results.data};
-                callback(true, data);
+                var totalLikes = parseTotalLikes(results ? results.data : null);
+                if(totalLikes !== null){
+                    var data = {url : site, totalLikes : totalLikes};
+                    callback(true, data);
+                    return;
+                }
             }
-            else{
-                callback(false, null);
-            }
+            callback(false, null);
         });
     };
 	/**
