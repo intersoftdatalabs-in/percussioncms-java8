@@ -42,7 +42,7 @@ import org.junit.Test;
  * Regression test for issue #355: verifies {@code sys_assembly.vm} renders {@code percJQueryUIWidget}
  * scripts in {@code <head>} when Script Location is {@code additionalHeadContent} ("Head"), and
  * preserves {@code afterBodyStart}, {@code beforeBodyClose}, {@code includeUIOnPublishedPage},
- * deferral propagation, edit mode, and default footer fallback behavior.
+ * deferral propagation, widget location coordination, edit mode, and default footer fallback behavior.
  */
 public class PSSysAssemblyJQueryUiMacroTest {
 
@@ -262,6 +262,133 @@ public class PSSysAssemblyJQueryUiMacroTest {
         htmlOverridden.contains(SYSTEM_JQUERY_UI_PATH));
   }
 
+  @Test
+  public void shouldEmitHeadJQueryUiAfterBodyStartWhenJQueryIsAfterBodyStart() throws Exception {
+    StubContext ctx = new StubContext("PUBLISH", false, false);
+    ctx.pageUtils.addWidget("percJQueryWidget", defaultJQueryProps("afterBodyStart", "no"));
+    ctx.pageUtils.addWidget(
+        "percJQueryUIWidget",
+        jQueryUiProps(SYSTEM_JQUERY_UI_PATH, "additionalHeadContent", "no", "yes", "", ""));
+
+    String html = renderTemplate(ctx);
+    String head = extractHead(html);
+    String body = extractBody(html);
+
+    assertFalse("Did not expect jquery.js in <head>", head.contains(SYSTEM_JQUERY_PATH));
+    assertFalse("Did not expect jquery-ui.js in <head>", head.contains(SYSTEM_JQUERY_UI_PATH));
+    assertTrue("Expected jquery.js in <body>", body.contains(SYSTEM_JQUERY_PATH));
+    assertTrue("Expected jquery-ui.js in <body>", body.contains(SYSTEM_JQUERY_UI_PATH));
+    assertTrue(
+        "Expected jquery.js before main body content",
+        body.indexOf(SYSTEM_JQUERY_PATH) < body.indexOf("<div id=\"main\">Body</div>"));
+    assertTrue(
+        "Expected jquery-ui.js before main body content",
+        body.indexOf(SYSTEM_JQUERY_UI_PATH) < body.indexOf("<div id=\"main\">Body</div>"));
+    assertTrue(
+        "Expected jquery.js before jquery-ui.js in <body>",
+        body.indexOf(SYSTEM_JQUERY_PATH) < body.indexOf(SYSTEM_JQUERY_UI_PATH));
+    assertEquals(1, countOccurrences(html, SYSTEM_JQUERY_PATH));
+    assertEquals(1, countOccurrences(html, SYSTEM_JQUERY_UI_PATH));
+  }
+
+  @Test
+  public void shouldEmitHeadJQueryUiBeforeBodyCloseWhenJQueryIsBeforeBodyClose() throws Exception {
+    StubContext ctx = new StubContext("PUBLISH", false, false);
+    ctx.pageUtils.addWidget("percJQueryWidget", defaultJQueryProps("beforeBodyClose", "no"));
+    ctx.pageUtils.addWidget(
+        "percJQueryUIWidget",
+        jQueryUiProps(SYSTEM_JQUERY_UI_PATH, "additionalHeadContent", "no", "yes", "", ""));
+
+    String html = renderTemplate(ctx);
+    String head = extractHead(html);
+    String body = extractBody(html);
+
+    assertFalse("Did not expect jquery.js in <head>", head.contains(SYSTEM_JQUERY_PATH));
+    assertFalse("Did not expect jquery-ui.js in <head>", head.contains(SYSTEM_JQUERY_UI_PATH));
+    assertTrue("Expected jquery.js in <body>", body.contains(SYSTEM_JQUERY_PATH));
+    assertTrue("Expected jquery-ui.js in <body>", body.contains(SYSTEM_JQUERY_UI_PATH));
+    assertTrue(
+        "Expected jquery.js after main body content",
+        body.indexOf(SYSTEM_JQUERY_PATH) > body.indexOf("<div id=\"main\">Body</div>"));
+    assertTrue(
+        "Expected jquery-ui.js after main body content",
+        body.indexOf(SYSTEM_JQUERY_UI_PATH) > body.indexOf("<div id=\"main\">Body</div>"));
+    assertTrue(
+        "Expected jquery.js before jquery-ui.js in <body>",
+        body.indexOf(SYSTEM_JQUERY_PATH) < body.indexOf(SYSTEM_JQUERY_UI_PATH));
+    assertEquals(1, countOccurrences(html, SYSTEM_JQUERY_PATH));
+    assertEquals(1, countOccurrences(html, SYSTEM_JQUERY_UI_PATH));
+  }
+
+  @Test
+  public void shouldEmitAfterBodyStartJQueryUiBeforeBodyCloseWhenJQueryIsBeforeBodyClose()
+      throws Exception {
+    StubContext ctx = new StubContext("PUBLISH", false, false);
+    ctx.pageUtils.addWidget("percJQueryWidget", defaultJQueryProps("beforeBodyClose", "no"));
+    ctx.pageUtils.addWidget(
+        "percJQueryUIWidget",
+        jQueryUiProps(SYSTEM_JQUERY_UI_PATH, "afterBodyStart", "no", "yes", "", ""));
+
+    String html = renderTemplate(ctx);
+    String head = extractHead(html);
+    String body = extractBody(html);
+
+    assertFalse("Did not expect jquery.js in <head>", head.contains(SYSTEM_JQUERY_PATH));
+    assertFalse("Did not expect jquery-ui.js in <head>", head.contains(SYSTEM_JQUERY_UI_PATH));
+    assertTrue("Expected jquery.js in <body>", body.contains(SYSTEM_JQUERY_PATH));
+    assertTrue("Expected jquery-ui.js in <body>", body.contains(SYSTEM_JQUERY_UI_PATH));
+    assertTrue(
+        "Expected jquery.js after main body content",
+        body.indexOf(SYSTEM_JQUERY_PATH) > body.indexOf("<div id=\"main\">Body</div>"));
+    assertTrue(
+        "Expected jquery-ui.js after main body content",
+        body.indexOf(SYSTEM_JQUERY_UI_PATH) > body.indexOf("<div id=\"main\">Body</div>"));
+    assertTrue(
+        "Expected jquery.js before jquery-ui.js in <body>",
+        body.indexOf(SYSTEM_JQUERY_PATH) < body.indexOf(SYSTEM_JQUERY_UI_PATH));
+    assertEquals(1, countOccurrences(html, SYSTEM_JQUERY_PATH));
+    assertEquals(1, countOccurrences(html, SYSTEM_JQUERY_UI_PATH));
+  }
+
+  @Test
+  public void shouldKeepHeadJQueryUiInHeadWhenJQueryWidgetExcludesPublishedPage() throws Exception {
+    StubContext ctx = new StubContext("PUBLISH", false, false);
+    ctx.pageUtils.addWidget(
+        "percJQueryWidget", defaultJQueryProps("beforeBodyClose", "no", "no"));
+    ctx.pageUtils.addWidget(
+        "percJQueryUIWidget",
+        jQueryUiProps(SYSTEM_JQUERY_UI_PATH, "additionalHeadContent", "no", "yes", "", ""));
+
+    String html = renderTemplate(ctx);
+    String head = extractHead(html);
+    String body = extractBody(html);
+
+    assertFalse("Did not expect jquery.js when includeOnPublishedPage=no", html.contains(SYSTEM_JQUERY_PATH));
+    assertTrue("Expected jquery-ui.js in <head>", head.contains(SYSTEM_JQUERY_UI_PATH));
+    assertFalse("Did not expect jquery-ui.js in <body>", body.contains(SYSTEM_JQUERY_UI_PATH));
+    assertEquals(1, countOccurrences(html, SYSTEM_JQUERY_UI_PATH));
+  }
+
+  @Test
+  public void shouldRenderHeadJQueryUiInHeadWhenOnlyJQueryUiWidgetPresent() throws Exception {
+    StubContext ctx = new StubContext("PUBLISH", false, false);
+    ctx.pageUtils.addWidget(
+        "percJQueryUIWidget",
+        jQueryUiProps(SYSTEM_JQUERY_UI_PATH, "additionalHeadContent", "no", "yes", "", ""));
+
+    String html = renderTemplate(ctx);
+    String head = extractHead(html);
+    String body = extractBody(html);
+
+    assertTrue("Expected jquery.js in <head>", head.contains(SYSTEM_JQUERY_PATH));
+    assertTrue("Expected jquery-ui.js in <head>", head.contains(SYSTEM_JQUERY_UI_PATH));
+    assertTrue(
+        "Expected jquery.js before jquery-ui.js in <head>",
+        head.indexOf(SYSTEM_JQUERY_PATH) < head.indexOf(SYSTEM_JQUERY_UI_PATH));
+    assertFalse("Did not expect jquery-ui.js in <body>", body.contains(SYSTEM_JQUERY_UI_PATH));
+    assertEquals(1, countOccurrences(html, SYSTEM_JQUERY_UI_PATH));
+  }
+
   private static String renderTemplate(StubContext stub) throws Exception {
     File vmDir = resolveRepoFile(VM_DIR_REL_PATH);
     File propsFile = resolveRepoFile(VELOCITY_PROPS_REL_PATH);
@@ -327,6 +454,11 @@ public class PSSysAssemblyJQueryUiMacroTest {
   }
 
   private static Map<String, Object> defaultJQueryProps(String scriptLocation, String isDeferred) {
+    return defaultJQueryProps(scriptLocation, isDeferred, "yes");
+  }
+
+  private static Map<String, Object> defaultJQueryProps(
+      String scriptLocation, String isDeferred, String includeOnPublishedPage) {
     Map<String, Object> props = new HashMap<>();
     props.put("jQueryLocation", SYSTEM_JQUERY_PATH);
     props.put("jQueryLocationIntegrity", "");
@@ -336,7 +468,7 @@ public class PSSysAssemblyJQueryUiMacroTest {
     props.put("jQueryMigrateLocationCrossOrigin", "");
     props.put("isDeferred", isDeferred);
     props.put("scriptLocation", scriptLocation);
-    props.put("includeOnPublishedPage", "yes");
+    props.put("includeOnPublishedPage", includeOnPublishedPage);
     return props;
   }
 
