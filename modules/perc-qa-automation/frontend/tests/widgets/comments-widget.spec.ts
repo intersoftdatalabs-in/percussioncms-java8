@@ -50,7 +50,7 @@ test.describe('Comments Widget', () => {
     await page.screenshot({ path: 'screenshots/comments-widget-published-page-comment-form-filled.png' });
     await form.getByRole('button', { name: 'Submit' }).click();
 
-    await page.goto(`${DTS_URL}/${TEST_FOLDER}/${host}.html`);
+    await expect(page, 'after Submit the browser returns to the page').toHaveURL(/lastCommentId=\d+/, { timeout: 30_000 });
     const list = page.locator('.perc-comments-view');
     await expect(list.getByText(comment.text), 'submitted comment text listed by the Comments widget').toBeVisible({ timeout: 60_000 });
     await expect(list.getByText(comment.user).first(), 'commenter name listed').toBeVisible();

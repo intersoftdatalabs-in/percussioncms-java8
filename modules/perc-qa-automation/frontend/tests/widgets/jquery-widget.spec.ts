@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import { test, expect, Page } from '@playwright/test';
-import { loginAsAdmin, createPage, publishOpenItem, configurePublishing } from '../helpers/cms-ui';
+import { loginAsAdmin, createPage, publishOpenItem, configurePublishing, ensureDeliveryResources } from '../helpers/cms-ui';
 import { placeWidget, saveLayout, openContentTab, openWidgetConfigure, confirmWidgetConfigure } from '../helpers/widgets-ui';
 import { DTS_URL, DTS_ADMIN_URL, TEST_FOLDER } from '../helpers/qa-env';
 
@@ -14,6 +14,7 @@ const MIGRATE = '/web_resources/cm/jslib/jquery-migrate.js';
 
 /** New page with a jQuery Widget configured through the dialog (when `configure` is given), published. Returns the published URL. */
 async function publishJQueryPage(page: Page, run: string, shot: string, configure?: (form: ReturnType<Page['locator']>) => Promise<void>): Promise<string> {
+  await ensureDeliveryResources(page);
   const host = await createPage(page, `jQuery Host ${shot.slice(-9)} ${run}`);
   await placeWidget(page, 'percJQueryWidget');
   const form = await openWidgetConfigure(page, 'percJQueryWidget');
