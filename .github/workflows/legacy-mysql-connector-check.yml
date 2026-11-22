@@ -2,6 +2,18 @@ name: Legacy MySQL Connector Check
 
 on:
   pull_request:
+    paths:
+      - "**/*.jar"
+      - "**/mysql-connector*"
+      - "**/mm.mysql*"
+      - "**/rxconfig/Installer/**"
+      - "**/install*.xml"
+      - "**/Install*.xml"
+      - "**/build.xml"
+      - "modules/perc-ant/**"
+      - "scripts/check-legacy-mysql-connector.py"
+      - "scripts/test-mysql-connector-upgrade.py"
+      - ".github/workflows/legacy-mysql-connector-check.yml"
   push:
     branches: ["main"]
 
