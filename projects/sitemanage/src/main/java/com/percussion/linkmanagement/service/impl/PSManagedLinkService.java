@@ -21,6 +21,7 @@ import static org.apache.commons.lang3.Validate.notEmpty;
 import static org.apache.commons.lang3.Validate.notNull;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -300,87 +301,13 @@ public class PSManagedLinkService implements IPSManagedLinkService {
         return null;
       }
 
-      String newPath = "";
-
       for (int i = 0; i < objectArray.size(); i++) {
-        PSManagedLink mLink = null;
         log.debug("Processing payload entry {}", i);
         ObjectNode entry = (ObjectNode) objectArray.get(i);
-
-        // Images
-        if (entry.has(PERC_IMAGEPATH)) {
-          if (entry.has(PERC_IMAGEPATH_LINKID)) {
-            if (!StringUtils.isBlank(entry.path(PERC_IMAGEPATH_LINKID).asText())) {
-              if (log.isDebugEnabled())
-                log.debug(
-                    "Getting updated path for Image entry: {} with current path of {}",
-                    entry.path(PERC_IMAGEPATH_LINKID).asText(),
-                    entry.path(PERC_IMAGEPATH).asText());
-              mLink =
-                  dao.findLinkByLinkId(
-                      Integer.parseInt(entry.path(PERC_IMAGEPATH_LINKID).asText()));
-              newPath = renderHref(mLink, linkContext, isStaging);
-              if (log.isDebugEnabled())
-                log.debug(
-                    "Updating payload for Image entry: {} with new path of {}",
-                    entry.path(PERC_IMAGEPATH_LINKID).asText(),
-                    newPath);
-
-              entry.put(PERC_IMAGEPATH, newPath);
-              objectArray.set(i, entry);
-              if (log.isDebugEnabled()) log.debug("Done updating links.");
-            }
-          }
-        }
-
-        // Files
-        if (entry.has(PERC_FILEPATH)) {
-          if (entry.has(PERC_FILEPATH_LINKID)) {
-            if (!StringUtils.isBlank(entry.path(PERC_FILEPATH_LINKID).asText())) {
-              if (log.isDebugEnabled())
-                log.debug(
-                    "Getting updated path for File entry: {} with current path of {}",
-                    entry.path(PERC_FILEPATH_LINKID).asText(),
-                    entry.path(PERC_FILEPATH).asText());
-              mLink =
-                  dao.findLinkByLinkId(Integer.parseInt(entry.path(PERC_FILEPATH_LINKID).asText()));
-              newPath = renderHref(mLink, linkContext, isStaging);
-              if (log.isDebugEnabled())
-                log.debug(
-                    "Updating payload for File entry: {} with new path of {}",
-                    entry.path(PERC_FILEPATH_LINKID).asText(),
-                    newPath);
-
-              entry.put(PERC_FILEPATH, newPath);
-              objectArray.set(i, entry);
-              if (log.isDebugEnabled()) log.debug("Done updating links.");
-            }
-          }
-        }
-
-        // Pages
-        if (entry.has(PERC_PAGEPATH)) {
-          if (entry.has(PERC_PAGEPATH_LINKID)) {
-            if (!StringUtils.isBlank(entry.path(PERC_PAGEPATH_LINKID).asText())) {
-              if (log.isDebugEnabled())
-                log.debug(
-                    "Getting updated path for Page entry: {} with current path of {}",
-                    entry.path(PERC_PAGEPATH_LINKID).asText(),
-                    entry.path(PERC_PAGEPATH).asText());
-              mLink =
-                  dao.findLinkByLinkId(Integer.parseInt(entry.path(PERC_PAGEPATH_LINKID).asText()));
-              newPath = renderHref(mLink, linkContext, isStaging);
-              if (log.isDebugEnabled())
-                log.debug(
-                    "Updating payload for Page entry: {} with new path of {}",
-                    entry.path(PERC_PAGEPATH_LINKID).asText(),
-                    newPath);
-              entry.put(PERC_PAGEPATH, newPath);
-              objectArray.set(i, entry);
-              if (log.isDebugEnabled()) log.debug("Done updating.");
-            }
-          }
-        }
+        renderJsonLink(
+            entry, PERC_IMAGEPATH, PERC_IMAGEPATH_LINKID, "Image", linkContext, isStaging);
+        renderJsonLink(entry, PERC_FILEPATH, PERC_FILEPATH_LINKID, "File", linkContext, isStaging);
+        renderJsonLink(entry, PERC_PAGEPATH, PERC_PAGEPATH_LINKID, "Page", linkContext, isStaging);
       }
 
       log.debug("Updating return payload.");
@@ -402,6 +329,54 @@ public class PSManagedLinkService implements IPSManagedLinkService {
 
     log.debug("Returning updated payload with any managed path updates: {}", object);
     return object.toString();
+  }
+
+  private static String getJsonText(ObjectNode entry, String fieldName) {
+    JsonNode node = entry.get(fieldName);
+    if (node == null || node.isNull()) {
+      return "";
+    }
+    return node.asText("");
+  }
+
+  private void renderJsonLink(
+      ObjectNode entry,
+      String pathKey,
+      String linkIdKey,
+      String entryType,
+      PSRenderLinkContext linkContext,
+      Boolean isStaging) {
+    if (!entry.has(pathKey)) {
+      return;
+    }
+    String linkIdText = getJsonText(entry, linkIdKey);
+    if (StringUtils.isBlank(linkIdText)) {
+      return;
+    }
+    long linkId;
+    try {
+      linkId = Long.parseLong(linkIdText.trim());
+    } catch (NumberFormatException e) {
+      log.warn("Skipping {} entry with non-numeric managed link id: {}", entryType, linkIdText);
+      return;
+    }
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "Getting updated path for {} entry: {} with current path of {}",
+          entryType,
+          linkIdText,
+          getJsonText(entry, pathKey));
+    }
+    PSManagedLink mLink = dao.findLinkByLinkId(linkId);
+    String newPath = renderHref(mLink, linkContext, isStaging);
+    if (log.isDebugEnabled()) {
+      log.debug(
+          "Updating payload for {} entry: {} with new path of {}", entryType, linkIdText, newPath);
+    }
+    entry.put(pathKey, StringUtils.defaultString(newPath));
+    if (log.isDebugEnabled()) {
+      log.debug("Done updating links.");
+    }
   }
 
   private static boolean getLinkState(Element elem, int contentId) {
