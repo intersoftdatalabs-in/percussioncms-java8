@@ -2917,6 +2917,40 @@
      */
     $.PercDataDropDownControl = function()
     {
+        function extractWidgetContentTypes(data)
+        {
+            var widgetContentTypes = [];
+            if(data)
+            {
+                // Support legacy and newer CXF/Jackson shapes.
+                if(data.WidgetContentType !== undefined)
+                {
+                    widgetContentTypes = data.WidgetContentType;
+                }
+                else if(data.ArrayList !== undefined)
+                {
+                    widgetContentTypes = data.ArrayList;
+                }
+                else if(Array.isArray(data))
+                {
+                    widgetContentTypes = data;
+                }
+            }
+            if(widgetContentTypes && widgetContentTypes.ArrayList !== undefined)
+            {
+                widgetContentTypes = widgetContentTypes.ArrayList;
+            }
+            if(widgetContentTypes === undefined || widgetContentTypes === null)
+            {
+                return [];
+            }
+            if($.perc_utils && typeof($.perc_utils.convertCXFArray) === "function")
+            {
+                return $.perc_utils.convertCXFArray(widgetContentTypes);
+            }
+            return Array.isArray(widgetContentTypes) ? widgetContentTypes : [widgetContentTypes];
+        }
+
         var DataDropDownControlAPI = $.extend({},$.PercFieldControlInterface);
         DataDropDownControlAPI.label="Data Drop Down field";
         DataDropDownControlAPI.getFieldData = function($fieldElem)
@@ -2946,11 +2980,12 @@
             fieldData.defaultValue = 0;
             var opts = $fieldElem.find('.dataDropDownSelect');
             opts.each(function(){
-                if($(this).val().trim() !== "")
+                var optVal = $(this).val();
+                if(optVal !== null && optVal !== undefined && String(optVal).trim() !== "")
                 {
                     fieldData.options[i] = {
-                        value : $(this).val(),
-                        label : $(this).val()
+                        value : optVal,
+                        label : optVal
                     };
                     if($(this).is('option:selected') || $(this).prev().is('input[type=radio]:checked'))
                     {
@@ -2970,19 +3005,29 @@
                 fieldEditorHtml = $("<div type='" + $.PercFormConstants.FIELD_CONTROL_DATADROPDOWN + "' class=' form-widget-label " + $.PercFormConstants.FIELD_EDITOR_EXT_CLASS + " " + $.PercFormConstants.FIELD_CLASS  + "'></div>").attr('name', $.PercFormController().generateNameFromLabel(fieldData.label));
                 fieldEditorHtml.append( $("<div>").append( $("<input size = '38' class = 'perc-form-datadisplay defaultFocus' type='text' maxlength='255' name='fieldLabel'/>").val(fieldData.label) ) );
                 fieldEditorHtml.append("<div class='form-widget-label' style='padding-right:10px;margin-bottom:-8px;' " + $.PercFormConstants.FIELD_EDITOR_LABEL_CLASS + " >Select a widget</div></br>");
-                s = $('<select class="dataDropDownSelect" />');
-                var opt = '';
+                var s = $('<select class="dataDropDownSelect" />');
+                var selectedValue = fieldData.defaultValue;
+                if(!selectedValue && fieldData.options && fieldData.options.length > 0)
+                {
+                    selectedValue = fieldData.options[0].value;
+                }
                 $.getJSON($.perc_paths.ASSET_TYPES + "?filterDisabledWidgets=yes", function(data) {
-                    var len = data.WidgetContentType.length;
-                    gData = data;
-                    s.append(opt);
-                    for (let i = 0; i< len; i++) {
-                        opt = $("<option value='" + data.WidgetContentType[i].contentTypeName +"'>" + data.WidgetContentType[i].contentTypeName + "</option>");
+                    var widgetContentTypes = extractWidgetContentTypes(data);
+                    for (var i = 0; i < widgetContentTypes.length; i++) {
+                        var item = widgetContentTypes[i];
+                        if(!item || !item.contentTypeName)
+                        {
+                            continue;
+                        }
+                        var opt = $('<option/>').val(item.contentTypeName).text(item.contentTypeName);
+                        if(selectedValue && selectedValue === item.contentTypeName)
+                        {
+                            opt.prop('selected', true);
+                        }
                         s.append(opt);
                     }
                 });
                 fieldEditorHtml.append(s);
-                fieldEditorHtml.append('</select>');
                 fieldEditorHtml.append("<br />");
 
                 //Add the final div
