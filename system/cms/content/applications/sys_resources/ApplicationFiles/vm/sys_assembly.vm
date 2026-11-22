@@ -435,10 +435,15 @@ $perc.setWidgetContents($rx.pageutils.widgetContents($sys.assemblyItem, $perc.wi
 #set($selectedDoctype = $perc.template.docType.selected)##
 #set($jqueryWidgetInstances = $rx.pageutils.findWidgetInstances($sys.assemblyItem, $NULL, "percJQueryWidget"))##
 #set($jqueryIsDeferred = "no")##
+#set($jqueryScriptLocation = "")##
 #if($jqueryWidgetInstances.size() > 0)##
 #set($jqueryWidgetInstance = $jqueryWidgetInstances.get(0))##
 #set($jqueryWidgetItem = $jqueryWidgetInstance.getItem())##
 #set($jqueryIsDeferred = $jqueryWidgetItem.getProperties().get("isDeferred"))##
+#set($jqueryIncludeOnPublishedPage = $jqueryWidgetItem.getProperties().get("includeOnPublishedPage"))##
+#if(!$perc.isEditMode() && "$!{jqueryIncludeOnPublishedPage}" != "no")##
+#set($jqueryScriptLocation = $jqueryWidgetItem.getProperties().get("scriptLocation"))##
+#end##
 #end##
 #set($deferDependents = false)##
 #if($jqueryIsDeferred == "yes" && !$perc.isEditMode())##
@@ -626,6 +631,9 @@ $__style
 #end##
 #end##
 #end##
+#if($instancesUI.size() > 0 && !$perc.isEditMode())##
+#print_jqueryUI("additionalHeadContent")##
+#end##
 
 #if ($stripCustomCanonical)##
 #set($tmplAdditionalHeadContent = $rx.pageutils.stripLinkCanonical($!perc.template.additionalHeadContent))##
@@ -692,10 +700,12 @@ display:none;
 #if($js_link.getUrl().endsWith("/jquery-ui.js"))##
 #if($perc.isEditMode())##
 <script src='/cm/jslib/profiles/3x/jquery/libraries/jquery-ui/jquery-ui.js'></script>
-#elseif ($perc.isPreviewMode() && ($perc.linkContext.site.overrideSystemJQueryUI==false) && ($jqueryUIwidget.size()==0) )##
+#elseif ($jqueryUIwidget.size() == 0)##
+#if ($perc.isPreviewMode() && ($perc.linkContext.site.overrideSystemJQueryUI==false))##
 <script src='/cm/jslib/profiles/3x/jquery/libraries/jquery-ui/jquery-ui.js'#if($deferDependents) defer#end></script>
 #else##
 #print_jqueryUI("additionalHeadContent")##
+#end##
 #end##
 #end##
 #end##
@@ -1059,7 +1069,13 @@ crossorigin="$!{jQueryMigrateCrossOrigin}"
 #if($instances.size() > 0)##
 #set($instance = $instances.get(0))##
 #set($widgetitem = $instance.getItem())##
+#set($scriptLocation = "")##
 #set($scriptLocation = $widgetitem.getProperties().get("scriptUILocation"))##
+#if("$!{jqueryScriptLocation}" == "beforeBodyClose" && ("$!{scriptLocation}" == "additionalHeadContent" || "$!{scriptLocation}" == "afterBodyStart"))##
+#set($scriptLocation = "beforeBodyClose")##
+#elseif("$!{jqueryScriptLocation}" == "afterBodyStart" && "$!{scriptLocation}" == "additionalHeadContent")##
+#set($scriptLocation = "afterBodyStart")##
+#end##
 #set($includeUIOnPublishedPage = $widgetitem.getProperties().get("includeUIOnPublishedPage"))##
 #if("${includeUIOnPublishedPage}"  ==  "")##
 #set($includeUIOnPublishedPage = "yes")## Default to publishing
