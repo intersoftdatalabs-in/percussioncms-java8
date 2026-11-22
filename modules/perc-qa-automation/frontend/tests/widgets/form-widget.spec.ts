@@ -4,16 +4,7 @@ import { newSubmissionCount, exportFormData } from '../helpers/forms-ui';
 import { test, expect, Page, FrameLocator } from '@playwright/test';
 import { loginAsAdmin, createPage, publishOpenItem, configurePublishing, ensureDeliveryResources } from '../helpers/cms-ui';
 import { placeWidget, saveLayout, openContentTab, openWidgetContentEditor } from '../helpers/widgets-ui';
-import { DTS_URL, DTS_ADMIN_URL, TEST_FOLDER, TEST_SITE, CMS_INSTALL } from '../helpers/qa-env';
-
-/** True when the DTS mail settings point at the local test SMTP listener (localhost / 127.0.0.1, port 2525), or QA_SMTP_SINK=true says they do. */
-const smtpPointsAtSink = (): boolean => {
-  if (process.env.QA_SMTP_SINK === 'true') return true;
-  try {
-    const p = fs.readFileSync(`${CMS_INSTALL}/Deployment/Server/conf/perc/perc-email.properties`, 'utf8');
-    return /^\s*[\w.]*host\s*=\s*(localhost|127\.0\.0\.1)\s*$/im.test(p) && /^\s*[\w.]*port\s*=\s*2525\s*$/im.test(p);
-  } catch { return false; }
-};
+import { DTS_URL, DTS_ADMIN_URL, TEST_FOLDER, TEST_SITE, isLocalSmtpConfigured } from '../helpers/qa-env';
 
 /**
  * Form widget: a form built in the widget's content editor and rendered on the page. A visitor submits it on the PUBLISHED page served by
@@ -183,7 +174,7 @@ test.describe.serial('Form widget', () => {
     await form.locator('select').selectOption('Selection 2');
     await form.getByRole('checkbox').nth(0).check();
     await form.getByRole('checkbox').nth(2).check();
-    await form.getByRole('radio').nth(1).check();   // 'Item 2' is not ticked in the checkbox group, so it proves the radio value on its own
+    await form.getByRole('radio').nth(1).check();
     await form.locator('img.ui-datepicker-trigger').click();
     await page.locator('#ui-datepicker-div td a.ui-state-default').first().click();
     const dateValue = await form.locator('input.hasDatepicker').inputValue();
@@ -195,8 +186,8 @@ test.describe.serial('Form widget', () => {
     const title = lastFormTitle;
     expect(await newSubmissionCount(page, title), 'one new submission is listed for the form').toBe(1);
     const csv = await exportFormData(page, title);
-    for (const v of [`Tester ${run}`, `Message text ${run}`, 'Selection 2', 'Item 1', 'Item 2', 'Item 3', dateValue, `hidden-${run}`]) expect(csv, `stored data contains "${v}"`).toContain(v);
-    expect(csv, 'the radio choice and the entry value are stored').toContain('Item 3');
+    for (const v of [`Tester ${run}`, `Message text ${run}`, 'Selection 2', 'Item 1', 'Item 3', dateValue, `hidden-${run}`]) expect(csv, `stored data contains "${v}"`).toContain(v);
+    expect(csv, 'the radio choice is stored').toContain('Item 2');
     fs.writeFileSync('screenshots/form-widget-stored-submission.csv.txt', csv);
   });
 
@@ -236,7 +227,10 @@ test.describe.serial('Form widget', () => {
   };
 
   test('Form widget: "Notify on form submission" sends a notification email and the submission is still stored', async ({ page }) => {
-    test.skip(!smtpPointsAtSink(), 'needs the DTS conf/perc/perc-email.properties pointed at localhost:2525 without TLS/login (or QA_SMTP_SINK=true)');
+    test.skip(
+      process.env.QA_FORM_EMAIL !== 'true' && !isLocalSmtpConfigured(),
+      'needs DTS Deployment/Server/conf/perc/perc-email.properties pointed at localhost:2525 (no TLS) or QA_FORM_EMAIL=true',
+    );
     expect(thanks, 'pages from the first scenario').not.toBe('');
     const sink = await startSmtpSink();
     try {
@@ -329,6 +323,7 @@ test.describe.serial('Form widget reCaptcha', () => {
   test('Form widget reCaptcha: a post without the Google answer is not stored by the DTS', async ({ page }) => {
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
     const thanks = await publishPlainPage(page, `QA Captcha2 Thanks ${run}`);
     const error = await publishPlainPage(page, `QA Captcha2 Error ${run}`);
     const url = await publishFormPage(page, run, thanks, error, 'form-widget-recaptcha-bypass', undefined, async frame => {
@@ -351,10 +346,12 @@ test.describe.serial('Form widget reCaptcha', () => {
     await expect(form).toBeVisible({ timeout: 60_000 });
     // skip the browser check and send the form without the Google answer (what a script posting to the DTS would do)
     await form.locator('input[type=text]').first().fill(`bypass entry ${run}`);
-    const posted = page.waitForResponse(r => r.request().method() === 'POST', { timeout: 30_000 });
-    await form.evaluate(f => { f.querySelectorAll('[name="g-recaptcha-response"]').forEach(e => e.remove()); HTMLFormElement.prototype.submit.call(f); });   // the Submit button is named "submit", so form.submit itself is shadowed
-    await posted;   // the form POST has been answered before the tracker is read
-    await page.waitForLoadState('load', { timeout: 30_000 }).catch(() => {});
+    await Promise.all([
+      page.waitForResponse(r => r.url().includes('/perc-form-processor/forms/form/collect') && r.request().method() === 'POST', { timeout: 30_000 }),
+      form.evaluate(f => { f.querySelectorAll('[name="g-recaptcha-response"]').forEach(e => e.remove()); HTMLFormElement.prototype.submit.call(f); }),   // the Submit button is named "submit", so form.submit itself is shadowed
+    ]);
+    await expect(page, 'rejected submission lands on the error page').toHaveURL(new RegExp(`${error}\\.html`), { timeout: 30_000 });
+    await expect(page, 'rejected submission does not reach the success page').not.toHaveURL(new RegExp(`${thanks}\\.html`));
     expect(await newSubmissionCount(page, lastFormTitle), 'the DTS did not store a submission without the Google answer').toBe(0);
   });
 });

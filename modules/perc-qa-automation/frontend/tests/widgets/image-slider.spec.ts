@@ -58,7 +58,7 @@ test.describe.serial('Image Slider', () => {
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
     await ensureDeliveryResources(page);
     imageA = await uploadImageAsset(page, TEST_ASSET_FOLDER, IMAGE, `QA Slide A ${run}`, `QA slide A alt ${run}`);
-    await publishOpenItem(page);   // the slider only renders Approved/Live images, so Draft assets would give 0 slides
+    await publishOpenItem(page);
     imageB = await uploadImageAsset(page, TEST_ASSET_FOLDER, IMAGE, `QA Slide B ${run}`, `QA slide B alt ${run}`);
     await publishOpenItem(page);
     expect(imageA, 'two different assets').not.toBe(imageB);
@@ -77,12 +77,13 @@ test.describe.serial('Image Slider', () => {
     await expect(slider.locator('.slick-next'), 'next arrow').toBeVisible();
     await expect(slider.locator('.slick-current').getByText(`Slide one ${run}`), 'first slide shown first, with its text').toBeVisible();
     await expect(slider.locator('.slick-current').getByText(`Second line one ${run}`)).toBeVisible();
-    // the slide image is a CSS background-image on the slide container, not an <img>: read its URL and fetch it
-    const bg = await slider.locator('.slick-current .perc-slide-image-container').first().evaluate(e => getComputedStyle(e).backgroundImage);
-    const imgUrl = bg.match(/url\(["']?(.*?)["']?\)/)?.[1];
-    expect(imgUrl, 'slide has a background image').toBeTruthy();
-    const imgRes = await page.request.get(new URL(imgUrl!, page.url()).toString());
-    expect(imgRes.ok(), 'slide image is served').toBe(true);
+    const imgContainer = slider.locator('.slick-current .perc-slide-image-container').first();
+    await expect(imgContainer, 'slide image container visible').toBeVisible();
+    const bgImage = await imgContainer.evaluate(e => getComputedStyle(e).backgroundImage);
+    const bgUrl = bgImage.match(/url\(["']?([^"')]+)["']?\)/)?.[1];
+    expect(bgUrl, `slide background-image URL (${bgImage})`).toBeTruthy();
+    const imgRes = await page.request.get(new URL(bgUrl!, url).toString());
+    expect(imgRes.status(), 'slide image is served by DTS').toBe(200);
     expect((await imgRes.body()).length, 'slide image has content').toBeGreaterThan(0);
     await page.screenshot({ path: 'screenshots/image-slider-published-page-first-slide.png' });
 

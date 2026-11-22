@@ -46,7 +46,13 @@ export async function startSmtpSink(port = 2525): Promise<{ mails: Mail[]; close
     socket.on('error', () => {});
   });
   await new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', () => resolve()); });
-  return { mails, close: () => new Promise<void>(resolve => { server.close(() => resolve()); sockets.forEach(s => s.destroy()); }) };
+  return {
+    mails,
+    close: () => new Promise<void>(resolve => {
+      server.close(() => resolve());
+      for (const socket of sockets) socket.destroy();
+    }),
+  };
 }
 
 /** Decodes quoted-printable / base64 bodies enough to search them for text. */

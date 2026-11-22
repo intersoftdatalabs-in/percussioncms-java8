@@ -14,6 +14,7 @@ const MIGRATE = '/web_resources/cm/jslib/jquery-migrate.js';
 
 /** New page with a jQuery Widget configured through the dialog (when `configure` is given), published. Returns the published URL. */
 async function publishJQueryPage(page: Page, run: string, shot: string, configure?: (form: ReturnType<Page['locator']>) => Promise<void>): Promise<string> {
+  await ensureDeliveryResources(page);
   const host = await createPage(page, `jQuery Host ${shot.slice(-9)} ${run}`);
   await placeWidget(page, 'percJQueryWidget');
   const form = await openWidgetConfigure(page, 'percJQueryWidget');
