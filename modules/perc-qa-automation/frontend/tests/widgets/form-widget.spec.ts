@@ -349,6 +349,7 @@ test.describe.serial('Form widget reCaptcha', () => {
       page.waitForResponse(r => r.url().includes('/perc-form-processor/forms/form/collect') && r.request().method() === 'POST', { timeout: 30_000 }),
       form.evaluate(f => { f.querySelectorAll('[name="g-recaptcha-response"]').forEach(e => e.remove()); HTMLFormElement.prototype.submit.call(f); }),   // the Submit button is named "submit", so form.submit itself is shadowed
     ]);
+    await expect(page, 'rejected submission lands on the error page').toHaveURL(new RegExp(`${error}\\.html`), { timeout: 30_000 });
     await expect(page, 'rejected submission does not reach the success page').not.toHaveURL(new RegExp(`${thanks}\\.html`));
     expect(await newSubmissionCount(page, lastFormTitle), 'the DTS did not store a submission without the Google answer').toBe(0);
   });

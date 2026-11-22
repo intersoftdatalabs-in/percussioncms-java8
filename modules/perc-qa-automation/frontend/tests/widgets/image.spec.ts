@@ -16,6 +16,7 @@ const pngSize = (b: Buffer) => ({ width: b.readUInt32BE(16), height: b.readUInt3
 
 /** New page with an Image widget (optionally configured), image uploaded with the given title/alt and main width, published. Returns the published URL. */
 async function publishImagePage(page: Page, run: string, shot: string, opts: { title: string; alt: string; mainWidth?: string; configure?: (form: ReturnType<Page['locator']>) => Promise<void> }): Promise<string> {
+  await ensureDeliveryResources(page);
   const host = await createPage(page, `Image Host ${shot.slice(-6)} ${run}`);
   await placeWidget(page, 'percImage');
   if (opts.configure) {
@@ -54,7 +55,6 @@ test.describe('Image widget', () => {
     const run = Date.now().toString().slice(-7);
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
-    await ensureDeliveryResources(page);
     const url = await publishImagePage(page, run, 'image-widget-scaled', { title: `QA Image ${run}`, alt: `QA alt text ${run}`, mainWidth: '80' });
 
     await page.goto(url);
