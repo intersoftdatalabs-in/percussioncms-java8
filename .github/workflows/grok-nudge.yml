@@ -1,0 +1,79 @@
+# Sends a lightweight JSON webhook ping to Grok Bot's watcher when relevant
+# repository events occur (issues, PR reviews/review comments, CI workflow
+# completions, or external check suite completions) so the watcher polls
+# GitHub immediately instead of waiting for its next scheduled interval.
+#
+# Secrets used:
+#   - GROK_WEBHOOK_URL: target webhook endpoint (step skips quietly if unset)
+#   - GROK_WEBHOOK_AUTH: literal Authorization header value (includes scheme)
+#
+# Only the repository name, event name, and event action are sent in the JSON
+# payload; no untrusted issue/PR titles, bodies, or comments are included.
+#
+# Note: GitHub Actions requires exact workflow `name:` entries in
+# `workflow_run.workflows` (wildcards are not supported). Listing only the
+# repository's other workflows also guarantees this workflow never triggers
+# itself in a loop. Update this list if workflows are added or renamed.
+
+name: Grok Nudge
+
+on:
+  issues:
+    types: [opened, reopened]
+  pull_request_review:
+    types: [submitted]
+  pull_request_review_comment:
+    types: [created]
+  workflow_run:
+    workflows:
+      - "CodeQL Advanced"
+      - "Dependency Submission"
+      - "Legacy MySQL Connector Check"
+      - "Upstream CVE Watch (Java 8 LTS Forks)"
+    types: [completed]
+  check_suite:
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  nudge:
+    name: Ping Grok webhook
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Defense-in-depth guard so this workflow can never trigger itself.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.name != github.workflow
+    steps:
+      - name: POST webhook ping
+        shell: bash
+        env:
+          GROK_WEBHOOK_URL: ${{ secrets.GROK_WEBHOOK_URL }}
+          GROK_WEBHOOK_AUTH: ${{ secrets.GROK_WEBHOOK_AUTH }}
+          EVENT_REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GROK_WEBHOOK_URL}" ]; then
+            echo "::notice::GROK_WEBHOOK_URL secret is not set; skipping Grok webhook ping."
+            exit 0
+          fi
+
+          payload=$(jq -n \
+            --arg repo "${EVENT_REPO}" \
+            --arg event_name "${EVENT_NAME}" \
+            --arg action "${EVENT_ACTION}" \
+            '{repo: $repo, event_name: $event_name, action: $action}')
+
+          auth_args=()
+          if [ -n "${GROK_WEBHOOK_AUTH}" ]; then
+            auth_args=(-H "Authorization: ${GROK_WEBHOOK_AUTH}")
+          fi
+
+          curl -fsS --max-time 20 -o /dev/null \
+            -X POST \
+            -H "Content-Type: application/json" \
+            ${auth_args[@]+"${auth_args[@]}"} \
+            --data "${payload}" \
+            "${GROK_WEBHOOK_URL}"
