@@ -16,7 +16,7 @@
 
     <security:http pattern="/favicon.ico" security='none' />
     <security:http  create-session="stateless" use-expressions="true" auto-config="true">
-        <security:csrf disabled="${disableCSRFProtection}" token-repository-ref="tokenRepository" request-matcher-ref="requestMatcher" />
+        <security:csrf disabled="${disableCSRFProtection}" token-repository-ref="tokenRepository" request-matcher-ref="requestMatcher" request-handler-ref="csrfRequestHandler" />
         <security:intercept-url pattern="/**" access="isAuthenticated()" />
 
         <security:custom-filter position="PRE_AUTH_FILTER"
@@ -115,6 +115,17 @@
     <beans:bean id="tokenRepository"
                 class="org.springframework.security.web.csrf.CookieCsrfTokenRepository"  cookieHttpOnly="${csrfCookieHttpOnly}"
     />
+
+    <beans:bean id="csrfRequestHandler"
+                class="org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler">
+        <!--
+             Opt in to Spring Security 5.8 deferred CSRF token loading so CSRF-exempt
+             endpoints (e.g. POST /comment/list, /likes/) do not eagerly generate and
+             emit Set-Cookie: XSRF-TOKEN headers that race with HEAD /comment/csrf
+             on first-time page visits (issue #373).
+        -->
+        <beans:property name="csrfRequestAttributeName" value="_csrf" />
+    </beans:bean>
 
     <beans:bean id="preauthAuthProvider" class="org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider">
         <beans:property name="preAuthenticatedUserDetailsService">
