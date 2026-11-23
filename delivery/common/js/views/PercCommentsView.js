@@ -19,6 +19,17 @@
     // THIS IS USED TO MANAGE THE DELIVERY SERVICES ULRS AS PASSED FROM CM1 TO THE STATIC PAGES
     var deliveryServicesURL = "";
     var currentWidgetCssDefinition = "";
+    var csrfRequestInFlight = false;
+    var pendingCommentLoads = [];
+
+    function flushPendingCommentLoads() {
+        csrfRequestInFlight = false;
+        var queue = pendingCommentLoads;
+        pendingCommentLoads = [];
+        for (var i = 0; i < queue.length; i++) {
+            queue[i]();
+        }
+    }
 
     function getDeliveryServicesDomain(widgetClass) {
         var currentWidget = $(widgetClass);
@@ -77,17 +88,34 @@
        if( $.isEditMode === "true" || commentForm.length === 0 || jQuery("input[type = 'submit']").attr('disabled') ===  'disabled'){
            return;
        }
-        $.PercServiceUtils.csrfGetToken($.PercServiceUtils.joinURL(deliveryServicesURL,"/perc-comments-services/comment/csrf"),function (response) {
-            if (typeof response !== 'undefined' && response != null)
-                tokenHeader = response.getResponseHeader("X-CSRF-HEADER");
-            if (typeof tokenHeader !== "undefined" && tokenHeader != null){
-                token = response.getResponseHeader("X-CSRF-TOKEN");
-                if(typeof token !== "undefined" && token != null) {
-                    url = url + ((url.indexOf('?')!==-1)?"&":"?") + "_csrf=" + token;
-                    commentForm.attr( "action", url);
+        csrfRequestInFlight = true;
+        try {
+            $.PercServiceUtils.csrfGetToken(
+                $.PercServiceUtils.joinURL(deliveryServicesURL,"/perc-comments-services/comment/csrf"),
+                function (response) {
+                    try {
+                        if (typeof response !== 'undefined' && response != null) {
+                            tokenHeader = response.getResponseHeader("X-CSRF-HEADER");
+                        }
+                        if (typeof tokenHeader !== "undefined" && tokenHeader != null){
+                            token = response.getResponseHeader("X-CSRF-TOKEN");
+                            if(typeof token !== "undefined" && token != null && token !== "") {
+                                url = url + ((url.indexOf('?')!==-1)?"&":"?") + "_csrf=" + token;
+                                commentForm.attr( "action", url);
+                            }
+                        }
+                    } finally {
+                        flushPendingCommentLoads();
+                    }
+                },
+                function () {
+                    flushPendingCommentLoads();
                 }
-            }
-        });
+            );
+        } catch (e) {
+            flushPendingCommentLoads();
+            throw e;
+        }
 
     });
 
@@ -230,6 +258,13 @@
                 callback(false);
             }
         };
+
+        if (csrfRequestInFlight) {
+            pendingCommentLoads.push(function() {
+                $.PercServiceUtils.makeAjaxRequest(init);
+            });
+            return;
+        }
 
         $.PercServiceUtils.makeAjaxRequest(init);
     }

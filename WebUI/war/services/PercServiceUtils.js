@@ -71,6 +71,7 @@
     var CSRF_COMMENTS_PATH="/perc-comments-services/comment/csrf";
     var CSRF_MEMBERSHIP_PATH="/perc-membership-services/membership/csrf";
     var CSRF_FEEDS_PATH="/feeds/rss/csrf";
+    var inFlightCsrfRequests = {};
 
     $.ajaxSetup({
         timeout: 300000
@@ -110,8 +111,8 @@
 
     }
 
-    function csrfGetToken(url,callback){
-        if(callback.callcount > 1){
+    function csrfGetToken(url,callback,errorCallback){
+        if(callback && callback.callcount > 1){
             return;
         }
         var csrfToken;
@@ -122,11 +123,18 @@
             if ('function' === typeof (jQuery.getDeliveryServiceBase)) {
                 var servicebase = jQuery.getDeliveryServiceBase();
                 if(servicebase !== null && typeof servicebase !== 'undefined') {
-                    if(url.indexOf(servicebase) === -1 ){
+                    if(url != null && url.indexOf(servicebase) === -1 ){
                         url = joinURL(servicebase,url);
                     }
                 }
             }
+        }
+        if (typeof url === "string" && url.length > 0) {
+            if (inFlightCsrfRequests[url]) {
+                inFlightCsrfRequests[url].push({ success: callback, error: errorCallback });
+                return;
+            }
+            inFlightCsrfRequests[url] = [{ success: callback, error: errorCallback }];
         }
         var init = {
             url:url,
@@ -146,23 +154,60 @@
             redirect: 'follow', // manual, *follow, error
             referrerPolicy: 'origin-when-cross-origin',
             success: function(data, textstatus,response){
-                if (typeof response !== 'undefined' && response != null) {
-                    var tokenHeader = response.getResponseHeader("X-CSRF-HEADER");
-                    if (typeof tokenHeader === "undefined" || tokenHeader === null) {
-                        // The header might be missing due to CORS Access-Control-Expose-Headers.
-                        // Instead of retrying and silently dropping the request, proceed with the callback.
-                        callback(response);
-                    }else{
-                        callback(response);
+                var waiters = (typeof url === "string" && inFlightCsrfRequests[url])
+                    ? inFlightCsrfRequests[url]
+                    : [{ success: callback, error: errorCallback }];
+                if (typeof url === "string") {
+                    delete inFlightCsrfRequests[url];
+                }
+                for (var i = 0; i < waiters.length; i++) {
+                    var waiter = waiters[i];
+                    if (typeof response !== 'undefined' && response != null) {
+                        if (typeof waiter.success === "function") {
+                            try {
+                                waiter.success(response);
+                            } catch (e) {
+                                console.debug(e);
+                            }
+                        }
+                    } else if (typeof waiter.error === "function") {
+                        try {
+                            waiter.error(response, textstatus, "Empty CSRF response");
+                        } catch (e) {
+                            console.debug(e);
+                        }
                     }
                 }
             },
             error: function(request, textstatus, error){
+                var waiters = (typeof url === "string" && inFlightCsrfRequests[url])
+                    ? inFlightCsrfRequests[url]
+                    : [{ success: callback, error: errorCallback }];
+                if (typeof url === "string") {
+                    delete inFlightCsrfRequests[url];
+                }
                 console.debug(textstatus + ":" + error);
+                for (var i = 0; i < waiters.length; i++) {
+                    var waiter = waiters[i];
+                    if (typeof waiter.error === "function") {
+                        try {
+                            waiter.error(request, textstatus, error);
+                        } catch (e) {
+                            console.debug(e);
+                        }
+                    }
+                }
             }
         };
 
-        $.ajax( url, init);
+        try {
+            $.ajax( url, init);
+        } catch (ex) {
+            if (typeof url === "string") {
+                delete inFlightCsrfRequests[url];
+            }
+            throw ex;
+        }
 
     }
 
