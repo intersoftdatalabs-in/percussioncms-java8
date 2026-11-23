@@ -23,6 +23,34 @@
     $.PercLoginView = {
         init : init
     };
+
+    /**
+     * Parses a service response payload into a plain object.
+     * makeXdmJsonRequest uses dataType: "text", so responses arrive as JSON strings.
+     * @param data (string|Object|null|undefined) raw response returned by PercMembershipService
+     * @return (Object|null) parsed object, or null if invalid/non-object
+     */
+    function parseServiceResponse(data) {
+        if (null === data || 'undefined' === typeof (data) || '' === data) {
+            return null;
+        }
+        try {
+            var parsed;
+            if ($.PercServiceUtils && 'function' === typeof ($.PercServiceUtils.toJSON)) {
+                parsed = $.PercServiceUtils.toJSON(data);
+            }
+            else if ('string' === typeof (data)) {
+                parsed = JSON.parse(data);
+            }
+            else {
+                parsed = data;
+            }
+            return (null !== parsed && 'object' === typeof (parsed) && !Array.isArray(parsed)) ? parsed : null;
+        }
+        catch (e) {
+            return null;
+        }
+    }
     
     /**
      * Initialize and configure each instance of login widget in the page.
@@ -34,14 +62,19 @@
             // Retrieve sessionId's value. If it exists and is not undefined, check if the session
             // is still active by retrieving the user info using the service getUser
             var sessionId = $.cookie('perc_membership_session_id');
-            if (null != sessionId && 'undefined' !== typeof (sessionId)) {
+            if (null != sessionId && 'undefined' !== typeof (sessionId) && '' !== sessionId) {
                 //If the user is logged in, show the welcome message
                 $.PercMembershipService.getUser(sessionId, function(status, data) {
-                    if (status === $.PercServiceUtils.STATUS_SUCCESS && null != data.userSummary && '' !== data.userSummary.email) {
-                        var loginMessage = (JSON.parse(currentLoginWidget.attr("data"))).loggedInMessage;
-                        var showUsername = (JSON.parse(currentLoginWidget.attr("data"))).showUsername;
+                    var parsedData = status === $.PercServiceUtils.STATUS_SUCCESS ? parseServiceResponse(data) : null;
+                    if (null !== parsedData
+                        && null != parsedData.userSummary
+                        && 'string' === typeof (parsedData.userSummary.email)
+                        && '' !== parsedData.userSummary.email) {
+                        var widgetData = JSON.parse(currentLoginWidget.attr("data"));
+                        var loginMessage = widgetData.loggedInMessage || '';
+                        var showUsername = widgetData.showUsername;
                         if(null !== showUsername && 'undefined' !== typeof (showUsername) && 'showUsername' === showUsername) {
-                            loginMessage += data.userSummary.email;   
+                            loginMessage += parsedData.userSummary.email;   
                         }
     
                         // Replace .login-message-box contents with logged in message
@@ -87,17 +120,17 @@
             
             $.PercMembershipService.login(loginObj, function(status, data) {
                 // Get the loginRedirect parameter from the URL parameter
-                data = JSON.parse(data)
+                var parsedData = status === $.PercServiceUtils.STATUS_SUCCESS ? parseServiceResponse(data) : null;
                 var redirectPage = '';
                 var urlstring = $.deparam.querystring();
                 if ("undefined" !== typeof (urlstring.loginRedirect)) {
                     options.loginRedirect = urlstring.loginRedirect;
                 }
                 
-                if (status === $.PercServiceUtils.STATUS_SUCCESS) {
-                    if (data.status.toUpperCase() === $.PercServiceUtils.STATUS_SUCCESS.toUpperCase()) {
+                if (status === $.PercServiceUtils.STATUS_SUCCESS && null !== parsedData) {
+                    if ('string' === typeof (parsedData.status) && parsedData.status.toUpperCase() === $.PercServiceUtils.STATUS_SUCCESS.toUpperCase()) {
                         // If successful login, store the ID session in a cookie and redirect to corresponding page
-                        $.cookie('perc_membership_session_id', data.sessionId, { "path": "/", "expires": "null" });
+                        $.cookie('perc_membership_session_id', parsedData.sessionId, { "path": "/", "expires": "null" });
                         
                         self.parent().find(".perc-login-error-message").hide();
                         // If there's a redirect parameter, redirect to that page, else refresh current page.
@@ -108,7 +141,7 @@
                     else {
                     	// The AJAX request was successful but there was an error in the service (e.g. wrong password)
                     	// Show the error inline to the user.
-                    	var errorMessage = data.message;
+                    	var errorMessage = parsedData.message;
                     	if (null !== errorMessage && 'undefined' !== typeof (errorMessage)) {
                     		self.parent().find(".perc-login-error-message").show().html(errorMessage);
                         }

@@ -33,6 +33,34 @@
     $.PercRegistrationView = {
         init : init
     };
+
+    /**
+     * Parses a service response payload into a plain object.
+     * makeXdmJsonRequest uses dataType: "text", so responses arrive as JSON strings.
+     * @param data (string|Object|null|undefined) raw response returned by PercMembershipService
+     * @return (Object|null) parsed object, or null if invalid/non-object
+     */
+    function parseServiceResponse(data) {
+        if (null === data || 'undefined' === typeof (data) || '' === data) {
+            return null;
+        }
+        try {
+            var parsed;
+            if ($.PercServiceUtils && 'function' === typeof ($.PercServiceUtils.toJSON)) {
+                parsed = $.PercServiceUtils.toJSON(data);
+            }
+            else if ('string' === typeof (data)) {
+                parsed = JSON.parse(data);
+            }
+            else {
+                parsed = data;
+            }
+            return (null !== parsed && 'object' === typeof (parsed) && !Array.isArray(parsed)) ? parsed : null;
+        }
+        catch (e) {
+            return null;
+        }
+    }
     /**
      * Initialize and configure each instance of registration widget in the page.
      */
@@ -101,10 +129,17 @@
 
         // If user is logged-in remove the password reset form and password reset request form from DOM
         var sessionId = $.cookie('perc_membership_session_id');
-            if (null !== sessionId && 'undefined' !== typeof (sessionId)) {
+            if (null !== sessionId && 'undefined' !== typeof (sessionId) && '' !== sessionId) {
                 //If the user is logged in, show the welcome message
                 $.PercMembershipService.getUser(sessionId, function(status, data) {
-                    if (status === $.PercServiceUtils.STATUS_SUCCESS && '' !== data.email) {
+                    var parsedData = status === $.PercServiceUtils.STATUS_SUCCESS ? parseServiceResponse(data) : null;
+                    var userEmail = null;
+                    if (null !== parsedData) {
+                        userEmail = (null != parsedData.userSummary && 'undefined' !== typeof (parsedData.userSummary.email))
+                            ? parsedData.userSummary.email
+                            : parsedData.email;
+                    }
+                    if ('string' === typeof (userEmail) && '' !== userEmail) {
                         $("#perc-password-request, #perc-password-reset").remove();
                     }
                 });         
@@ -157,10 +192,11 @@
             var email = $("#perc-registration-email-field").val();
             var redirectUrl = $("input[name='perc_password_reset_page']").val();
             $.PercMembershipService.resetPwRequest(email, redirectUrl, function(status, data) {
-                if(status === $.PercServiceUtils.STATUS_SUCCESS)
+                var parsedData = parseServiceResponse(data);
+                if(status === $.PercServiceUtils.STATUS_SUCCESS && null !== parsedData)
                 {
-                    if("AUTH_FAILED" === data.status) {
-                        $(".perc-reg-error-message").show().html(data.message);
+                    if("AUTH_FAILED" === parsedData.status) {
+                        $(".perc-reg-error-message").show().html(parsedData.message);
                     }
                     else {
                     //On Reset Request Successful  show the confirmation message.
@@ -172,7 +208,7 @@
                 }
                 else
                 {
-                    alert(data.message);
+                    alert((null !== parsedData && parsedData.message) ? parsedData.message : data);
                 }
             });
         }
@@ -193,17 +229,18 @@
             var password = $("#perc-registration-password-field").val();
             var resetKey = self.data("key");
             $.PercMembershipService.resetPassword(email, password, resetKey, function(status, data) {
-                if(status === $.PercServiceUtils.STATUS_SUCCESS)
+                var parsedData = parseServiceResponse(data);
+                if(status === $.PercServiceUtils.STATUS_SUCCESS && null !== parsedData && parsedData.sessionId)
                 {
                      // If successful login, store the ID session in a cookie and redirect to corresponding page
-                    $.cookie('perc_membership_session_id', data.sessionId, { "path": "/", "expires": "null" });
+                    $.cookie('perc_membership_session_id', parsedData.sessionId, { "path": "/", "expires": "null" });
                     // After successfully resetting the password - take user to home page fo website.                   
                     window.location.replace("/");
 
                 }
                 else
                 {
-                    alert(data.message);
+                    alert((null !== parsedData && parsedData.message) ? parsedData.message : data);
                 }
             });
         }

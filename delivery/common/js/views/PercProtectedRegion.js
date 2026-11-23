@@ -23,6 +23,34 @@
     $(document).ready(function(){
 		protectContent();
     });
+
+    /**
+     * Parses a service response payload into a plain object.
+     * makeXdmJsonRequest uses dataType: "text", so responses arrive as JSON strings.
+     * @param data (string|Object|null|undefined) raw response returned by PercMembershipService
+     * @return (Object|null) parsed object, or null if invalid/non-object
+     */
+    function parseServiceResponse(data) {
+        if (null === data || 'undefined' === typeof (data) || '' === data) {
+            return null;
+        }
+        try {
+            var parsed;
+            if ($.PercServiceUtils && 'function' === typeof ($.PercServiceUtils.toJSON)) {
+                parsed = $.PercServiceUtils.toJSON(data);
+            }
+            else if ('string' === typeof (data)) {
+                parsed = JSON.parse(data);
+            }
+            else {
+                parsed = data;
+            }
+            return (null !== parsed && 'object' === typeof (parsed) && !Array.isArray(parsed)) ? parsed : null;
+        }
+        catch (e) {
+            return null;
+        }
+    }
     
     function protectContent() {
 		//Check if there's protected content on the page.
@@ -31,13 +59,17 @@
 			var protectedRegionInformationElem = $(this);
 			var sessionId = $.cookie('perc_membership_session_id');
 			userloggedIn = false;
-			if (null !== sessionId && 'undefined' !== typeof (sessionId))
+			if (null !== sessionId && 'undefined' !== typeof (sessionId) && '' !== sessionId)
             {
 				
                 //TODO: Call GetUser service.
                 $.PercMembershipService.getUser(sessionId, function(status, data)
                 {
-                    if (status === $.PercServiceUtils.STATUS_SUCCESS && null !== data.userSummary && '' !== data.userSummary.email)
+                    var parsedData = status === $.PercServiceUtils.STATUS_SUCCESS ? parseServiceResponse(data) : null;
+                    if (null !== parsedData
+                        && null != parsedData.userSummary
+                        && 'string' === typeof (parsedData.userSummary.email)
+                        && '' !== parsedData.userSummary.email)
                     {
                         userloggedIn = true;
                         
