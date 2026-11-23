@@ -134,6 +134,7 @@ test.describe.serial('Page Auto List', () => {
       await form.locator('input[name="perc_hide_when_empty"]').check();
     }, `NoSuchPage ${run}`);
     await page.goto(url);
+    await expect(page.locator('.perc-page-auto-list'), 'list is rendered').toBeAttached({ timeout: 30_000 });
     await expect(page.locator('.perc-page-auto-list'), 'list is hidden').toBeHidden({ timeout: 30_000 });
     await expect(page.locator('li.perc-list-element:visible')).toHaveCount(0);
     await page.screenshot({ path: 'screenshots/page-auto-list-published-page-hidden-when-empty.png' });
