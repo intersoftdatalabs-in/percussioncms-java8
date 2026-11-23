@@ -53,8 +53,17 @@
 #set($targetAttr = " target='$!{targetAttr}'")##
 #end##
 #if($addTitleAttrs == "yes")##
-#set($titleAttr = ' title="' + $tools.esc.html($node.getProperty('rx:displaytitle').String) + '"')##
-#set($titleAttr = "$!{$titleNavigateToText}$!{titleAttr}")##
+#set($displayTitle = "$!{node.getProperty('rx:displaytitle').String}")##
+#set($navTitlePrefix = "$!{titleNavigateToText}")##
+#set($navTitlePrefix = $navTitlePrefix.trim())##
+#if("$!{navTitlePrefix}" != "" && "$!{displayTitle}" != "")##
+#set($titleText = "${navTitlePrefix} ${displayTitle}")##
+#elseif("$!{navTitlePrefix}" != "")##
+#set($titleText = "${navTitlePrefix}")##
+#else##
+#set($titleText = "$!{displayTitle}")##
+#end##
+#set($titleAttr = ' title="' + $tools.esc.html($titleText) + '"')##
 #else##
 #set($titleAttr = "")##
 #end##
