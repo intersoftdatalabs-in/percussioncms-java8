@@ -62,7 +62,7 @@
 					<div class="perc-poll-title">$!{pollTitle}</div>
 					<div class="perc-poll-question">$!{question}</div>
 					#foreach($ans in $ansArray)
-						<div class="perc-poll-answer-container"><input type="$inputType" name="perc-poll-answer"/><span class="perc-poll-answer">$ans</span></div>
+						<div class="perc-poll-answer-container"><input type="$inputType" name="perc-poll-answer"/><span class="perc-poll-answer">$!{ans.asText()}</span></div>
 					#end
 					#if($perc.isEditMode() || $perc.isPreviewMode() )
 						#set($subspanclass = "perc-poll-submit-button-span")
@@ -87,7 +87,7 @@
 					<div class="perc-poll-title">$!{pollTitle}</div>
 					<div class="perc-poll-question">$!{question}</div>
 					#foreach($ans in $ansArray)
-						<div class="perc-poll-answer-container"><span class="perc-poll-answer">$ans</span><span class="perc-poll-result-percent"></span><span class="perc-poll-result-count"></span></div>
+						<div class="perc-poll-answer-container"><span class="perc-poll-answer">$!{ans.asText()}</span><span class="perc-poll-result-percent"></span><span class="perc-poll-result-count"></span></div>
 						<div class="perc-poll-result-container"><span class="perc-poll-result-fill"></span><span class="perc-poll-result-empty"></span></div>
 					#end
 					<div class="perc-poll-total-votes">$totalVotesText:<span></span></div>
