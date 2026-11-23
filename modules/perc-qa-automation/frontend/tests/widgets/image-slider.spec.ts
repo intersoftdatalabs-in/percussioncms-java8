@@ -89,10 +89,15 @@ test.describe.serial('Image Slider', () => {
 
     await slider.locator('.slick-next').click();
     await expect(slider.locator('.slick-current').getByText(`Slide two ${run}`), 'next arrow moves to the second slide').toBeVisible({ timeout: 10_000 });
-    await slider.locator('.slick-dots li').first().click();
-    await expect(slider.locator('.slick-current').getByText(`Slide one ${run}`), 'first dot goes back to the first slide').toBeVisible({ timeout: 10_000 });
-    await slider.locator('.slick-dots li').nth(1).click();
-    await expect(slider.locator('.slick-current').getByText(`Slide two ${run}`), 'second dot goes to the second slide').toBeVisible({ timeout: 10_000 });
+    // slick ignores clicks while a slide is still animating, so the click is repeated until the slide has changed
+    await expect(async () => {
+      await slider.locator('.slick-dots li').first().click();
+      await expect(slider.locator('.slick-current').getByText(`Slide one ${run}`), 'first dot goes back to the first slide').toBeVisible({ timeout: 2_000 });
+    }).toPass({ timeout: 20_000 });
+    await expect(async () => {
+      await slider.locator('.slick-dots li').nth(1).click();
+      await expect(slider.locator('.slick-current').getByText(`Slide two ${run}`), 'second dot goes to the second slide').toBeVisible({ timeout: 2_000 });
+    }).toPass({ timeout: 20_000 });
     await page.screenshot({ path: 'screenshots/image-slider-published-page-second-slide-after-next-arrow.png' });
   });
 
