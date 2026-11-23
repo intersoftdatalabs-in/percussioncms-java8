@@ -10,6 +10,33 @@
         var c = null;
         var f = null;
         var b = { init: k };
+        function parseCanVote(data) {
+            if (typeof data === "boolean") {
+                return data;
+            }
+            if (typeof data === "string") {
+                var trimmed = data.replace(/^\s+|\s+$/g, "");
+                var lower = trimmed.toLowerCase();
+                if (lower === "true") {
+                    return true;
+                }
+                if (lower === "false") {
+                    return false;
+                }
+                try {
+                    var parsed = JSON.parse(trimmed);
+                    if (typeof parsed === "boolean") {
+                        return parsed;
+                    }
+                    if (typeof parsed === "string") {
+                        return parsed.replace(/^\s+|\s+$/g, "").toLowerCase() === "true";
+                    }
+                } catch (err) {
+                    return false;
+                }
+            }
+            return false;
+        }
         function k(l) {
             d = l;
             h = JSON.parse(d.attr("data-poll"));
@@ -121,10 +148,13 @@
                 q.find(".perc-poll-result-count").text("(" + s + "/" + m.totalVotes + ")");
             });
             c.find(".perc-poll-total-votes span").text(" " + m.totalVotes);
-            d.find(".perc-poll-backto-poll").on("click", function () {
-                f.show();
-                c.hide();
-            });
+            d.find(".perc-poll-backto-poll")
+                .hide()
+                .off("click")
+                .on("click", function () {
+                    f.show();
+                    c.hide();
+                });
             i(function (o) {
                 if (!o) {
                     d.find(".perc-poll-backto-poll").hide();
@@ -149,19 +179,19 @@
                     }
                 } else {
                     if (o === "Session") {
-                        var n = d.find(".perc-poll-question:first").text();
                         var m = "/perc-polls-services/polls/canuservote/" + encodeURIComponent(n);
-                        a.PercServiceUtils.makeXdmJsonRequest(null, m, a.PercServiceUtils.TYPE_GET, function (r, s) {
-                            if (s.status === a.PercServiceUtils.STATUS_SUCCESS) {
-                                if (s.data) {
-                                    q(!0);
+                        a.PercServiceUtils.makeXdmJsonRequest(
+                            null,
+                            m,
+                            a.PercServiceUtils.TYPE_GET,
+                            function (r, s) {
+                                if (r === a.PercServiceUtils.STATUS_SUCCESS && s) {
+                                    q(parseCanVote(s.data));
                                 } else {
                                     q(!1);
                                 }
-                            } else {
-                                q(!1);
                             }
-                        });
+                        );
                     }
                 }
             }
