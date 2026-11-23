@@ -517,8 +517,72 @@ public class PercLoginWidgetJsTest {
     engine.eval("__pwRequestForm.trigger('submit');");
 
     assertTrue(Boolean.TRUE.equals(engine.eval("__regError._visible")));
-    assertEquals("Email not found.", engine.eval("__regError.html()"));
+    assertEquals("Email not found.", engine.eval("__regError.text()"));
     assertFalse(Boolean.TRUE.equals(engine.eval("__pwRequestForm._removed")));
+    assertFalse(Boolean.TRUE.equals(engine.eval("__regConfirmationMsg._visible")));
+  }
+
+  @Test
+  public void testResetPwRequestSuccessShowsConfirmationAndRemovesForm() throws ScriptException {
+    engine.eval("__loginWidget._present = false; __loginWidget.length = 0;");
+    engine.eval("__pwRequestForm._present = true; __pwRequestForm.length = 1;");
+    engine.eval("__runReady();");
+    engine.eval("__regEmailInput.val('user@example.com');");
+    engine.eval(
+        "__queueSuccess('{\"status\":\"SUCCESS\",\"message\":\"\",\"sessionId\":\"reset-key-1\"}');");
+    engine.eval("__pwRequestForm.trigger('submit');");
+
+    assertTrue(Boolean.TRUE.equals(engine.eval("__regConfirmationMsg._visible")));
+    assertTrue(Boolean.TRUE.equals(engine.eval("__pwRequestForm._removed")));
+    assertFalse(Boolean.TRUE.equals(engine.eval("__regError._visible")));
+  }
+
+  @Test
+  public void testResetPwRequestInvalidParamShowsErrorAndKeepsForm() throws ScriptException {
+    engine.eval("__loginWidget._present = false; __loginWidget.length = 0;");
+    engine.eval("__pwRequestForm._present = true; __pwRequestForm.length = 1;");
+    engine.eval("__runReady();");
+    engine.eval("__regEmailInput.val('');");
+    engine.eval(
+        "__queueSuccess('{\"status\":\"INVALID_PARAM\",\"message\":\"Email may not be empty\"}');");
+    engine.eval("__pwRequestForm.trigger('submit');");
+
+    assertTrue(Boolean.TRUE.equals(engine.eval("__regError._visible")));
+    assertEquals("Email may not be empty", engine.eval("__regError.text()"));
+    assertFalse(Boolean.TRUE.equals(engine.eval("__pwRequestForm._removed")));
+    assertFalse(Boolean.TRUE.equals(engine.eval("__regConfirmationMsg._visible")));
+  }
+
+  @Test
+  public void testResetPwRequestUnexpectedErrorShowsErrorAndKeepsForm() throws ScriptException {
+    engine.eval("__loginWidget._present = false; __loginWidget.length = 0;");
+    engine.eval("__pwRequestForm._present = true; __pwRequestForm.length = 1;");
+    engine.eval("__runReady();");
+    engine.eval("__regEmailInput.val('user@example.com');");
+    engine.eval(
+        "__queueSuccess('{\"status\":\"UNEXPECTED_ERROR\",\"message\":\"SMTP connection refused\"}');");
+    engine.eval("__pwRequestForm.trigger('submit');");
+
+    assertTrue(Boolean.TRUE.equals(engine.eval("__regError._visible")));
+    assertEquals("SMTP connection refused", engine.eval("__regError.text()"));
+    assertFalse(Boolean.TRUE.equals(engine.eval("__pwRequestForm._removed")));
+    assertFalse(Boolean.TRUE.equals(engine.eval("__regConfirmationMsg._visible")));
+  }
+
+  @Test
+  public void testResetPwRequestErrorWithoutMessageShowsFallbackErrorAndKeepsForm()
+      throws ScriptException {
+    engine.eval("__loginWidget._present = false; __loginWidget.length = 0;");
+    engine.eval("__pwRequestForm._present = true; __pwRequestForm.length = 1;");
+    engine.eval("__runReady();");
+    engine.eval("__regEmailInput.val('user@example.com');");
+    engine.eval("__queueSuccess('{\"status\":\"UNEXPECTED_ERROR\",\"message\":\"\"}');");
+    engine.eval("__pwRequestForm.trigger('submit');");
+
+    assertTrue(Boolean.TRUE.equals(engine.eval("__regError._visible")));
+    assertEquals("There was an unexpected error.", engine.eval("__regError.text()"));
+    assertFalse(Boolean.TRUE.equals(engine.eval("__pwRequestForm._removed")));
+    assertFalse(Boolean.TRUE.equals(engine.eval("__regConfirmationMsg._visible")));
   }
 
   @Test

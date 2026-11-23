@@ -195,16 +195,19 @@
                 var parsedData = parseServiceResponse(data);
                 if(status === $.PercServiceUtils.STATUS_SUCCESS && null !== parsedData)
                 {
-                    if("AUTH_FAILED" === parsedData.status) {
-                        $(".perc-reg-error-message").show().html(parsedData.message);
+                    if ('string' === typeof (parsedData.status)
+                        && parsedData.status.toUpperCase() === $.PercServiceUtils.STATUS_SUCCESS.toUpperCase()) {
+                        //On Reset Request Successful show the confirmation message.
+                        $(".perc-confirmation-message").show();
+                        $("#perc-password-request").remove();
+                        $(".perc-reg-error-message").hide();
                     }
                     else {
-                    //On Reset Request Successful  show the confirmation message.
-                    $(".perc-confirmation-message").show();
-                    $("#perc-password-request").remove();
-                    $(".perc-reg-error-message").hide(); 
+                        var errorMessage = ('string' === typeof (parsedData.message) && '' !== parsedData.message)
+                            ? parsedData.message
+                            : "There was an unexpected error.";
+                        $(".perc-reg-error-message").show().text(errorMessage);
                     }
-                   
                 }
                 else
                 {
