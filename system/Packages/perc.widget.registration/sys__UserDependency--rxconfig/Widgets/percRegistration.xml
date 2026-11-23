@@ -214,8 +214,9 @@
              #if($perc.isPreviewMode())
                     jQuery("#perc-registration-form, #perc-registration-cform, #perc-password-request, #perc-password-reset").on("submit", function(){return false;});
                     jQuery("#perc-registration-form, #perc-registration-cform, #perc-password-request, #perc-password-reset").find("input[type = 'submit']").prop("disabled", true);
+                    jQuery("#perc-password-reset").show();
                 #end
-                jQuery("#perc-password-request, #perc-password-reset").show();
+                jQuery("#perc-password-request").show();
                 //var urlParams = jQuery.deparam.querystring();
 			});
             </script>
