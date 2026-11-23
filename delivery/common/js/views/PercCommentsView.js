@@ -228,12 +228,6 @@
     */
     function getComments(callback)
     {
-        if (csrfRequestInFlight) {
-            pendingCommentLoads.push(function() {
-                getComments(callback);
-            });
-            return;
-        }
         var fullLink =  getUrl();
         var splittedLink = fullLink.split("?");
         var href = splittedLink[0] + "/list";
@@ -264,6 +258,13 @@
                 callback(false);
             }
         };
+
+        if (csrfRequestInFlight) {
+            pendingCommentLoads.push(function() {
+                $.PercServiceUtils.makeAjaxRequest(init);
+            });
+            return;
+        }
 
         $.PercServiceUtils.makeAjaxRequest(init);
     }

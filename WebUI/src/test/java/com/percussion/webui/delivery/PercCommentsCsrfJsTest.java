@@ -54,7 +54,39 @@ public class PercCommentsCsrfJsTest {
 
   private ScriptEngine createEngine(boolean hasCommentForm, boolean hasCommentsView)
       throws Exception {
+    if (hasCommentsView) {
+      return createEngine(hasCommentForm, "{\"site\":\"TestSite\",\"pagepath\":\"/page.html\"}");
+    }
+    return createEngine(hasCommentForm);
+  }
+
+  private ScriptEngine createEngine(boolean hasCommentForm, String... dataQueries)
+      throws Exception {
     ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+    StringBuilder viewElsJs = new StringBuilder("var __commentsViewEls = [\n");
+    for (int i = 0; i < dataQueries.length; i++) {
+      String escapedQuery = dataQueries[i].replace("\\", "\\\\").replace("'", "\\'");
+      viewElsJs
+          .append("  {\n")
+          .append("    length: 1,\n")
+          .append("    _classes: {},\n")
+          .append("    _attrs: { 'data-query': '")
+          .append(escapedQuery)
+          .append("' },\n")
+          .append(
+              "    attr: function(k, v) { if (arguments.length === 1) return this._attrs[k]; this._attrs[k] = v; return this; },\n")
+          .append("    addClass: function(c) { this._classes[c] = true; return this; },\n")
+          .append("    each: function(fn) { fn.call(this, 0, this); return this; },\n")
+          .append(
+              "    PercCommentsView: function() { return $.fn.PercCommentsView.apply(this, arguments); }\n")
+          .append("  }");
+      if (i < dataQueries.length - 1) {
+        viewElsJs.append(",");
+      }
+      viewElsJs.append("\n");
+    }
+    viewElsJs.append("];\n");
+
     String stub =
         "var window = { location: { protocol: 'http:', href: 'http://localhost:9982/page.html', pathname: '/page.html' } };\n"
             + "var document = {};\n"
@@ -69,23 +101,21 @@ public class PercCommentsCsrfJsTest {
             + "  _attrs: {},\n"
             + "  attr: function(k, v) { if (arguments.length === 1) return this._attrs[k]; this._attrs[k] = v; return this; }\n"
             + "};\n"
-            + "var __commentsViewEl = {\n"
-            + "  length: "
-            + (hasCommentsView ? "1" : "0")
-            + ",\n"
-            + "  _classes: {},\n"
-            + "  _attrs: { 'data-query': '{\"site\":\"TestSite\",\"pagepath\":\"/page.html\"}' },\n"
-            + "  attr: function(k, v) { if (arguments.length === 1) return this._attrs[k]; this._attrs[k] = v; return this; },\n"
-            + "  addClass: function(c) { this._classes[c] = true; return this; },\n"
-            + "  each: function(fn) { if (this.length > 0) fn.call(this, 0, this); return this; },\n"
-            + "  PercCommentsView: function() { return this; }\n"
+            + viewElsJs
+            + "var __commentsViewCollection = {\n"
+            + "  length: __commentsViewEls.length,\n"
+            + "  each: function(fn) {\n"
+            + "    for (var i = 0; i < __commentsViewEls.length; i++) { fn.call(__commentsViewEls[i], i, __commentsViewEls[i]); }\n"
+            + "    return this;\n"
+            + "  }\n"
             + "};\n"
             + "function SimpleDateFormat() { this.format = function() { return ''; }; }\n"
             + "function jQuery(arg) {\n"
             + "  if (typeof arg === 'function') { __readyCallbacks.push(arg); return; }\n"
             + "  if (arg === document) { return { ready: function(fn) { __readyCallbacks.push(fn); } }; }\n"
             + "  if (arg === \"form[name = 'commentForm']\") { return __commentForm; }\n"
-            + "  if (arg === '.perc-comments-view' || arg === __commentsViewEl) { return __commentsViewEl; }\n"
+            + "  if (arg === '.perc-comments-view') { return __commentsViewCollection; }\n"
+            + "  for (var i = 0; i < __commentsViewEls.length; i++) { if (arg === __commentsViewEls[i]) { return arg; } }\n"
             + "  if (arg === \"input[type = 'submit']\") { return { attr: function() { return undefined; } }; }\n"
             + "  return { length: 0, attr: function() { return undefined; }, position: function() { return null; } };\n"
             + "}\n"
@@ -126,13 +156,7 @@ public class PercCommentsCsrfJsTest {
             "delivery/common/js/views/PercCommentsView.js");
 
     engine.eval(new String(Files.readAllBytes(serviceUtils), StandardCharsets.UTF_8));
-    // Rewire PercCommentsView's $.fn.PercCommentsView into our stub jQuery selector result
     engine.eval(new String(Files.readAllBytes(commentsView), StandardCharsets.UTF_8));
-    engine.eval(
-        "__commentsViewEl.PercCommentsView = $.fn.PercCommentsView;\n"
-            + "if (typeof __commentsViewEl.PercCommentsView === 'function') {\n"
-            + "  // already wired\n"
-            + "}\n");
     return engine;
   }
 
@@ -188,6 +212,36 @@ public class PercCommentsCsrfJsTest {
     assertTrue(
         String.valueOf(engine.eval("__ajaxCalls[0].url"))
             .endsWith("/perc-comments-services/comment/list"));
+  }
+
+  @Test
+  public void testDeferredMultipleCommentViewsRetainDistinctQueries() throws Exception {
+    ScriptEngine engine =
+        createEngine(
+            true,
+            "{\"site\":\"TestSite\",\"pagepath\":\"/a.html\"}",
+            "{\"site\":\"TestSite\",\"pagepath\":\"/b.html\"}");
+    engine.eval("__runReady();");
+
+    assertEquals(1, ((Number) engine.eval("__ajaxCalls.length")).intValue());
+    assertEquals("HEAD", engine.eval("__ajaxCalls[0].method"));
+
+    engine.eval(
+        "__ajaxCalls[0].opts.success(null, 'success', __makeResponse('X-XSRF-TOKEN', 'tok-multi'));");
+
+    assertEquals(3, ((Number) engine.eval("__ajaxCalls.length")).intValue());
+    assertEquals("POST", engine.eval("__ajaxCalls[1].method"));
+    assertEquals("POST", engine.eval("__ajaxCalls[2].method"));
+    assertTrue(
+        String.valueOf(engine.eval("__ajaxCalls[1].url"))
+            .endsWith("/perc-comments-services/comment/list"));
+    assertTrue(
+        String.valueOf(engine.eval("__ajaxCalls[2].url"))
+            .endsWith("/perc-comments-services/comment/list"));
+    assertEquals("TestSite", engine.eval("JSON.parse(__ajaxCalls[1].opts.data).site"));
+    assertEquals("/a.html", engine.eval("JSON.parse(__ajaxCalls[1].opts.data).pagepath"));
+    assertEquals("TestSite", engine.eval("JSON.parse(__ajaxCalls[2].opts.data).site"));
+    assertEquals("/b.html", engine.eval("JSON.parse(__ajaxCalls[2].opts.data).pagepath"));
   }
 
   @Test
