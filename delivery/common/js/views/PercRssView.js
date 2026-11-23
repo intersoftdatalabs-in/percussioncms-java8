@@ -45,6 +45,34 @@
         if (/^\s*(?:javascript|vbscript|data)\s*:/i.test(u)) {return "#";}
         return escapeHtml(u);
     }
+
+    //Strips HTML markup safely via inert DOMParser without executing scripts or event handlers
+    function stripHtml(value)
+    {
+        var s = ("undefined" === typeof (value) || null === value) ? "" : String(value);
+        if ("" === s) {return "";}
+        if ("undefined" !== typeof (DOMParser))
+        {
+            var doc = new DOMParser().parseFromString(s, "text/html");
+            if (doc && doc.body)
+            {
+                if ("function" === typeof (doc.body.querySelectorAll))
+                {
+                    var blocked = doc.body.querySelectorAll("script, style");
+                    for (var i = 0; i < blocked.length; i++)
+                    {
+                        if (blocked[i].parentNode)
+                        {
+                            blocked[i].parentNode.removeChild(blocked[i]);
+                        }
+                    }
+                }
+                return doc.body.textContent || "";
+            }
+            return "";
+        }
+        return s;
+    }
     
     function updateRssFeed()
     {
@@ -158,25 +186,23 @@
             
             if(queryString.showItemDescription && item.description)
             {
-                var description = $("<"+itemDescriptionElement+">").text(item.description);
-                
-                if(queryString.itemRemoveHtml)
+                var descText = String(item.description);
+
+                if(true === queryString.itemRemoveHtml || "true" === queryString.itemRemoveHtml)
                 {
-                    description.text(description.text());
+                    descText = stripHtml(descText);
                 }
-                
+
                 if(!queryString.itemDescriptionEmpty)
                 {
-                    //Truncate description
-                    description.text(description.text().substring(0, queryString.itemDescriptionLength));
-                    //If there are more description
-                    if('' !== item.description.substring(queryString.itemDescriptionLength + 1))
+                    var maxLen = parseInt(queryString.itemDescriptionLength, 10);
+                    if(!isNaN(maxLen) && maxLen >= 0 && descText.length > maxLen)
                     {
-                        description.text(description.text().trim() + "...");
+                        descText = descText.substring(0, maxLen).trim() + "...";
                     }
                 }
 
-                feedItem += '<'+itemDescriptionElement+' class="perc-feed-item-description">' + description.html() + '</'+itemDescriptionElement+'>';
+                feedItem += '<'+itemDescriptionElement+' class="perc-feed-item-description">' + escapeHtml(descText) + '</'+itemDescriptionElement+'>';
             }
             feedItem += '</'+itemElement+'>';
         }
