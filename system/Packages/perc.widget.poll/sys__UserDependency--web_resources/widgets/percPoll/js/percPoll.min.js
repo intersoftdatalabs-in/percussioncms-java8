@@ -127,27 +127,75 @@
                 }
             });
         }
+        function getAnswerVoteCount(pollResults, answerText, renderedLowerCounts) {
+            if (!pollResults || typeof pollResults !== "object") {
+                return 0;
+            }
+            if (Object.prototype.hasOwnProperty.call(pollResults, answerText)) {
+                var exact = Number(pollResults[answerText]);
+                return !isNaN(exact) && exact > 0 ? exact : 0;
+            }
+            var target = String(answerText).toLowerCase();
+            if (
+                !renderedLowerCounts ||
+                !Object.prototype.hasOwnProperty.call(renderedLowerCounts, target) ||
+                renderedLowerCounts[target] !== 1
+            ) {
+                return 0;
+            }
+            var fallbackTotal = 0;
+            for (var key in pollResults) {
+                if (
+                    Object.prototype.hasOwnProperty.call(pollResults, key) &&
+                    String(key).toLowerCase() === target
+                ) {
+                    var count = Number(pollResults[key]);
+                    if (!isNaN(count) && count > 0) {
+                        fallbackTotal += count;
+                    }
+                }
+            }
+            return fallbackTotal;
+        }
         function e(m) {
             f.hide();
             c.show();
-            var l = d.find(".perc-poll-result-container").width();
-            var n = m.totalVotes > 0 ? l / m.totalVotes : 0;
-            a.each(m.pollResults, function (o, s) {
-                var t = s * n;
-                t = Math.round(t);
-                var r = d.find(".perc-poll-answer").filter(function () {
-                    return a(this).text() == o;
-                });
-                var q = r.closest(".perc-poll-answer-container");
+            var totalVotes =
+                m && typeof m.totalVotes === "number" && !isNaN(m.totalVotes)
+                    ? m.totalVotes
+                    : parseInt(m && m.totalVotes, 10) || 0;
+            if (totalVotes < 0) {
+                totalVotes = 0;
+            }
+            var pollResults = m && m.pollResults ? m.pollResults : {};
+            var l = c.find(".perc-poll-result-container").width();
+            if (typeof l !== "number" || isNaN(l) || l < 0) {
+                l = 0;
+            }
+            var n = totalVotes > 0 ? l / totalVotes : 0;
+            var answerRows = c.find(".perc-poll-answer-container");
+            var renderedLowerCounts = Object.create(null);
+            answerRows.each(function () {
+                var lower = String(a(this).find(".perc-poll-answer").text()).toLowerCase();
+                renderedLowerCounts[lower] = (renderedLowerCounts[lower] || 0) + 1;
+            });
+            answerRows.each(function () {
+                var q = a(this);
+                var answerText = q.find(".perc-poll-answer").text();
+                var s = getAnswerVoteCount(pollResults, answerText, renderedLowerCounts);
+                var t = Math.round(s * n);
+                if (t > l) {
+                    t = l;
+                }
                 q.next().find(".perc-poll-result-fill").width(t);
                 q.next()
                     .find(".perc-poll-result-empty")
                     .width(l - t);
-                var p = m.totalVotes > 0 ? Math.round((s / m.totalVotes) * 100) : 0;
+                var p = totalVotes > 0 ? Math.round((s / totalVotes) * 100) : 0;
                 q.find(".perc-poll-result-percent").text(p + "%");
-                q.find(".perc-poll-result-count").text("(" + s + "/" + m.totalVotes + ")");
+                q.find(".perc-poll-result-count").text("(" + s + "/" + totalVotes + ")");
             });
-            c.find(".perc-poll-total-votes span").text(" " + m.totalVotes);
+            c.find(".perc-poll-total-votes span").text(" " + totalVotes);
             d.find(".perc-poll-backto-poll")
                 .hide()
                 .off("click")
