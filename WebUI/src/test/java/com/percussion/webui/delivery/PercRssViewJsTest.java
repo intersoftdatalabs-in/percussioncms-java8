@@ -30,6 +30,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -320,6 +321,10 @@ public class PercRssViewJsTest {
     private static void appendTextContent(Node node, StringBuilder sb) {
       if (node instanceof TextNode) {
         sb.append(((TextNode) node).getWholeText());
+        return;
+      }
+      if (node instanceof DataNode) {
+        sb.append(((DataNode) node).getWholeData());
         return;
       }
       List<Node> children = node.childNodes();
