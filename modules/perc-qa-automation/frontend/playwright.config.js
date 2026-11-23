@@ -20,6 +20,8 @@ module.exports = defineConfig({
   use: {
     baseURL: process.env.CMS_URL || BASE_URL,
     headless,
+    // a step that cannot find its element fails after 30 s, not after the whole test timeout; steps that need longer pass their own timeout
+    actionTimeout: Number(process.env.ACTION_TIMEOUT || 30000),
     launchOptions: { slowMo },
     ignoreHTTPSErrors: true,
     viewport: { width: 1440, height: 900 },

@@ -168,6 +168,14 @@ export async function addWidget(page: Page, widgetKey: string, region: 'leftside
   const lib = page.locator('#perc-widget-library');
   if (!(await lib.isVisible())) await page.getByText('Add Widget').first().click();
   const tile = page.locator(`#widget-${widgetKey}-0`);
+  // the library shows one type at a time (Percussion, Custom, Deprecated (Pending Removal)): look in the others when the tile is not in this one
+  if ((await tile.count()) === 0) {
+    const typeSelect = lib.locator('select').first();
+    for (const label of ['Custom', 'Deprecated (Pending Removal)', 'Percussion']) {
+      await typeSelect.selectOption({ label });
+      if ((await tile.count()) > 0) break;
+    }
+  }
   await tile.waitFor({ state: 'visible' });
   await tile.scrollIntoViewIfNeeded();   // tiles further along the library are clipped until scrolled to
   const frame = page.frameLocator('iframe#frame');
@@ -323,4 +331,18 @@ export async function uploadImageAsset(page: Page, folder: string, fixturePath: 
   await page.getByRole('button', { name: 'Save' }).click();
   await page.waitForURL(/view=editAsset.*name=/, { timeout: 60_000 });
   return new URL(page.url()).searchParams.get('name')!;
+}
+
+/**
+ * Opens a page that was just published (and so is checked in) in the editor again, in edit mode. `editUrl` is the editor address saved while the page was open
+ * (it only selects the page in the finder; the finder lists just the first 100 pages of a folder), `host` is the page file name without .html.
+ */
+export async function reopenPageInEditor(page: Page, editUrl: string, host: string) {
+  await page.goto(editUrl);
+  const item = page.getByText(`${host}.html`, { exact: true }).last();
+  await expect(item).toBeVisible({ timeout: 60_000 });
+  await item.dblclick();
+  await expect(page).toHaveURL(/view=editor/, { timeout: 60_000 });
+  await page.getByRole('button', { name: 'Edit', exact: true }).click({ timeout: 60_000 });
+  await expect(page).toHaveURL(/mode=edit/, { timeout: 60_000 });
 }
