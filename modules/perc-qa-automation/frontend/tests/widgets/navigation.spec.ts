@@ -10,6 +10,8 @@ import { DTS_URL, DTS_ADMIN_URL } from '../helpers/qa-env';
  */
 const LEVEL2_TITLE = 'QA Crumb Two';
 const LEVEL2_FOLDER = 'qa-crumb-two';
+const LEVEL2_SECOND_TITLE = 'QA Nav Two';
+const LEVEL2_SECOND_FOLDER = 'qa-nav-two';
 
 type Form = ReturnType<Page['locator']>;
 
@@ -117,6 +119,11 @@ test.describe.serial('Navigation', () => {
   test('Navigation: "Maximum number of navigation items at the root level" 1 (with Primary node 2) shows one root entry', async ({ page }) => {
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    // ensure a second published level 2 section exists so rootlevel = 2 has at least two root entries to truncate on a fresh site
+    await ensureLevel2Section(page, LEVEL2_SECOND_TITLE, LEVEL2_SECOND_FOLDER);
+    await openPageByPath(page, [LEVEL2_SECOND_FOLDER], 'index.html');
+    await openContentTab(page);
+    await publishOpenItem(page);
     const { url } = await publishNavigationPage(page, run(), 'navigation-max-root-items', async form => {
       await form.locator('input[name="rootlevel"]').fill('2');   // the root items are the entries at the primary node level; with the default primary node (Home) there is only Home
       await form.locator('input[name="maxRootItems"]').fill('1');

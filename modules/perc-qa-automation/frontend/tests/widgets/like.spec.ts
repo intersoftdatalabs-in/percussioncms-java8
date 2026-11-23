@@ -40,9 +40,7 @@ test.describe.serial('Like', () => {
     await ready(page);
     await expect(widget(page)).toHaveClass(/perc-unliked/);
     await expect(button(page), 'button offers "Like"').toHaveAttribute('title', 'Like');
-    // PercLikedView.js intends to hide the counter at 0, but the published page shows it with "0" (the service answers 0 and the script compares it
-    // with ===). Not a documented behaviour, so it is recorded as an observation: the count must be 0 whether the counter is shown or hidden.
-    if (await counter(page).isVisible()) await expect(widget(page).locator('.perc-like-total-likes'), 'no likes yet: the counter shows 0').toHaveText('0');
+    await expect(counter(page), 'counter is hidden while nobody has liked the page').toBeHidden();
     await page.screenshot({ path: 'screenshots/like-published-page-before-any-like.png' });
   });
 

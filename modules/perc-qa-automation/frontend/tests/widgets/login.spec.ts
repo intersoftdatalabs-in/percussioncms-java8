@@ -15,8 +15,8 @@ test.describe.serial('Login', () => {
   const password = 'QaPass-12345';
   let formUrl = '';
 
-  /** New page with a Login widget (Render mode and labels optional); publishes and returns the published URL. */
-  async function publishLogin(page: Page, shot: string, mode: 'link' | 'form', labels?: { email: string; password: string; submit: string }, layout?: string): Promise<string> {
+  /** New page with a Login widget (Render mode, labels, layout and showUsername optional); publishes and returns the published URL. */
+  async function publishLogin(page: Page, shot: string, mode: 'link' | 'form', labels?: { email: string; password: string; submit: string }, layout?: string, showUsername = false): Promise<string> {
     const host = await createPage(page, `Login Host ${shot.slice(-9)} ${run}`);
     await placeWidget(page, 'percLogin');
     const form = await openWidgetConfigure(page, 'percLogin');
@@ -31,6 +31,7 @@ test.describe.serial('Login', () => {
       await frame.locator('#perc-content-edit-password_label').fill(labels.password);
       await frame.locator('#perc-content-edit-submit_label').fill(labels.submit);
     }
+    if (showUsername) await frame.locator('input[name="show_username"]').check();
     await page.screenshot({ path: `screenshots/${shot}-content-editor.png` });
     await save.click();
     await expect(save).toBeHidden({ timeout: 60_000 });
@@ -60,7 +61,7 @@ test.describe.serial('Login', () => {
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
     await ensureDeliveryResources(page);
-    formUrl = await publishLogin(page, 'login-form-mode', 'form', { email: `Mail ${run}`, password: `Secret ${run}`, submit: `Enter ${run}` }, 'align_left');
+    formUrl = await publishLogin(page, 'login-form-mode', 'form', { email: `Mail ${run}`, password: `Secret ${run}`, submit: `Enter ${run}` }, 'align_left', true);
     await page.goto(formUrl);
     const form = page.locator('form.perc-login-form');
     await expect(form, 'login form').toBeVisible({ timeout: 60_000 });

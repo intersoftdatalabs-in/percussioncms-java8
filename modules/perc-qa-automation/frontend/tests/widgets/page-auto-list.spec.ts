@@ -59,6 +59,7 @@ test.describe.serial('Page Auto List', () => {
     const url = await publishListPage(page, 'page-auto-list-title-filter');
 
     await page.goto(url);
+    await expect(page.locator('.perc-page-auto-list'), 'list loaded from DTS').toHaveAttribute('aria-busy', 'false', { timeout: 60_000 });
     for (const n of names) await expect(page.locator('li.perc-list-element:visible', { hasText: titleOf(n) }), `"${titleOf(n)}" is listed`).toHaveCount(1, { timeout: 60_000 });
     await expect(page.getByText(`Unrelated page ${run}`), 'page whose link text does not match is not listed').toHaveCount(0);
     await expect(page.locator('.perc-list-title', { hasText: `Pages ${run}` }), 'list title').toBeVisible();
@@ -89,6 +90,7 @@ test.describe.serial('Page Auto List', () => {
 
     await page.goto(url);
     const list = page.locator('.perc-page-auto-list');
+    await expect(list, 'list loaded from DTS').toHaveAttribute('aria-busy', 'false', { timeout: 60_000 });
     await expect(items(page).first()).toBeVisible({ timeout: 60_000 });
     await expect(page.locator('h2.perc-list-title', { hasText: `Pages ${run}` }), 'list title is a Heading 2').toBeVisible();
     await expect(list.locator('ol.perc-list-main:visible'), 'ordered list').toHaveCount(1);
@@ -113,10 +115,11 @@ test.describe.serial('Page Auto List', () => {
       await form.locator('select[name="sortDirection"]').selectOption('asc', { timeout: 10_000 });
     });
     await page.goto(url);
+    await expect(page.locator('.perc-page-auto-list'), 'list loaded from DTS').toHaveAttribute('aria-busy', 'false', { timeout: 60_000 });
     await expect(items(page), 'two pages on the first page of results').toHaveCount(2, { timeout: 60_000 });
     await expect(items(page).locator('a')).toHaveText([titleOf('Alpha'), titleOf('Bravo')]);
     const paging = page.locator('.perc-pagination-container').first();
-    await expect(paging, 'paging controls').toBeVisible();
+    await expect(paging, 'paging controls').toBeVisible({ timeout: 60_000 });
     await expect(paging).toContainText(/1 of 2 pages/);
     await paging.locator('a[aria-label="Page 2"]').click();
     await expect(items(page), 'one page on the second page of results').toHaveCount(1, { timeout: 30_000 });
