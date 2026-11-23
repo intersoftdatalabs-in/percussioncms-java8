@@ -134,7 +134,7 @@
 
         $dynamicListData = $dynamicListData + ", &quot;tag_render_option&quot;:&quot;" +$tagRenderOption + "&quot;";
 
-		if(!empty($orderby))
+		if(!empty($tagSortOption))
         {
             $dynamicListData = $dynamicListData + ", &quot;orderBy&quot;:&quot;" + $tagSortOption + "&quot;";
         }
