@@ -44,6 +44,8 @@
 #set($wrapper = $perc.widget.item.properties.get('wrapper'))##
 #if("$!{wrapper}" == "")##
    #set($wrapper = "h1")##
+#elseif("$!{wrapper}" == "paragraph")##
+   #set($wrapper = "p")##
 #end##
 #loadRelatedWidgetContents()##
 #if( ! $perc.widgetContents.isEmpty() )##
