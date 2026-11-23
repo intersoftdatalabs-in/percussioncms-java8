@@ -63,7 +63,7 @@ test.describe.serial('Like', () => {
     await expect(button(page)).toHaveAttribute('title', 'Remove');
   });
 
-  test('Like: a second visitor sees the total, is not shown as having liked, and their like makes it "2 people"', async ({ page, browser }) => {
+  test('Like: a second visitor sees the total, is not shown as having liked, and their like makes it "2 people" (also for a new visitor afterwards)', async ({ page, browser }) => {
     expect(url, 'page from the first scenario').not.toBe('');
     const other = await browser.newContext();   // a different visitor: no cookie
     try {
@@ -78,8 +78,8 @@ test.describe.serial('Like', () => {
       await b.screenshot({ path: 'screenshots/like-published-page-second-visitor-two-people.png' });
     } finally { await other.close(); }
 
-    await ready(page);   // first visitor sees the new total
-    await expect(widget(page).locator('.perc-like-total-likes'), 'first visitor sees 2').toHaveText('2');
+    await ready(page);   // every scenario has its own browser, so this is another new visitor (no cookie): it sees the total of both likes
+    await expect(widget(page).locator('.perc-like-total-likes'), 'a new visitor sees 2').toHaveText('2');
   });
 
   test('Like: clicking Remove takes the like back: the total goes down, the button offers "Like" again and it stays that way after a reload', async ({ page }) => {

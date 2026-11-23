@@ -35,7 +35,9 @@ async function publishNavigationPage(page: Page, run: string, shot: string, conf
   return { url: `${DTS_URL}/${LEVEL2_FOLDER}/${l3Folder}/index.html`, l3Title };
 }
 
-test.describe('Navigation', () => {
+// serial: every scenario creates a level 3 section below the shared level 2 section, so they must not run in parallel. The sections are left in the
+// QA site (one per scenario and run) because the specs only create content in the dedicated QA site.
+test.describe.serial('Navigation', () => {
   test.setTimeout(420_000);
   const run = () => Date.now().toString().slice(-6);
 

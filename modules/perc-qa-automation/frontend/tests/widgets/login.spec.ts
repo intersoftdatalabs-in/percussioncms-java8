@@ -59,6 +59,7 @@ test.describe.serial('Login', () => {
   test('Login: Render mode "Show login form" shows the form with the labels typed in the content editor', async ({ page }) => {
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
     formUrl = await publishLogin(page, 'login-form-mode', 'form', { email: `Mail ${run}`, password: `Secret ${run}`, submit: `Enter ${run}` }, 'align_left');
     await page.goto(formUrl);
     const form = page.locator('form.perc-login-form');

@@ -51,6 +51,7 @@ test.describe.serial('Page Auto List', () => {
       hrefs[n] = `/${TEST_FOLDER}/${await createPage(page, titleOf(n))}.html`;
       await openContentTab(page);
       await publishOpenItem(page);
+      await page.waitForTimeout(1_500);   // the default sort is by post date (to the second): publish the pages at least a second apart
     }
     await createPage(page, `Unrelated page ${run}`);
     await openContentTab(page);
@@ -96,7 +97,9 @@ test.describe.serial('Page Auto List', () => {
     await expect(items(page).locator('a').first(), 'link target').toHaveAttribute('target', '_blank');
     await expect(items(page).locator('.perc-page-auto-list-date').first(), 'post date shown').not.toHaveText('');
     // with a list title the list is labelled by that title (aria-labelledby); the aria-label setting is only used when there is no list title
-    await expect(list, 'labelled by the list title').toHaveAttribute('aria-labelledby', await page.locator('h2.perc-list-title').getAttribute('id') as string);
+    const titleId = await page.locator('h2.perc-list-title').getAttribute('id');
+    expect(titleId, 'the list title has an id').toBeTruthy();
+    await expect(list, 'labelled by the list title').toHaveAttribute('aria-labelledby', titleId!);
     await expect(list, 'aria role').toHaveAttribute('role', 'navigation');
     await page.screenshot({ path: 'screenshots/page-auto-list-published-page-ordered-formats-link-text-ascending.png' });
   });

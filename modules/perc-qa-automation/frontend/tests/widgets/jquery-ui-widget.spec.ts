@@ -103,6 +103,12 @@ test.describe('jQuery-ui Widget', () => {
   const CDN_UI = 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js';
   const CDN_CSS = 'https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css';
 
+  /** Skips the scenario when code.jquery.com cannot be reached, so an offline QA machine does not report false failures. */
+  const requireInternet = async () => {
+    const ok = await fetch(CDN_UI, { method: 'HEAD', signal: AbortSignal.timeout(8_000) }).then(r => r.ok, () => false);
+    test.skip(!ok, 'needs internet access (code.jquery.com)');
+  };
+
   /** SRI value (sha384) of the file at `url`, computed from the downloaded bytes. */
   const sri = async (page: Page, url: string) => {
     const res = await page.request.get(url);
@@ -113,6 +119,7 @@ test.describe('jQuery-ui Widget', () => {
     .map(s => ({ src: s.getAttribute('src')!, integrity: s.getAttribute('integrity'), crossorigin: s.getAttribute('crossorigin'), defer: s.hasAttribute('defer') })));
 
   test('jQuery-ui Widget: a CDN address with SRI hash and cross-origin setting and a CDN style sheet are written as given and the browser loads them', async ({ page }) => {
+    await requireInternet();
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
     await ensureDeliveryResources(page);
@@ -132,6 +139,7 @@ test.describe('jQuery-ui Widget', () => {
   });
 
   test('jQuery-ui Widget: a wrong SRI hash is written to the tag and the browser refuses to run the script', async ({ page }) => {
+    await requireInternet();
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
     await ensureDeliveryResources(page);
@@ -150,6 +158,7 @@ test.describe('jQuery-ui Widget', () => {
   });
 
   test('jQuery-ui Widget: an address that cannot be reached falls back to the system jQuery UI', async ({ page }) => {
+    await requireInternet();
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
     await ensureDeliveryResources(page);
