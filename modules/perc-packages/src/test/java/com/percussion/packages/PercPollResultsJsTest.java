@@ -537,4 +537,47 @@ public class PercPollResultsJsTest {
       assertEquals("(0/3)", engine.eval("__resultCountSpans[2]._text"));
     }
   }
+
+  @Test
+  public void testCaseInsensitiveFallbackSkipsAmbiguousUnmatchedKey() throws Exception {
+    String[] answers = {"Red", "red", "Blue"};
+    for (String script : POLL_SCRIPTS) {
+      ScriptEngine engine = createEngine(script, answers);
+      engine.eval(
+          "__nextGetResult = { pollName: 'TestPoll', pollQuestion: 'Best colour?', totalVotes: 1, "
+              + "pollResults: { 'RED': 1 } };\n"
+              + "__viewResultsLink.trigger('click');");
+
+      assertEquals("0%", engine.eval("__resultPercentSpans[0]._text"));
+      assertEquals("(0/1)", engine.eval("__resultCountSpans[0]._text"));
+      assertEquals(0, ((Number) engine.eval("__resultFillSpans[0]._width")).intValue());
+      assertEquals(200, ((Number) engine.eval("__resultEmptySpans[0]._width")).intValue());
+
+      assertEquals("0%", engine.eval("__resultPercentSpans[1]._text"));
+      assertEquals("(0/1)", engine.eval("__resultCountSpans[1]._text"));
+      assertEquals(0, ((Number) engine.eval("__resultFillSpans[1]._width")).intValue());
+      assertEquals(200, ((Number) engine.eval("__resultEmptySpans[1]._width")).intValue());
+
+      assertEquals("0%", engine.eval("__resultPercentSpans[2]._text"));
+      assertEquals("(0/1)", engine.eval("__resultCountSpans[2]._text"));
+      assertEquals(0, ((Number) engine.eval("__resultFillSpans[2]._width")).intValue());
+      assertEquals(200, ((Number) engine.eval("__resultEmptySpans[2]._width")).intValue());
+
+      assertEquals(" 1", engine.eval("__totalVotesSpan._text"));
+
+      engine.eval(
+          "__nextGetResult = { pollName: 'TestPoll', pollQuestion: 'Best colour?', totalVotes: 4, "
+              + "pollResults: { 'Red': 1, 'RED': 2, 'blue': 1 } };\n"
+              + "__viewResultsLink.trigger('click');");
+
+      assertEquals("25%", engine.eval("__resultPercentSpans[0]._text"));
+      assertEquals("(1/4)", engine.eval("__resultCountSpans[0]._text"));
+
+      assertEquals("0%", engine.eval("__resultPercentSpans[1]._text"));
+      assertEquals("(0/4)", engine.eval("__resultCountSpans[1]._text"));
+
+      assertEquals("25%", engine.eval("__resultPercentSpans[2]._text"));
+      assertEquals("(1/4)", engine.eval("__resultCountSpans[2]._text"));
+    }
+  }
 }

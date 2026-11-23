@@ -127,7 +127,7 @@
                 }
             });
         }
-        function getAnswerVoteCount(pollResults, answerText, renderedAnswers) {
+        function getAnswerVoteCount(pollResults, answerText, renderedLowerCounts) {
             if (!pollResults || typeof pollResults !== "object") {
                 return 0;
             }
@@ -136,17 +136,26 @@
                 return !isNaN(exact) && exact > 0 ? exact : 0;
             }
             var target = String(answerText).toLowerCase();
+            if (
+                !renderedLowerCounts ||
+                !Object.prototype.hasOwnProperty.call(renderedLowerCounts, target) ||
+                renderedLowerCounts[target] !== 1
+            ) {
+                return 0;
+            }
+            var fallbackTotal = 0;
             for (var key in pollResults) {
                 if (
                     Object.prototype.hasOwnProperty.call(pollResults, key) &&
-                    (!renderedAnswers || !Object.prototype.hasOwnProperty.call(renderedAnswers, key)) &&
                     String(key).toLowerCase() === target
                 ) {
                     var count = Number(pollResults[key]);
-                    return !isNaN(count) && count > 0 ? count : 0;
+                    if (!isNaN(count) && count > 0) {
+                        fallbackTotal += count;
+                    }
                 }
             }
-            return 0;
+            return fallbackTotal;
         }
         function e(m) {
             f.hide();
@@ -165,14 +174,15 @@
             }
             var n = totalVotes > 0 ? l / totalVotes : 0;
             var answerRows = c.find(".perc-poll-answer-container");
-            var renderedAnswers = Object.create(null);
+            var renderedLowerCounts = Object.create(null);
             answerRows.each(function () {
-                renderedAnswers[a(this).find(".perc-poll-answer").text()] = true;
+                var lower = String(a(this).find(".perc-poll-answer").text()).toLowerCase();
+                renderedLowerCounts[lower] = (renderedLowerCounts[lower] || 0) + 1;
             });
             answerRows.each(function () {
                 var q = a(this);
                 var answerText = q.find(".perc-poll-answer").text();
-                var s = getAnswerVoteCount(pollResults, answerText, renderedAnswers);
+                var s = getAnswerVoteCount(pollResults, answerText, renderedLowerCounts);
                 var t = Math.round(s * n);
                 if (t > l) {
                     t = l;
