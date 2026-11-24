@@ -97,11 +97,11 @@ async function openBlogsGadget(page: Page) {
 }
 
 /** Creates the blog "QA Blog" (folder qa-blog) with the New Blog wizard of the Blogs gadget unless the folder is already there. */
-export async function ensureBlog(page: Page) {
+export async function ensureBlog(page: Page, title: string = BLOG_TITLE, folder: string = BLOG_FOLDER) {
   await page.goto('/cm/app/?view=dash');
   await page.getByText('Sites', { exact: true }).first().click();
   await page.getByText(TEST_SITE, { exact: true }).first().click();
-  if (await page.getByText(BLOG_FOLDER, { exact: true }).first().waitFor({ timeout: 5_000 }).then(() => true, () => false)) return;
+  if (await page.getByText(folder, { exact: true }).first().waitFor({ timeout: 5_000 }).then(() => true, () => false)) return;
   const gadget = await openBlogsGadget(page);
   await expect(async () => {
     if (!(await gadget.locator('#perc-add-blog-button').isVisible())) await gadget.getByText('All Blogs').first().click({ timeout: 3_000 });
@@ -112,7 +112,7 @@ export async function ensureBlog(page: Page) {
   await dlg.waitFor({ timeout: 20_000 });
   await dlg.getByText('Sites', { exact: true }).first().click();
   await dlg.getByText(TEST_SITE, { exact: true }).first().click({ timeout: 10_000 });
-  await dlg.locator('#perc-blog-text-link').pressSequentially(BLOG_TITLE, { delay: 30 });
+  await dlg.locator('#perc-blog-text-link').pressSequentially(title, { delay: 30 });
   await dlg.getByRole('button', { name: 'Next' }).click();
   await expect(dlg.getByText(BLOG_INDEX_TEMPLATE)).toBeVisible({ timeout: 30_000 });
   await expect(dlg.getByText(BLOG_POST_TEMPLATE)).toBeVisible();
@@ -126,8 +126,22 @@ export async function ensureBlog(page: Page) {
  */
 export async function createAndPublishPost(page: Page, title: string, byline: string, bodyText: string): Promise<string> {
   const gadget = await openBlogsGadget(page);
+  // Always return to All Blogs and explicitly open BLOG_TITLE so a persisted selectedBlogID (e.g. QA Empty Blog) cannot hijack post creation.
+  const openBlogBtn = gadget
+    .locator('tr', { has: gadget.getByText(BLOG_TITLE, { exact: true }) })
+    .first()
+    .locator('span[title="Open Blog"]');
   await expect(async () => {
-    if (!(await gadget.locator('#perc-add-post-button').isVisible())) await gadget.getByText(BLOG_TITLE, { exact: true }).first().click({ timeout: 3_000 });
+    if (await gadget.locator('#perc-return-button').isVisible()) {
+      await gadget.locator('#perc-return-button').click({ timeout: 3_000 });
+    }
+    await expect(openBlogBtn).toBeVisible({ timeout: 5_000 });
+  }).toPass({ timeout: 60_000 });
+  await expect(async () => {
+    if (await openBlogBtn.isVisible()) {
+      await openBlogBtn.click({ timeout: 3_000 });
+    }
+    await expect(gadget.locator('#perc-return-button')).toBeVisible({ timeout: 5_000 });
     await expect(gadget.locator('#perc-add-post-button')).toBeVisible({ timeout: 5_000 });
   }).toPass({ timeout: 60_000 });
   const dlg = page.locator('.ui-dialog:visible').filter({ hasText: 'New Post' });
