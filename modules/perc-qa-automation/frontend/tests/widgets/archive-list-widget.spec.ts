@@ -137,4 +137,44 @@ test.describe('Archive List Widget', () => {
     expect(query.numberEntries, 'the entries limit is written to data-query for the delivery script').toBe('1');
     await page.screenshot({ path: 'screenshots/archive-list-widget-flat-layout-max-entries-1.png' });
   });
+
+  /**
+   * The test pages are all created in one month, so the entries limit cannot cut anything off with the real DTS data. The published page is therefore
+   * served the same answer shape by the DTS archive service with two years and three months (2 + 1 months), and the widget's own script limits the list.
+   */
+  const archiveAnswer = {
+    years: [
+      { year: 2026, yearCount: 5, months: [{ month: 'November', count: 3 }, { month: 'October', count: 2 }] },
+      { year: 2025, yearCount: 4, months: [{ month: 'December', count: 4 }] },
+    ],
+  };
+  const stubArchiveService = (page: Page) => page.route('**/metadata/blogs/get', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(archiveAnswer) }));
+
+  test('Archive List Widget: "Number of entries to show" limits the years of the hierarchical layout and the months of the flat layout', async ({ page }) => {
+    const run = Date.now().toString().slice(-7);
+    await loginAsAdmin(page);
+    await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
+    const criteria = async (frame: FrameLocator) => { await frame.locator('#display_title_contains').fill(`QAArchLimit${run}`); };
+    const hierarchical = await publishArchiveHost(page, `${run}h`, criteria, 'archive-list-widget-limit-hierarchical', 'perc-list-hierarchical', '1');
+    const flat = await publishArchiveHost(page, `${run}f`, criteria, 'archive-list-widget-limit-flat', 'perc-list-flat', '2');
+
+    // hierarchical, limit 1: only the first (newest) year is listed, with its months
+    await stubArchiveService(page);
+    await page.goto(`${DTS_URL}/${TEST_FOLDER}/${hierarchical}.html`);
+    await expect(page.locator('li.perc-archive-year'), 'limit 1 shows one year of the two').toHaveCount(1, { timeout: 60_000 });
+    await expect(page.locator('li.perc-archive-year > a')).toHaveText('2026 (5)');
+    await expect(page.locator('li.perc-archive-month'), 'its two months').toHaveCount(2);
+    await page.screenshot({ path: 'screenshots/archive-list-widget-limit-1-hierarchical-shows-one-year.png' });
+
+    // flat, limit 2: only the first two months (of three) are listed
+    await page.goto(`${DTS_URL}/${TEST_FOLDER}/${flat}.html`);
+    const months = page.locator('ul.perc-archive-flat li.perc-archive-month');
+    await expect(months.first(), 'the flat list is built').toBeVisible({ timeout: 60_000 });
+    await expect(months, 'limit 2 shows two months of the three').toHaveCount(2);
+    await expect(months.nth(0)).toHaveText('November 2026 (3)');
+    await expect(months.nth(1)).toHaveText('October 2026 (2)');
+    await page.screenshot({ path: 'screenshots/archive-list-widget-limit-2-flat-shows-two-months.png' });
+  });
 });
