@@ -330,6 +330,8 @@ public class PSMetadataQueryService implements IPSMetadataQueryService {
         throw new UnsupportedOperationException(
             "Pagination is not supported for requested sort property");
       } else {
+        int effectiveLimit = getEffectiveTotalLimit(query);
+
         // Get the Count of entries only when the StartIndex is 0, for later pages client should be
         // having the
         // total count already so no need to get the count again
@@ -337,24 +339,31 @@ public class PSMetadataQueryService implements IPSMetadataQueryService {
           queryInfo = buildHibernateQuery(session, query, true);
 
           Long count = (Long) queryInfo.getFirst().list().get(0);
-          totalResults = count.intValue();
+          totalResults =
+              effectiveLimit > 0 ? (int) Math.min(count, (long) effectiveLimit) : count.intValue();
         }
 
-        // call the method for second time to get list of objects based on the query
-        queryInfo = new PSPair<Query, SORTTYPE>();
-        queryInfo = buildHibernateQuery(session, query, false);
-        if (queryInfo.getSecond().equals(SORTTYPE.PROPERTY)) {
-          List<Object[]> resultsTmpList = queryInfo.getFirst().list();
-          for (Object[] o : resultsTmpList) {
-            results.add((PSDbMetadataEntry) o[0]);
+        int startIndex = Math.max(0, query.getStartIndex());
+        if (effectiveLimit > 0 && startIndex >= effectiveLimit) {
+          searchResults.setFirst(results);
+          searchResults.setSecond(totalResults);
+        } else {
+          // call the method for second time to get list of objects based on the query
+          queryInfo = new PSPair<Query, SORTTYPE>();
+          queryInfo = buildHibernateQuery(session, query, false);
+          if (queryInfo.getSecond().equals(SORTTYPE.PROPERTY)) {
+            List<Object[]> resultsTmpList = queryInfo.getFirst().list();
+            for (Object[] o : resultsTmpList) {
+              results.add((PSDbMetadataEntry) o[0]);
+            }
+            searchResults.setFirst(results);
+          } else if (queryInfo.getSecond().equals(SORTTYPE.METADATA)
+              || queryInfo.getSecond().equals(SORTTYPE.NONE)) {
+            results = queryInfo.getFirst().list();
+            searchResults.setFirst(results);
           }
-          searchResults.setFirst(results);
-        } else if (queryInfo.getSecond().equals(SORTTYPE.METADATA)
-            || queryInfo.getSecond().equals(SORTTYPE.NONE)) {
-          results = queryInfo.getFirst().list();
-          searchResults.setFirst(results);
+          searchResults.setSecond(totalResults);
         }
-        searchResults.setSecond(totalResults);
       }
     }
 
@@ -625,21 +634,29 @@ public class PSMetadataQueryService implements IPSMetadataQueryService {
     // codeql[java/sql-injection]
     Query q = sess.createQuery(SecureStringUtils.requireFactorySqlStatement(queryBuf.toString()));
     // justification: tokens passed through SecureStringUtils SQL barrier; re-review by 2027-07-31
-    int useLimit = queryLimit;
-    // All caller to set a query limit, but they can't allow higher than the server limit.
-    if (rawQuery.getTotalMaxResults() > 0 && rawQuery.getTotalMaxResults() < queryLimit) {
-      log.debug(
-          "Setting max query limit to client provided value :{}", rawQuery.getTotalMaxResults());
-      useLimit = rawQuery.getTotalMaxResults();
-    }
-
-    q.setMaxResults(useLimit);
+    int useLimit = getEffectiveTotalLimit(rawQuery);
     q.setCacheable(true);
 
-    // If it is not for count then only pagination properties need to be set on the query
-    if (!isCount && rawQuery.getMaxResults() > 0 && rawQuery.getMaxResults() <= useLimit) {
-      if (rawQuery.getMaxResults() > 0) q.setMaxResults(rawQuery.getMaxResults());
-      if (rawQuery.getStartIndex() >= 0) q.setFirstResult(rawQuery.getStartIndex());
+    // If it is not for count then apply the effective total limit and pagination properties
+    if (!isCount) {
+      int startIndex = Math.max(0, rawQuery.getStartIndex());
+      int pageLimit = useLimit;
+      if (useLimit > 0) {
+        int remaining = Math.max(0, useLimit - startIndex);
+        pageLimit =
+            rawQuery.getMaxResults() > 0
+                ? Math.min(rawQuery.getMaxResults(), remaining)
+                : remaining;
+      } else if (rawQuery.getMaxResults() > 0) {
+        pageLimit = rawQuery.getMaxResults();
+      }
+
+      if (pageLimit > 0) {
+        q.setMaxResults(pageLimit);
+      }
+      if (rawQuery.getStartIndex() >= 0) {
+        q.setFirstResult(rawQuery.getStartIndex());
+      }
     }
     for (String key : paramValues.keySet()) {
       Object value = paramValues.get(key);
@@ -657,6 +674,22 @@ public class PSMetadataQueryService implements IPSMetadataQueryService {
     }
 
     return getBuildQueryInfo(q, type);
+  }
+
+  /**
+   * Resolves the effective maximum number of total results allowed for the query, capped by the
+   * configured server {@code queryLimit} when positive.
+   */
+  private int getEffectiveTotalLimit(PSMetadataQuery rawQuery) {
+    int useLimit = (queryLimit != null && queryLimit > 0) ? queryLimit : 0;
+    // Allow caller to set a query limit, but they can't allow higher than the server limit.
+    if (rawQuery.getTotalMaxResults() > 0
+        && (useLimit == 0 || rawQuery.getTotalMaxResults() < useLimit)) {
+      log.debug(
+          "Setting max query limit to client provided value :{}", rawQuery.getTotalMaxResults());
+      useLimit = rawQuery.getTotalMaxResults();
+    }
+    return useLimit;
   }
 
   private String escapeSpecialCharacters(String value) {
