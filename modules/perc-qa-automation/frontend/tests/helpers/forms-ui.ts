@@ -28,7 +28,7 @@ async function openFormsTracker(page: Page): Promise<Frame> {
 
 /** The tracker row of the form with this title (the list is paged, so the pages are walked until the form is found). */
 async function findFormRow(page: Page, g: Frame, title: string) {
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 60; i++) {
     const row = g.locator('tr', { hasText: title }).first();
     if (await row.waitFor({ timeout: 4_000 }).then(() => true, () => false)) return row;
     const next = g.locator('a:text-is(">")').first();
