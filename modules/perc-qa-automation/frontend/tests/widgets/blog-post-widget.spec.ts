@@ -58,6 +58,79 @@ async function setDefaults(f: Locator) {
   await f.locator('select[name="blogNavigationContext"]').selectOption('preNext', { timeout: 10_000 });
   await f.locator('input[name="blogPostNextPost"]').fill('Newer Post');
   await f.locator('input[name="blogPostPrePost"]').fill('Older Post');
+  await f.locator('input[name="perc_hidefield_tags"]').uncheck();
+  await f.locator('input[name="perc_tags_label"]').fill('Tags:');
+  await f.locator('input[name="perc_hidefield_categories"]').uncheck();
+  await f.locator('input[name="perc_categories_label"]').fill('Categories:');
+  await f.locator('input[name="trackBlogPost"]').uncheck();
+}
+
+const CATEGORY = 'QA Cat Alpha Child';
+const TAGS = ['qatagone', 'qatagtwo'];
+
+/** Actions > Edit Metadata > Tags and Categories of the open page: opens the section and returns the metadata frame. */
+async function openTagCategorySection(page: Page) {
+  await expect(async () => {
+    await page.getByText('Actions', { exact: true }).first().click();
+    await page.getByText('Edit Metadata', { exact: true }).first().click({ timeout: 3_000 });
+    await expect(page.locator('iframe#edit-page-metadata-frame')).toBeVisible({ timeout: 5_000 });
+  }).toPass({ timeout: 60_000 });
+  const frame = page.frameLocator('iframe#edit-page-metadata-frame');
+  const label = frame.locator('.perc-section-label[group="perc-tagCat-container"]');
+  await expect(async () => {
+    if (!(await label.isVisible())) await frame.locator('#perc-content-edit-metadata-link').click({ timeout: 3_000 });
+    await expect(label).toBeVisible({ timeout: 3_000 });
+  }).toPass({ timeout: 60_000 });
+  await label.click();
+  return frame;
+}
+
+/** Administration > Categories: makes sure the category QA Cat Alpha with its child exists (nothing is published to the DTS, the post only needs the category in the CMS). */
+async function ensureCategories(page: Page) {
+  await page.goto('/cm/app/?view=workflow');
+  const tab = page.locator('#tabs a, .ui-tabs-nav a').filter({ hasText: /^Categories$/ }).first();
+  await expect(tab).toBeVisible({ timeout: 60_000 });
+  await tab.click();
+  const tree = page.locator('#perc-category-tree');
+  await expect(page.locator('#perc-categories-add-category-button')).toBeVisible({ timeout: 30_000 });
+  const typeName = async (name: string) => {
+    await page.locator('#perc-category-name-field').click();
+    await page.keyboard.press('Control+A');
+    await page.keyboard.type(name, { delay: 40 });
+    await page.locator('#perc-category-save').click();
+  };
+  if (!((await tree.textContent()) ?? '').includes('QA Cat Alpha')) {
+    await page.locator('#perc-categories-add-category-button').click();
+    await typeName('QA Cat Alpha');
+    await expect(tree).toContainText('QA Cat Alpha', { timeout: 30_000 });
+  }
+  const rootNode = tree.locator('.fancytree-node').filter({ has: page.locator('.fancytree-title', { hasText: /^QA Cat Alpha$/ }) }).first();
+  if ((await rootNode.locator('.fancytree-expander').isVisible()) && !((await rootNode.getAttribute('class')) ?? '').includes('fancytree-expanded')) {
+    await rootNode.locator('.fancytree-expander').click();
+    await page.waitForTimeout(1500);
+  }
+  if (!((await tree.textContent()) ?? '').includes(CATEGORY)) {
+    await tree.locator('.fancytree-title', { hasText: /^QA Cat Alpha$/ }).click();
+    await page.locator('#perc-categories-add-child-category-button').click();
+    await typeName(CATEGORY);
+    await expect.poll(async () => (await tree.textContent()) ?? '', { timeout: 30_000 }).toContain(CATEGORY);
+  }
+}
+
+/** Gives the middle post two tags and one category (once per run). */
+async function ensureTagged(page: Page) {
+  const flag = path.join(os.tmpdir(), `qa-blogpost-tagged-${runKey}.txt`);
+  if (fs.existsSync(flag)) return;
+  await ensureCategories(page);
+  await openPageByPath(page, [BLOG_FOLDER], `${postFiles().Middle}.html`);
+  const frame = await openTagCategorySection(page);
+  await frame.locator('#page_tags-display').fill(TAGS.join(', '));
+  await page.keyboard.press('Escape');
+  await frame.locator(`#page_categories_tree-tree span.fancytree-node:has(> span.fancytree-title:text-is("${CATEGORY}")) > span.fancytree-checkbox`).click();
+  const dialog = page.locator('.ui-dialog:visible', { hasText: 'Edit Metadata' });
+  await dialog.getByRole('button', { name: 'Save' }).click();
+  await expect(dialog).toBeHidden({ timeout: 60_000 });
+  fs.writeFileSync(flag, 'ok');
 }
 
 /** Resets the Blog Post widget on the post template to defaults, applies any overrides, and saves the template. */
@@ -153,5 +226,78 @@ test.describe('Blog Post Widget options', () => {
     await expect(top.locator('.perc-blog-nav-left-wrapper a').first(), 'older link opens the older post').toHaveAttribute('href', new RegExp(`${file.Older}\\.html`), { timeout: 30_000 });
     await expect(page.locator('.perc-blog-nav-bottom .perc-blog-nav-right-wrapper a').first(), 'newer link opens the newer post').toHaveAttribute('href', new RegExp(`${file.Newer}\\.html`));
     await page.screenshot({ path: 'screenshots/blog-post-published-navigation-above-and-beneath.png', fullPage: true });
+  });
+
+  test('Blog Post: navigation with "Use blog title" shows the titles of the older and the newer post as the link texts', async ({ page }) => {
+    const url = await configureBlogPost(page, 'blog-post-navigation-titles', async f => {
+      await f.locator('select[name="blogNavigationLocation"]').selectOption('above', { timeout: 10_000 });
+      await f.locator('select[name="blogNavigationContext"]').selectOption('blogTitle', { timeout: 10_000 });
+    });
+    await page.goto(url);
+    await expect(page.locator('.perc-blog-nav-top .perc-older-post-title'), 'older post title as link text').toHaveText(postFor('Older').title, { timeout: 60_000 });
+    await expect(page.locator('.perc-blog-nav-top .perc-newer-post-title'), 'newer post title as link text').toHaveText(postFor('Newer').title);
+    await page.screenshot({ path: 'screenshots/blog-post-published-navigation-uses-post-titles.png' });
+  });
+
+  test('Blog Post: tags and categories are shown with the label texts from Configure', async ({ page }) => {
+    await ensureTagged(page);
+    const url = await configureBlogPost(page, 'blog-post-tags-categories', async f => {
+      await f.locator('input[name="perc_tags_label"]').fill('Keywords:');
+      await f.locator('input[name="perc_categories_label"]').fill('Topics:');
+    });
+    await page.goto(url);
+    const tags = page.locator('.perc-blog-post-tag-container');
+    await expect(tags, 'tag label text').toContainText('Keywords:', { timeout: 60_000 });
+    await expect(tags.locator('a'), 'both tags are listed').toHaveText([`${TAGS[0]},`, TAGS[1]]);
+    const cats = page.locator('.perc-blog-post-category-container');
+    await expect(cats, 'category label text').toContainText('Topics:');
+    await expect(cats.locator('a'), 'the category is listed').toHaveText(CATEGORY);
+    await page.screenshot({ path: 'screenshots/blog-post-published-tags-and-categories-with-labels.png' });
+  });
+
+  test('Blog Post: hiding the tags and the categories removes them from the published post', async ({ page }) => {
+    await ensureTagged(page);
+    const url = await configureBlogPost(page, 'blog-post-tags-categories-hidden', async f => {
+      await f.locator('input[name="perc_hidefield_tags"]').check();
+      await f.locator('input[name="perc_hidefield_categories"]').check();
+    });
+    await page.goto(url);
+    await expect(page.locator('.perc-blog h1').first()).toContainText(postFor('Middle').title, { timeout: 60_000 });
+    await expect(page.locator('.perc-blog-post-tag-container'), 'tags hidden').toHaveCount(0);
+    await expect(page.locator('.perc-blog-post-category-container'), 'categories hidden').toHaveCount(0);
+    await page.screenshot({ path: 'screenshots/blog-post-published-tags-and-categories-hidden.png' });
+  });
+
+  test('Blog Post: "Track blog post" reports the visit to the DTS and is silent when it is off', async ({ page }) => {
+    const requests: string[] = [];
+    const responses: { status: number; ok: boolean; body: string }[] = [];
+    page.on('request', r => {
+      if (r.method() === 'POST' && /metadata\/trackblogpost/.test(r.url())) requests.push(r.postData() ?? '');
+    });
+    page.on('response', res => {
+      if (res.request().method() === 'POST' && /metadata\/trackblogpost/.test(res.url())) {
+        responses.push({ status: res.status(), ok: res.ok(), body: res.request().postData() ?? '' });
+      }
+    });
+    let url = await configureBlogPost(page, 'blog-post-track-on', async f => {
+      await f.locator('input[name="trackBlogPost"]').check();
+    });
+    const file = postFiles();
+    await page.goto(url);
+    await expect.poll(() => responses.length, { message: 'the visit is reported to the DTS', timeout: 30_000 }).toBeGreaterThan(0);
+    for (const res of responses) {
+      expect(res.ok, `DTS accepted /metadata/trackblogpost (status ${res.status})`).toBe(true);
+    }
+    expect(responses.map(r => r.body).join(' '), 'the report names the post').toContain(file.Middle);
+
+    requests.length = 0;
+    responses.length = 0;
+    url = await configureBlogPost(page, 'blog-post-track-off', async f => {
+      await f.locator('input[name="trackBlogPost"]').uncheck();
+    });
+    await page.goto(url);
+    await expect(page.locator('.perc-blog h1').first()).toContainText(postFor('Middle').title, { timeout: 60_000 });
+    await page.waitForTimeout(3_000);
+    expect(requests, 'nothing is reported when tracking is off').toEqual([]);
   });
 });
