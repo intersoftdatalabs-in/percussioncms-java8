@@ -542,7 +542,7 @@ aria-labelledby="$!{headerId}"##
 $!{listAriaLabel}##
 #end##
 #end##
-#if("$!{navLoc}" != "")##
+#if("$!{navLoc}" != "" && (!$perc.isEditMode() || ("" != "$!{relresults}" && 0 < $relresults.size())))##
 #if($feedname)##
 <div style="display:none" hidden data-name="feedQuery_$feedname" data-query="$!{feedDynamicListData}"></div>
 #end##
