@@ -45,9 +45,10 @@ import org.junit.Test;
 
 /**
  * Regression tests for issue #413: verifies {@code percBlogIndexPage.xml} honors {@code
- * perc_hide_when_empty} on empty blogs instead of falling back to the sample content placeholder,
- * keeps {@code .perc-blog-list-container} and {@code .perc-no-post} reachable when posts are empty,
- * and emits balanced {@code <div>} tags across all branches.
+ * perc_hide_when_empty} on published/previewed empty blogs instead of falling back to the sample
+ * content placeholder, keeps {@code .perc-blog-list-container} and {@code .perc-no-post} reachable
+ * when posts are empty outside edit mode, preserves the sample content placeholder in edit mode for
+ * empty blogs and templates, and emits balanced {@code <div>} tags across all branches.
  */
 public class PSBlogListHideWhenEmptyTemplateTest {
 
@@ -171,6 +172,52 @@ public class PSBlogListHideWhenEmptyTemplateTest {
           html.contains("bloglist-sample-content"));
       assertBalancedDivs(html);
     }
+  }
+
+  @Test
+  public void emptyBlogInEditModeShouldRenderSampleContentPlaceholder() throws Exception {
+    List<List<Object>> emptyPostInputs = new ArrayList<>();
+    emptyPostInputs.add(Collections.emptyList());
+    emptyPostInputs.add(null);
+
+    for (boolean hideWhenEmpty : new boolean[] {true, false}) {
+      for (List<Object> emptyPosts : emptyPostInputs) {
+        String html = renderBlogIndexWidget(true, hideWhenEmpty, emptyPosts, true);
+
+        assertTrue(
+            "Expected sample content placeholder in edit mode for empty blog (hideWhenEmpty="
+                + hideWhenEmpty
+                + ", posts="
+                + emptyPosts
+                + "): "
+                + html,
+            html.contains("bloglist-sample-content"));
+        assertFalse(
+            "Did not expect .perc-blog-list-container in edit mode for empty blog: " + html,
+            html.contains("perc-blog-list-container"));
+        assertBalancedDivs(html);
+      }
+    }
+  }
+
+  @Test
+  public void nonEmptyBlogInEditModeShouldRenderPostListInsteadOfSampleContent() throws Exception {
+    List<Object> posts =
+        Collections.<Object>singletonList(
+            new ResultItemStub("<p>Post summary</p>", createTestCalendar()));
+
+    String html = renderBlogIndexWidget(true, true, posts, true);
+    String containerTag = extractContainerOpenTag(html);
+    assertFalse(
+        "Did not expect hidden attribute for non-empty blog in edit mode: " + containerTag,
+        containerTag.contains(" hidden ") || containerTag.endsWith(" hidden>"));
+    assertTrue(
+        "Expected rendered post list <ol> in edit mode for non-empty blog: " + html,
+        html.contains("<ol style=\"visibility:hidden\" class=\"perc-blog-list perc-list-main\">"));
+    assertFalse(
+        "Did not expect sample content placeholder for non-empty blog in edit mode: " + html,
+        html.contains("bloglist-sample-content"));
+    assertBalancedDivs(html);
   }
 
   @Test
