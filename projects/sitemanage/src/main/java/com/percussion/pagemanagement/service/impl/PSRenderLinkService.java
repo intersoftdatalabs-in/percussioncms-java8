@@ -78,9 +78,9 @@ import com.percussion.validation.ValidationException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -230,12 +230,13 @@ public class PSRenderLinkService
     /*
      * Remove the duplicated resources (eg: perc_common_ui.js is included in several files)
      */
-    resources = removeDuplicatedResources(resources);
+    Map<String, String> deduplicatedIds = new HashMap<>();
+    resources = removeDuplicatedResources(resources, deduplicatedIds);
 
     /*
      * Sort the resources by dependencies.
      */
-    resources = PSResourceDefinitionUtils.sortByDependencies(resources);
+    resources = PSResourceDefinitionUtils.sortByDependencies(resources, deduplicatedIds);
 
     /*
      * Now turn them into links.
@@ -256,31 +257,27 @@ public class PSRenderLinkService
    * @author federicoromanelli
    * @param resources the list of resources that may contain duplicated values (comparison is based
    *     on id, not uniqueId).
-   * @return the list of resources with the duplicated object deleted, or the original list if
-   *     objects couldn't be removed, never <code>null</code>.
+   * @param deduplicatedIds populated with {@code removedUniqueId -> keptUniqueId} so dependency
+   *     sorting can resolve references to deduplicated resources.
+   * @return the list of resources with the duplicated object deleted, never <code>null</code>.
    */
   private List<PSResourceDefinition> removeDuplicatedResources(
-      List<PSResourceDefinition> resources) {
-    List<PSResourceDefinition> res = resources;
-    List<PSResourceDefinition> resourcesToDelete = new ArrayList<>();
+      List<PSResourceDefinition> resources, Map<String, String> deduplicatedIds) {
+    List<PSResourceDefinition> deduplicated = new ArrayList<>(resources.size());
+    Map<String, String> keptUniqueIdByLocalId = new HashMap<>();
 
-    HashSet<String> uniqueResources = new HashSet<>();
-    Iterator<PSResourceDefinition> iterator = res.iterator();
-
-    while (iterator.hasNext()) {
-      PSResourceDefinition resourceDef = iterator.next();
+    for (PSResourceDefinition resourceDef : resources) {
       String id = resourceDef.getId();
-      if (!uniqueResources.contains(id)) {
-        uniqueResources.add(id);
+      String keptUniqueId = keptUniqueIdByLocalId.get(id);
+      if (keptUniqueId == null) {
+        keptUniqueIdByLocalId.put(id, resourceDef.getUniqueId());
+        deduplicated.add(resourceDef);
       } else {
-        resourcesToDelete.add(resourceDef);
+        deduplicatedIds.put(resourceDef.getUniqueId(), keptUniqueId);
       }
     }
-    if (res.removeAll(resourcesToDelete)) {
-      return res;
-    }
 
-    return resources;
+    return deduplicated;
   }
 
   @GET

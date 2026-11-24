@@ -25,7 +25,9 @@ import com.percussion.pagemanagement.data.PSResourceDefinitionGroup.PSResourceDe
 import com.percussion.pagemanagement.data.PSResourceDefinitionGroup.PSResourceDependency;
 import com.percussion.pagemanagement.service.impl.PSResourceDefinitionUtils;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -63,6 +65,26 @@ public class PSResourceDefinitionUtilsTest {
   public void testCycle() throws Exception {
     resources.add(f);
     actual = sortByDependencies(resources);
+  }
+
+  @Test
+  public void testDepOrderWithAliasedDeduplicatedIds() throws Exception {
+    PSFileResource blogCommonJs = createResource("percBlogPost.common_js");
+    PSFileResource fullCalendarJs =
+        createResource("percCalendarTwo.fullcalendar-js", "percCalendarTwo.common_js");
+    PSFileResource langAllJs =
+        createResource("percCalendarTwo.lang-all-js", "percCalendarTwo.fullcalendar-js");
+
+    Map<String, String> aliasMap = new HashMap<>();
+    aliasMap.put("percCalendarTwo.common_js", "percBlogPost.common_js");
+
+    List<PSResourceDefinition> input = asList(langAllJs, fullCalendarJs, blogCommonJs);
+    List<PSResourceDefinition> sorted = sortByDependencies(input, aliasMap);
+
+    assertEquals(asList(blogCommonJs, fullCalendarJs, langAllJs), sorted);
+    assertEquals(
+        asList("percCalendarTwo.common_js"),
+        PSResourceDefinitionUtils.getResourceDependeeIds(fullCalendarJs.getDependencies()));
   }
 
   public PSFileResource createResource(String id, String... depIds) {

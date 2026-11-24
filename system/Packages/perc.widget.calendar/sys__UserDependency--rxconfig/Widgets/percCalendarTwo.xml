@@ -267,10 +267,8 @@
 #end##
 ##
 #if($perc.isEditMode() || $perc.isPreviewMode())##
-<script src="/Rhythmyx/web_resources/widgets/calendarTwo/js/moment.min.js"></script>
 #set($resourcePrefix = "/Rhythmyx")##
 #else##
-<script src="/web_resources/widgets/calendarTwo/js/moment.min.js"></script>
 #set($resourcePrefix = "")##
 #end##
 ##
