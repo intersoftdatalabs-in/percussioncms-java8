@@ -123,7 +123,32 @@
         dateFormatter: null 
     };
 
-    var settings = {
+    var DEFAULT_TITLE_FORMAT = 'h3';
+    var ALLOWED_TITLE_FORMATS = {
+        h1: true,
+        h2: true,
+        h3: true,
+        h4: true,
+        h5: true,
+        h6: true,
+        p: true,
+        div: true
+    };
+
+    function resolveTitleFormat(titleFormat)
+    {
+        if('string' === typeof (titleFormat))
+        {
+            var normalized = titleFormat.replace(/^\s+|\s+$/g, '').toLowerCase();
+            if(ALLOWED_TITLE_FORMATS.hasOwnProperty(normalized))
+            {
+                return normalized;
+            }
+        }
+        return DEFAULT_TITLE_FORMAT;
+    }
+
+    var defaultSettings = {
         serviceurl: null, // The comments service url. Expects no query string.
         site: null, // The sitename
         pagepath: null,
@@ -131,7 +156,8 @@
         username: null,
         state: 'APPROVED', // either APPROVED or REJECTED
         moderated: null,
-        fields: ['createdDate', 'username', {name: 'title', element: 'h3'}, 'text'],
+        titleFormat: DEFAULT_TITLE_FORMAT,
+        fields: ['createdDate', 'username', {name: 'title'}, 'text'],
         /*
          The fields array property defines what fields will show and their sort order and containment.
          The following fields are available:
@@ -168,14 +194,14 @@
         ascending: true,
         lastCommentId: 0
     };
+
+    var settings = $.extend({}, defaultSettings);
     
     // Publically exposed methods
     var methods = {
         init: function(options) {
             return this.each(function() {
-                if(options){ 
-                    $.extend( settings, options );
-                }
+                settings = $.extend({}, defaultSettings, options || {});
             globals.dateFormatter = new SimpleDateFormat(settings.dateformat);
             var querystring = $.deparam.querystring();
             if ("undefined" !== typeof (querystring.lastCommentId)) {
@@ -185,14 +211,15 @@
         },
         show: function() {
             var el = this;
-            el.addClass(settings.defaultClass);
+            var activeSettings = $.extend({}, settings);
+            el.addClass(activeSettings.defaultClass);
             getComments(function(success, data) {
                 if(success && 'undefined' !== typeof (data.comments) && null !== data.comments)
                 {
                     var comments = data.comments; 
                     for(var c = 0; c < comments.length; c++)
                     {
-                        el.append(createCommentHtml(comments[c]));
+                        el.append(createCommentHtml(comments[c], activeSettings));
                         el.append($("<div/>").addClass("perc-comment-divider"));
                     }
                 }
@@ -338,8 +365,9 @@
     * <code>null</code> or empty.
     * @type jQuery
     */
-    function createCommentHtml(commentData)
+    function createCommentHtml(commentData, activeSettings)
     {
+        var currentSettings = activeSettings || settings;
         if(typeof commentData["commentCreatedDate"] !== "undefined"){
             commentData["createdDate"] = commentData["commentCreatedDate"];
         }
@@ -347,10 +375,10 @@
         var comment = $("<div/>").addClass('perc-comment');
         var field = null;
         var snippet = null;
-        if(0 < settings.fields.length)
+        if(0 < currentSettings.fields.length)
         {
             //Highlight the recent comment
-            if(settings.lastCommentId === commentData["id"]) {
+            if(currentSettings.lastCommentId === commentData["id"]) {
                 comment.addClass('perc-comment-highlight');
                 if (!commentData["moderated"] && "APPROVED" !== commentData["approvalState"])
                 {
@@ -361,19 +389,19 @@
                     )
                 }
             }
-            if(Array.isArray(settings.fields[0]))
+            if(Array.isArray(currentSettings.fields[0]))
             {
                 // Use comment containers
-                for(z = 0; z < settings.fields.length; z++)
+                for(var z = 0; z < currentSettings.fields.length; z++)
                 {
                    var container = $("<div/>").addClass("comment-container-" + z);
                    comment.append(container);
-                   createFieldsHtml(commentData, settings.fields[z], container);
+                   createFieldsHtml(commentData, currentSettings.fields[z], container, currentSettings);
                 }
             }
             else
             {
-               createFieldsHtml(commentData, settings.fields, comment);
+               createFieldsHtml(commentData, currentSettings.fields, comment, currentSettings);
             }
         }
         return comment;
@@ -387,12 +415,14 @@
     * <code>null</code>.
     * @param container {jQuery} the container to append the html to,
     * assumed not <code>null</code>.
+    * @param activeSettings {object} optional settings snapshot for this widget instance.
     */
-    function createFieldsHtml(commentData, fields, container)
+    function createFieldsHtml(commentData, fields, container, activeSettings)
     {
+        var currentSettings = activeSettings || settings;
         for(var i = 0; i < fields.length; i++)
         {
-           var field = getFieldObject(fields[i]);
+           var field = getFieldObject(fields[i], currentSettings);
             if(isBlank(commentData[field["name"]]))
                 continue;
             var snippet = $("<" + field["element"] + "/>")
@@ -429,21 +459,23 @@
      * Helper method to always return a field object with a specified element, even
      * if the string field shortcut is used.
      */ 
-    function getFieldObject(rawField)
+    function getFieldObject(rawField, activeSettings)
     {
-        if('object' == typeof (rawField))
+        var currentSettings = activeSettings || settings;
+        if('object' === typeof (rawField) && null !== rawField)
         {
-            if(isBlank(rawField.element)) {
-                if (settings.titleFormat) {
-                    rawField["element"] = settings.titleFormat;
+            var field = $.extend({}, rawField);
+            if(isBlank(field.element)) {
+                if ('title' === field.name) {
+                    field.element = resolveTitleFormat(currentSettings.titleFormat);
                 }
                 else {
-                    rawField["element"] = settings.defaultElement;
+                    field.element = currentSettings.defaultElement;
                 }
             }
-            return rawField;
+            return field;
         }
-        return {name: rawField, element: settings.defaultElement};
+        return {name: rawField, element: currentSettings.defaultElement};
     }
     
    /**
