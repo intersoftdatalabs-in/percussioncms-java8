@@ -72,10 +72,12 @@ public class PSDbMetadataProperty implements IPSMetadataProperty, Serializable {
   @Nationalized
   private String name;
 
+  // Eagerly fetch textvalue: PSMetadataQueryService and PSMetadataDao close their Hibernate
+  // sessions before callers (e.g. PSMetadataRestService) read detached property values.
   @Column(length = Integer.MAX_VALUE)
   @Nationalized
   @Lob
-  @Basic(fetch = FetchType.LAZY)
+  @Basic(fetch = FetchType.EAGER)
   private String textvalue;
 
   @Basic
