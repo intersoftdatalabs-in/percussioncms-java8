@@ -3,8 +3,8 @@ import { startSmtpSink, mailText } from '../helpers/smtp-sink';
 import { newSubmissionCount, exportFormData } from '../helpers/forms-ui';
 import { test, expect, Page, FrameLocator } from '@playwright/test';
 import { loginAsAdmin, createPage, publishOpenItem, configurePublishing, ensureDeliveryResources } from '../helpers/cms-ui';
-import { placeWidget, saveLayout, openContentTab, openWidgetContentEditor } from '../helpers/widgets-ui';
-import { DTS_URL, DTS_ADMIN_URL, TEST_FOLDER, TEST_SITE, isLocalSmtpConfigured } from '../helpers/qa-env';
+import { placeWidget, saveLayout, openContentTab, openWidgetContentEditor, openWidgetConfigure, confirmWidgetConfigure } from '../helpers/widgets-ui';
+import { DTS_URL, DTS_ADMIN_URL, TEST_FOLDER, TEST_SITE, TEST_ASSET_FOLDER, isLocalSmtpConfigured } from '../helpers/qa-env';
 
 /**
  * Form widget: a form built in the widget's content editor and rendered on the page. A visitor submits it on the PUBLISHED page served by
@@ -33,9 +33,15 @@ async function choosePage(page: Page, frame: FrameLocator, browseIndex: 0 | 1, p
 
 /** New page with a Form widget: title, success/error pages, optional edits of the entry field; publishes. Returns the published URL. */
 let lastFormTitle = '';
-async function publishFormPage(page: Page, run: string, thanks: string, error: string, shot: string, field?: { label: string; defaultText: string }, customize?: (frame: FrameLocator, page: Page) => Promise<void>): Promise<string> {
+async function publishFormPage(page: Page, run: string, thanks: string, error: string, shot: string, field?: { label: string; defaultText: string }, customize?: (frame: FrameLocator, page: Page) => Promise<void>, labelAlign?: 'top' | 'left'): Promise<string> {
   const host = await createPage(page, `Form Host ${shot.slice(-8)} ${run}`);
   await placeWidget(page, 'percForm');
+  if (labelAlign) {
+    const cfg = await openWidgetConfigure(page, 'percForm');
+    await cfg.locator('select[name="labelalign"]').selectOption(labelAlign);
+    await page.screenshot({ path: `screenshots/${shot}-configure-dialog.png` });
+    await confirmWidgetConfigure(page);
+  }
   await saveLayout(page);
   const { frame, save } = await openWidgetContentEditor(page, 'percForm');
   // a form name must be unique in the system, so every form gets its own title
@@ -189,6 +195,129 @@ test.describe.serial('Form widget', () => {
     for (const v of [`Tester ${run}`, `Message text ${run}`, 'Selection 2', 'Item 1', 'Item 3', dateValue, `hidden-${run}`]) expect(csv, `stored data contains "${v}"`).toContain(v);
     expect(csv, 'the radio choice is stored').toContain('Item 2');
     fs.writeFileSync('screenshots/form-widget-stored-submission.csv.txt', csv);
+  });
+
+  test('Form widget: label alignment is top by default and left when chosen in Configure', async ({ page }) => {
+    expect(thanks, 'success page from the first scenario').not.toBe('');
+    await loginAsAdmin(page);
+    await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    const left = await publishFormPage(page, run, thanks, error, 'form-widget-label-left', undefined, undefined, 'left');
+    await page.goto(left);
+    await expect(page.locator('.perc-form form'), 'form on the published page').toBeVisible({ timeout: 60_000 });
+    await expect(page.locator('.perc-form'), 'label alignment chosen in Configure').toHaveClass(/perc-label-location-left/);
+    await expect(page.locator('.perc-form'), 'not the top class').not.toHaveClass(/perc-label-location-top/);
+    await page.screenshot({ path: 'screenshots/form-widget-published-form-label-left.png' });
+    const top = await publishFormPage(page, run, thanks, error, 'form-widget-label-top-default');
+    await page.goto(top);
+    await expect(page.locator('.perc-form form')).toBeVisible({ timeout: 60_000 });
+    await expect(page.locator('.perc-form'), 'label alignment top is the default').toHaveClass(/perc-label-location-top/);
+    await page.screenshot({ path: 'screenshots/form-widget-published-form-label-top-default.png' });
+  });
+
+  test('Form widget: a Data Drop Down lists the widget types to choose from and is published with the chosen widget', async ({ page }) => {
+    await loginAsAdmin(page);
+    await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
+    if (!thanks) { thanks = await publishPlainPage(page, `QA Thanks ${run}`); error = await publishPlainPage(page, `QA Form Error ${run}`); }
+    let offered: string[] = [];
+    const url = await publishFormPage(page, run, thanks, error, 'form-widget-data-drop-down', undefined, async frame => {
+      await frame.locator('#perc-control-menu-button').click({ timeout: 8_000 }).catch(() => {});
+      await frame.locator('li.form-data-drop-down-label').click({ timeout: 8_000 });
+      const w = frame.locator('.perc-form-field-wrapper').last();
+      await w.locator('input[name="fieldLabel"]').fill(`Widget ${run}`);
+      const select = w.locator('select.dataDropDownSelect');
+      await expect.poll(async () => await select.locator('option').count(), { message: 'the "Select a widget" list is filled (bug #349)', timeout: 15_000 }).toBeGreaterThan(5);
+      offered = await select.locator('option').allTextContents();
+      await select.selectOption('percPerson');
+      await page.screenshot({ path: 'screenshots/form-widget-data-drop-down-content-editor-widget-chosen.png' });
+    });
+    expect(offered, 'widget types offered').toEqual(expect.arrayContaining(['percPerson', 'percBlogPostAsset']));
+
+    await page.goto(url);
+    const form = page.locator('.perc-form form');
+    await expect(form).toBeVisible({ timeout: 60_000 });
+    await expect(form.getByText(`Widget ${run}`), 'label of the data drop down').toBeVisible();
+    await page.screenshot({ path: 'screenshots/form-widget-published-form-with-data-drop-down.png' });
+  });
+
+  test('Form widget: an "Email form" lists the people of the site in its Data Drop Down and mails the submission to the chosen person', async ({ page }) => {
+    test.skip(
+      process.env.QA_FORM_EMAIL !== 'true' && !isLocalSmtpConfigured(),
+      'needs DTS Deployment/Server/conf/perc/perc-email.properties pointed at localhost:2525 (no TLS) or QA_FORM_EMAIL=true',
+    );
+    await loginAsAdmin(page);
+    await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
+    if (!thanks) { thanks = await publishPlainPage(page, `QA Thanks ${run}`); error = await publishPlainPage(page, `QA Form Error ${run}`); }
+    // the people the Data Drop Down offers are the shared Person assets
+    const person = { first: 'Quinn', last: `Mailer${run}`, email: `qa-person-${run}@example.com` };
+    await page.goto('/cm/app/?view=dash');
+    await expect(page.getByText('Welcome, Admin')).toBeVisible({ timeout: 90_000 });
+    await page.getByText('Assets', { exact: true }).first().click();
+    await expect(page.locator('#mcol-path-summary')).toHaveValue('/Assets', { timeout: 30_000 });
+    await page.getByText(TEST_ASSET_FOLDER, { exact: true }).first().click();
+    await expect(page.locator('#mcol-path-summary')).toHaveValue(`/Assets/${TEST_ASSET_FOLDER}`, { timeout: 30_000 });
+    await page.locator('#mcol-new-asset.ui-enabled').click();
+    await page.locator('text=/^Person$/ >> visible=true').first().click({ timeout: 60_000 });
+    await page.getByRole('button', { name: 'Next' }).click();
+    const pf = page.frameLocator('iframe[src*="psx_cepercPerson"]');
+    await pf.locator('input[name="sys_title"]').fill(`QA Person ${run}`, { timeout: 30_000 });
+    await pf.locator('input[name="personFirstName"]').fill(person.first);
+    await pf.locator('input[name="personLastName"]').fill(person.last);
+    await pf.locator('input[name="personEmail"]').fill(person.email);
+    await page.screenshot({ path: 'screenshots/form-widget-email-form-person-asset.png' });
+    await page.getByRole('button', { name: 'Save' }).click();
+    await page.waitForURL(/view=editAsset.*name=/, { timeout: 60_000 });
+    // a form only offers the people that are public: take the asset through the workflow (Draft > Review > Pending > Live)
+    const personName = new URL(page.url()).searchParams.get('name')!;
+    const takeStep = async () => {
+      const comments = page.locator('.ui-dialog:visible', { hasText: 'Enter Comments' });
+      await comments.getByRole('button').filter({ hasNotText: 'Cancel' }).last().click({ timeout: 10_000 });
+      await expect(comments).toBeHidden({ timeout: 30_000 });
+    };
+    await page.getByRole('button', { name: 'Submit' }).first().click({ timeout: 30_000 });
+    await takeStep();
+    for (let step = 0; step < 2; step++) {   // Review > Pending, Pending > Live
+      await page.getByText(personName, { exact: true }).first().dblclick({ timeout: 30_000 });
+      await page.getByRole('button', { name: 'Edit' }).click({ timeout: 30_000 });
+      const next = page.getByRole('button', { name: /^(Approve|Publish)$/ }).first();
+      await next.waitFor({ timeout: 30_000 });
+      await next.click();
+      await takeStep();
+      await page.waitForTimeout(3_000);
+    }
+
+    const sink = await startSmtpSink();
+    try {
+      const subject = `QA email form ${run}`;
+      const url = await publishFormPage(page, run, thanks, error, 'form-widget-email-form', { label: 'Email subject', defaultText: 'Subject of the mail' }, async frame => {   // an entry field named email-subject is the subject of the mail
+        await frame.locator('#perc-control-menu-button').click({ timeout: 8_000 }).catch(() => {});
+        await frame.locator('li.form-data-drop-down-label').click({ timeout: 8_000 });
+        const w = frame.locator('.perc-form-field-wrapper').last();
+        await w.locator('input[name="fieldLabel"]').fill(`Send to ${run}`);
+        const select = w.locator('select.dataDropDownSelect');
+        await expect.poll(async () => await select.locator('option').count(), { message: 'the "Select a widget" list is filled (bug #349)', timeout: 15_000 }).toBeGreaterThan(5);
+        await select.selectOption('percPerson');
+        await frame.getByText('Meta-data').first().click();
+        await frame.locator('#perc-form-metadata-email-form').check({ timeout: 10_000 });   // Email form
+      });
+      await page.goto(url);
+      const form = page.locator('.perc-form form');
+      await expect(form).toBeVisible({ timeout: 60_000 });
+      const to = form.locator('select[name="perc_EmailFormTo"]');
+      await expect(to.locator('option').filter({ hasText: `Quinn Mailer${run}` }), 'the public person is offered in the drop down').toHaveCount(1, { timeout: 30_000 });
+      await page.screenshot({ path: 'screenshots/form-widget-published-email-form-lists-the-person.png' });
+      await to.selectOption({ label: `Quinn Mailer${run}` });
+      await expect(form.locator('input[name="emailForm"]'), 'an email form carries its marker').toHaveCount(1);
+      await form.locator('input[name="email-subject"]').fill(subject);
+      await form.locator('input[type=submit]').first().click();
+      await expect(page, 'the visitor reaches the success page').toHaveURL(new RegExp(`${thanks}\\.html`), { timeout: 30_000 });
+      await expect.poll(() => sink.mails.length, { message: 'the submission is mailed', timeout: 45_000 }).toBeGreaterThan(0);
+      const mail = sink.mails[0];
+      expect(mail.to.join(' '), 'mailed to the person chosen in the drop down').toContain(person.email);
+      expect(mailText(mail), 'the subject typed by the visitor is the subject of the mail').toContain(subject);
+      fs.writeFileSync('screenshots/form-widget-email-form-message.txt', mail.data);
+    } finally { await sink.close(); }
   });
 
   test('Form widget: a submission the DTS cannot process sends the browser to the error page chosen for the form', async ({ page }) => {
