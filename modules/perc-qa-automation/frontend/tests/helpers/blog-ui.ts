@@ -130,9 +130,12 @@ export async function createAndPublishPost(page: Page, title: string, byline: st
     if (!(await gadget.locator('#perc-add-post-button').isVisible())) await gadget.getByText(BLOG_TITLE, { exact: true }).first().click({ timeout: 3_000 });
     await expect(gadget.locator('#perc-add-post-button')).toBeVisible({ timeout: 5_000 });
   }).toPass({ timeout: 60_000 });
-  await gadget.locator('#perc-add-post-button').click();
   const dlg = page.locator('.ui-dialog:visible').filter({ hasText: 'New Post' });
-  await dlg.waitFor({ timeout: 20_000 });
+  // the button is shown a moment before its handler is attached: click again until the dialog opens
+  await expect(async () => {
+    if (!(await dlg.isVisible())) await gadget.locator('#perc-add-post-button').click({ timeout: 3_000 });
+    await expect(dlg).toBeVisible({ timeout: 5_000 });
+  }).toPass({ timeout: 40_000 });
   await dlg.locator('#perc-page-linktext').pressSequentially(title, { delay: 30 });
   const name = await dlg.locator('#perc-page-name').inputValue();
   expect(name, 'post file name auto-filled from the title').not.toBe('');
