@@ -299,7 +299,9 @@ export async function openPageByPath(page: Page, segments: string[], pageName: s
   await expect(path).toHaveValue(`${current}/${pageName}`, { timeout: 30_000 });
   await expect(page).toHaveURL(/view=editor/, { timeout: 60_000 });
   // double click opens the page read-only ("Viewing Page"); Edit switches to edit mode (checks the page out)
-  await page.getByRole('button', { name: 'Edit', exact: true }).click({ timeout: 60_000 });
+  // a page that is already being edited (e.g. a Quick Edit of a live page) opens straight in edit mode and has no Edit button
+  const editButton = page.getByRole('button', { name: 'Edit', exact: true });
+  if (!/mode=edit/.test(page.url()) && (await editButton.waitFor({ timeout: 20_000 }).then(() => true, () => false))) await editButton.click();
   await expect(page).toHaveURL(/mode=edit/, { timeout: 60_000 });
 }
 
