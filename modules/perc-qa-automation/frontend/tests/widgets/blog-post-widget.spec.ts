@@ -25,6 +25,7 @@ test.describe('Blog Post Widget', () => {
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
     await ensureDeliveryResources(page);
     await ensureBlogInfrastructure(page);
+    await configureBlogPostTemplate(page, 'blog-post-defaults');   // the option scenarios change the template: start from the default options
     const name = await createAndPublishPost(page, title, byline, bodyText);
 
     await page.goto(`${DTS_URL}/${BLOG_FOLDER}/${name}.html`);
@@ -59,8 +60,8 @@ async function setDefaults(f: Locator) {
   await f.locator('input[name="blogPostPrePost"]').fill('Older Post');
 }
 
-/** Sets the options on the post template, then publishes the middle post again. Returns its published URL. */
-async function configureBlogPost(page: Page, shot: string, set: (form: Locator) => Promise<void>): Promise<string> {
+/** Resets the Blog Post widget on the post template to defaults, applies any overrides, and saves the template. */
+async function configureBlogPostTemplate(page: Page, shot: string, set?: (form: Locator) => Promise<void>) {
   await page.goto('/cm/app/?view=design');
   await page.getByText(TEST_SITE, { exact: true }).first().dblclick({ timeout: 60_000 });
   await page.locator('.perc-template-item').filter({ hasText: BLOG_POST_TEMPLATE }).locator('button.perc-edit').click({ timeout: 60_000 });
@@ -68,11 +69,17 @@ async function configureBlogPost(page: Page, shot: string, set: (form: Locator) 
   const form = await openWidgetConfigure(page, 'percBlogPost');
   await form.getByText('Properties', { exact: true }).click();   // the options are in the collapsed Properties section
   await expect(form.locator('select[name="titleFormat"]')).toBeVisible({ timeout: 10_000 });
-  await set(form);
+  await setDefaults(form);
+  if (set) await set(form);
   await page.screenshot({ path: `screenshots/${shot}-configure-dialog.png` });
   await confirmWidgetConfigure(page);
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText(/Processing\. Please wait/)).toBeHidden({ timeout: 60_000 });
+}
+
+/** Sets the options on the post template, then publishes the middle post again. Returns its published URL. */
+async function configureBlogPost(page: Page, shot: string, set?: (form: Locator) => Promise<void>): Promise<string> {
+  await configureBlogPostTemplate(page, shot, set);
   const middle = postFiles().Middle;
   await openPageByPath(page, [BLOG_FOLDER], `${middle}.html`);
   await openContentTab(page);
@@ -97,7 +104,6 @@ test.describe('Blog Post Widget options', () => {
 
   test('Blog Post: title element, byline text and date format from Configure are applied', async ({ page }) => {
     const url = await configureBlogPost(page, 'blog-post-texts', async f => {
-      await setDefaults(f);
       await f.locator('select[name="titleFormat"]').selectOption('h3', { timeout: 10_000 });
       await f.locator('input[name="blogPostBylineText"]').fill('written by');
       await f.locator('input[name="blogPostDateTimeFormat"]').fill('yyyy-MM-dd');
@@ -112,7 +118,6 @@ test.describe('Blog Post Widget options', () => {
 
   test('Blog Post: hiding the date and the byline removes them from the published post', async ({ page }) => {
     const url = await configureBlogPost(page, 'blog-post-hide', async f => {
-      await setDefaults(f);
       await f.locator('input[name="perc_hidefield_blog_date"]').check();
       await f.locator('input[name="perc_hidefield_byline"]').check();
     });
@@ -125,7 +130,6 @@ test.describe('Blog Post Widget options', () => {
 
   test('Blog Post: a French locale writes the date in French', async ({ page }) => {
     const url = await configureBlogPost(page, 'blog-post-french', async f => {
-      await setDefaults(f);
       await f.locator('select[name="locale"]').selectOption('fr-FR', { timeout: 10_000 });
       await f.locator('input[name="blogPostDateTimeFormat"]').fill('EEEE d MMMM yyyy');
     });
@@ -136,7 +140,6 @@ test.describe('Blog Post Widget options', () => {
 
   test('Blog Post: navigation above and beneath with the texts from Configure links to the older and the newer post', async ({ page }) => {
     const url = await configureBlogPost(page, 'blog-post-navigation', async f => {
-      await setDefaults(f);
       await f.locator('select[name="blogNavigationLocation"]').selectOption('aboveBeneath', { timeout: 10_000 });
       await f.locator('input[name="blogPostNextPost"]').fill('Go newer');
       await f.locator('input[name="blogPostPrePost"]').fill('Go older');

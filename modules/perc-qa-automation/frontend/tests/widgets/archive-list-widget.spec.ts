@@ -133,7 +133,8 @@ test.describe('Archive List Widget', () => {
     await expect(month, 'flat layout: one entry for the one month that has pages (limit 1)').toHaveCount(1, { timeout: 60_000 });
     await expect(month).toHaveText(`${monthName} ${new Date().getFullYear()} (2)`);
     await expect(page.locator('li.perc-archive-year'), 'flat layout has no year groups').toHaveCount(0);
-    expect(await page.content(), 'the entries limit is written to the page for the delivery script').toContain('numberEntries');
+    const query = JSON.parse((await page.locator('.perc-archive-list').getAttribute('data-query')) ?? '{}');
+    expect(query.numberEntries, 'the entries limit is written to data-query for the delivery script').toBe('1');
     await page.screenshot({ path: 'screenshots/archive-list-widget-flat-layout-max-entries-1.png' });
   });
 });
