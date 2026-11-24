@@ -39,6 +39,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -357,9 +359,9 @@ public class PSPageChangeHandler implements IPSPageChangeListener {
           if (asset != null && moreLinkSupportTypes.containsKey(asset.getType())) {
             Map<String, Object> assetFields = asset.getFields();
             String text = (String) assetFields.get(moreLinkSupportTypes.get(asset.getType()));
-            int moreIndex = StringUtils.indexOf(text, MORE_LINK_TEXT);
-            if (moreIndex != -1) {
-              summary = text.substring(0, moreIndex + MORE_LINK_TEXT.length());
+            String extracted = extractSummaryToMoreLink(text);
+            if (extracted != null) {
+              summary = extracted;
               break;
             }
           }
@@ -375,12 +377,34 @@ public class PSPageChangeHandler implements IPSPageChangeListener {
     return summary;
   }
 
+  /**
+   * Extracts the summary prefix up to the first {@code perc-blog-more-link} marker (tolerating
+   * whitespace, NBSP, or self-closing syntax) and normalizes the marker to {@link #MORE_LINK_TEXT}.
+   *
+   * @param text rich text field content, may be {@code null}
+   * @return summary prefix ending with {@link #MORE_LINK_TEXT}, or {@code null} if no marker found
+   */
+  static String extractSummaryToMoreLink(String text) {
+    if (text == null) {
+      return null;
+    }
+    Matcher matcher = MORE_LINK_PATTERN.matcher(text);
+    if (matcher.find()) {
+      return text.substring(0, matcher.start()) + MORE_LINK_TEXT;
+    }
+    return null;
+  }
+
   // Initialized on the first call to the #pageChanged() method.
   private IPSContentItemDao contentItemDao;
   // Initialized on the first call to the #pageChanged() method.
   private PSWidgetAssetRelationshipService widgetAssetRelationshipService;
 
   private static final String MORE_LINK_TEXT = "<span class=\"perc-blog-more-link\"></span>";
+
+  private static final Pattern MORE_LINK_PATTERN =
+      Pattern.compile(
+          "(?i)<span\\s+class\\s*=\\s*(?:\"perc-blog-more-link\"|'perc-blog-more-link')\\s*(?:/>|>(?:\\s|\\u00A0|&nbsp;|&#160;|&#[xX]0*[aA]0;)*</span>)");
 
   // Constants for page and title widget fields
   private static final String TITLE_WIDGET_SYNC_FIELD_NAME = "sync_link_text";
