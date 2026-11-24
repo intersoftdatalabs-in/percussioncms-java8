@@ -8,7 +8,7 @@
 	    <dependency refid="percSystem.jquery"/>
 	    <dependency refid="percSystem.jquery-ui" />
 	    <dependency refid="percSystem.common_slim_js"/>
-	    <dependency refid="percSystem.common_js" />
+	    <dependency refid="percCalendarTwo.common_js" />
   </file>
   <file id="gcal-js" path="/web_resources/widgets/calendarTwo/js/gcal.js" type="javascript">
     <dependency refid="percSystem.jquery" />

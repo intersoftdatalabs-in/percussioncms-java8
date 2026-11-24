@@ -26,7 +26,9 @@ import com.percussion.pagemanagement.data.PSResourceDefinitionGroup.PSResourceDe
 import com.percussion.pagemanagement.data.PSResourceDefinitionGroup.PSResourceDependency;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class PSResourceDefinitionUtils {
 
@@ -41,13 +43,33 @@ public class PSResourceDefinitionUtils {
    * @return a new list in dependency order, never <code>null</code>.
    * @throws PSResourceDefinitionDependencyCycleException if there is a cycle in the dependencies.
    */
-  @SuppressWarnings("unchecked")
   public static <T extends PSResourceDefinition> List<T> sortByDependencies(List<T> resources)
+      throws PSResourceDefinitionDependencyCycleException {
+    return sortByDependencies(resources, Collections.emptyMap());
+  }
+
+  /**
+   * Sorts a list of resources by its dependencies, resolving any deduplicated dependency IDs via
+   * {@code uniqueIdAliases} without mutating the resource definitions.
+   *
+   * @param <T> Resource Definition.
+   * @param resources never <code>null</code> and will not be modified.
+   * @param uniqueIdAliases optional mapping from a deduplicated resource's {@code uniqueId} to the
+   *     retained resource's {@code uniqueId}; may be <code>null</code>.
+   * @return a new list in dependency order, never <code>null</code>.
+   * @throws PSResourceDefinitionDependencyCycleException if there is a cycle in the dependencies.
+   */
+  @SuppressWarnings("unchecked")
+  public static <T extends PSResourceDefinition> List<T> sortByDependencies(
+      List<T> resources, Map<String, String> uniqueIdAliases)
       throws PSResourceDefinitionDependencyCycleException {
     notNull(resources, "resources");
     int size = resources.size();
 
     if (size == 0) return new ArrayList<>();
+
+    Map<String, String> aliases =
+        uniqueIdAliases == null ? Collections.emptyMap() : uniqueIdAliases;
 
     /*
      * It should take less than n*n times to sort the deps.
@@ -62,8 +84,17 @@ public class PSResourceDefinitionUtils {
     while (!resourceBag.isEmpty() && cutOff != 0) {
       cutOff--;
       T r = resourceBag.remove(0);
-      Collection<String> depIds = getResourceDependeeIds(r.getDependencies());
-      depIds = intersection(depIds, allIds);
+      Collection<String> rawDepIds = getResourceDependeeIds(r.getDependencies());
+      List<String> resolvedDepIds = new ArrayList<>(rawDepIds.size());
+      for (String depId : rawDepIds) {
+        String resolved = aliases.getOrDefault(depId, depId);
+        // Skip only if remapped from a different ID to self; preserve direct self-cycles.
+        if (!depId.equals(r.getUniqueId()) && resolved.equals(r.getUniqueId())) {
+          continue;
+        }
+        resolvedDepIds.add(resolved);
+      }
+      Collection<String> depIds = intersection(resolvedDepIds, allIds);
       List<String> sortedIds = getResourceIds(sortedResources);
       if (isSubCollection(depIds, sortedIds)) {
         sortedResources.add(r);
