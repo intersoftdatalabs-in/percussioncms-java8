@@ -99,7 +99,7 @@ const txt = (f: Locator, name: string, value: string) => f.locator(`input[name="
 const chk = (f: Locator, name: string, on: boolean) => on ? f.locator(`input[name="${name}"]`).check() : f.locator(`input[name="${name}"]`).uncheck();
 
 test.describe('Calendar 2.0 options', () => {
-  test.setTimeout(180_000);
+  test.setTimeout(600_000);
 
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);

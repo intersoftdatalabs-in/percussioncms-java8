@@ -230,7 +230,6 @@ test.describe('Blog Post Widget options', () => {
 
   test('Blog Post: navigation with "Use blog title" shows the titles of the older and the newer post as the link texts', async ({ page }) => {
     const url = await configureBlogPost(page, 'blog-post-navigation-titles', async f => {
-      await setDefaults(f);
       await f.locator('select[name="blogNavigationLocation"]').selectOption('above', { timeout: 10_000 });
       await f.locator('select[name="blogNavigationContext"]').selectOption('blogTitle', { timeout: 10_000 });
     });
@@ -243,7 +242,6 @@ test.describe('Blog Post Widget options', () => {
   test('Blog Post: tags and categories are shown with the label texts from Configure', async ({ page }) => {
     await ensureTagged(page);
     const url = await configureBlogPost(page, 'blog-post-tags-categories', async f => {
-      await setDefaults(f);
       await f.locator('input[name="perc_tags_label"]').fill('Keywords:');
       await f.locator('input[name="perc_categories_label"]').fill('Topics:');
     });
@@ -260,7 +258,6 @@ test.describe('Blog Post Widget options', () => {
   test('Blog Post: hiding the tags and the categories removes them from the published post', async ({ page }) => {
     await ensureTagged(page);
     const url = await configureBlogPost(page, 'blog-post-tags-categories-hidden', async f => {
-      await setDefaults(f);
       await f.locator('input[name="perc_hidefield_tags"]').check();
       await f.locator('input[name="perc_hidefield_categories"]').check();
     });
@@ -272,25 +269,35 @@ test.describe('Blog Post Widget options', () => {
   });
 
   test('Blog Post: "Track blog post" reports the visit to the DTS and is silent when it is off', async ({ page }) => {
-    const reported: string[] = [];
-    page.on('request', r => { if (r.method() === 'POST' && /metadata\/trackblogpost/.test(r.url())) reported.push(r.postData() ?? ''); });
+    const requests: string[] = [];
+    const responses: { status: number; ok: boolean; body: string }[] = [];
+    page.on('request', r => {
+      if (r.method() === 'POST' && /metadata\/trackblogpost/.test(r.url())) requests.push(r.postData() ?? '');
+    });
+    page.on('response', res => {
+      if (res.request().method() === 'POST' && /metadata\/trackblogpost/.test(res.url())) {
+        responses.push({ status: res.status(), ok: res.ok(), body: res.request().postData() ?? '' });
+      }
+    });
     let url = await configureBlogPost(page, 'blog-post-track-on', async f => {
-      await setDefaults(f);
       await f.locator('input[name="trackBlogPost"]').check();
     });
     const file = postFiles();
     await page.goto(url);
-    await expect.poll(() => reported.length, { message: 'the visit is reported to the DTS', timeout: 30_000 }).toBeGreaterThan(0);
-    expect(reported.join(' '), 'the report names the post').toContain(file.Middle);
+    await expect.poll(() => responses.length, { message: 'the visit is reported to the DTS', timeout: 30_000 }).toBeGreaterThan(0);
+    for (const res of responses) {
+      expect(res.ok, `DTS accepted /metadata/trackblogpost (status ${res.status})`).toBe(true);
+    }
+    expect(responses.map(r => r.body).join(' '), 'the report names the post').toContain(file.Middle);
 
-    reported.length = 0;
+    requests.length = 0;
+    responses.length = 0;
     url = await configureBlogPost(page, 'blog-post-track-off', async f => {
-      await setDefaults(f);
       await f.locator('input[name="trackBlogPost"]').uncheck();
     });
     await page.goto(url);
     await expect(page.locator('.perc-blog h1').first()).toContainText(postFor('Middle').title, { timeout: 60_000 });
     await page.waitForTimeout(3_000);
-    expect(reported, 'nothing is reported when tracking is off').toEqual([]);
+    expect(requests, 'nothing is reported when tracking is off').toEqual([]);
   });
 });
