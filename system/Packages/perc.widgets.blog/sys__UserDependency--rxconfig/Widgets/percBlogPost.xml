@@ -211,7 +211,7 @@
     $olderPostClass = 'perc-older-post';
     $blogPostBylineText = $perc.widget.item.properties.get('blogPostBylineText');
     $locale = $perc.widget.item.properties.get('locale');
-    if($locale == null)
+    if($locale == null || $locale == "")
        $locale = "en-US";
     $blogNavigationContext = $perc.widget.item.properties.get('blogNavigationContext');
     if($blogNavigationContext == 'blogTitle')
@@ -389,8 +389,15 @@ $bylineStart$tools.esc.html($blogAuthorName)$bylineEnd
 #if($postDateTz == "Default")##
 #set( $postDateTz = "" )##
 #end##
+#set($validDateFormat = $rx.pageutils.parseDateFormat($blogPostDateTimeFormat, "EEE MMM d, yyyy 'at' hh:mm a"))##
+#set($formatterOut = $rx.pageutils.getDateFormatFromLocale($validDateFormat, $locale))##
+#if($sys.item.hasProperty("rx:sys_contentpostdate") && $sys.item.getProperty("rx:sys_contentpostdate").String != "" && $sys.item.getProperty("rx:sys_contentpostdate").Date)##
+#set($formattedPostDate = $formatterOut.format($sys.item.getProperty("rx:sys_contentpostdate").Date.Time))##
+#else##
+#set($formattedPostDate = $formatterOut.format($tools.date.getDate()))##
+#end##
 <div class="perc-blog-date">
-#perc_displayXdsDateTimeWithFormat($blogPostDateTimeFormat, 'rx:sys_contentpostdate') $postDateTz ##
+$!{formattedPostDate} $!{postDateTz} ##
 </div>
 #end##
 </div>
