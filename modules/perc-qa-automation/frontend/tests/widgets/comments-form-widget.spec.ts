@@ -9,7 +9,8 @@ import { DTS_URL, DTS_ADMIN_URL, TEST_FOLDER } from '../helpers/qa-env';
  */
 
 /** Creates a page with the Comments Form and Comments widgets, stores the form with its default fields, publishes it. Returns the published URL. */
-async function publishCommentsFormPage(page: Page, run: string, labelAlign: 'top' | 'left', shot: string): Promise<string> {
+async function publishCommentsFormPage(page: Page, run: string, labelAlign: 'top' | 'left', shot: string,
+                                       customize?: (frame: ReturnType<Page['frameLocator']>) => Promise<void>): Promise<string> {
   const host = await createPage(page, `Comments Form Host ${run}`);
   await placeWidget(page, 'percCommentsForm');
   await placeWidget(page, 'percComments');
@@ -25,6 +26,10 @@ async function publishCommentsFormPage(page: Page, run: string, labelAlign: 'top
   const dialog = page.locator('.ui-dialog:visible', { hasText: 'Edit Widget Content' });
   await expect(page.frameLocator('iframe#edit-widget-content-frame').getByText('Comment box')).toBeVisible({ timeout: 30_000 });
   await page.screenshot({ path: `screenshots/${shot}-content-editor-default-fields.png` });
+  if (customize) {
+    await customize(page.frameLocator('iframe#edit-widget-content-frame'));
+    await page.screenshot({ path: `screenshots/${shot}-content-editor-customized.png` });
+  }
   await dialog.getByRole('button', { name: 'Save' }).click();
   await expect(dialog).toBeHidden({ timeout: 30_000 });
   await openContentTab(page);
@@ -54,6 +59,7 @@ test.describe('Comments Form Widget', () => {
     await page.goto(url);
     const form = page.locator('.perc-comments-form form');
     await expect(form).toBeVisible({ timeout: 60_000 });
+    await expect(page.locator('.perc-comments-form'), 'label alignment top is the default').toHaveClass(/perc-label-location-top/);
     await fillComment(form, c);
     await form.getByRole('button', { name: 'Submit' }).click();
     await expect(page, 'after Submit the browser returns to the page').toHaveURL(/lastCommentId=\d+/, { timeout: 30_000 });
@@ -69,9 +75,7 @@ test.describe('Comments Form Widget', () => {
     await ensureDeliveryResources(page);
     const url = await publishCommentsFormPage(page, run, 'left', 'comments-form-widget-fields-and-validation');
 
-    await page.goto(url);
-    await page.locator('.perc-comments-form form').waitFor({ timeout: 60_000 });
-    await page.reload();    // see bug #338: the token is only available from the second page view on
+    await page.goto(url);   // a first-time visitor: no second page view is needed any more (bugs #338 and #373 are fixed)
     const root = page.locator('.perc-comments-form');
     const form = root.locator('form');
     await expect(form).toBeVisible({ timeout: 60_000 });
@@ -98,5 +102,45 @@ test.describe('Comments Form Widget', () => {
     await expect(page, 'valid comment: the browser returns to the page').toHaveURL(/lastCommentId=\d+/, { timeout: 30_000 });
     await expect(page.locator('.perc-comments-view').getByText(c.text), 'stored comment listed').toBeVisible({ timeout: 30_000 });
     await page.screenshot({ path: 'screenshots/comments-form-widget-valid-comment-stored-and-listed.png' });
+  });
+
+  test('Comments Form Widget: a field label, a deleted field and the button label changed in the content editor are published', async ({ page }) => {
+    const run = Date.now().toString().slice(-7);
+    const c = { title: `Custom title ${run}`, user: `Custom Visitor ${run}`, text: `Custom form comment ${run}.`, email: `custom${run}@example.com` };
+    await loginAsAdmin(page);
+    await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
+    const url = await publishCommentsFormPage(page, run, 'top', 'comments-form-widget-customized', async frame => {
+      const fields = frame.locator('.perc-form-field-wrapper');
+      await expect(fields, 'the default fields and the button').toHaveCount(7);
+      // the label of the Title field
+      await fields.nth(0).locator('.toggle-editor').click({ timeout: 15_000 });
+      await fields.nth(0).locator('input[name="fieldLabel"]').fill('Subject');
+      // the URL field is removed
+      await fields.nth(2).locator('.delete-field').click({ timeout: 15_000 });
+      await expect(fields, 'one field less').toHaveCount(6, { timeout: 10_000 });
+      // the text of the button
+      const button = fields.last();
+      await button.locator('.toggle-editor').click({ timeout: 15_000 });
+      await button.locator('input[name="label"]').fill('Send comment');
+    });
+
+    await page.goto(url);
+    const form = page.locator('.perc-comments-form form');
+    await expect(form).toBeVisible({ timeout: 60_000 });
+    await expect(form.getByLabel('Subject'), 'the Title field is shown with the new label').toBeVisible();
+    await expect(form.getByLabel('Title'), 'no field with the old label').toHaveCount(0);
+    await expect(form.getByLabel('URL'), 'the deleted URL field is not published').toHaveCount(0);
+    await expect(form.getByRole('button', { name: 'Send comment' }), 'button with the new text').toBeVisible();
+    await page.screenshot({ path: 'screenshots/comments-form-widget-published-customized-form.png' });
+    await form.getByLabel('Subject').fill(c.title);
+    await form.getByLabel("User's name").fill(c.user);
+    await form.getByLabel('Comment box').fill(c.text);
+    await form.getByLabel('Email').fill(c.email);
+    await form.getByRole('button', { name: 'Send comment' }).click();
+    await expect(page, 'the customized form is stored').toHaveURL(/lastCommentId=\d+/, { timeout: 30_000 });
+    await expect(page.locator('.perc-comments-view').getByText(c.text)).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('.perc-comments-view').getByText(c.title), 'the value of the relabelled field is stored as the comment title').toBeVisible();
+    await page.screenshot({ path: 'screenshots/comments-form-widget-customized-comment-stored-and-listed.png' });
   });
 });
