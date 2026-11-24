@@ -1,8 +1,8 @@
 tinymce.PluginManager.add('percmorelink', function(editor, url) {
-	var cls = 'perc-blog-more-link', sep = '<span class="perc-blog-more-link"/>', mlRE;
+	var cls = 'perc-blog-more-link', sep = '<span class="perc-blog-more-link"></span>', mlRE;
 	var ml = '<img src="' + url + '/img/ReadMoreInsert-1.png" class="perc-blog-more-link mceItemNoResize" />';
 
-    mlRE = new RegExp(sep.replace(/[\?\.\*\[\]\(\)\{\}\+\^\$\:]/g, function(a) {return '\\' + a;}), 'g');
+    mlRE = /<span\s+class\s*=\s*(?:"perc-blog-more-link"|'perc-blog-more-link')\s*(?:\/>|>(?:\s|\u00A0|&nbsp;|&#160;|&#x0*a0;)*<\/span>)/gi;
 
 	/**
 	 * This method checks if TinyMCE is part of ContentEditor or CMS UI

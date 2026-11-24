@@ -786,7 +786,7 @@ $postDate##
 </div>
 #end##
 #if ($summary)##
-#set($summary_text=$result.node.getProperty('rx:page_summary').getString().replace('<span class="perc-blog-more-link"></span>', "<a href='$!{pagelink}' aria-label='Read more about  $!{linkTitle}' title='$!{linkTitle}'>...more</a>"))##
+#set($summary_text=$result.node.getProperty('rx:page_summary').getString().replaceAll('(?i)<span\s+class\s*=\s*(?:"perc-blog-more-link"|\x27perc-blog-more-link\x27)\s*(?:/>|>(?:\s|\u00A0|&nbsp;|&#160;|&#[xX]0*[aA]0;)*</span>)', '<span class="perc-blog-more-link"></span>').replace('<span class="perc-blog-more-link"></span>', "<a href='$!{pagelink}' aria-label='Read more about  $!{linkTitle}' title='$!{linkTitle}'>...more</a>"))##
 #if("$!{summary_text}" != "")##
 <div class="#cleanClass("perc-page-auto-list-summary-container $!{summaryclass}")">
 $!{summary_text}
