@@ -30,6 +30,24 @@
     $.PercArchiveListView = {
         updateArchiveList : updateArchiveList
     };
+    function parseNumberEntries(value)
+    {
+        if ("undefined" === typeof (value) || null === value)
+        {
+            return null;
+        }
+        var trimmed = String(value).replace(/^\s+|\s+$/g, "");
+        if ("" === trimmed)
+        {
+            return null;
+        }
+        var parsed = parseInt(trimmed, 10);
+        if (isNaN(parsed))
+        {
+            return null;
+        }
+        return parsed;
+    }
     function updateArchiveList()
     {
         $(".perc-archive-list").each(function(){
@@ -49,6 +67,7 @@
             //Get the number of entries to be shown
             var numberEntries = queryString.numberEntries;
             delete queryString.numberEntries;
+            var entryLimit = parseNumberEntries(numberEntries);
 
             var isEditMode = queryString.isEditMode;
 
@@ -74,15 +93,19 @@
                             archiveList = $.PercServiceUtils.toJSON(archiveList);
                         }
                         var itemToList = archiveList.years.length;
-                        if("undefined" !== typeof (numberEntries) && "" !== numberEntries)
+                        if (null !== entryLimit)
                         {
-                            if(archiveList.years.length < numberEntries)
+                            if (entryLimit <= 0)
+                            {
+                                itemToList = 0;
+                            }
+                            else if (archiveList.years.length < entryLimit)
                             {
                                 itemToList = archiveList.years.length;
                             }
                             else
                             {
-                                itemToList = numberEntries;
+                                itemToList = entryLimit;
                             }
                         }
 
@@ -248,14 +271,14 @@
                         }
 
                         //Set the variable if max entry value is defined
-                        var flatItemToList=0;
-                        if(typeof(numberEntries) !== "undefined" && numberEntries !== "")
-                        {
-                             flatItemToList =  numberEntries;
-                        }
+                        var flatItemToList = entryLimit;
                         var listCounter = 0;
                         var ul = $("<ul>").addClass(".perc-archive-list-wrapper perc-archive-flat");
                         for (var i = 0; i < archiveList.years.length; i++) {
+                            if (null !== flatItemToList && listCounter >= flatItemToList)
+                            {
+                                break;
+                            }
 
                             var row = archiveList.years[i];
                             //JSON object return the list of months in desc order, starting with December
@@ -338,14 +361,14 @@
                                 listCounter = listCounter + 1;
 
                                 //If max value is defined and counter is equal to max value break the month loop
-                                if(listCounter === flatItemToList && typeof(numberEntries) !== "undefined" && numberEntries !== "")
+                                if (null !== flatItemToList && listCounter >= flatItemToList)
                                 {
                                     break;
                                 }
 
                             }
                             //If max value is defined and counter is equal to max value break the year loop
-                            if(listCounter === flatItemToList && typeof(numberEntries) !== "undefined" && numberEntries !== "")
+                            if (null !== flatItemToList && listCounter >= flatItemToList)
                             {
                                 break;
                             }
