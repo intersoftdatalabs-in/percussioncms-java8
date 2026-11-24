@@ -18,14 +18,16 @@ async function dtsCount(page: Page, criteria: string[]): Promise<number> {
 }
 
 /** Creates a page with an Archive List widget, configures it, fills the criteria in the content editor and publishes it. Returns the file name. */
-async function publishArchiveHost(page: Page, run: string, fillCriteria: (frame: FrameLocator) => Promise<void>, shot: string) {
+async function publishArchiveHost(page: Page, run: string, fillCriteria: (frame: FrameLocator) => Promise<void>, shot: string,
+                                  layout = 'perc-list-hierarchical', maxEntries?: string) {
   const host = await createPage(page, `Archive Host ${run}`);
   await placeWidget(page, 'percArchiveList');
   const configure = await openWidgetConfigure(page, 'percArchiveList');
   await expect(configure.getByText('Layout:')).toBeVisible();
   await expect(configure.getByText('Number of entries to show:')).toBeVisible();
   await expect(configure.getByText('Locale:')).toBeVisible();
-  await configure.locator('select').first().selectOption('perc-list-hierarchical');
+  await configure.locator('select').first().selectOption(layout);
+  if (maxEntries !== undefined) await configure.locator('input[name="list_maxlength"]').fill(maxEntries);
   await page.screenshot({ path: `screenshots/${shot}-configure-dialog-layout-entries-locale.png` });
   await confirmWidgetConfigure(page);
   await saveLayout(page);
@@ -108,5 +110,31 @@ test.describe('Archive List Widget', () => {
     await expect(yearItem.locator('> a')).toHaveText(`${year} (3)`);
     await expect(yearItem.locator('li.perc-archive-month')).toHaveText(`${monthName} (3)`);
     await page.screenshot({ path: 'screenshots/archive-list-widget-title-contains-published-page-shows-3-pages.png' });
+  });
+
+  test('Archive List Widget: layout "List by months" shows one flat entry per month and "Number of entries to show" is written to the page', async ({ page }) => {
+    const run = Date.now().toString().slice(-7);
+    const marker = `QAArchFlat${run}`;
+    await loginAsAdmin(page);
+    await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
+    for (const n of ['One', 'Two']) {
+      await createPage(page, `${marker} Source ${n}`);
+      await openContentTab(page);
+      await publishOpenItem(page);
+    }
+    const host = await publishArchiveHost(page, run, async frame => {
+      await frame.locator('#display_title_contains').fill(marker);
+    }, 'archive-list-widget-flat-max-entries', 'perc-list-flat', '1');
+
+    await page.goto(`${DTS_URL}/${TEST_FOLDER}/${host}.html`);
+    const monthName = new Date().toLocaleString('en-US', { month: 'long' });
+    const month = page.locator('ul.perc-archive-flat li.perc-archive-month');
+    await expect(month, 'flat layout: one entry for the one month that has pages (limit 1)').toHaveCount(1, { timeout: 60_000 });
+    await expect(month).toHaveText(`${monthName} ${new Date().getFullYear()} (2)`);
+    await expect(page.locator('li.perc-archive-year'), 'flat layout has no year groups').toHaveCount(0);
+    const query = JSON.parse((await page.locator('.perc-archive-list').getAttribute('data-query')) ?? '{}');
+    expect(query.numberEntries, 'the entries limit is written to data-query for the delivery script').toBe('1');
+    await page.screenshot({ path: 'screenshots/archive-list-widget-flat-layout-max-entries-1.png' });
   });
 });
