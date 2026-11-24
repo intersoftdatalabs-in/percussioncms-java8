@@ -360,20 +360,22 @@ test.describe('Blog List Widget options', () => {
     const titles = async () => (await page.locator('ol.perc-blog-list.perc-list-main h2.perc-blog-list-title').allInnerTexts())
       .filter(t => t.includes(runKey)).map(t => POSTS.find(n => t.includes(`Post ${n} `)));
     await configureBlogList(page, 'blog-list-sort-title-asc', async f => {
-      await f.locator('input[name="blogPostMaxResults"]').fill('50');   // this run's posts must not fall off the first page
+      await f.locator('input[name="blogPostMaxResults"]').fill('500');   // this run's posts must not fall off the first page
       await f.locator('select[name="sortby"]').selectOption('rx:page_title', { timeout: 10_000 });
       await f.locator('select[name="sortDirection"]').selectOption('asc', { timeout: 10_000 });
     });
     await page.goto(`${DTS_URL}/${BLOG_FOLDER}/index.html`);
+    await expect(page.locator('.perc-blog-list-container[aria-busy="false"]'), 'DTS blog list finished loading').toHaveCount(1, { timeout: 60_000 });
     await expect(entry(page, postFor('Alpha').title)).toBeVisible({ timeout: 60_000 });
     expect(await titles(), 'ascending by title').toEqual(['Alpha', 'Bravo', 'Charlie']);
     await page.screenshot({ path: 'screenshots/blog-list-published-index-sorted-by-title-ascending.png', fullPage: true });
     await configureBlogList(page, 'blog-list-sort-title-desc', async f => {
-      await f.locator('input[name="blogPostMaxResults"]').fill('50');
+      await f.locator('input[name="blogPostMaxResults"]').fill('500');
       await f.locator('select[name="sortby"]').selectOption('rx:page_title', { timeout: 10_000 });
       await f.locator('select[name="sortDirection"]').selectOption('desc', { timeout: 10_000 });
     });
     await page.goto(`${DTS_URL}/${BLOG_FOLDER}/index.html`);
+    await expect(page.locator('.perc-blog-list-container[aria-busy="false"]'), 'DTS blog list finished loading').toHaveCount(1, { timeout: 60_000 });
     await expect(entry(page, postFor('Alpha').title)).toBeVisible({ timeout: 60_000 });
     expect(await titles(), 'descending by title').toEqual(['Charlie', 'Bravo', 'Alpha']);
     await page.screenshot({ path: 'screenshots/blog-list-published-index-sorted-by-title-descending.png', fullPage: true });
@@ -423,6 +425,7 @@ test.describe('Blog List Widget options', () => {
       await f.locator('input[name="blogPostReadMoreText"]').fill('Read on QA');
     });
     await page.goto(`${DTS_URL}/${BLOG_FOLDER}/index.html`);
+    await expect(page.locator('.perc-blog-list-container[aria-busy="false"]'), 'DTS blog list finished loading').toHaveCount(1, { timeout: 60_000 });
     const e = entry(page, postFor('Bravo').title);
     await expect(e, 'the post is listed').toBeVisible({ timeout: 60_000 });
     await expect(e.locator('.perc-blog-list-summary-container'), 'the own summary text').toContainText(`Own summary of the Bravo post ${runKey}`);
@@ -461,15 +464,20 @@ test.describe('Blog List Widget options', () => {
     await publishEmptyIndex();
     await page.goto(`${DTS_URL}/${EMPTY_FOLDER}/index.html`);
     await page.waitForLoadState('networkidle');
-    await expect(container.locator('li.ui-perc-list-element'), 'no posts in this blog').toHaveCount(0);
-    await expect(container, 'the empty list is not shown').toHaveCount(0);
-    await expect(noPost, 'with the option on nothing of the empty list is left in the page').toHaveCount(0);
+    await expect(page.locator('.bloglist-sample-content'), 'not replaced by the sample content placeholder').toHaveCount(0);
+    await expect(container.locator('ol.perc-blog-list.perc-list-main > li.ui-perc-list-element'), 'no posts in this blog').toHaveCount(0);
+    await expect(container, 'the empty list container is rendered').toBeAttached();
+    await expect(container, 'the empty list container has the hidden attribute').toHaveAttribute('hidden', '');
+    await expect(container, 'the empty list is hidden').toBeHidden();
+    await expect(noPost, 'with the option on the empty list message is hidden').toBeHidden();
     await page.screenshot({ path: 'screenshots/blog-list-published-empty-blog-list-hidden.png' });
     await configureBlogList(page, 'blog-list-hide-when-empty-off', async f => { await f.locator('input[name="perc_hide_when_empty"]').uncheck(); });
     await publishEmptyIndex();
     await page.goto(`${DTS_URL}/${EMPTY_FOLDER}/index.html`);
     await page.waitForLoadState('networkidle');
-    await expect(container, 'with the option off the (empty) list is still in the page, it is not replaced by the sample content placeholder').toHaveCount(1);
+    await expect(page.locator('.bloglist-sample-content'), 'not replaced by the sample content placeholder').toHaveCount(0);
+    await expect(container, 'with the option off the (empty) list is still in the page').toHaveCount(1);
+    await expect(container, 'with the option off the container is not hidden').not.toHaveAttribute('hidden', /.*/);
     await page.screenshot({ path: 'screenshots/blog-list-published-empty-blog-list-shown.png' });
   });
 });

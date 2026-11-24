@@ -126,8 +126,22 @@ export async function ensureBlog(page: Page, title: string = BLOG_TITLE, folder:
  */
 export async function createAndPublishPost(page: Page, title: string, byline: string, bodyText: string): Promise<string> {
   const gadget = await openBlogsGadget(page);
+  // Always return to All Blogs and explicitly open BLOG_TITLE so a persisted selectedBlogID (e.g. QA Empty Blog) cannot hijack post creation.
+  const openBlogBtn = gadget
+    .locator('tr', { has: gadget.getByText(BLOG_TITLE, { exact: true }) })
+    .first()
+    .locator('span[title="Open Blog"]');
   await expect(async () => {
-    if (!(await gadget.locator('#perc-add-post-button').isVisible())) await gadget.locator('tr', { has: gadget.getByText(BLOG_TITLE, { exact: true }) }).first().locator('span[title="Open Blog"]').click({ timeout: 3_000 });   // with more than one blog the gadget lists them: open the blog
+    if (await gadget.locator('#perc-return-button').isVisible()) {
+      await gadget.locator('#perc-return-button').click({ timeout: 3_000 });
+    }
+    await expect(openBlogBtn).toBeVisible({ timeout: 5_000 });
+  }).toPass({ timeout: 60_000 });
+  await expect(async () => {
+    if (await openBlogBtn.isVisible()) {
+      await openBlogBtn.click({ timeout: 3_000 });
+    }
+    await expect(gadget.locator('#perc-return-button')).toBeVisible({ timeout: 5_000 });
     await expect(gadget.locator('#perc-add-post-button')).toBeVisible({ timeout: 5_000 });
   }).toPass({ timeout: 60_000 });
   const dlg = page.locator('.ui-dialog:visible').filter({ hasText: 'New Post' });
