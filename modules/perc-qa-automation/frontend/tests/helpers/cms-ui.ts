@@ -277,6 +277,22 @@ export async function addLevel3Section(page: Page, title: string, folderName: st
   await addSection(page, 3, title, folderName);
 }
 
+/** Switches an open page in the editor to edit mode, unless it already opened directly in edit mode (e.g. Quick Edit). */
+async function enterEditMode(page: Page) {
+  await expect(page).toHaveURL(/view=editor/, { timeout: 60_000 });
+  // double click opens a checked-in page read-only ("Viewing Page"); a page already in Quick Edit opens straight in edit mode with no Edit button
+  const editButton = page.getByRole('button', { name: 'Edit', exact: true });
+  await expect(async () => {
+    if (/mode=edit/.test(page.url())) return;
+    if (await editButton.isVisible()) {
+      await editButton.click({ timeout: 5_000 });
+      return;
+    }
+    expect(page.url()).toMatch(/mode=edit/);
+  }).toPass({ timeout: 60_000 });
+  await expect(page).toHaveURL(/mode=edit/, { timeout: 60_000 });
+}
+
 /**
  * Opens a page in the editor in EDIT mode by clicking through the finder: Sites > site > folders... > page. The page is picked in the
  * deepest finder column (the same file name, e.g. index.html, also exists in the columns to the left) and its full path is checked.
@@ -297,12 +313,7 @@ export async function openPageByPath(page: Page, segments: string[], pageName: s
   await expect(item).toBeVisible({ timeout: 30_000 });
   await item.dblclick();
   await expect(path).toHaveValue(`${current}/${pageName}`, { timeout: 30_000 });
-  await expect(page).toHaveURL(/view=editor/, { timeout: 60_000 });
-  // double click opens the page read-only ("Viewing Page"); Edit switches to edit mode (checks the page out)
-  // a page that is already being edited (e.g. a Quick Edit of a live page) opens straight in edit mode and has no Edit button
-  const editButton = page.getByRole('button', { name: 'Edit', exact: true });
-  if (!/mode=edit/.test(page.url()) && (await editButton.waitFor({ timeout: 20_000 }).then(() => true, () => false))) await editButton.click();
-  await expect(page).toHaveURL(/mode=edit/, { timeout: 60_000 });
+  await enterEditMode(page);
 }
 
 /**
@@ -344,7 +355,5 @@ export async function reopenPageInEditor(page: Page, editUrl: string, host: stri
   const item = page.getByText(`${host}.html`, { exact: true }).last();
   await expect(item).toBeVisible({ timeout: 60_000 });
   await item.dblclick();
-  await expect(page).toHaveURL(/view=editor/, { timeout: 60_000 });
-  await page.getByRole('button', { name: 'Edit', exact: true }).click({ timeout: 60_000 });
-  await expect(page).toHaveURL(/mode=edit/, { timeout: 60_000 });
+  await enterEditMode(page);
 }

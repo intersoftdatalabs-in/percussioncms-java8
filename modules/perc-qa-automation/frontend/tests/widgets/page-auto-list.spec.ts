@@ -213,18 +213,18 @@ test.describe.serial('Page Auto List', () => {
   test('Page Auto List: the RSS icon is shown at the top or the bottom of the list with the link text from Configure', async ({ page }) => {
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
-    const feed = async (frame: FrameLocator) => {
+    const feed = (titleSuffix: string, nameSuffix: string, description: string) => async (frame: FrameLocator) => {
       await frame.getByText('Meta-data').first().click();
       await frame.locator('#perc-enable-feed').check({ timeout: 15_000 });
-      await frame.locator('#perc-feed-title').fill(`QA Pages Feed ${run}`);
-      await frame.locator('#perc-feed-name').fill(`qapalfeed${run}`);
-      await frame.locator('#perc-feed-description').fill('Feed of the QA pages');
+      await frame.locator('#perc-feed-title').fill(`QA Pages Feed${titleSuffix} ${run}`);
+      await frame.locator('#perc-feed-name').fill(`qapalfeed${nameSuffix}${run}`);
+      await frame.locator('#perc-feed-description').fill(description);
     };
     const top = await publishListPage(page, 'page-auto-list-rss-icon-top', async form => {
       await form.locator('input[name="enable_rss_icon"]').check();
       await form.locator('select[name="rssIconPosition"]').selectOption('perc-list-top', { timeout: 10_000 });
       await form.locator('input[name="rssLinkText"]').fill('QA feed top');
-    }, token, feed);
+    }, token, feed('', '', 'Feed of the QA pages'));
     await page.goto(top);
     await expect(page.locator('.perc-rss-icon-top a.perc-rss-icon'), 'RSS icon at the top with its link text').toHaveAttribute('aria-label', 'QA feed top', { timeout: 60_000 });
     await expect(page.locator('.perc-rss-icon-top a.perc-rss-icon'), 'the link points to the feed').toHaveAttribute('href', new RegExp(`/feeds/rss/.+/qapalfeed${run}/`));
@@ -234,13 +234,7 @@ test.describe.serial('Page Auto List', () => {
       await form.locator('input[name="enable_rss_icon"]').check();
       await form.locator('select[name="rssIconPosition"]').selectOption('perc-list-bottom', { timeout: 10_000 });
       await form.locator('input[name="rssLinkText"]').fill('QA feed bottom');
-    }, token, async frame => {
-      await frame.getByText('Meta-data').first().click();
-      await frame.locator('#perc-enable-feed').check({ timeout: 15_000 });
-      await frame.locator('#perc-feed-title').fill(`QA Pages Feed B ${run}`);
-      await frame.locator('#perc-feed-name').fill(`qapalfeedb${run}`);
-      await frame.locator('#perc-feed-description').fill('Feed of the QA pages, bottom');
-    });
+    }, token, feed(' B', 'b', 'Feed of the QA pages, bottom'));
     await page.goto(bottom);
     await expect(page.locator('.perc-rss-icon-bottom a.perc-rss-icon'), 'RSS icon at the bottom with its link text').toHaveAttribute('aria-label', 'QA feed bottom', { timeout: 60_000 });
     await expect(page.locator('.perc-rss-icon-top'), 'no icon at the top').toHaveCount(0);
@@ -287,8 +281,10 @@ test.describe.serial('Page Auto List', () => {
     await expect(page.locator('.perc-page-auto-list'), 'list loaded from DTS').toHaveAttribute('aria-busy', 'false', { timeout: 60_000 });
     const bravo = items(page).filter({ hasText: titleOf('Bravo') });
     await expect(bravo.locator('.perc-page-auto-list-summary-container'), 'the summary of the page').toContainText(`Own summary of the Bravo page ${run}`, { timeout: 30_000 });
-    await expect(bravo.locator('a.perc-more-link, a.perc-blog-list-more-link'), 'read more link of the summary').toHaveCount(1);
-    await expect(items(page).filter({ hasText: titleOf('Alpha') }).locator('.perc-page-auto-list-summary-container'), 'a page without a summary has no summary block').toHaveCount(0);
+    const more = bravo.locator('a.perc-more-link, a.perc-blog-list-more-link');
+    await expect(more, 'read more link of the summary').toHaveCount(1);
+    expect(new URL((await more.getAttribute('href'))!, page.url()).pathname, 'read more link opens Bravo').toBe(hrefs['Bravo']);
+    await expect(items(page).filter({ hasText: titleOf('Alpha') }).locator('.perc-page-auto-list-summary-container'), 'a page without a summary has an empty summary container').toHaveText('');
     await page.screenshot({ path: 'screenshots/page-auto-list-published-page-summary.png' });
   });
 
