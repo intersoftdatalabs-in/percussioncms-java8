@@ -242,6 +242,10 @@
    $autoListDivId = $perc.widget.item.properties.get('autoListDivId');
    $showPostDate = $perc.widget.item.properties.get('showPostDate');
    $postDateTimeFormat = $perc.widget.item.properties.get('postDateTimeFormat');
+   $locale = $perc.widget.item.properties.get('locale');
+   if($locale == null) {
+      $locale = "en-US";
+   }
    $perc_hide_when_empty = $perc.widget.item.properties.get('perc_hide_when_empty');
    $perc.setWidgetContents($assetItems);
    $target = $perc.widget.item.properties.get('target');
@@ -399,7 +403,7 @@ $!{titleFormatStartTag}$title$!{titleFormatEndTag}
 #else##
 #set($img_title_attr = 'title="' + $img_title + '"')##
 #end
-$!{itemFormatStartTag}<li class="$rowtag $!{firstrow} $!{lastrow} perc-list-element">
+<li class="$rowtag $!{firstrow} $!{lastrow} perc-list-element">$!{itemFormatStartTag}
 #if($renderingformat == 'image')
 #set($img_height=$result.node.getProperty('rx:img_height').getString())##
 #set($img_width=$result.node.getProperty('rx:img_width').getString())##
@@ -436,7 +440,7 @@ $!{itemFormatStartTag}<li class="$rowtag $!{firstrow} $!{lastrow} perc-list-elem
 ${caption_text}
 </div>
 #end
-</li>$!{itemFormatEndTag}
+$!{itemFormatEndTag}</li>
 #end##
 #if($rendering == "ordered")##
 </ol>##
