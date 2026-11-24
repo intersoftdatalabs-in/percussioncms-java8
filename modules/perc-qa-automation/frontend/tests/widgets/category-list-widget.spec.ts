@@ -169,4 +169,62 @@ test.describe('Category List Widget', () => {
     await expect(childTitle, 'child shown after expanding the parent').toBeVisible();
     await page.screenshot({ path: 'screenshots/category-list-widget-collapsible-published-page-shows-category-tree.png' });
   });
+
+  /**
+   * The QA site has only two categories, so "Maximum number of categories to show" cannot cut anything off with the real DTS data. The published page is
+   * served the same answer shape by the DTS category service with a root and four categories (the first with a child), and the widget's own script limits the list.
+   */
+  const cat = (category: string, first: number, children: unknown[] = []) => ({ category, count: { first }, children });
+  const categoryAnswer = [cat('Categories', 0, [cat('QA Max A', 3, [cat('QA Max A1', 2)]), cat('QA Max B', 4), cat('QA Max C', 1), cat('QA Max D', 5)])];
+  const stubCategoryService = (page: Page) => page.route('**/metadata/categories/get', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(categoryAnswer) }));
+
+  async function publishCategoryHost(page: Page, run: string, label: string, display: 'expanded' | 'collapsible', max: string) {
+    const host = await createPage(page, `Category Max Host ${label} ${run}`);
+    await placeWidget(page, 'percCategoryList');
+    const configure = await openWidgetConfigure(page, 'percCategoryList');
+    await configure.locator('select[name="perc_display_option"]').selectOption(display);
+    await configure.locator('input[name="perc_max_categories"]').fill(max);
+    await page.screenshot({ path: `screenshots/category-list-widget-maximum-${label}-configure-dialog.png` });
+    await confirmWidgetConfigure(page);
+    await saveLayout(page);
+    const { frame, save } = await openWidgetContentEditor(page, 'percCategoryList');
+    await frame.locator('input[name="displaytitle"]').first().fill(`Categories max ${label} ${run}`);
+    await frame.locator('.fancytree-title', { hasText: /^Sites$/ }).click();
+    await frame.locator('.fancytree-title', { hasText: new RegExp(`^${TEST_SITE}$`) }).click();
+    await save.click();
+    await expect(save).toBeHidden({ timeout: 30_000 });
+    await openContentTab(page);
+    await publishOpenItem(page);
+    return host;
+  }
+
+  test('Category List Widget: "Maximum number of categories to show" limits the categories of the expanded and of the collapsible display', async ({ page }) => {
+    const run = Date.now().toString().slice(-7);
+    await loginAsAdmin(page);
+    await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    await ensureDeliveryResources(page);
+    const expanded = await publishCategoryHost(page, run, 'expanded', 'expanded', '3');
+    const collapsible = await publishCategoryHost(page, run, 'collapsible', 'collapsible', '2');
+    await stubCategoryService(page);
+
+    // expanded, maximum 3: the rows are counted over the whole tree, so the root and the first two categories (A and its child A1) are listed
+    await page.goto(`${DTS_URL}/${TEST_FOLDER}/${expanded}.html`);
+    const rows = page.locator('.perc-category-list-expanded li.perc-category-element');
+    await expect(rows.first(), 'the expanded list is built').toBeVisible({ timeout: 60_000 });
+    await expect(rows, 'maximum 3 shows three entries of the six').toHaveCount(3);
+    await expect(page.locator('.perc-category-list-expanded a[title^="QA Max A ("]')).toBeVisible();
+    await expect(page.locator('.perc-category-list-expanded a[title^="QA Max A1 ("]')).toBeVisible();
+    await expect(page.locator('.perc-category-list-expanded a[title^="QA Max B ("]'), 'B is cut off').toHaveCount(0);
+    await page.screenshot({ path: 'screenshots/category-list-widget-maximum-3-expanded-shows-three-entries.png' });
+
+    // collapsible, maximum 2: of the four first level categories only A and B are listed (A keeps its child)
+    await page.goto(`${DTS_URL}/${TEST_FOLDER}/${collapsible}.html`);
+    const tree = page.locator('.perc-category-list-collapsible');
+    await expect(tree.locator('.fancytree-title', { hasText: /^QA Max A \(/ }), 'A is listed').toBeVisible({ timeout: 60_000 });
+    await expect(tree.locator('.fancytree-title', { hasText: /^QA Max B \(/ }), 'B is listed').toBeVisible();
+    await expect(tree.locator('.fancytree-title', { hasText: /^QA Max C \(/ }), 'C is cut off').toHaveCount(0);
+    await expect(tree.locator('.fancytree-title', { hasText: /^QA Max D \(/ }), 'D is cut off').toHaveCount(0);
+    await page.screenshot({ path: 'screenshots/category-list-widget-maximum-2-collapsible-shows-two-categories.png' });
+  });
 });
