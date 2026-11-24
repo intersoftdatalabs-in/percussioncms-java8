@@ -20,6 +20,7 @@ import com.percussion.delivery.polls.data.PSPollsResponse;
 import com.percussion.delivery.polls.data.PSRestPoll;
 import com.percussion.delivery.services.IPSRestService;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -50,5 +51,7 @@ public interface IPSPollsRestService extends IPSRestService {
   @Path("/canuservote/{pollQuestion}")
   @Produces(MediaType.APPLICATION_JSON)
   public abstract String canUserVote(
-      @PathParam("pollQuestion") String pollQuestion, @Context HttpServletRequest req);
+      @PathParam("pollQuestion") String pollQuestion,
+      @Context HttpServletRequest req,
+      @Context HttpServletResponse resp);
 }
