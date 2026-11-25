@@ -8,11 +8,14 @@ import { DTS_URL, DTS_ADMIN_URL, TEST_FOLDER } from '../helpers/qa-env';
  * legacy "/perc-login" call of the DTS, which needs the secured-sections settings and an LDAP server (Deployment/Server/conf/perc/perc-secured-sections.properties);
  * the QA install has neither, so the DTS answers 404 there and the real sign-in cannot be tested. What can be proved is the PUBLISHED page: the form,
  * the title and labels typed in the editor, the label alignment and the "Forgot password?" link chosen in Configure.
+ * The LDAP sign-in service of the DTS (perc-secure-membership, with sys_resources/webapps/secure) was removed from 8.1.8 (#297), so there is no sign-in to prove:
+ * the last scenario records what a visitor gets when the form is submitted.
  */
-const run = Date.now().toString().slice(-7);
+process.env.QA_SL_RUN ??= Date.now().toString().slice(-7);   // shared with the workers Playwright restarts after a failed scenario
+const run = process.env.QA_SL_RUN;
 
 async function publishLoginPage(page: Page, shot: string, configure?: (f: ReturnType<Page['locator']>) => Promise<void>): Promise<string> {
-  const host = await createPage(page, `Secure Login Host ${shot.slice(-9)} ${run}`);
+  const host = await createPage(page, `Secure Login Host ${shot.replace(/^secure-login-/, '')} ${run}`);
   await placeWidget(page, 'percSecureLogin');
   if (configure) {
     const form = await openWidgetConfigure(page, 'percSecureLogin');
@@ -71,5 +74,21 @@ test.describe('Secure Login (Deprecated)', () => {
     await expect(form(page).locator('.percLogin-form-label-top'), 'no label above the fields').toHaveCount(0);
     await expect(form(page).getByRole('link', { name: 'Forgot password?' }), 'no forgot password link').toHaveCount(0);
     await page.screenshot({ path: 'screenshots/secure-login-published-page-labels-left-no-forgot-link.png' });
+  });
+
+  test('Secure Login: submitting the form reaches /perc-login, which the DTS of 8.1.8 no longer serves (the LDAP sign-in service was removed in #297)', async ({ page }) => {
+    await loginAsAdmin(page);
+    await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    const url = await publishLoginPage(page, 'secure-login-submit');
+    await page.goto(url);
+    await expect(form(page)).toBeVisible({ timeout: 60_000 });
+    await form(page).locator('input[name="j_username"]').fill('qa-user');
+    await form(page).locator('input[name="j_password"]').fill('qa-password');
+    const [response] = await Promise.all([
+      page.waitForResponse(r => new URL(r.url()).pathname === '/perc-login' && r.request().method() === 'POST', { timeout: 30_000 }),
+      form(page).locator('input[type="submit"]').click(),
+    ]);
+    expect(response.status(), 'no sign-in service answers /perc-login on the 8.1.8 DTS').toBe(404);
+    await page.screenshot({ path: 'screenshots/secure-login-published-page-submit-no-sign-in-service.png' });
   });
 });
