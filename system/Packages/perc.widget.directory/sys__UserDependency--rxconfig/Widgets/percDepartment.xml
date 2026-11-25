@@ -100,6 +100,7 @@
             ## Get Organization Name from contentId
             ##
             $orgContentId = $assetItem.getNode().getProperty('dptOrganization').String;
+            $orgName = "";
             $orgPage_path = "";
             $orgPage_title = "";
             if ($orgContentId != "" && $orgContentId != "#")
@@ -181,7 +182,7 @@
             $dptSchema = $rx.string.getJSONObject();
             $dptSchema.put("@context", "http://schema.org");
             $dptSchema.put("@type", "Organization");
-            if (! empty($dptOrganization)) {
+            if (! empty($orgContentId) && ! empty($orgName)) {
                 $dptSchema.put("name", $orgName);
             }
             if (! empty($orgPage_path) && $orgPage_path != "#") {
@@ -209,7 +210,16 @@
                     $departmentSubSchema.put("url", $dptWebsiteURL);
                 }
                 $dptAddressSchema = $rx.string.getJSONObject();
-                $dptStreetAddress = $dptAddress1 + '' + $dptAddress2;
+                $dptStreetAddress = "";
+                if (! empty($dptAddress1)) {
+                    $dptStreetAddress = $dptAddress1;
+                }
+                if (! empty($dptAddress1) && ! empty($dptAddress2)) {
+                    $dptStreetAddress = $dptStreetAddress + " ";
+                }
+                if (! empty($dptAddress2)) {
+                    $dptStreetAddress = $dptStreetAddress + $dptAddress2;
+                }
                 if(! empty($dptStreetAddress)){
                     $dptAddressSchema.put("streetAddress", $dptStreetAddress);
                 }
