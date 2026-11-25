@@ -186,7 +186,8 @@ public class PSPollsRestService extends PSAbstractRestService implements IPSPoll
       @PathParam("pollQuestion") String pollQuestion,
       @Context HttpServletRequest req,
       @Context HttpServletResponse resp) {
-    // The answer depends on the visitor's session and changes when the visitor votes, so it must never be
+    // The answer depends on the visitor's session and changes when the visitor votes, so it must
+    // never be
     // served from a cache (the DTS adds Cache-Control: max-age to every response; replace it here).
     if (resp != null) {
       resp.setHeader("Cache-Control", "no-store");
