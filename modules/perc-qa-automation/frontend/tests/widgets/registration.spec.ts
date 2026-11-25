@@ -11,7 +11,8 @@ import { DTS_URL, DTS_ADMIN_URL, TEST_FOLDER, isLocalSmtpConfigured } from '../h
  * page served by the DTS, so the proof is the page: the labels typed in the editor, the label layout, the validation messages, what happens on submit,
  * the e-mail the DTS sends (read from a local mail server) and whether the visitor can sign in through the membership service afterwards.
  */
-const run = Date.now().toString().slice(-7);
+process.env.QA_REG_RUN ??= Date.now().toString().slice(-7);   // shared with the workers Playwright restarts after a failed scenario
+const run = process.env.QA_REG_RUN;
 const SVC = `${DTS_URL}/perc-membership-services/membership`;
 const password = 'QaPass-123456';
 
@@ -40,7 +41,7 @@ interface Opts {
 
 /** A new page with a Registration widget set up as `opts` says; published. Returns the published URL. */
 async function publishRegistrationPage(page: Page, shot: string, opts: Opts = {}): Promise<string> {
-  const host = await createPage(page, `Registration Host ${shot.slice(-9)} ${run}`);
+  const host = await createPage(page, `Registration Host ${shot.replace(/^registration-/, '')} ${run}`);
   await placeWidget(page, 'percRegistration');
   if (opts.mode || opts.layout || opts.verification === false) {
     const form = await openWidgetConfigure(page, 'percRegistration');
