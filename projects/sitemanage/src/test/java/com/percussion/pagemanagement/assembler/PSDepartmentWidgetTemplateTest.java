@@ -15,6 +15,7 @@
  */
 package com.percussion.pagemanagement.assembler;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -28,7 +29,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -36,6 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.runtime.RuntimeInstance;
+import org.json.JSONObject;
 import org.junit.Test;
 
 /**
@@ -47,6 +48,10 @@ import org.junit.Test;
  *   <li>Issue #439: verifies {@code perc_hidefield_dptOrganizationField} ("Hide Organization")
  *       hides {@code .perc-org-name} alongside {@code perc_hidefield_orgNameField} ("Hide
  *       Organization Name").
+ *   <li>Issue #440: verifies the JSON-LD schema includes the resolved organization {@code name} on
+ *       the outer {@code Organization} object and omits it when no organization is resolved.
+ *   <li>Issue #441: verifies {@code department.address.streetAddress} separates {@code dptAddress1}
+ *       and {@code dptAddress2} with a single space and omits empty lines cleanly.
  * </ul>
  */
 public class PSDepartmentWidgetTemplateTest {
@@ -65,6 +70,10 @@ public class PSDepartmentWidgetTemplateTest {
       Pattern.compile(
           "<Content\\s+type=\"velocity\">\\s*<!--.*?-->\\s*<!\\[CDATA\\[(.*?)\\]\\]>\\s*</Content>",
           Pattern.DOTALL);
+
+  private static final Pattern JSON_LD_SCRIPT_PATTERN =
+      Pattern.compile(
+          "<script[^>]*type=['\"]application/ld\\+json['\"][^>]*>(.*?)</script>", Pattern.DOTALL);
 
   private static final String STUB_MACROS =
       "#macro(createEmptyWidgetContent $class $text)"
@@ -299,6 +308,174 @@ public class PSDepartmentWidgetTemplateTest {
         html.contains("<div class=\"perc-org-name\">Acme University</div>"));
   }
 
+  @Test
+  public void shouldIncludeOrganizationNameInSchemaWhenOrganizationIsResolved() throws Exception {
+    JSONObject schema =
+        renderSchema(
+            Boolean.FALSE,
+            "Dept X",
+            "601",
+            "Child Org",
+            "9 Side Road",
+            "Floor 3",
+            "Shelbyville",
+            "KY",
+            "40065",
+            "USA",
+            "555-0200",
+            "555-0201",
+            "dept@example.com");
+
+    assertEquals("Organization", schema.getString("@type"));
+    assertEquals("Child Org", schema.getString("name"));
+    JSONObject department = schema.getJSONObject("department");
+    assertEquals("Dept X", department.getString("name"));
+    assertEquals("555-0200", department.getString("telephone"));
+    assertEquals("555-0201", department.getString("faxNumber"));
+    assertEquals("mailto:dept@example.com", department.getString("email"));
+  }
+
+  @Test
+  public void shouldOmitOrganizationNameInSchemaWhenOrganizationIsAbsent() throws Exception {
+    JSONObject schema =
+        renderSchema(
+            Boolean.TRUE,
+            "Dept X",
+            "",
+            "",
+            "9 Side Road",
+            "Floor 3",
+            "Shelbyville",
+            "KY",
+            "40065",
+            "USA",
+            "",
+            "",
+            "");
+
+    assertFalse(
+        "Did not expect outer schema name when dptOrganization is empty: " + schema,
+        schema.has("name"));
+  }
+
+  @Test
+  public void shouldOmitOrganizationNameInSchemaWhenOrganizationLookupReturnsEmpty()
+      throws Exception {
+    JSONObject schema =
+        renderSchema(
+            Boolean.TRUE,
+            "Dept X",
+            "601",
+            "",
+            "9 Side Road",
+            "Floor 3",
+            "Shelbyville",
+            "KY",
+            "40065",
+            "USA",
+            "",
+            "",
+            "");
+
+    assertFalse(
+        "Did not expect outer schema name when organization lookup returns no results: " + schema,
+        schema.has("name"));
+  }
+
+  @Test
+  public void shouldJoinStreetAddressLinesWithSpaceInSchema() throws Exception {
+    JSONObject schema =
+        renderSchema(
+            Boolean.FALSE,
+            "Dept X",
+            "601",
+            "Child Org",
+            "9 Side Road",
+            "Floor 3",
+            "Shelbyville",
+            "KY",
+            "40065",
+            "USA",
+            "555-0200",
+            "555-0201",
+            "dept@example.com");
+
+    JSONObject address = schema.getJSONObject("department").getJSONObject("address");
+    assertEquals("9 Side Road Floor 3", address.getString("streetAddress"));
+    assertEquals("Shelbyville", address.getString("addressLocality"));
+    assertEquals("KY", address.getString("addressRegion"));
+    assertEquals("40065", address.getString("postalCode"));
+    assertEquals("USA", address.getString("addressCountry"));
+  }
+
+  @Test
+  public void shouldNotAddTrailingSpaceWhenOnlyAddress1IsPresentInSchema() throws Exception {
+    JSONObject schema =
+        renderSchema(
+            Boolean.TRUE,
+            "Dept X",
+            "601",
+            "Child Org",
+            "9 Side Road",
+            "",
+            "Shelbyville",
+            "KY",
+            "40065",
+            "USA",
+            "",
+            "",
+            "");
+
+    JSONObject address = schema.getJSONObject("department").getJSONObject("address");
+    assertEquals("9 Side Road", address.getString("streetAddress"));
+  }
+
+  @Test
+  public void shouldNotAddLeadingSpaceWhenOnlyAddress2IsPresentInSchema() throws Exception {
+    JSONObject schema =
+        renderSchema(
+            Boolean.TRUE,
+            "Dept X",
+            "601",
+            "Child Org",
+            "",
+            "Floor 3",
+            "Shelbyville",
+            "KY",
+            "40065",
+            "USA",
+            "",
+            "",
+            "");
+
+    JSONObject address = schema.getJSONObject("department").getJSONObject("address");
+    assertEquals("Floor 3", address.getString("streetAddress"));
+  }
+
+  @Test
+  public void shouldOmitStreetAddressInSchemaWhenBothAddressLinesAreEmpty() throws Exception {
+    JSONObject schema =
+        renderSchema(
+            Boolean.TRUE,
+            "Dept X",
+            "601",
+            "Child Org",
+            "",
+            "",
+            "Shelbyville",
+            "KY",
+            "40065",
+            "USA",
+            "",
+            "",
+            "");
+
+    JSONObject address = schema.getJSONObject("department").getJSONObject("address");
+    assertFalse(
+        "Did not expect streetAddress when both address lines are empty: " + address,
+        address.has("streetAddress"));
+  }
+
   private static String extractDepartmentNameBlock(String html) {
     int start = html.indexOf("<div class=\"perc-dpt-name\">");
     assertTrue("Expected .perc-dpt-name block in rendered HTML: " + html, start >= 0);
@@ -346,19 +523,6 @@ public class PSDepartmentWidgetTemplateTest {
       String managedWebsiteTitle,
       String dptWebsiteExt)
       throws Exception {
-    File widgetFile = resolveRepoFile(WIDGET_REL_PATH);
-    File velocityPropsFile = resolveRepoFile(VELOCITY_PROPS_REL_PATH);
-
-    String xml = new String(Files.readAllBytes(widgetFile.toPath()), StandardCharsets.UTF_8);
-
-    Matcher jexlMatcher = JEXL_CODE_PATTERN.matcher(xml);
-    assertTrue("JEXL <Code> section not found in " + widgetFile, jexlMatcher.find());
-    String jexlCode = jexlMatcher.group(1);
-
-    Matcher velocityMatcher = VELOCITY_CONTENT_PATTERN.matcher(xml);
-    assertTrue("Velocity <Content> section not found in " + widgetFile, velocityMatcher.find());
-    String velocityTemplate = STUB_MACROS + velocityMatcher.group(1);
-
     Map<String, Object> props = new HashMap<>();
     props.put("dptNameFormat", dptNameFormat);
     if (hideOrgName != null) {
@@ -375,10 +539,66 @@ public class PSDepartmentWidgetTemplateTest {
       props.put("perc_hidefield_dptOrganizationField", hideDptOrganization);
     }
 
+    Map<String, String> assetProps = defaultAssetProps(dptName, orgName.isEmpty() ? "" : "601");
+    assetProps.put("dptWebsite_linkId", dptWebsiteLinkId);
+    assetProps.put("dptWebsiteExt", dptWebsiteExt);
+
+    Map<String, String> orgProps = defaultOrgProps(orgName);
+
+    return renderWidget(props, assetProps, orgProps, managedWebsitePath, managedWebsiteTitle).html;
+  }
+
+  private static JSONObject renderSchema(
+      Boolean hideEmail,
+      String dptName,
+      String dptOrganization,
+      String orgName,
+      String dptAddress1,
+      String dptAddress2,
+      String dptCity,
+      String dptState,
+      String dptPostCode,
+      String dptCountry,
+      String dptPhone,
+      String dptFax,
+      String dptEmail)
+      throws Exception {
+    Map<String, Object> props = new HashMap<>();
+    props.put("dptNameFormat", "div");
+    props.put("perc_hidefield_orgNameField", Boolean.FALSE);
+    props.put("perc_hidefield_dptAddressField", Boolean.FALSE);
+    props.put("perc_hidefield_dptPhoneField", Boolean.FALSE);
+    props.put("perc_hidefield_dptFaxField", Boolean.FALSE);
+    props.put("perc_hidefield_dptEmailField", hideEmail);
+    props.put("perc_hidefield_dptPageField", Boolean.FALSE);
+    props.put("perc_hidefield_dptOrganizationField", Boolean.FALSE);
+
+    Map<String, String> assetProps = defaultAssetProps(dptName, dptOrganization);
+    assetProps.put("dptAddress1", dptAddress1);
+    assetProps.put("dptAddress2", dptAddress2);
+    assetProps.put("dptCity", dptCity);
+    assetProps.put("dptState", dptState);
+    assetProps.put("dptPostCode", dptPostCode);
+    assetProps.put("dptCountry", dptCountry);
+    assetProps.put("dptPhone", dptPhone);
+    assetProps.put("dptFax", dptFax);
+    assetProps.put("dptEmail", dptEmail);
+
+    Map<String, String> orgProps = defaultOrgProps(orgName);
+
+    RenderResult result = renderWidget(props, assetProps, orgProps, "", "");
+    Matcher matcher = JSON_LD_SCRIPT_PATTERN.matcher(result.additionalHeadContent);
+    assertTrue(
+        "Expected JSON-LD script in additional head content: " + result.additionalHeadContent,
+        matcher.find());
+    return new JSONObject(matcher.group(1));
+  }
+
+  private static Map<String, String> defaultAssetProps(String dptName, String dptOrganization) {
     Map<String, String> assetProps = new HashMap<>();
     assetProps.put("sys_contentid", "501");
     assetProps.put("dptName", dptName);
-    assetProps.put("dptOrganization", orgName.isEmpty() ? "" : "601");
+    assetProps.put("dptOrganization", dptOrganization);
     assetProps.put("dptAddress1", "");
     assetProps.put("dptAddress2", "");
     assetProps.put("dptCity", "");
@@ -388,15 +608,40 @@ public class PSDepartmentWidgetTemplateTest {
     assetProps.put("dptEmail", "");
     assetProps.put("dptPhone", "");
     assetProps.put("dptFax", "");
-    assetProps.put("dptWebsite_linkId", dptWebsiteLinkId);
-    assetProps.put("dptWebsiteExt", dptWebsiteExt);
+    assetProps.put("dptWebsite_linkId", "");
+    assetProps.put("dptWebsiteExt", "");
+    return assetProps;
+  }
 
+  private static Map<String, String> defaultOrgProps(String orgName) {
     Map<String, String> orgProps = new HashMap<>();
     if (!orgName.isEmpty()) {
       orgProps.put("orgName", orgName);
       orgProps.put("orgPage_linkId", "");
       orgProps.put("orgPageExt", "");
     }
+    return orgProps;
+  }
+
+  private static RenderResult renderWidget(
+      Map<String, Object> props,
+      Map<String, String> assetProps,
+      Map<String, String> orgProps,
+      String managedWebsitePath,
+      String managedWebsiteTitle)
+      throws Exception {
+    File widgetFile = resolveRepoFile(WIDGET_REL_PATH);
+    File velocityPropsFile = resolveRepoFile(VELOCITY_PROPS_REL_PATH);
+
+    String xml = new String(Files.readAllBytes(widgetFile.toPath()), StandardCharsets.UTF_8);
+
+    Matcher jexlMatcher = JEXL_CODE_PATTERN.matcher(xml);
+    assertTrue("JEXL <Code> section not found in " + widgetFile, jexlMatcher.find());
+    String jexlCode = jexlMatcher.group(1);
+
+    Matcher velocityMatcher = VELOCITY_CONTENT_PATTERN.matcher(xml);
+    assertTrue("Velocity <Content> section not found in " + widgetFile, velocityMatcher.find());
+    String velocityTemplate = STUB_MACROS + velocityMatcher.group(1);
 
     PercHelper percHelper = new PercHelper(props);
     SysHelper sysHelper = new SysHelper();
@@ -434,7 +679,17 @@ public class PSDepartmentWidgetTemplateTest {
 
     StringWriter writer = new StringWriter();
     runtime.evaluate(ctx, writer, "percDepartment", velocityTemplate);
-    return writer.toString();
+    return new RenderResult(writer.toString(), percHelper.getPage().getAdditionalHeadContent());
+  }
+
+  private static final class RenderResult {
+    private final String html;
+    private final String additionalHeadContent;
+
+    private RenderResult(String html, String additionalHeadContent) {
+      this.html = html;
+      this.additionalHeadContent = additionalHeadContent;
+    }
   }
 
   private static File resolveRepoFile(String relativePath) throws IOException {
@@ -609,8 +864,8 @@ public class PSDepartmentWidgetTemplateTest {
       return new HashMap<>();
     }
 
-    public Map<String, Object> getJSONObject() {
-      return new LinkedHashMap<>();
+    public JSONObject getJSONObject() {
+      return new JSONObject();
     }
   }
 
