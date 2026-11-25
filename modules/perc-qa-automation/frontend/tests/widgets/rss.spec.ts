@@ -155,4 +155,64 @@ test.describe('RSS', () => {
     await expect(items(page), 'all 12 items of the feed').toHaveCount(12);
     await page.screenshot({ path: 'screenshots/rss-published-page-all-items.png' });
   });
+
+  test('RSS: with "Remove HTML from fields before displaying" off the HTML of the feed is kept, shown escaped as text', async ({ page }) => {
+    await loginAsAdmin(page);
+    await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    const url = await publishRssPage(page, 'rss-keep-html', async f => {
+      await f.locator('input[name="perc-feed-remove-html"]').uncheck();
+      await f.locator('input[name="perc-feed-description-length"]').fill('500');
+    });
+    await open(page, url);
+    const desc = items(page).locator('.perc-feed-item-description');
+    await expect(desc, 'the tags of the feed are kept in the description').toContainText('<b>Bold</b> Long description');
+    await expect(desc.locator('b'), 'the page script escapes feed content, so no element is created from it').toHaveCount(0);
+    await page.screenshot({ path: 'screenshots/rss-published-page-html-kept-in-description.png' });
+  });
+
+  test('RSS: item limit 10 shows ten items, an ordered list wraps them and the other element formats are applied', async ({ page }) => {
+    await loginAsAdmin(page);
+    await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    const url = await publishRssPage(page, 'rss-limit-ten-ordered', async f => {
+      await f.locator('select[name="perc-feed-item-limit"]').selectOption('limit_10', { timeout: 10_000 });
+      await f.locator('select[name="wrappingElement"]').selectOption('ol', { timeout: 10_000 });
+      await f.locator('select[name="titleElement"]').selectOption('h1', { timeout: 10_000 });
+      await f.locator('select[name="itemTitleElement"]').selectOption('h4', { timeout: 10_000 });
+      await f.locator('select[name="itemDateElement"]').selectOption('div', { timeout: 10_000 });
+      await f.locator('select[name="itemDescriptionElement"]').selectOption('div', { timeout: 10_000 });
+    });
+    await open(page, url);
+    await expect(items(page), 'ten items').toHaveCount(10);
+    await expect(feed(page).locator('ol > li.perc-feed-item'), 'items are li in an ol').toHaveCount(10);
+    await expect(feed(page).locator('h1.perc-feed-title'), 'feed title is a Heading 1').toHaveCount(1);
+    await expect(items(page).first().locator('h4.perc-feed-item-title'), 'item title is a Heading 4').toHaveCount(1);
+    await expect(items(page).first().locator('div.perc-feed-item-date'), 'date is a div').toHaveCount(1);
+    await expect(items(page).first().locator('div.perc-feed-item-description'), 'description is a div').toHaveCount(1);
+    await page.screenshot({ path: 'screenshots/rss-published-page-ten-items-ordered-list.png' });
+  });
+
+  test('RSS: a div wraps the items, or no wrapper at all, as chosen in Configure', async ({ page }) => {
+    await loginAsAdmin(page);
+    await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    const url = await publishRssPage(page, 'rss-wrapper-div', async f => {
+      await f.locator('select[name="perc-feed-item-limit"]').selectOption('limit_5', { timeout: 10_000 });
+      await f.locator('select[name="wrappingElement"]').selectOption('div', { timeout: 10_000 });
+      await f.locator('select[name="titleElement"]').selectOption('span', { timeout: 10_000 });
+      await f.locator('select[name="itemTitleElement"]').selectOption('p', { timeout: 10_000 });
+    });
+    await open(page, url);
+    await expect(items(page), 'five items').toHaveCount(5);
+    await expect(feed(page).locator('div > div.perc-feed-item'), 'items are in a wrapping div').toHaveCount(5);
+    await expect(feed(page).locator('span.perc-feed-title'), 'feed title is a span').toHaveCount(1);
+    await expect(items(page).first().locator('p.perc-feed-item-title'), 'item title is a paragraph').toHaveCount(1);
+    await page.screenshot({ path: 'screenshots/rss-published-page-items-in-div.png' });
+    const bare = await publishRssPage(page, 'rss-wrapper-none', async f => {
+      await f.locator('select[name="perc-feed-item-limit"]').selectOption('limit_5', { timeout: 10_000 });
+      await f.locator('select[name="wrappingElement"]').selectOption('none', { timeout: 10_000 });
+    });
+    await open(page, bare);
+    await expect(items(page), 'five items').toHaveCount(5);
+    await expect(feed(page).locator('ul, ol'), 'no list wraps the items').toHaveCount(0);
+    await expect(feed(page).locator('> .perc-feed-item'), 'items are direct children of the feed').toHaveCount(5);
+  });
 });
