@@ -2,6 +2,7 @@ import * as path from 'path';
 import { test, expect, Page, FrameLocator } from '@playwright/test';
 import { loginAsAdmin, createPage, publishOpenItem, configurePublishing, uploadImageAsset } from '../helpers/cms-ui';
 import { chooseImageFromLibrary } from '../helpers/asset-chooser';
+import { createAssetIn, dragAssetOntoWidget, takeAssetToLive } from '../helpers/directory-ui';
 import { placeWidget, saveLayout, openContentTab, openWidgetContentEditor, openWidgetConfigure, confirmWidgetConfigure } from '../helpers/widgets-ui';
 import { DTS_URL, DTS_ADMIN_URL, TEST_FOLDER, TEST_ASSET_FOLDER } from '../helpers/qa-env';
 
@@ -147,5 +148,35 @@ test.describe('Organization', () => {
     });
     await page.goto(hidden);
     await expect(box(page).locator('.perc-org-logo'), 'with Hide Organization Logo on, no logo is written').toHaveCount(0);
+  });
+
+  test('Organization: the parent organization, found through the folders of the library, is named in the schema', async ({ page }) => {
+    test.setTimeout(240_000);
+    await loginAsAdmin(page);
+    await configurePublishing(page, DTS_ADMIN_URL, 'dts');
+    // the parent of an Organization is the Organization in the folder above its own folder
+    const dir = `qa-dir-${run}`;
+    const parentName = `Parent Org ${run}`;
+    const parentAsset = await createAssetIn(page, [TEST_ASSET_FOLDER, dir], 'Organization', 'psx_cepercOrganization', { orgName: parentName });
+    await takeAssetToLive(page, [TEST_ASSET_FOLDER, dir], parentAsset);
+    const childFolders = [TEST_ASSET_FOLDER, dir, 'org-b'];
+    const childAsset = await createAssetIn(page, childFolders, 'Organization', 'psx_cepercOrganization', { orgName: org.orgName, orgAddress1: org.orgAddress1 });
+    const editor = page.frameLocator('iframe[src*="psx_cepercOrganization"]');
+    await expect(editor.locator('#perc-content-display-parentOrganization'), 'the parent is found in the folder above').toHaveValue(parentName, { timeout: 30_000 });
+    await page.screenshot({ path: 'screenshots/org-asset-editor-parent-organization-found.png' });
+    // the link to the parent is filled in when the editor opens: save once more to store it
+    await page.getByRole('button', { name: 'Save' }).click();
+    await page.waitForTimeout(4_000);
+
+    const host = await createPage(page, `Org Host parent ${run} ${Date.now().toString().slice(-4)}`);
+    await placeWidget(page, 'percOrganization');
+    await saveLayout(page);
+    await openContentTab(page);
+    await dragAssetOntoWidget(page, 'percOrganization', childFolders, childAsset);
+    await publishOpenItem(page);
+    await page.goto(`${DTS_URL}/${TEST_FOLDER}/${host}.html`);
+    await expect(box(page).locator('.perc-org-name'), 'the organization of the dropped asset is shown').toHaveText(org.orgName);
+    expect((await schemaOf(page)).parentOrganization, 'schema.org parent organization').toBe(parentName);
+    await page.screenshot({ path: 'screenshots/org-published-page-parent-organization.png' });
   });
 });
