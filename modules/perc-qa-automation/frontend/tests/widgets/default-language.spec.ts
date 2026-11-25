@@ -14,12 +14,21 @@ const run = process.env.QA_DEFLANG_RUN;
 
 type Row = { protocol: 'http' | 'https'; language: string; country?: string; isDefault?: boolean };
 
+/** `percDefaultLang.js` populates the template row's site `<select>` and attaches `.perc-table-add` / pre-submit handlers inside an async `getSites()` callback. */
+async function waitForSitesLoaded(frame: FrameLocator) {
+  await expect(
+    frame.locator('tr.hide select.perc-site-list option', { hasText: TEST_SITE }).first(),
+    'sites loaded in editor template row',
+  ).toBeAttached({ timeout: 30_000 });
+}
+
 /** A new page with a Default Language widget configured with `rows`, published. Returns the host name and the published URL. */
 async function publishLangPage(page: Page, shot: string, rows: Row[], reopen?: () => Promise<void>): Promise<{ host: string; url: string }> {
   const host = await createPage(page, `Lang Host ${shot.replace(/^lang-/, '')} ${run} ${Date.now().toString().slice(-4)}`);
   await placeWidget(page, 'percDefaultLang');
   await saveLayout(page);
   const { frame, save } = await openWidgetContentEditor(page, 'percDefaultLang');
+  await waitForSitesLoaded(frame);
   await frame.locator('#perc-content-edit-configurationName').fill(`QA Lang ${shot} ${run}`);
   for (const row of rows) {
     await frame.locator('.perc-table-add').click();
@@ -67,13 +76,13 @@ test.describe('Default Language', () => {
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
     const { host, url } = await publishLangPage(page, 'lang-default', [
-      { protocol: 'https', language: 'English', country: 'United Kingdom' },
+      { protocol: 'http', language: 'English', country: 'United Kingdom' },
       { protocol: 'https', language: 'Spanish', country: 'Spain', isDefault: true },
     ]);
     await page.goto(url);
     const path = `${TEST_SITE}/${TEST_FOLDER}/${host}.html`.toLowerCase();
     const found = await alternates(page);
-    expect(found.find(a => a.lang === 'en-GB')?.href, 'English, United Kingdom').toBe(`https://${path}`);
+    expect(found.find(a => a.lang === 'en-GB')?.href, 'English, United Kingdom').toBe(`http://${path}`);
     expect(found.find(a => a.lang === 'es-ES')?.href, 'Spanish, Spain').toBe(`https://${path}`);
     expect(found.filter(a => a.lang === 'x-default').map(a => a.href), 'x-default points at the default row').toEqual([`https://${path}`]);
     await page.screenshot({ path: 'screenshots/lang-published-page-x-default.png' });
@@ -106,14 +115,21 @@ test.describe('Default Language', () => {
     expect(found.find(a => a.lang === 'de')?.href, 'the other rows are still written').toBe(`https://${path}`);
   });
 
-  test('Default Language: the editor refuses a configuration without a name and a row', async ({ page }) => {
+  test('Default Language: the editor refuses to save without a configuration name', async ({ page }) => {
     await loginAsAdmin(page);
     await createPage(page, `Lang Host validation ${run} ${Date.now().toString().slice(-4)}`);
     await placeWidget(page, 'percDefaultLang');
     await saveLayout(page);
     const { frame, save } = await openWidgetContentEditor(page, 'percDefaultLang');
+    await waitForSitesLoaded(frame);
+    // configurationName defaults to "Configured-International-Sites" in percDefaultLanguage.itemDef.contentType; clear it to trigger required-field validation
+    await frame.locator('#perc-content-edit-configurationName').fill('');
     await save.click();
-    await expect(save, 'nothing is saved without a name: the editor stays open').toBeVisible({ timeout: 10_000 });
+    const alert = page.locator('#perc_fill_mandatory_fields_dialog');
+    await expect(alert, 'mandatory field alert is shown when configuration name is empty').toBeVisible({ timeout: 10_000 });
     await page.screenshot({ path: 'screenshots/lang-editor-validation.png' });
+    await alert.locator('#perc_fill_mandatory_fields_close').click();
+    await expect(alert).toBeHidden({ timeout: 10_000 });
+    await expect(save, 'nothing is saved without a name: the editor stays open').toBeVisible();
   });
 });
