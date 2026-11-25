@@ -48,6 +48,18 @@ export async function ensureTestSite(page: Page) {
   await ensureFolderHere(page, TEST_ASSET_FOLDER);
 }
 
+/** Makes sure `/Sites/<TEST_SITE>/<name>` exists, creating it through the finder when missing. Safe to call again. */
+export async function ensureSiteFolder(page: Page, name: string) {
+  const path = page.locator('#mcol-path-summary');
+  await page.goto('/cm/app/?view=dash');
+  await expect(page.getByText('Welcome, Admin')).toBeVisible({ timeout: 90_000 });
+  await page.getByText('Sites', { exact: true }).first().click();
+  await expect(path).toHaveValue('/Sites', { timeout: 30_000 });
+  await page.getByText(TEST_SITE, { exact: true }).first().click();
+  await expect(path).toHaveValue(`/Sites/${TEST_SITE}`, { timeout: 30_000 });
+  await ensureFolderHere(page, name);
+}
+
 /** In the finder folder that is currently selected: creates the folder `name` unless it is already listed. */
 async function ensureFolderHere(page: Page, name: string) {
   const folder = page.getByText(name, { exact: true }).first();
