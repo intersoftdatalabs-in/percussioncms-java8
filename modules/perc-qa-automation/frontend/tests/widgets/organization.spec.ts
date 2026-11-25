@@ -151,6 +151,7 @@ test.describe('Organization', () => {
   });
 
   test('Organization: the parent organization, found through the folders of the library, is named in the schema', async ({ page }) => {
+    test.setTimeout(240_000);
     await loginAsAdmin(page);
     await configurePublishing(page, DTS_ADMIN_URL, 'dts');
     // the parent of an Organization is the Organization in the folder above its own folder

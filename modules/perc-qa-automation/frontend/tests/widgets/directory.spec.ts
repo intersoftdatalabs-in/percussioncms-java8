@@ -34,7 +34,7 @@ const reuse = process.env.QA_DIRW_REUSE === 'true';
 if (reuse) for (const k of Object.keys(assets) as (keyof typeof assets)[]) assetNames[k] = assets[k].toLowerCase().replace(/\s+/g, '-');
 
 /** A new page with a Directory widget (optionally configured), the shared Directory asset dropped on it, published. Returns the published URL. */
-async function publishDirectoryPage(page: Page, shot: string, which: keyof typeof assets, configure?: (form: ReturnType<Page['locator']>) => Promise<void>): Promise<string> {
+async function publishDirectoryPage(page: Page, shot: string, which: keyof typeof assets | 'placeholder', configure?: (form: ReturnType<Page['locator']>) => Promise<void>): Promise<string> {
   await ensureDeliveryResources(page);   // the script of the directory is a delivery resource: a redeploy of the DTS removes it
   const host = await createPage(page, `Directory Host ${shot.replace(/^dir-/, '')} ${run} ${Date.now().toString().slice(-4)}`);
   await placeWidget(page, 'percDirectory');
@@ -97,8 +97,10 @@ test.describe.serial('Directory', () => {
       const a = await createAssetIn(page, folders, 'Organization', 'psx_cepercOrganization', { orgName });
       await takeAssetToLive(page, folders, a);
     }
-    for (const [folders, dptName] of [[[...base, 'org-a', 'dept-a'], dptA], [[...base, 'org-a', 'dept-b'], dptB], [[...base, 'org-b', 'dept-c'], dptC]] as [string[], string][]) {
+    for (const [folders, dptName, orgName] of [[[...base, 'org-a', 'dept-a'], dptA, orgA], [[...base, 'org-a', 'dept-b'], dptB, orgA], [[...base, 'org-b', 'dept-c'], dptC, orgB]] as [string[], string, string][]) {
       const a = await createAssetIn(page, folders, 'Department', 'psx_cepercDepartment', { dptName });
+      await expect(page.frameLocator('iframe[src*="psx_cepercDepartment"]').locator('#perc-content-display-dptOrganization'), `${dptName}: the organization is found through the folders`).toHaveValue(orgName, { timeout: 30_000 });
+      await saveAgain(page);
       await takeAssetToLive(page, folders, a);
     }
     mailForm = await createPage(page, `AA Dir Mail Form ${run}`);
@@ -124,7 +126,10 @@ test.describe.serial('Directory', () => {
         if (dptLabel) {   // the departments are listed when the organization is chosen: "<department> - <organization>"
           const opt = frame.locator('select[name="departmentID"] option', { hasText: dptLabel });
           await expect(opt).toHaveCount(1, { timeout: 15_000 });
-          await frame.locator('select[name="departmentID"]').selectOption({ label: (await opt.textContent())!.trim() });
+          const val = (await opt.getAttribute('value'))!;
+          await frame.locator('select[name="departmentID"]').selectOption(val);
+          // directoryDropdown.js clears and reloads departmentID asynchronously on change; wait for it to restore the selection before Save
+          await expect(frame.locator('select[name="departmentID"]')).toHaveValue(val, { timeout: 15_000 });
         }
       });
     }
@@ -313,7 +318,7 @@ test.describe.serial('Directory', () => {
     assetNames.placeholder = await createAssetIn(page, base, 'Directory', 'psx_cepercDirectory', { directoryTitle: `Directory Placeholder ${run}` }, async frame => {
       await chooseImageFromLibrary(page, frame.getByRole('button', { name: 'Browse' }).first(), placeholder);
     });
-    const url = await publishDirectoryPage(page, 'dir-custom-placeholder', 'placeholder' as keyof typeof assets);
+    const url = await publishDirectoryPage(page, 'dir-custom-placeholder', 'placeholder');
     await openDirectory(page, url);
     await expect(rows(page).filter({ hasText: people[1].last }).locator('img'), 'a person without an image shows the custom placeholder').toHaveAttribute('title', placeholderTitle);
     await expect(rows(page).filter({ hasText: people[0].last }).locator('img'), 'a person with an image keeps it').toHaveAttribute('title', imageTitle);
