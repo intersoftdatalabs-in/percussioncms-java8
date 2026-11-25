@@ -257,7 +257,8 @@
                     <span id="perc-alpha-sort-letters"></span>
                     <button id="perc-clear-alpha-filter" class="perc-directory-button" style="display:none;" aria-label="Clear Filter">Clear Filter</button>
                 </div>
-#if( !($percHideFieldFilterDropdown) && $orgSearchId == -1 )##
+#if( !($percHideFieldFilterDropdown) )##
+#if( $orgSearchId == -1 )##
                 <div class="perc-filter-wrapper">
                     <select name="perc-org-filter" id="perc-org-filter">
                         <option value="all">Filter by Organization</option>
@@ -267,14 +268,15 @@
                     </select>
                 </div>
                 <div class="perc-filter-wrapper">
-#if( $orgSearchId > 0 && $deptId == -1 )##
-                    <select name="perc-dpt-filter" data-tezt="tezt" id="perc-dpt-filter">
-                    </select>
-#else##
                     <select name="perc-dpt-filter" id="perc-dpt-filter" style="display:none;">
                     </select>
-#end##
                 </div>
+#elseif( $orgSearchId > 0 && $deptId == -1 )##
+                <div class="perc-filter-wrapper">
+                    <select name="perc-dpt-filter" id="perc-dpt-filter">
+                    </select>
+                </div>
+#end##
 #end##
 ##
 #if( $directoryLayoutFormat == "table" )##
