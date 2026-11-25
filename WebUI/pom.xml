@@ -624,14 +624,6 @@
             <groupId>com.intsof.lts.tika</groupId>
             <artifactId>tika-parsers-standard-package</artifactId>
         </dependency>
-        <dependency>
-            <groupId>caja</groupId>
-            <artifactId>caja</artifactId>
-            <version>r3828</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/caja-r3828.jar</systemPath>
-            <optional>true</optional>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
