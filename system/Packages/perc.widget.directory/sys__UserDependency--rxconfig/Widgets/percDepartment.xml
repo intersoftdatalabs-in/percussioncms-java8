@@ -247,7 +247,7 @@
                     <div class="perc-org-name">$!{orgName}</div>
 #end##
                 <div class="perc-dpt-name">
-#if( "$!{dptWebsite_path}" != "" && "$!{dptWebsite_path}" != "#" )##
+#if( !($percHideFieldDptPage) && "$!{dptWebsite_path}" != "" && "$!{dptWebsite_path}" != "#" )##
                         <a href="$dptWebsite_path" title="$dptWebsite_title">
                             $!{dptNameFormatStartTag}${dptName}$!{dptNameFormatEndTag}
                         </a>
