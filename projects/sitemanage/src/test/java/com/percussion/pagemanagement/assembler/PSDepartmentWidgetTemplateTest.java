@@ -39,9 +39,15 @@ import org.apache.velocity.runtime.RuntimeInstance;
 import org.junit.Test;
 
 /**
- * Regression test for issue #438: verifies {@code percDepartment.xml} honors the {@code
- * perc_hidefield_dptPageField} ("Hide Department Page") UserPref so the department name is rendered
- * without an anchor link when the option is enabled.
+ * Regression tests for {@code percDepartment.xml}:
+ *
+ * <ul>
+ *   <li>Issue #438: verifies {@code perc_hidefield_dptPageField} ("Hide Department Page") renders
+ *       the department name without an anchor link when enabled.
+ *   <li>Issue #439: verifies {@code perc_hidefield_dptOrganizationField} ("Hide Organization")
+ *       hides {@code .perc-org-name} alongside {@code perc_hidefield_orgNameField} ("Hide
+ *       Organization Name").
+ * </ul>
  */
 public class PSDepartmentWidgetTemplateTest {
 
@@ -172,6 +178,127 @@ public class PSDepartmentWidgetTemplateTest {
         hashNameHtml.contains("<a "));
   }
 
+  @Test
+  public void shouldHideOrganizationWhenHideOrganizationIsTrue() throws Exception {
+    String html =
+        renderTemplate(
+            Boolean.FALSE,
+            Boolean.TRUE,
+            Boolean.FALSE,
+            "div",
+            "Engineering",
+            "Acme University",
+            "",
+            "",
+            "",
+            "");
+
+    assertFalse(
+        "Did not expect .perc-org-name when Hide Organization is true: " + html,
+        html.contains("perc-org-name"));
+    assertFalse(
+        "Did not expect organization name when Hide Organization is true: " + html,
+        html.contains("Acme University"));
+    assertTrue(
+        "Expected department name to still render: " + html,
+        html.contains("<div>Engineering</div>"));
+  }
+
+  @Test
+  public void shouldHideOrganizationWhenHideOrganizationIsTrueAndHideOrgNameIsUnset()
+      throws Exception {
+    String html =
+        renderTemplate(
+            null,
+            Boolean.TRUE,
+            Boolean.FALSE,
+            "div",
+            "Engineering",
+            "Acme University",
+            "",
+            "",
+            "",
+            "");
+
+    assertFalse(
+        "Did not expect .perc-org-name when Hide Organization is true and Hide Organization Name"
+            + " is unset: "
+            + html,
+        html.contains("perc-org-name"));
+  }
+
+  @Test
+  public void shouldHideOrganizationWhenHideOrgNameIsTrue() throws Exception {
+    String html =
+        renderTemplate(
+            Boolean.TRUE,
+            Boolean.FALSE,
+            Boolean.FALSE,
+            "div",
+            "Engineering",
+            "Acme University",
+            "",
+            "",
+            "",
+            "");
+
+    assertFalse(
+        "Did not expect .perc-org-name when Hide Organization Name is true: " + html,
+        html.contains("perc-org-name"));
+  }
+
+  @Test
+  public void shouldHideOrganizationWhenBothHideOrganizationOptionsAreTrue() throws Exception {
+    String html =
+        renderTemplate(
+            Boolean.TRUE,
+            Boolean.TRUE,
+            Boolean.FALSE,
+            "div",
+            "Engineering",
+            "Acme University",
+            "",
+            "",
+            "",
+            "");
+
+    assertFalse(
+        "Did not expect .perc-org-name when both organization hide options are true: " + html,
+        html.contains("perc-org-name"));
+  }
+
+  @Test
+  public void shouldRenderOrganizationWhenBothHideOrganizationOptionsAreFalse() throws Exception {
+    String html =
+        renderTemplate(
+            Boolean.FALSE,
+            Boolean.FALSE,
+            Boolean.FALSE,
+            "div",
+            "Engineering",
+            "Acme University",
+            "",
+            "",
+            "",
+            "");
+
+    assertTrue(
+        "Expected .perc-org-name with organization name when both hide options are false: " + html,
+        html.contains("<div class=\"perc-org-name\">Acme University</div>"));
+  }
+
+  @Test
+  public void shouldRenderOrganizationByDefaultWhenHideOrganizationOptionsAreUnset()
+      throws Exception {
+    String html =
+        renderTemplate(
+            null, null, Boolean.FALSE, "div", "Engineering", "Acme University", "", "", "", "");
+
+    assertTrue(
+        "Expected .perc-org-name with organization name when hide options are unset: " + html,
+        html.contains("<div class=\"perc-org-name\">Acme University</div>"));
+  }
+
   private static String extractDepartmentNameBlock(String html) {
     int start = html.indexOf("<div class=\"perc-dpt-name\">");
     assertTrue("Expected .perc-dpt-name block in rendered HTML: " + html, start >= 0);
@@ -194,6 +321,31 @@ public class PSDepartmentWidgetTemplateTest {
       String managedWebsiteTitle,
       String dptWebsiteExt)
       throws Exception {
+    return renderTemplate(
+        Boolean.TRUE,
+        Boolean.FALSE,
+        hideDepartmentPage,
+        dptNameFormat,
+        dptName,
+        "",
+        dptWebsiteLinkId,
+        managedWebsitePath,
+        managedWebsiteTitle,
+        dptWebsiteExt);
+  }
+
+  private static String renderTemplate(
+      Boolean hideOrgName,
+      Boolean hideDptOrganization,
+      Boolean hideDepartmentPage,
+      String dptNameFormat,
+      String dptName,
+      String orgName,
+      String dptWebsiteLinkId,
+      String managedWebsitePath,
+      String managedWebsiteTitle,
+      String dptWebsiteExt)
+      throws Exception {
     File widgetFile = resolveRepoFile(WIDGET_REL_PATH);
     File velocityPropsFile = resolveRepoFile(VELOCITY_PROPS_REL_PATH);
 
@@ -209,7 +361,9 @@ public class PSDepartmentWidgetTemplateTest {
 
     Map<String, Object> props = new HashMap<>();
     props.put("dptNameFormat", dptNameFormat);
-    props.put("perc_hidefield_orgNameField", Boolean.TRUE);
+    if (hideOrgName != null) {
+      props.put("perc_hidefield_orgNameField", hideOrgName);
+    }
     props.put("perc_hidefield_dptAddressField", Boolean.TRUE);
     props.put("perc_hidefield_dptPhoneField", Boolean.TRUE);
     props.put("perc_hidefield_dptFaxField", Boolean.TRUE);
@@ -217,11 +371,14 @@ public class PSDepartmentWidgetTemplateTest {
     if (hideDepartmentPage != null) {
       props.put("perc_hidefield_dptPageField", hideDepartmentPage);
     }
+    if (hideDptOrganization != null) {
+      props.put("perc_hidefield_dptOrganizationField", hideDptOrganization);
+    }
 
     Map<String, String> assetProps = new HashMap<>();
     assetProps.put("sys_contentid", "501");
     assetProps.put("dptName", dptName);
-    assetProps.put("dptOrganization", "");
+    assetProps.put("dptOrganization", orgName.isEmpty() ? "" : "601");
     assetProps.put("dptAddress1", "");
     assetProps.put("dptAddress2", "");
     assetProps.put("dptCity", "");
@@ -234,11 +391,20 @@ public class PSDepartmentWidgetTemplateTest {
     assetProps.put("dptWebsite_linkId", dptWebsiteLinkId);
     assetProps.put("dptWebsiteExt", dptWebsiteExt);
 
+    Map<String, String> orgProps = new HashMap<>();
+    if (!orgName.isEmpty()) {
+      orgProps.put("orgName", orgName);
+      orgProps.put("orgPage_linkId", "");
+      orgProps.put("orgPageExt", "");
+    }
+
     PercHelper percHelper = new PercHelper(props);
     SysHelper sysHelper = new SysHelper();
 
     Map<String, Object> rx = new HashMap<>();
-    rx.put("pageutils", new PageUtilsStub(assetProps, managedWebsitePath, managedWebsiteTitle));
+    rx.put(
+        "pageutils",
+        new PageUtilsStub(assetProps, orgProps, managedWebsitePath, managedWebsiteTitle));
     rx.put("string", new StringToolStub());
 
     Map<String, Object> bindings = new HashMap<>();
@@ -390,18 +556,29 @@ public class PSDepartmentWidgetTemplateTest {
 
   public static class PageUtilsStub {
     private final Map<String, String> assetProps;
+    private final Map<String, String> orgProps;
     private final String managedWebsitePath;
     private final String managedWebsiteTitle;
 
     public PageUtilsStub(
-        Map<String, String> assetProps, String managedWebsitePath, String managedWebsiteTitle) {
+        Map<String, String> assetProps,
+        Map<String, String> orgProps,
+        String managedWebsitePath,
+        String managedWebsiteTitle) {
       this.assetProps = assetProps;
+      this.orgProps = orgProps;
       this.managedWebsitePath = managedWebsitePath;
       this.managedWebsiteTitle = managedWebsiteTitle;
     }
 
     public List<Object> widgetContents(
         Object item, Object widget, Object finderName, Object params) {
+      if (finderName != null) {
+        if (orgProps.isEmpty()) {
+          return Collections.emptyList();
+        }
+        return Collections.singletonList(new AssetItemStub(orgProps));
+      }
       return Collections.singletonList(new AssetItemStub(assetProps));
     }
 

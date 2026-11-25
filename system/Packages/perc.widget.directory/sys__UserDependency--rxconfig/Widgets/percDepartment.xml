@@ -90,6 +90,7 @@
             $percHideFieldDptFax = $perc.widget.item.properties.get('perc_hidefield_dptFaxField');
             $percHideFieldDptEmail = $perc.widget.item.properties.get('perc_hidefield_dptEmailField');
             $percHideFieldDptPage = $perc.widget.item.properties.get('perc_hidefield_dptPageField');
+            $percHideFieldDptOrganization = $perc.widget.item.properties.get('perc_hidefield_dptOrganizationField');
 
             ## Get Widget Content Properties
             ##
@@ -243,7 +244,7 @@
                     $perc.page.setAdditionalHeadContent("$!{addlHead}<script async id='$!{scriptSchemaId}' type='application/ld+json'>$!{dptSchema}</script>")##
 #end##
 ## Display Department Name with selected formatting HTML tags
-#if( !($percHideFieldOrgName) )##
+#if( !($percHideFieldOrgName) && !($percHideFieldDptOrganization) )##
                     <div class="perc-org-name">$!{orgName}</div>
 #end##
                 <div class="perc-dpt-name">
