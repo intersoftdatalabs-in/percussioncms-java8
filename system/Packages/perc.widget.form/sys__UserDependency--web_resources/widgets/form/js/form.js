@@ -89,9 +89,15 @@
 
                     var doc=$(this);
 
-                    if( jQuery("input[type = 'submit']").attr('disabled') === 'disabled'){
+                    var editMode = (typeof $.isEditMode !== "undefined")
+                        ? $.isEditMode
+                        : (typeof window !== "undefined" ? window.percIsEditMode : undefined);
+                    var previewMode = (typeof $.isPreviewMode !== "undefined")
+                        ? $.isPreviewMode
+                        : (typeof window !== "undefined" ? window.percIsPreviewMode : undefined);
+                    if (editMode === "true" || editMode === true || previewMode === "true" || previewMode === true || jQuery("input[type = 'submit']").attr('disabled') === 'disabled') {
                         return;
-                    };
+                    }
 
                     $.PercServiceUtils.csrfGetToken($.PercServiceUtils.joinURL(servicebase,"/perc-form-processor/forms/csrf"),function (response) {
                         if (typeof response !== 'undefined' && response != null)

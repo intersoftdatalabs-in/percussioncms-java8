@@ -27,6 +27,19 @@
         if (typeof jQuery.getCMSVersion !== 'function' && typeof window.percCMSVersion !== 'undefined') {
             jQuery.getCMSVersion = function() { return window.percCMSVersion; };
         }
+        if (typeof jQuery.isEditMode === 'undefined' && typeof window.percIsEditMode !== 'undefined') {
+            jQuery.isEditMode = window.percIsEditMode;
+        }
+        if (typeof jQuery.isPreviewMode === 'undefined' && typeof window.percIsPreviewMode !== 'undefined') {
+            jQuery.isPreviewMode = window.percIsPreviewMode;
+        }
+    }
+
+    function isEditMode() {
+        var editMode = (typeof jQuery !== 'undefined' && typeof jQuery.isEditMode !== 'undefined')
+            ? jQuery.isEditMode
+            : (typeof window !== 'undefined' ? window.percIsEditMode : undefined);
+        return editMode === true || editMode === "true";
     }
 
     /**
@@ -112,6 +125,16 @@
     }
 
     function csrfGetToken(url,callback,errorCallback){
+        if (isEditMode()) {
+            if (typeof errorCallback === "function") {
+                try {
+                    errorCallback(null, "editmode", "Skipped in edit mode");
+                } catch (e) {
+                    console.debug(e);
+                }
+            }
+            return;
+        }
         if(callback && callback.callcount > 1){
             return;
         }
@@ -552,6 +575,9 @@
      */
      function makeXdmJsonRequest(servicebase, url, type, callback, dataObject) {
         var self = this;
+        if (isEditMode()) {
+            return;
+        }
         if(null === callback || 'undefined' === typeof (callback))
         {
             console.error("Callback cannot be null or undefined");

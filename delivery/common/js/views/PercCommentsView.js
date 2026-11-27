@@ -85,9 +85,15 @@
         commentForm.attr("action", url);
         var tokenHeader;
         var token;
-       if( $.isEditMode === "true" || commentForm.length === 0 || jQuery("input[type = 'submit']").attr('disabled') ===  'disabled'){
-           return;
-       }
+        var editMode = (typeof $.isEditMode !== "undefined")
+            ? $.isEditMode
+            : (typeof window !== "undefined" ? window.percIsEditMode : undefined);
+        var previewMode = (typeof $.isPreviewMode !== "undefined")
+            ? $.isPreviewMode
+            : (typeof window !== "undefined" ? window.percIsPreviewMode : undefined);
+        if (editMode === "true" || editMode === true || previewMode === "true" || previewMode === true || commentForm.length === 0 || jQuery("input[type = 'submit']").attr('disabled') === 'disabled') {
+            return;
+        }
         csrfRequestInFlight = true;
         try {
             $.PercServiceUtils.csrfGetToken(

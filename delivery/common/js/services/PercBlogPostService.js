@@ -25,6 +25,11 @@
     };
     function getPostNavEntries(queryString, pagePath, callback)
     {
+        //Skip DTS processing if we are in edit mode
+        if (queryString != null && (queryString.isEditMode === "true" || queryString.isEditMode === true)) {
+            callback(false, "");
+            return;
+        }
         //var pagePathId = "?currentPageId=" + pagePath;
     	var deliveryUrl = "";
     	try{
