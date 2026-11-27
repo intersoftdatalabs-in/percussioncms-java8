@@ -126,16 +126,16 @@
             {
                 pageModel = P.pageModel($.perc_pagemanager, $.perc_templatemanager, pageId, function()
                 {
-                    // enable all tabs and select the first tab
-                    $tabs.data('disabled.tabs', []).tabs("option", "active", defaultTabIndex);
-                    $("#perc-pageEditor-tabs").find("li").each(function(i)
+                    // Enable Layout and Style tabs unless template type is UNASSIGNED, then select the first tab
+                    if (pageModel.getTemplateModel().getTemplateType() !== unassigned)
                     {
-                        // Don't enable Layout and Style tabs if template type is UNASSIGNED
-                        if (pageModel.getTemplateModel().getTemplateType() !== unassigned)
-                        {
-                            $(this).removeClass('ui-state-disabled');
-                        }
-                    });
+                        $tabs.tabs("option", "disabled", []);
+                    }
+                    else
+                    {
+                        $tabs.tabs("option", "disabled", [1, 2]);
+                    }
+                    $tabs.tabs("option", "active", defaultTabIndex);
 
                     // Don't enable Edit Template action if template type is UNASSIGNED
                     var enableMenu = pageModel.getTemplateModel().getTemplateType() !== unassigned;
