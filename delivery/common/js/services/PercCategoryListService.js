@@ -35,6 +35,11 @@
             		{"category":"F","children":null,"count":{"second":4,"first":4}}],"count":{"second":10,"first":1}}];
     	*/
     	var deliveryUrl = "";
+    	// Skip DTS processing if we are in edit mode
+    	if (queryString != null && (queryString.isEditMode === "true" || queryString.isEditMode === true)) {
+    		callback(false, "");
+    		return;
+    	}
     	try{
     		if ("undefined" !== typeof (queryString.deliveryurl)){
     		    deliveryUrl = queryString.deliveryurl;
