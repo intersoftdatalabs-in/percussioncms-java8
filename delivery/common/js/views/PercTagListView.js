@@ -42,6 +42,9 @@
             //Set the base URL to create the href for each tag then
             //Set the base URL to create the href for each item then
             var isEditMode = queryString.isEditMode;
+            if (isEditMode === "true" || isEditMode === true) {
+                return;
+            }
             var baseURL = "";
             var isPreviewMode = queryString.isPreviewMode;
             if(isEditMode === "true" || isPreviewMode === "true"){

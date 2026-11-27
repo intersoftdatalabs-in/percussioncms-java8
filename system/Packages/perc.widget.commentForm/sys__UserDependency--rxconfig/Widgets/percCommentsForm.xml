@@ -94,7 +94,7 @@
                  #createEmptyWidgetContent("commentsform-sample-content", "This Form widget is showing sample content.")
              #end
 
-             #if($perc.isPreviewMode())
+             #if($perc.isPreviewMode() || $perc.isEditMode())
                 <script>
                     window.addEventListener('DOMContentLoaded', function() {
                         jQuery("input[type = 'submit']").attr('disabled', 'disabled');

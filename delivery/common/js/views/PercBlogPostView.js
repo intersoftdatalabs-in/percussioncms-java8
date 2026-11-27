@@ -63,6 +63,9 @@
               
             var pagePath = '/' + siteName + window.location.pathname;
 
+            if (queryString.isEditMode === "true" || queryString.isEditMode === true) {
+                return;
+            }
             if(!(queryString.criteria.length))
             {
                 $('.perc-blog').find('.perc-blog-nav-left-wrapper , .perc-blog-nav-right-wrapper').hide();

@@ -22,6 +22,11 @@
     };
     function getTagEntries(queryString, orderBy, callback)
     {
+        //Skip DTS processing if we are in edit mode
+        if (queryString != null && (queryString.isEditMode === "true" || queryString.isEditMode === true)) {
+            callback(false, "");
+            return;
+        }
         //var paramOrderBy = "?sortTagsBy=" + orderBy;
     	var deliveryUrl = "";
     	try{

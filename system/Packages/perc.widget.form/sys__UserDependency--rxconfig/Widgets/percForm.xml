@@ -81,7 +81,7 @@
 #createEmptyWidgetContent("form-sample-content", "This Form widget is showing sample content.")
 #end
 
-#if($perc.isPreviewMode())
+#if($perc.isPreviewMode() || $perc.isEditMode())
 <script>
 window.addEventListener('DOMContentLoaded', function() {
 jQuery("form").on('submit',function(){return false;});

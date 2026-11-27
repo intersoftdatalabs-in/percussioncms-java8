@@ -114,6 +114,9 @@
 					$this.one('click.superfish', false);
 					if (e.type === 'MSPointerDown' || e.type === 'pointerdown') {
 						$this.trigger('focus');
+						if ($ul.is(':hidden')) {
+							$.proxy(over, $this.parent('li'))();
+						}
 					} else {
 						$.proxy(over, $this.parent('li'))();
 					}

@@ -30,7 +30,7 @@
     	var deliveryUrl = "";
     	//Don't fetch results in case in Edit Mode
     	if(queryString != null && typeof queryString !== 'undefined'){
-    	    if(queryString.isEditMode === true){
+    	    if(queryString.isEditMode === true || queryString.isEditMode === "true"){
     	        return;
             }
         }

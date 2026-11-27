@@ -818,7 +818,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
 #if(! $cm1Version )##
 #set($cm1Version = "")##
 #end##
-<script>(function() { if (typeof jQuery !== 'undefined') { jQuery.getDeliveryServiceBase = function(){ return '$dServiceBase';};jQuery.getCMSVersion = function(){ return '$!{cm1Version}';}; } })();</script>
+#set($percEditMode = $perc.isEditMode())##
+#set($percPreviewMode = $perc.isPreviewMode())##
+<script>(function() { window.percIsEditMode = '$!{percEditMode}'; window.percIsPreviewMode = '$!{percPreviewMode}'; if (typeof jQuery !== 'undefined') { jQuery.getDeliveryServiceBase = function(){ return '$dServiceBase';};jQuery.getCMSVersion = function(){ return '$!{cm1Version}';};jQuery.isEditMode = '$!{percEditMode}';jQuery.isPreviewMode = '$!{percPreviewMode}'; } })();</script>
 #end##
 ##
 ##

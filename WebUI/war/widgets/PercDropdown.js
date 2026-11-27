@@ -187,7 +187,28 @@
 			.attr("title",labels[0])
             .data("callbackData", callbackData[0])
             .on("click",function(evt){
+                var $li = $(this).parent("li");
+                var $menu = $li.children(".perc-dropdown-option-list");
+                if ($menu.length > 0 && $menu.is(":hidden")) {
+                    if (document.activeElement !== this) {
+                        $(this).trigger("focus");
+                    }
+                    if ($menu.is(":hidden")) {
+                        $li.superfish("show");
+                    }
+                }
                 clickDropdown(evt);
+            })
+            .on("keydown",function(evt){
+                if (evt.code === "Enter" || evt.code === "Space" || evt.key === "Enter" || evt.key === " ") {
+                    evt.preventDefault();
+                    var $li = $(this).parent("li");
+                    var $menu = $li.children(".perc-dropdown-option-list");
+                    if ($menu.length > 0 && $menu.is(":hidden")) {
+                        $li.superfish("show");
+                    }
+                    clickDropdown(evt);
+                }
             });
 
         var dropdownOptionList = dropdown.find(".perc-dropdown-option-list");
