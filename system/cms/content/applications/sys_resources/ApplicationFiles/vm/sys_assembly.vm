@@ -652,16 +652,14 @@ $__style
 </head>
 <body>
 <input type="hidden" id="perc_linkback_id" value="$perc.page.id"/>
-#if($perc.linkContext.mode == "PUBLISH" && $perc.template.protectedRegion && $perc.template.protectedRegion.String != "")##
+#if($perc.linkContext.mode == "PUBLISH" && "" != "$!{perc.template.protectedRegion}")##
 #set($loginPage = $rx.pageutils.getSiteLoginPage($perc.linkContext.site.name))##
-<div id="protectedRegionInformation" data="{&quot;protectedRegion&quot;:&quot;$!perc.template.protectedRegion&quot;,&quot;protectedRegionText&quot;:&quot;$!perc.template.protectedRegionText&quot;,&quot$"/>
-#if("" != "$!{perc.template.protectedRegion}"))##
+<div id="protectedRegionInformation" data="{&quot;protectedRegion&quot;:&quot;$tools.esc.html($tools.esc.java($!perc.template.protectedRegion))&quot;,&quot;protectedRegionText&quot;:&quot;$tools.esc.html($tools.esc.java($!perc.template.protectedRegionText))&quot;,&quot;siteLoginPage&quot;:&quot;$tools.esc.html($tools.esc.java($!loginPage))&quot;}"></div>
 <style>
-$!perc.template.protectedRegion{
+#$!perc.template.protectedRegion{
 display:none;
 }
 </style>
-#end##
 #end##
 ##
 #if($perc.page.name && $sys.item.getProperty("rx:page_summary").String != "")##
