@@ -222,6 +222,7 @@ public class PSPackageBuilderTest {
         || lower.endsWith(".html")
         || lower.endsWith(".htm")
         || lower.endsWith(".css")
+        || lower.endsWith(".xsl")
         || lower.endsWith(".txt")
         || lower.endsWith(".md")
         || lower.endsWith(".jsp")
