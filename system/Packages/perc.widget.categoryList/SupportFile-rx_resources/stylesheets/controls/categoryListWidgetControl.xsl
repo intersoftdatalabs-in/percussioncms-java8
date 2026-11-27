@@ -30,8 +30,8 @@
 				<psxctl:FileLocation>/cm/css/PercDatetimePicker.css</psxctl:FileLocation>
 				<psxctl:Timestamp/>
 			</psxctl:FileDescriptor>
-			<psxctl:FileDescriptor name="jquery-ui-1.8.9.custom.css     " type="css" mimetype="text/css">
-				<psxctl:FileLocation>/cm/themes/smoothness/jquery-ui-1.8.9.custom.css     </psxctl:FileLocation>
+			<psxctl:FileDescriptor name="jquery-ui-1.8.9.custom.css" type="css" mimetype="text/css">
+				<psxctl:FileLocation>/cm/themes/smoothness/jquery-ui-1.8.9.custom.css</psxctl:FileLocation>
 				<psxctl:Timestamp/>
 			</psxctl:FileDescriptor>
 			<psxctl:FileDescriptor name="ui.datepicker.css" type="css" mimetype="text/css">
@@ -39,7 +39,7 @@
 				<psxctl:Timestamp/>
 			</psxctl:FileDescriptor>
 			<psxctl:FileDescriptor name="perc_webmgt.packed.css" type="css" mimetype="text/css">
-				<psxctl:FileLocation>/cm/jslib/profiles/3x/jquery/plugins/jquery-fancytree/skin-xp/skin.min.css</psxctl:FileLocation>
+				<psxctl:FileLocation>/cm/jslib/profiles/3x/jquery/plugins/jquery-fancytree/skin-xp/ui.fancytree.min.css</psxctl:FileLocation>
 				<psxctl:Timestamp/>
 			</psxctl:FileDescriptor>
 			<psxctl:FileDescriptor name="perc_webmgt.packed.css" type="css" mimetype="text/css">
